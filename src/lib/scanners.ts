@@ -241,19 +241,46 @@ export async function scanResearch(): Promise<IntelItem[]> {
   return deduplicateByTitle(deduplicateByUrl(items));
 }
 
-// Scan GitHub for repositories - more targeted
+// Stricter relevance check specifically for GitHub repos
+function isGitHubRelevant(text: string, repoName: string): boolean {
+  const lowerText = text.toLowerCase();
+  const lowerName = repoName.toLowerCase();
+
+  // Must explicitly mention grain-related terms
+  const grainTerms = ['grain', 'wheat', 'rice', 'corn', 'maize', 'barley', 'soybean', 'seed', 'kernel', 'cereal'];
+  const hasGrainTerm = grainTerms.some(term => lowerText.includes(term) || lowerName.includes(term));
+  if (!hasGrainTerm) return false;
+
+  // Must have explicit ML/AI/CV terms (stricter than general isRelevant)
+  const mlTerms = [
+    'machine learning', 'deep learning', 'neural network', 'cnn', 'convolutional',
+    'classification', 'classifier', 'computer vision', 'image processing',
+    'yolo', 'resnet', 'tensorflow', 'pytorch', 'keras', 'opencv'
+  ];
+  const hasMLTerm = mlTerms.some(term => lowerText.includes(term) || lowerName.includes(term));
+  if (!hasMLTerm) return false;
+
+  // Must relate to quality/grading/sorting/detection
+  const qualityTerms = ['quality', 'grading', 'grade', 'sorting', 'detection', 'classify', 'inspection', 'defect', 'disease'];
+  const hasQualityTerm = qualityTerms.some(term => lowerText.includes(term) || lowerName.includes(term));
+
+  return hasQualityTerm;
+}
+
+// Scan GitHub for repositories - highly targeted
 export async function scanGitHub(): Promise<IntelItem[]> {
   const items: IntelItem[] = [];
   const token = process.env.GITHUB_TOKEN;
 
-  // More specific queries
+  // Very specific queries for grain quality ML projects
   const searchQueries = [
-    'grain quality classification machine learning',
-    'wheat grading deep learning',
-    'grain sorting computer vision',
-    'seed quality assessment CNN',
-    'rice grain classification neural network',
-    'corn kernel detection'
+    'wheat grain quality classification CNN',
+    'rice grain grading deep learning',
+    'grain defect detection neural network',
+    'seed quality classification pytorch',
+    'wheat kernel classification tensorflow',
+    'grain sorting machine learning opencv',
+    'cereal grain image classification'
   ];
 
   const headers: Record<string, string> = {
@@ -268,7 +295,7 @@ export async function scanGitHub(): Promise<IntelItem[]> {
   for (const query of searchQueries) {
     try {
       const response = await fetch(
-        `https://api.github.com/search/repositories?q=${encodeURIComponent(query)}&sort=updated&order=desc&per_page=5`,
+        `https://api.github.com/search/repositories?q=${encodeURIComponent(query)}&sort=stars&order=desc&per_page=5`,
         { headers }
       );
 
@@ -280,8 +307,8 @@ export async function scanGitHub(): Promise<IntelItem[]> {
         for (const repo of data.items) {
           const fullText = `${repo.name} ${repo.description || ''} ${repo.topics?.join(' ') || ''}`;
 
-          // Check relevance
-          if (!isRelevant(fullText)) continue;
+          // Strict relevance check for GitHub
+          if (!isGitHubRelevant(fullText, repo.name)) continue;
 
           const entities = findEntities(fullText);
 
