@@ -7,10 +7,14 @@ function generateId(): string {
 
 // Official grain types from Canadian Grain Grading Guide
 const GRAIN_TYPES = [
-  'wheat', 'barley', 'oats', 'rye', 'corn', 'maize', 'triticale', 'buckwheat',
-  'canola', 'rapeseed', 'flaxseed', 'mustard seed', 'sunflower', 'safflower',
-  'soybeans', 'soybean', 'peas', 'lentils', 'beans', 'faba beans', 'chickpeas',
-  'grain', 'kernel', 'seed', 'cereal'
+  // Cereals
+  'wheat', 'rye', 'barley', 'oats', 'triticale', 'mixed grain', 'buckwheat', 'corn', 'maize',
+  // Oilseeds
+  'canola', 'rapeseed', 'flaxseed', 'mustard seed', 'domestic mustard', 'sunflower seed', 'sunflower', 'safflower seed', 'safflower', 'canary seed',
+  // Pulses
+  'peas', 'lentils', 'beans', 'soybeans', 'soybean', 'faba beans', 'faba bean', 'chickpeas', 'chickpea',
+  // Generic terms
+  'grain', 'kernel', 'seed', 'cereal', 'pulse', 'oilseed'
 ];
 
 // Official grading factors from Canadian Grain Commission
