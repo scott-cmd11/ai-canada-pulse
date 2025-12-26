@@ -5,88 +5,91 @@ function generateId(): string {
   return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 }
 
-// Official grain types from Canadian Grain Grading Guide
-const GRAIN_TYPES = [
-  // Cereals
-  'wheat', 'rye', 'barley', 'oats', 'triticale', 'mixed grain', 'buckwheat', 'corn', 'maize',
-  // Oilseeds
-  'canola', 'rapeseed', 'flaxseed', 'mustard seed', 'domestic mustard', 'sunflower seed', 'sunflower', 'safflower seed', 'safflower', 'canary seed',
-  // Pulses
-  'peas', 'lentils', 'beans', 'soybeans', 'soybean', 'faba beans', 'faba bean', 'chickpeas', 'chickpea',
-  // Generic terms
-  'grain', 'kernel', 'seed', 'cereal', 'pulse', 'oilseed'
+// Official grain types from Canadian Grain Grading Guide - SPECIFIC crop names only
+const GRAIN_CROPS = [
+  'wheat', 'rye', 'barley', 'oats', 'triticale', 'buckwheat', 'corn', 'maize',
+  'canola', 'rapeseed', 'flaxseed', 'mustard seed', 'sunflower seed', 'safflower seed', 'canary seed',
+  'peas', 'lentils', 'beans', 'soybeans', 'soybean', 'faba beans', 'chickpeas',
+  'rice', 'sorghum', 'millet'
 ];
 
-// Official grading factors from Canadian Grain Commission
-const GRADING_FACTORS = [
-  // Primary grading factors
-  'test weight', 'moisture', 'moisture content', 'dockage', 'foreign material',
-  'damaged kernels', 'falling number', 'protein', 'protein content',
-
-  // Defects and damage types
-  'fusarium', 'fusarium damage', 'fusarium head blight', 'fhb', 'scab',
-  'frost damage', 'frost damaged', 'sprouted', 'sprouting',
-  'heated', 'binburnt', 'fireburnt', 'heat damage',
-  'insect damage', 'insect damaged', 'mildew', 'mildewed',
-  'ergot', 'blackpoint', 'black point',
-  'weather stain', 'weathering', 'weathered',
-  'green kernels', 'immature',
-  'don', 'deoxynivalenol', 'vomitoxin', 'mycotoxin',
-
-  // Quality measurements
-  'hard vitreous kernels', 'hvk', 'vitreous',
-  'alpha-amylase', 'amylase activity',
-  'thousand kernel weight', 'tkw',
-  'bulk density', 'hectolitre weight',
-
-  // Grading terms
-  'grade', 'grading', 'grain grade', 'quality assessment',
-  'sample grade', 'feed grade',
-  'defect', 'defects', 'tolerance', 'tolerances'
+// Phrases that indicate actual grain/crop context (not ML jargon)
+const GRAIN_CONTEXT_PHRASES = [
+  'grain quality', 'grain grading', 'grain classification', 'grain sorting', 'grain inspection',
+  'wheat quality', 'wheat grading', 'wheat kernel', 'wheat grain',
+  'rice quality', 'rice grading', 'rice grain',
+  'corn kernel', 'corn quality', 'maize kernel', 'maize quality',
+  'barley quality', 'barley grading', 'malting barley',
+  'oat quality', 'oats grading',
+  'soybean quality', 'soybean grading',
+  'lentil quality', 'lentil grading', 'lentil sorting',
+  'canola quality', 'canola grading',
+  'seed quality', 'seed grading', 'seed classification', 'seed sorting',
+  'crop quality', 'crop grading',
+  'cereal grain', 'cereal quality',
+  'pulse quality', 'pulse grading',
+  'oilseed quality', 'oilseed grading',
+  'kernel damage', 'damaged kernel', 'broken kernel',
+  'test weight', 'hectolitre weight', 'bulk density',
+  'moisture content', 'grain moisture',
+  'foreign material', 'dockage',
+  'fusarium', 'mycotoxin', 'don level', 'deoxynivalenol', 'vomitoxin',
+  'sprouted grain', 'sprouting damage', 'falling number',
+  'frost damage', 'heat damage', 'weather damage',
+  'protein content', 'grain protein',
+  'hard vitreous', 'vitreous kernel',
+  'milling quality', 'baking quality', 'malting quality',
+  'grain defect', 'seed defect',
+  'grain analyzer', 'grain analyser', 'grain inspection system'
 ];
 
-// ML/AI terms for technology relevance
-const ML_TERMS = [
-  'machine learning', 'deep learning', 'neural network', 'cnn', 'convolutional',
-  'computer vision', 'image processing', 'image classification', 'image analysis',
-  'object detection', 'classification', 'classifier', 'segmentation',
-  'artificial intelligence', 'ai', 'ml',
-  'yolo', 'resnet', 'vgg', 'mobilenet', 'efficientnet',
-  'tensorflow', 'pytorch', 'keras', 'opencv',
-  'hyperspectral', 'multispectral', 'nir', 'near-infrared', 'spectroscopy',
-  'x-ray', 'imaging', 'vision system', 'automated', 'automation'
+// Terms to EXCLUDE - ML jargon that creates false positives
+const EXCLUDE_TERMS = [
+  'fine-grained', 'coarse-grained', 'multi-grained',
+  'kernel method', 'kernel function', 'gaussian kernel', 'rbf kernel',
+  'kernel trick', 'kernel matrix', 'kernel density',
+  'attention kernel', 'convolution kernel',
+  'linux kernel', 'operating system kernel',
+  'exoplanet', 'astronomy', 'astrophysics',
+  'fabric defect', 'textile', 'tableware',
+  'timber', 'wood moisture', 'lumber',
+  'sand grain', 'aeolian', 'sediment'
 ];
 
-// Check if content is relevant to grain grading + ML/AI
-function isRelevant(text: string): boolean {
+// Check if content is STRICTLY relevant to grain grading
+function isStrictlyRelevant(text: string): boolean {
   const lowerText = text.toLowerCase();
 
-  // Must mention a grain type
-  const hasGrainType = GRAIN_TYPES.some(grain => lowerText.includes(grain));
-  if (!hasGrainType) return false;
+  // First, EXCLUDE papers with ML jargon or unrelated topics
+  for (const exclude of EXCLUDE_TERMS) {
+    if (lowerText.includes(exclude)) return false;
+  }
 
-  // Must mention a grading factor OR an ML term
-  const hasGradingFactor = GRADING_FACTORS.some(factor => lowerText.includes(factor));
-  const hasMLTerm = ML_TERMS.some(term => lowerText.includes(term));
+  // Must contain a grain context phrase (specific to agricultural grain)
+  const hasGrainContext = GRAIN_CONTEXT_PHRASES.some(phrase => lowerText.includes(phrase));
 
-  return hasGradingFactor || hasMLTerm;
+  // OR must contain a specific crop name + quality/grading related term
+  const hasCropName = GRAIN_CROPS.some(crop => {
+    const cropPattern = new RegExp(`\\b${crop}\\b`, 'i');
+    return cropPattern.test(text);
+  });
+
+  const hasQualityTerm = [
+    'quality', 'grading', 'grade', 'sorting', 'classification', 'detection',
+    'defect', 'damage', 'inspection', 'assessment', 'evaluation', 'analysis'
+  ].some(term => lowerText.includes(term));
+
+  const hasMLTerm = [
+    'machine learning', 'deep learning', 'neural network', 'cnn', 'computer vision',
+    'image processing', 'classification model', 'detection model', 'yolo', 'resnet',
+    'tensorflow', 'pytorch', 'automated', 'automation'
+  ].some(term => lowerText.includes(term));
+
+  // Accept if: has grain context phrase, OR (has crop name AND quality term AND ML term)
+  return hasGrainContext || (hasCropName && hasQualityTerm && hasMLTerm);
 }
 
-// Stricter relevance for GitHub - must have grain + grading + ML
-function isGitHubRelevant(text: string, repoName: string): boolean {
-  const lowerText = (text + ' ' + repoName).toLowerCase();
-
-  const hasGrainType = GRAIN_TYPES.some(grain => lowerText.includes(grain));
-  if (!hasGrainType) return false;
-
-  const hasGradingFactor = GRADING_FACTORS.some(factor => lowerText.includes(factor));
-  const hasMLTerm = ML_TERMS.some(term => lowerText.includes(term));
-
-  // Must have both grading relevance AND ML/AI
-  return hasGradingFactor && hasMLTerm;
-}
-
-// Find which monitored entities are mentioned in text
+// Find which monitored entities are mentioned
 function findEntities(text: string): string[] {
   const lowerText = text.toLowerCase();
   const found: string[] = [];
@@ -107,28 +110,25 @@ function findEntities(text: string): string[] {
   return found;
 }
 
-// Calculate relevance score based on grading factors mentioned
+// Calculate relevance score
 function calculateRelevance(text: string, entities: string[]): number {
   const lowerText = text.toLowerCase();
   let score = 2;
 
-  // Bonus for monitored entities
   score += Math.min(entities.length * 0.5, 1.5);
 
-  // Bonus for specific grading factors
-  const criticalFactors = ['fusarium', 'test weight', 'moisture', 'protein', 'falling number', 'grading'];
+  const criticalFactors = ['fusarium', 'test weight', 'moisture content', 'protein content', 'falling number', 'grain grading', 'grain quality'];
   criticalFactors.forEach(factor => {
     if (lowerText.includes(factor)) score += 0.3;
   });
 
-  // Bonus for ML terms
-  const mlBonus = ['deep learning', 'cnn', 'neural network', 'computer vision'].some(t => lowerText.includes(t));
+  const mlBonus = ['deep learning', 'cnn', 'neural network', 'computer vision', 'yolo'].some(t => lowerText.includes(t));
   if (mlBonus) score += 0.5;
 
   return Math.min(Math.round(score * 10) / 10, 5);
 }
 
-// Deduplicate items by URL
+// Deduplicate by URL
 function deduplicateByUrl(items: IntelItem[]): IntelItem[] {
   const seen = new Set<string>();
   return items.filter(item => {
@@ -162,7 +162,7 @@ function deduplicateByTitle(items: IntelItem[]): IntelItem[] {
   return result;
 }
 
-// Scan GNews API for news articles
+// Scan GNews API for news
 export async function scanNews(): Promise<IntelItem[]> {
   const items: IntelItem[] = [];
   const apiKey = process.env.GNEWS_API_KEY;
@@ -172,14 +172,13 @@ export async function scanNews(): Promise<IntelItem[]> {
     return items;
   }
 
-  // Queries focused on grain grading and quality assessment
   const searchQueries = [
-    '"grain grading" AND ("machine learning" OR "AI" OR "automation")',
-    '"wheat quality" AND ("fusarium" OR "test weight" OR "protein")',
-    '"grain quality assessment" AND "technology"',
-    '"kernel damage" OR "grain defect" AND "detection"',
-    '"grain inspection" AND ("computer vision" OR "imaging")',
-    ...MONITORED_ENTITIES.companies.established.slice(0, 3).map(c => `"${c}" grain grading`)
+    '"grain grading" technology',
+    '"wheat quality" assessment',
+    '"grain inspection" automation',
+    '"fusarium" wheat detection',
+    '"grain sorting" machine',
+    ...MONITORED_ENTITIES.companies.established.slice(0, 3).map(c => `"${c}" grain`)
   ];
 
   for (const query of searchQueries) {
@@ -196,7 +195,7 @@ export async function scanNews(): Promise<IntelItem[]> {
         for (const article of data.articles) {
           const fullText = `${article.title} ${article.description || ''}`;
 
-          if (!isRelevant(fullText)) continue;
+          if (!isStrictlyRelevant(fullText)) continue;
 
           const entities = findEntities(fullText);
 
@@ -226,22 +225,24 @@ export async function scanNews(): Promise<IntelItem[]> {
   return deduplicateByTitle(deduplicateByUrl(items));
 }
 
-// Scan arXiv for research papers on grain grading
+// Scan arXiv - VERY specific queries only
 export async function scanResearch(): Promise<IntelItem[]> {
   const items: IntelItem[] = [];
 
-  // Queries focused on grain grading factors and ML
+  // Highly specific queries that should only return grain-related papers
   const searchQueries = [
-    'ti:"wheat" AND abs:"grading" AND abs:"deep learning"',
-    'ti:"grain" AND abs:"quality" AND abs:"classification"',
-    'ti:"kernel" AND abs:"defect" AND abs:"detection"',
+    'ti:"wheat" AND ti:"quality" AND abs:"deep learning"',
+    'ti:"grain" AND ti:"grading" AND abs:"classification"',
+    'ti:"rice" AND ti:"quality" AND abs:"machine learning"',
+    'ti:"wheat" AND ti:"kernel" AND abs:"detection"',
+    'ti:"corn" AND ti:"kernel" AND abs:"classification"',
+    'ti:"soybean" AND ti:"quality" AND abs:"classification"',
+    'ti:"lentil" AND abs:"sorting" AND abs:"machine"',
+    'ti:"barley" AND ti:"quality" AND abs:"neural"',
+    'abs:"grain sorting" AND abs:"computer vision"',
     'abs:"fusarium" AND abs:"wheat" AND abs:"detection"',
-    'abs:"grain" AND abs:"moisture" AND abs:"prediction"',
-    'ti:"rice" AND abs:"grading" AND abs:"neural network"',
-    'abs:"grain" AND abs:"test weight" AND abs:"machine learning"',
-    'abs:"wheat" AND abs:"protein" AND abs:"prediction"',
-    'ti:"corn" AND abs:"kernel" AND abs:"classification"',
-    'abs:"grain sorting" AND abs:"computer vision"'
+    'abs:"seed quality" AND abs:"deep learning"',
+    'ti:"cereal" AND abs:"grading" AND abs:"image"'
   ];
 
   for (const query of searchQueries) {
@@ -264,7 +265,8 @@ export async function scanResearch(): Promise<IntelItem[]> {
         if (title && link) {
           const fullText = `${title} ${summary}`;
 
-          if (!isRelevant(fullText)) continue;
+          // Apply strict relevance filter
+          if (!isStrictlyRelevant(fullText)) continue;
 
           const entities = findEntities(fullText);
 
@@ -293,22 +295,20 @@ export async function scanResearch(): Promise<IntelItem[]> {
   return deduplicateByTitle(deduplicateByUrl(items));
 }
 
-// Scan GitHub for grain grading ML projects
+// Scan GitHub - strict grain grading focus
 export async function scanGitHub(): Promise<IntelItem[]> {
   const items: IntelItem[] = [];
   const token = process.env.GITHUB_TOKEN;
 
-  // Very specific queries for grain grading ML projects
   const searchQueries = [
-    'wheat grain grading classification CNN',
-    'grain quality defect detection deep learning',
-    'kernel damage classification neural network',
-    'fusarium wheat detection machine learning',
-    'grain moisture prediction',
-    'rice grading classification pytorch',
+    'wheat grain quality classification',
+    'rice grain grading deep learning',
+    'grain defect detection CNN',
+    'wheat kernel classification',
+    'soybean quality machine learning',
     'corn kernel defect detection',
-    'wheat protein prediction machine learning',
-    'grain test weight prediction'
+    'lentil sorting classification',
+    'seed quality assessment neural network'
   ];
 
   const headers: Record<string, string> = {
@@ -335,7 +335,7 @@ export async function scanGitHub(): Promise<IntelItem[]> {
         for (const repo of data.items) {
           const fullText = `${repo.name} ${repo.description || ''} ${repo.topics?.join(' ') || ''}`;
 
-          if (!isGitHubRelevant(fullText, repo.name)) continue;
+          if (!isStrictlyRelevant(fullText)) continue;
 
           const entities = findEntities(fullText);
 
