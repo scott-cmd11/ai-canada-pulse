@@ -19,6 +19,8 @@ export function useIntelData(options?: UseIntelDataOptions) {
 
   const [activeType, setActiveType] = useState<IntelType | 'all'>(options?.defaultType || 'all');
   const [activeWatchlist, setActiveWatchlist] = useState<string>(options?.defaultWatchlist || 'all');
+  const [activeRegion, setActiveRegion] = useState<string>('all');
+  const [activeSource, setActiveSource] = useState<string>('all');
   const [query, setQuery] = useState('');
 
   const fetchData = useCallback(async () => {
@@ -27,6 +29,8 @@ export function useIntelData(options?: UseIntelDataOptions) {
       params.set('limit', String(limit));
       if (activeType !== 'all') params.set('type', activeType);
       if (activeWatchlist !== 'all') params.set('watchlist', activeWatchlist);
+      if (activeRegion !== 'all') params.set('region', activeRegion);
+      if (activeSource !== 'all') params.set('source', activeSource);
 
       const [intelRes, statsRes] = await Promise.all([fetch(`/api/intel?${params.toString()}`), fetch('/api/stats')]);
 
@@ -40,7 +44,7 @@ export function useIntelData(options?: UseIntelDataOptions) {
     } finally {
       setLoading(false);
     }
-  }, [activeType, activeWatchlist, limit]);
+  }, [activeType, activeWatchlist, activeRegion, activeSource, limit]);
 
   useEffect(() => {
     fetchData();
@@ -76,9 +80,13 @@ export function useIntelData(options?: UseIntelDataOptions) {
     scanning,
     activeType,
     activeWatchlist,
+    activeRegion,
+    activeSource,
     query,
     setActiveType,
     setActiveWatchlist,
+    setActiveRegion,
+    setActiveSource,
     setQuery,
     fetchData,
     runScan,

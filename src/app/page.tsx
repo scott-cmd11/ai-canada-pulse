@@ -1,17 +1,8 @@
 ﻿'use client';
 
+import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import {
-  Briefing,
-  DashboardStats,
-  EventCluster,
-  IntelItem,
-  IntelType,
-  MomentumItem,
-  TimelinePoint,
-  TrendDirection,
-  WATCHLISTS,
-} from '@/lib/types';
+import { Briefing, DashboardStats, EventCluster, IntelItem, IntelType, MomentumItem, TimelinePoint, WATCHLISTS } from '@/lib/types';
 
 type TimelineMode = 'daily' | 'weekly' | 'monthly' | 'yearly';
 type BriefMode = 'daily' | 'weekly' | 'monthly';
@@ -32,6 +23,8 @@ export default function Dashboard() {
 
   const [activeType, setActiveType] = useState<IntelType | 'all'>('all');
   const [activeWatchlist, setActiveWatchlist] = useState<string>('all');
+  const [activeRegion, setActiveRegion] = useState<string>('all');
+  const [activeSource, setActiveSource] = useState<string>('all');
   const [query, setQuery] = useState('');
 
   const [timelineMode, setTimelineMode] = useState<TimelineMode>('monthly');
@@ -43,6 +36,8 @@ export default function Dashboard() {
       params.set('limit', '400');
       if (activeType !== 'all') params.set('type', activeType);
       if (activeWatchlist !== 'all') params.set('watchlist', activeWatchlist);
+      if (activeRegion !== 'all') params.set('region', activeRegion);
+      if (activeSource !== 'all') params.set('source', activeSource);
 
       const [intelRes, statsRes] = await Promise.all([fetch(`/api/intel?${params.toString()}`), fetch('/api/stats')]);
 
@@ -56,7 +51,7 @@ export default function Dashboard() {
     } finally {
       setLoading(false);
     }
-  }, [activeType, activeWatchlist]);
+  }, [activeType, activeWatchlist, activeRegion, activeSource]);
 
   useEffect(() => {
     fetchData();
@@ -77,7 +72,6 @@ export default function Dashboard() {
 
   const filteredItems = useMemo(() => {
     if (!query.trim()) return items;
-
     const lower = query.toLowerCase();
     return items.filter((item) => {
       const fullText = `${item.title} ${item.description} ${item.source} ${item.entities.join(' ')}`.toLowerCase();
@@ -85,20 +79,16 @@ export default function Dashboard() {
     });
   }, [items, query]);
 
-  const timelinePoints: TimelinePoint[] = useMemo(() => {
-    if (!stats) return [];
-    return stats.timeline[timelineMode];
-  }, [stats, timelineMode]);
-
-  const activeBrief: Briefing | null = useMemo(() => {
-    if (!stats) return null;
-    return stats.briefings[briefMode];
-  }, [stats, briefMode]);
+  const timelinePoints: TimelinePoint[] = useMemo(() => (stats ? stats.timeline[timelineMode] : []), [stats, timelineMode]);
+  const activeBrief: Briefing | null = useMemo(() => (stats ? stats.briefings[briefMode] : null), [stats, briefMode]);
 
   const avgTimeline = useMemo(() => {
     if (!timelinePoints.length) return 0;
     return Math.round(timelinePoints.reduce((sum, point) => sum + point.count, 0) / timelinePoints.length);
   }, [timelinePoints]);
+
+  const regionOptions = useMemo(() => ['all', ...(stats?.regionalBreakdown.map((entry) => entry.region) || [])], [stats]);
+  const sourceOptions = useMemo(() => ['all', ...(stats?.bySource.map((entry) => entry.name) || [])], [stats]);
 
   const formatRelative = (dateRaw: string) => {
     const date = new Date(dateRaw);
@@ -116,13 +106,14 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen bg-[var(--bg)] text-[var(--text)]">
       <div className="noise-layer" />
+
       <header className="sticky top-0 z-40 border-b border-[var(--line)] bg-[color:var(--panel-solid)]/92 backdrop-blur-xl">
         <div className="mx-auto flex max-w-[1400px] flex-wrap items-center justify-between gap-3 px-4 py-4 md:px-8">
           <div>
             <p className="text-[11px] uppercase tracking-[0.28em] text-[var(--muted)]">AI Canada Pulse</p>
             <h1 className="text-2xl font-semibold leading-tight md:text-3xl">National AI Intelligence Cockpit</h1>
             <p className="mt-1 text-sm text-[var(--muted)]">
-              Executive-grade monitoring across policy, research, funding, open source, and media since 2022-11-30.
+              Live Canada AI monitoring from the ChatGPT moment onward with entity, region, and policy tracking.
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -141,23 +132,14 @@ export default function Dashboard() {
       </header>
 
       <main className="relative z-10 mx-auto max-w-[1400px] space-y-5 px-4 py-6 md:px-8 md:py-7">
-        <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-6">
+        <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-7">
           <KpiCard label="Signals" value={stats?.totalItems || 0} detail="All tracked items" />
           <KpiCard label="Today" value={stats?.itemsToday || 0} detail="New in 24h" />
           <KpiCard label="Week" value={stats?.itemsThisWeek || 0} detail="Last 7 days" />
           <KpiCard label="Month" value={stats?.itemsThisMonth || 0} detail="Current month" />
-          <KpiCard
-            label="Rel. Score"
-            value={stats?.quality.avgRelevance || 0}
-            detail="Average relevance"
-            precision={2}
-          />
-          <KpiCard
-            label="Source Trust"
-            value={stats?.quality.avgReliability || 0}
-            detail={`${stats?.quality.sourceDiversity || 0} active sources`}
-            precision={1}
-          />
+          <KpiCard label="Rel. Score" value={stats?.quality.avgRelevance || 0} detail="Average relevance" precision={2} />
+          <KpiCard label="Source Trust" value={stats?.quality.avgReliability || 0} detail={`${stats?.quality.sourceDiversity || 0} active sources`} precision={1} />
+          <KpiCard label="Policy Heat" value={stats?.regulatory.score || 0} detail={`Level: ${stats?.regulatory.level || 'low'}`} />
         </section>
 
         <section className="grid gap-4 xl:grid-cols-[2fr_1fr]">
@@ -165,26 +147,19 @@ export default function Dashboard() {
             <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
               <div>
                 <h2 className="text-lg font-semibold">Signal Velocity</h2>
-                <p className="text-sm text-[var(--muted)]">Volume over time, with dynamic window control.</p>
+                <p className="text-sm text-[var(--muted)]">Volume trend windows.</p>
               </div>
               <div className="flex flex-wrap gap-2">
                 {(['daily', 'weekly', 'monthly', 'yearly'] as TimelineMode[]).map((mode) => (
-                  <Chip
-                    key={mode}
-                    active={timelineMode === mode}
-                    onClick={() => setTimelineMode(mode)}
-                    label={mode}
-                  />
+                  <Chip key={mode} active={timelineMode === mode} onClick={() => setTimelineMode(mode)} label={mode} />
                 ))}
               </div>
             </div>
-
             <LineChart points={timelinePoints} />
-
             <div className="mt-4 grid gap-3 md:grid-cols-3">
               <MiniMetric label="Window Avg" value={avgTimeline} />
               <MiniMetric label="Peak" value={Math.max(...timelinePoints.map((p) => p.count), 0)} />
-              <MiniMetric label="Signal Mix" value={`${stats?.signalMix.high || 0}/${stats?.signalMix.medium || 0}/${stats?.signalMix.low || 0}`} />
+              <MiniMetric label="Policy 7d" value={stats?.regulatory.mentions7d || 0} />
             </div>
           </div>
 
@@ -197,15 +172,14 @@ export default function Dashboard() {
                 ))}
               </div>
             </div>
-
             {activeBrief ? <BriefCard brief={activeBrief} /> : <p className="text-sm text-[var(--muted)]">Loading...</p>}
           </div>
         </section>
 
         <section className="grid gap-4 xl:grid-cols-[1.2fr_1fr_1fr]">
           <div className="panel p-4 md:p-5">
-            <h3 className="text-base font-semibold">Event Radar</h3>
-            <p className="mb-3 text-sm text-[var(--muted)]">Clustered multi-source narratives with highest strategic weight.</p>
+            <h3 className="text-base font-semibold">Semantic Event Radar</h3>
+            <p className="mb-3 text-sm text-[var(--muted)]">Embedding-based storyline clusters.</p>
             <div className="space-y-2">
               {(stats?.eventClusters || []).slice(0, 6).map((cluster) => (
                 <ClusterCard key={cluster.id} cluster={cluster} />
@@ -221,69 +195,23 @@ export default function Dashboard() {
               {(stats?.momentum || []).slice(0, 10).map((item) => (
                 <MomentumRow key={item.name} item={item} onClick={() => setQuery(item.name)} />
               ))}
-              {!stats?.momentum?.length && <p className="text-sm text-[var(--muted)]">Momentum data unavailable.</p>}
             </div>
           </div>
 
           <div className="panel p-4 md:p-5">
-            <h3 className="text-base font-semibold">Activity Heatmap</h3>
-            <p className="mb-3 text-sm text-[var(--muted)]">84-day signal intensity matrix.</p>
-            <Heatmap cells={stats?.heatmap || []} />
-          </div>
-        </section>
-
-        <section className="grid gap-4 xl:grid-cols-[1.2fr_1fr]">
-          <div className="panel p-4 md:p-5">
-            <h3 className="mb-3 text-base font-semibold">Source Quality Matrix</h3>
-            <div className="space-y-2">
-              {(stats?.sourceReliability || []).slice(0, 10).map((source) => (
+            <h3 className="text-base font-semibold">Regional Intelligence</h3>
+            <p className="mb-3 text-sm text-[var(--muted)]">Click a province to filter the live feed.</p>
+            <div className="flex flex-wrap gap-2">
+              {(stats?.regionalBreakdown || []).slice(0, 10).map((region) => (
                 <button
-                  key={source.name}
-                  onClick={() => setQuery(source.name)}
-                  className="group flex w-full items-center gap-3 rounded-lg border border-[var(--line)] bg-[var(--surface-2)] px-3 py-2 text-left transition hover:bg-white"
+                  key={region.region}
+                  onClick={() => setActiveRegion(region.region)}
+                  className="rounded-full border border-[var(--line)] bg-[var(--surface-2)] px-3 py-1 text-xs transition hover:bg-white"
                 >
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-medium">{source.name}</p>
-                    <p className="text-xs text-[var(--muted)]">{source.count} items</p>
-                  </div>
-                  <div className="h-2 w-28 overflow-hidden rounded-full bg-slate-200/70">
-                    <div className="h-2 rounded-full bg-gradient-to-r from-[#3da8ff] to-[#2ce2b2]" style={{ width: `${source.score}%` }} />
-                  </div>
-                  <span className="w-10 text-right text-xs text-[var(--muted)]">{source.score}</span>
+                  {region.region} ({region.count})
                 </button>
               ))}
             </div>
-          </div>
-
-          <div className="panel p-4 md:p-5">
-            <h3 className="mb-3 text-base font-semibold">Watchlists</h3>
-            <div className="space-y-2">
-              {(stats?.watchlists || []).map((watch) => (
-                <button
-                  key={watch.id}
-                  onClick={() => setActiveWatchlist(watch.id)}
-                  className={`w-full rounded-xl border px-3 py-2 text-left transition ${
-                    activeWatchlist === watch.id
-                      ? 'border-[var(--accent)] bg-[var(--accent-soft)]'
-                      : 'border-[var(--line)] bg-[var(--surface-2)] hover:bg-white'
-                  }`}
-                >
-                  <div className="flex items-center justify-between">
-                    <p className="text-sm font-semibold">{watch.name}</p>
-                    <DeltaTag direction={watch.direction} delta={watch.deltaPercent} />
-                  </div>
-                  <p className="mt-1 line-clamp-2 text-xs text-[var(--muted)]">{watch.description}</p>
-                  <p className="mt-1 text-xs text-[var(--muted)]">{watch.count} items this week</p>
-                </button>
-              ))}
-            </div>
-
-            <button
-              onClick={() => setActiveWatchlist('all')}
-              className="mt-3 w-full rounded-lg border border-[var(--line)] bg-[var(--surface-2)] px-3 py-2 text-xs uppercase tracking-[0.18em] text-[var(--muted)] transition hover:bg-white"
-            >
-              Show all watchlists
-            </button>
           </div>
         </section>
 
@@ -308,11 +236,33 @@ export default function Dashboard() {
                   </option>
                 ))}
               </select>
+              <select
+                value={activeRegion}
+                onChange={(event) => setActiveRegion(event.target.value)}
+                className="rounded-lg border border-[var(--line)] bg-[var(--surface-2)] px-3 py-2 text-sm text-[var(--text)]"
+              >
+                {regionOptions.map((option) => (
+                  <option key={option} value={option}>
+                    {option === 'all' ? 'All Regions' : option}
+                  </option>
+                ))}
+              </select>
+              <select
+                value={activeSource}
+                onChange={(event) => setActiveSource(event.target.value)}
+                className="rounded-lg border border-[var(--line)] bg-[var(--surface-2)] px-3 py-2 text-sm text-[var(--text)]"
+              >
+                {sourceOptions.map((option) => (
+                  <option key={option} value={option}>
+                    {option === 'all' ? 'All Sources' : option}
+                  </option>
+                ))}
+              </select>
               <input
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
                 placeholder="Search entities, sources, or themes"
-                className="min-w-[260px] flex-1 rounded-lg border border-[var(--line)] bg-[var(--surface-2)] px-3 py-2 text-sm text-[var(--text)] outline-none ring-[var(--accent)]/25 transition focus:ring"
+                className="min-w-[220px] flex-1 rounded-lg border border-[var(--line)] bg-[var(--surface-2)] px-3 py-2 text-sm text-[var(--text)]"
               />
             </div>
           </div>
@@ -326,47 +276,29 @@ export default function Dashboard() {
               {filteredItems.slice(0, 80).map((item) => (
                 <article key={item.id} className="rounded-xl border border-[var(--line)] bg-white/70 p-3 transition hover:border-white/20">
                   <div className="flex flex-wrap items-center gap-2 text-xs text-[var(--muted)]">
-                    <span
-                      className="rounded-full px-2 py-0.5 font-medium"
-                      style={{ backgroundColor: TYPE_META[item.type].color, color: '#051018' }}
-                    >
+                    <span className="rounded-full px-2 py-0.5 font-medium" style={{ backgroundColor: TYPE_META[item.type].color, color: '#051018' }}>
                       {TYPE_META[item.type].label}
                     </span>
                     <span>{item.source}</span>
+                    <span>{item.regionTag?.province || item.region || 'Canada'}</span>
                     <span>{formatRelative(item.publishedAt)}</span>
-                    <span>relevance {item.relevanceScore.toFixed(1)}</span>
                   </div>
 
-                  <a
-                    href={item.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="mt-2 block text-base font-semibold leading-snug transition hover:text-[var(--accent)]"
-                  >
+                  <a href={item.url} target="_blank" rel="noopener noreferrer" className="mt-2 block text-base font-semibold leading-snug transition hover:text-[var(--accent)]">
                     {item.title}
                   </a>
 
                   <p className="mt-1 text-sm text-[var(--muted)]">{item.description}</p>
-                  <div className="mt-2">
-                    <a
-                      href={item.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex rounded-full border border-[var(--line)] bg-[var(--surface-2)] px-2.5 py-1 text-[11px] uppercase tracking-[0.14em] text-[var(--muted)] transition hover:bg-white"
-                    >
-                      Open Source
-                    </a>
-                  </div>
 
                   <div className="mt-2 flex flex-wrap gap-2">
                     {item.entities.map((entity) => (
-                      <button
+                      <Link
                         key={`${item.id}-${entity}`}
-                        onClick={() => setQuery(entity)}
-                        className="rounded-full border border-[var(--line)] px-2 py-0.5 text-xs text-[var(--muted)] transition hover:bg-white/5"
+                        href={`/entities/${encodeURIComponent(entity)}`}
+                        className="rounded-full border border-[var(--line)] px-2 py-0.5 text-xs text-[var(--muted)] transition hover:bg-white"
                       >
                         {entity}
-                      </button>
+                      </Link>
                     ))}
                   </div>
                 </article>
@@ -447,40 +379,29 @@ function ClusterCard(props: { cluster: EventCluster }) {
       </div>
       <div className="mt-2 flex flex-wrap gap-1">
         {props.cluster.entities.slice(0, 3).map((entity) => (
-          <span key={entity} className="rounded-full border border-[var(--line)] px-2 py-0.5 text-[11px] text-[var(--muted)]">
+          <Link key={entity} href={`/entities/${encodeURIComponent(entity)}`} className="rounded-full border border-[var(--line)] px-2 py-0.5 text-[11px] text-[var(--muted)] transition hover:bg-white">
             {entity}
-          </span>
+          </Link>
         ))}
       </div>
-      <span className="mt-2 inline-flex rounded-full border border-[var(--line)] bg-[var(--surface-2)] px-2.5 py-1 text-[11px] uppercase tracking-[0.14em] text-[var(--muted)]">
-        Open Source
-      </span>
+      <p className="mt-2 text-[11px] text-[var(--muted)]">Keywords: {props.cluster.keywordVector.join(', ') || 'n/a'}</p>
     </a>
   );
 }
 
 function MomentumRow(props: { item: MomentumItem; onClick: () => void }) {
+  const sign = props.item.direction === 'up' ? '+' : props.item.direction === 'down' ? '' : '~';
+  const color = props.item.direction === 'up' ? 'text-emerald-700' : props.item.direction === 'down' ? 'text-rose-700' : 'text-slate-600';
+
   return (
-    <button
-      onClick={props.onClick}
-      className="flex w-full items-center justify-between rounded-lg border border-[var(--line)] bg-[var(--surface-2)] px-3 py-2 text-left transition hover:bg-white"
-    >
+    <button onClick={props.onClick} className="flex w-full items-center justify-between rounded-lg border border-[var(--line)] bg-[var(--surface-2)] px-3 py-2 text-left transition hover:bg-white">
       <div>
         <p className="text-sm font-medium">{props.item.name}</p>
-        <p className="text-xs text-[var(--muted)]">
-          {props.item.current} now vs {props.item.previous} prior
-        </p>
+        <p className="text-xs text-[var(--muted)]">{props.item.current} now vs {props.item.previous} prior</p>
       </div>
-      <DeltaTag direction={props.item.direction} delta={props.item.deltaPercent} />
+      <span className={`text-xs font-semibold ${color}`}>{`${sign}${props.item.deltaPercent}%`}</span>
     </button>
   );
-}
-
-function DeltaTag(props: { direction: TrendDirection; delta: number }) {
-  const sign = props.direction === 'up' ? '+' : props.direction === 'down' ? '' : '~';
-  const color = props.direction === 'up' ? 'text-emerald-700' : props.direction === 'down' ? 'text-rose-700' : 'text-slate-600';
-
-  return <span className={`text-xs font-semibold ${color}`}>{`${sign}${props.delta}%`}</span>;
 }
 
 function LineChart(props: { points: TimelinePoint[] }) {
@@ -519,51 +440,9 @@ function LineChart(props: { points: TimelinePoint[] }) {
           </linearGradient>
         </defs>
 
-        {[0, 1, 2, 3, 4].map((step) => {
-          const y = padding + (step / 4) * (height - padding * 2);
-          return <line key={step} x1={padding} y1={y} x2={width - padding} y2={y} stroke="rgba(19,40,63,0.14)" />;
-        })}
-
         <path d={areaPath} fill="url(#areaGradient)" />
         <path d={path} fill="none" stroke="url(#lineGradient)" strokeWidth={3} />
-
-        {coordinates.filter((_, index) => index % Math.ceil(coordinates.length / 8) === 0).map((coord) => (
-          <g key={`${coord.label}-${coord.x}`}>
-            <circle cx={coord.x} cy={coord.y} r={4} fill="#2ce2b2" />
-            <text x={coord.x} y={height - 8} textAnchor="middle" fill="rgba(19,40,63,0.55)" fontSize="11">
-              {coord.label.slice(5)}
-            </text>
-          </g>
-        ))}
       </svg>
     </div>
   );
 }
-
-function Heatmap(props: { cells: { date: string; count: number }[] }) {
-  if (!props.cells.length) return <p className="text-sm text-[var(--muted)]">No heatmap data.</p>;
-
-  const max = Math.max(...props.cells.map((cell) => cell.count), 1);
-
-  return (
-    <div className="grid grid-cols-14 gap-1">
-      {props.cells.map((cell) => {
-        const intensity = cell.count / max;
-        const alpha = intensity === 0 ? 0.12 : 0.2 + intensity * 0.8;
-
-        return (
-          <div
-            key={cell.date}
-            title={`${cell.date}: ${cell.count}`}
-            className="h-3.5 rounded-[3px] border border-black/20"
-            style={{ backgroundColor: `rgba(44, 226, 178, ${alpha})` }}
-          />
-        );
-      })}
-    </div>
-  );
-}
-
-
-
-

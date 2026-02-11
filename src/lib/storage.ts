@@ -3,10 +3,13 @@
   Briefing,
   CHATGPT_MOMENT_ISO,
   DashboardStats,
+  EntitySummary,
   EventCluster,
   IntelItem,
   IntelType,
   MomentumItem,
+  REGULATORY_TERMS,
+  SOURCE_REGISTRY,
   SourceReliability,
   TimelinePoint,
   TrendDirection,
@@ -82,6 +85,14 @@ const STOP_WORDS = new Set([
   'canada',
   'canadian',
   'ai',
+  'this',
+  'that',
+  'into',
+  'over',
+  'after',
+  'before',
+  'their',
+  'there',
 ]);
 
 function getItemDate(item: IntelItem): Date {
@@ -100,6 +111,32 @@ function tokenize(text: string): string[] {
     .replace(/[^a-z0-9\s]/g, ' ')
     .split(/\s+/)
     .filter((token) => token.length > 2 && !STOP_WORDS.has(token));
+}
+
+function buildTokenEmbedding(text: string): Record<string, number> {
+  const counts: Record<string, number> = {};
+  tokenize(text).forEach((token) => {
+    counts[token] = (counts[token] || 0) + 1;
+  });
+
+  const norm = Math.sqrt(Object.values(counts).reduce((sum, value) => sum + value * value, 0)) || 1;
+  Object.keys(counts).forEach((token) => {
+    counts[token] = counts[token] / norm;
+  });
+
+  return counts;
+}
+
+function cosineSimilarity(a: Record<string, number>, b: Record<string, number>): number {
+  const smaller = Object.keys(a).length < Object.keys(b).length ? a : b;
+  const larger = smaller === a ? b : a;
+
+  let dot = 0;
+  Object.entries(smaller).forEach(([token, weight]) => {
+    dot += weight * (larger[token] || 0);
+  });
+
+  return dot;
 }
 
 function getWatchlistMatchScore(item: IntelItem, watchlist: WatchlistDefinition): number {
@@ -301,34 +338,67 @@ function buildSignalMix(sourceReliability: SourceReliability[]): { high: number;
   );
 }
 
+function mergeEmbeddings(target: Record<string, number>, incoming: Record<string, number>): Record<string, number> {
+  const merged: Record<string, number> = { ...target };
+  Object.entries(incoming).forEach(([token, weight]) => {
+    merged[token] = (merged[token] || 0) + weight;
+  });
+
+  const norm = Math.sqrt(Object.values(merged).reduce((sum, value) => sum + value * value, 0)) || 1;
+  Object.keys(merged).forEach((token) => {
+    merged[token] = merged[token] / norm;
+  });
+
+  return merged;
+}
+
 function buildEventClusters(items: IntelItem[]): EventCluster[] {
   const now = Date.now();
   const recent = items.filter((item) => now - getItemDate(item).getTime() <= 30 * 24 * 60 * 60 * 1000);
-  const buckets: Array<{ seed: IntelItem; tokens: Set<string>; items: IntelItem[] }> = [];
+
+  type Bucket = {
+    id: string;
+    items: IntelItem[];
+    embedding: Record<string, number>;
+    tokenCounts: Record<string, number>;
+  };
+
+  const buckets: Bucket[] = [];
 
   recent.forEach((item) => {
-    const tokens = new Set(tokenize(`${item.title} ${item.entities.join(' ')}`).slice(0, 10));
-    if (tokens.size === 0) return;
+    const text = `${item.title} ${item.description} ${item.entities.join(' ')}`;
+    const embedding = buildTokenEmbedding(text);
+    const tokenCounts: Record<string, number> = {};
+    tokenize(text).forEach((token) => {
+      tokenCounts[token] = (tokenCounts[token] || 0) + 1;
+    });
 
-    let matchedBucket: { seed: IntelItem; tokens: Set<string>; items: IntelItem[] } | null = null;
+    let matched: Bucket | null = null;
+    let best = 0;
 
     for (const bucket of buckets) {
-      const overlap = Array.from(tokens).filter((token) => bucket.tokens.has(token)).length;
-      const denominator = Math.max(Math.min(tokens.size, bucket.tokens.size), 1);
-      const overlapRatio = overlap / denominator;
-
-      if (overlap >= 3 || overlapRatio >= 0.45) {
-        matchedBucket = bucket;
-        break;
+      const similarity = cosineSimilarity(embedding, bucket.embedding);
+      if (similarity > best) {
+        best = similarity;
+        matched = bucket;
       }
     }
 
-    if (matchedBucket) {
-      matchedBucket.items.push(item);
-      tokens.forEach((token) => matchedBucket?.tokens.add(token));
-    } else {
-      buckets.push({ seed: item, tokens, items: [item] });
+    if (matched && best >= 0.33) {
+      matched.items.push(item);
+      matched.embedding = mergeEmbeddings(matched.embedding, embedding);
+      Object.entries(tokenCounts).forEach(([token, count]) => {
+        matched!.tokenCounts[token] = (matched!.tokenCounts[token] || 0) + count;
+      });
+      return;
     }
+
+    buckets.push({
+      id: `${item.type}-${item.id}`,
+      items: [item],
+      embedding,
+      tokenCounts,
+    });
   });
 
   return buckets
@@ -338,14 +408,17 @@ function buildEventClusters(items: IntelItem[]): EventCluster[] {
       const sources = Array.from(new Set(group.map((item) => item.source))).slice(0, 8);
       const entities = Array.from(new Set(group.flatMap((item) => item.entities))).slice(0, 10);
       const types = Array.from(new Set(group.map((item) => item.type)));
+      const regionFocus = Array.from(new Set(group.map((item) => item.regionTag?.province || item.region || 'Canada'))).slice(0, 4);
       const topItem = [...group].sort((a, b) => b.relevanceScore - a.relevanceScore)[0];
       const avgRel = group.reduce((sum, item) => sum + item.relevanceScore, 0) / group.length;
       const score = Number((group.length * 0.7 + sources.length * 0.9 + avgRel).toFixed(1));
-
-      const id = `${bucket.seed.type}-${tokenize(bucket.seed.title).slice(0, 4).join('-') || bucket.seed.id}`;
+      const keywordVector = Object.entries(bucket.tokenCounts)
+        .sort((a, b) => b[1] - a[1])
+        .map(([token]) => token)
+        .slice(0, 6);
 
       return {
-        id,
+        id: bucket.id,
         headline: topItem.title,
         topUrl: topItem.url,
         itemCount: group.length,
@@ -356,6 +429,8 @@ function buildEventClusters(items: IntelItem[]): EventCluster[] {
           .map((item) => getItemDate(item).toISOString())
           .sort((a, b) => (a > b ? -1 : 1))[0],
         score,
+        keywordVector,
+        regionFocus,
       };
     })
     .sort((a, b) => b.score - a.score)
@@ -492,6 +567,50 @@ function buildWatchlists(items: IntelItem[]): WatchlistSnapshot[] {
   });
 }
 
+function buildRegionalBreakdown(items: IntelItem[]): { region: string; count: number }[] {
+  const counts: Record<string, number> = {};
+  items.forEach((item) => {
+    const key = item.regionTag?.province || item.region || 'Canada';
+    counts[key] = (counts[key] || 0) + 1;
+  });
+
+  return Object.entries(counts)
+    .map(([region, count]) => ({ region, count }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 12);
+}
+
+function buildRegulatorySnapshot(items: IntelItem[]) {
+  const now = Date.now();
+  const oneDay = 24 * 60 * 60 * 1000;
+  const sevenDays = 7 * oneDay;
+
+  const policyItems = items.filter((item) => item.type === 'policy');
+  const weighted = policyItems.map((item) => {
+    const text = `${item.title} ${item.description} ${item.category}`.toLowerCase();
+    const termHits = REGULATORY_TERMS.reduce((sum, term) => (text.includes(term) ? sum + 1 : sum), 0);
+    return { item, termHits };
+  });
+
+  const mentions24h = weighted.filter(({ item, termHits }) => now - getItemDate(item).getTime() <= oneDay && termHits > 0).length;
+  const mentions7d = weighted.filter(({ item, termHits }) => now - getItemDate(item).getTime() <= sevenDays && termHits > 0).length;
+
+  const avgHits = weighted.length ? weighted.reduce((sum, entry) => sum + entry.termHits, 0) / weighted.length : 0;
+  const rawScore = Math.min(100, Math.round(mentions7d * 6 + mentions24h * 10 + avgHits * 18));
+  const level: 'high' | 'medium' | 'low' = rawScore >= 70 ? 'high' : rawScore >= 35 ? 'medium' : 'low';
+
+  return {
+    score: rawScore,
+    level,
+    mentions24h,
+    mentions7d,
+    timeline: buildDailyTimeline(
+      weighted.filter((entry) => entry.termHits > 0).map((entry) => entry.item),
+      30,
+    ),
+  };
+}
+
 export async function getIntelItems(): Promise<IntelItem[]> {
   const client = getRedis();
 
@@ -589,6 +708,8 @@ export async function getDashboardStats(): Promise<DashboardStats> {
   const eventClusters = buildEventClusters(items);
   const momentum = buildMomentum(items);
   const watchlists = buildWatchlists(items);
+  const regionalBreakdown = buildRegionalBreakdown(items);
+  const regulatory = buildRegulatorySnapshot(items);
 
   const totalRelevance = items.reduce((sum, item) => sum + item.relevanceScore, 0);
   const avgRelevance = items.length > 0 ? Number((totalRelevance / items.length).toFixed(2)) : 0;
@@ -618,6 +739,7 @@ export async function getDashboardStats(): Promise<DashboardStats> {
     byType,
     bySource,
     topEntities,
+    regionalBreakdown,
     timeline: {
       daily: buildDailyTimeline(items, 30),
       weekly: buildWeeklyTimeline(items, 16),
@@ -631,8 +753,10 @@ export async function getDashboardStats(): Promise<DashboardStats> {
     },
     signalMix,
     sourceReliability,
+    sourceRegistry: SOURCE_REGISTRY,
     eventClusters,
     momentum,
+    regulatory,
     briefings: {
       daily: buildBriefing(items, eventClusters, 'daily'),
       weekly: buildBriefing(items, eventClusters, 'weekly'),
@@ -671,6 +795,62 @@ export async function getItemsByEntity(entity: string, limit = 50): Promise<Inte
     .slice(0, limit);
 }
 
+export async function getEntitySummary(entity: string): Promise<EntitySummary | null> {
+  const matched = await getItemsByEntity(entity, 500);
+  if (!matched.length) return null;
+
+  const byType: Record<IntelType, number> = { news: 0, research: 0, policy: 0, github: 0, funding: 0 };
+  const sourceCounts: Record<string, number> = {};
+  const regionCounts: Record<string, number> = {};
+
+  matched.forEach((item) => {
+    byType[item.type] += 1;
+    sourceCounts[item.source] = (sourceCounts[item.source] || 0) + 1;
+    const region = item.regionTag?.province || item.region || 'Canada';
+    regionCounts[region] = (regionCounts[region] || 0) + 1;
+  });
+
+  const topSources = Object.entries(sourceCounts)
+    .map(([name, count]) => ({ name, count }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 5);
+
+  const regions = Object.entries(regionCounts)
+    .map(([region, count]) => ({ region, count }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 6);
+
+  return {
+    name: entity,
+    count: matched.length,
+    avgRelevance: Number((matched.reduce((sum, item) => sum + item.relevanceScore, 0) / matched.length).toFixed(2)),
+    topSources,
+    recentItems: matched.slice(0, 25),
+    latestAt: matched[0]?.publishedAt || null,
+    byType,
+    regions,
+  };
+}
+
+export async function getItemsByRegion(region: string, limit = 50): Promise<IntelItem[]> {
+  const lower = region.toLowerCase();
+  const items = await getIntelItems();
+  return items
+    .filter((item) => {
+      const province = item.regionTag?.province?.toLowerCase() || '';
+      const city = item.regionTag?.city?.toLowerCase() || '';
+      const direct = (item.region || '').toLowerCase();
+      return province.includes(lower) || city.includes(lower) || direct.includes(lower);
+    })
+    .slice(0, limit);
+}
+
+export async function getItemsBySource(source: string, limit = 50): Promise<IntelItem[]> {
+  const lower = source.toLowerCase();
+  const items = await getIntelItems();
+  return items.filter((item) => item.source.toLowerCase().includes(lower)).slice(0, limit);
+}
+
 export async function getItemsByWatchlist(watchlistId: string, limit = 50): Promise<IntelItem[]> {
   const items = await getIntelItems();
   const watchlist = WATCHLISTS.find((entry) => entry.id === watchlistId);
@@ -704,5 +884,3 @@ export async function searchItems(query: string, limit = 50): Promise<IntelItem[
 export function isStorageConfigured(): boolean {
   return getRedis() !== null;
 }
-
-

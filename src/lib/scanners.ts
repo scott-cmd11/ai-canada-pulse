@@ -1,11 +1,4 @@
-﻿import { CHATGPT_MOMENT_ISO, IntelItem, IntelType, MONITORED_ENTITIES } from './types';
-
-interface FeedSource {
-  name: string;
-  url: string;
-  type: IntelType;
-  category: string;
-}
+﻿import { CHATGPT_MOMENT_ISO, IntelItem, IntelType, MONITORED_ENTITIES, REGION_KEYWORDS, SOURCE_REGISTRY, SourceDefinition } from './types';
 
 function generateId(): string {
   return `${Date.now()}-${Math.random().toString(36).slice(2, 11)}`;
@@ -54,12 +47,34 @@ async function fetchWithTimeout(url: string, timeoutMs = 12000): Promise<Respons
   }
 }
 
+function inferRegionTag(text: string, url?: string): NonNullable<IntelItem['regionTag']> {
+  const lower = `${text} ${url || ''}`.toLowerCase();
+
+  for (const entry of REGION_KEYWORDS) {
+    if (entry.keywords.some((keyword) => lower.includes(keyword.toLowerCase()))) {
+      return {
+        country: 'Canada',
+        province: entry.province,
+        city: entry.city,
+        hub: entry.hub,
+      };
+    }
+  }
+
+  return {
+    country: 'Canada',
+    province: 'National',
+    hub: 'Pan-Canadian',
+  };
+}
+
 function findEntities(text: string): string[] {
   const lower = text.toLowerCase();
   const entities = [
     ...MONITORED_ENTITIES.nationalInstitutions,
     ...MONITORED_ENTITIES.companies,
     ...MONITORED_ENTITIES.provinces,
+    ...MONITORED_ENTITIES.cities,
   ];
 
   return entities.filter((entity) => {
@@ -152,15 +167,41 @@ function normalizeTitle(rawTitle: string): { title: string; sourceHint: string }
   return { title, sourceHint: '' };
 }
 
-async function scanGoogleNewsFeed(params: {
-  query: string;
-  type: IntelType;
-  category: string;
-}): Promise<IntelItem[]> {
-  const { query, type, category } = params;
+function buildItem(params: {
+  sourceDef: SourceDefinition;
+  title: string;
+  description: string;
+  link: string;
+  publishedAt?: string;
+  sourceNameOverride?: string;
+}): IntelItem {
+  const combined = `${params.title} ${params.description}`;
+  const entities = findEntities(combined);
+  const regionTag = inferRegionTag(combined, params.link);
+
+  return {
+    id: generateId(),
+    type: params.sourceDef.type,
+    title: params.title,
+    description: params.description || 'No summary available.',
+    url: params.link,
+    source: params.sourceNameOverride || params.sourceDef.name,
+    sourceId: params.sourceDef.id,
+    publishedAt: params.publishedAt ? new Date(params.publishedAt).toISOString() : new Date().toISOString(),
+    discoveredAt: new Date().toISOString(),
+    relevanceScore: calculateRelevance(combined, entities),
+    entities: entities.length > 0 ? entities : ['Canada AI'],
+    category: params.sourceDef.category,
+    region: regionTag.province,
+    regionTag,
+  };
+}
+
+async function scanGoogleNewsSource(sourceDef: SourceDefinition): Promise<IntelItem[]> {
+  if (!sourceDef.query) return [];
   const items: IntelItem[] = [];
 
-  const url = `https://news.google.com/rss/search?q=${encodeURIComponent(query)}&hl=en-CA&gl=CA&ceid=CA:en`;
+  const url = `https://news.google.com/rss/search?q=${encodeURIComponent(sourceDef.query)}&hl=en-CA&gl=CA&ceid=CA:en`;
 
   try {
     const response = await fetchWithTimeout(url);
@@ -182,192 +223,68 @@ async function scanGoogleNewsFeed(params: {
       if (!title || !link) return;
       if (!isCanadaAiRelevant(combined)) return;
 
-      const entities = findEntities(combined);
-
-      items.push({
-        id: generateId(),
-        type,
-        title,
-        description: description || 'No summary available.',
-        url: link,
-        source: source || sourceHint || 'Google News',
-        publishedAt: publishedAt ? new Date(publishedAt).toISOString() : new Date().toISOString(),
-        discoveredAt: new Date().toISOString(),
-        relevanceScore: calculateRelevance(combined, entities),
-        entities: entities.length > 0 ? entities : ['Canada AI'],
-        category,
-        region: 'Canada',
-      });
+      items.push(
+        buildItem({
+          sourceDef,
+          title,
+          description,
+          link,
+          publishedAt,
+          sourceNameOverride: source || sourceHint || sourceDef.name,
+        }),
+      );
     });
   } catch (error) {
-    console.error(`Google News scan failed for query: ${query}`, error);
+    console.error(`Google News scan failed for source: ${sourceDef.name}`, error);
   }
 
   return deduplicateByTitle(deduplicateByUrl(items));
 }
 
-async function scanCuratedFeeds(): Promise<IntelItem[]> {
-  const feeds: FeedSource[] = [
-    {
-      name: 'CBC Technology',
-      url: 'https://www.cbc.ca/webfeed/rss/rss-technology',
-      type: 'news',
-      category: 'Canadian Media',
-    },
-    {
-      name: 'BetaKit',
-      url: 'https://betakit.com/feed/',
-      type: 'funding',
-      category: 'Startup and Funding',
-    },
-    {
-      name: 'Mila News',
-      url: 'https://mila.quebec/en/feed/',
-      type: 'research',
-      category: 'Research Institute',
-    },
-    {
-      name: 'Amii News',
-      url: 'https://www.amii.ca/latest-news/feed/',
-      type: 'research',
-      category: 'Research Institute',
-    },
-    {
-      name: 'Vector Institute Insights',
-      url: 'https://vectorinstitute.ai/feed/',
-      type: 'research',
-      category: 'Research Institute',
-    },
-  ];
+async function scanRssSource(sourceDef: SourceDefinition): Promise<IntelItem[]> {
+  if (!sourceDef.url) return [];
 
-  const allItems: IntelItem[] = [];
+  try {
+    const response = await fetchWithTimeout(sourceDef.url);
+    if (!response.ok) return [];
 
-  await Promise.all(
-    feeds.map(async (feed) => {
-      try {
-        const response = await fetchWithTimeout(feed.url);
-        if (!response.ok) return;
+    const xml = await response.text();
+    const rssEntries = xml.match(/<item>[\s\S]*?<\/item>/g) || [];
+    const atomEntries = xml.match(/<entry>[\s\S]*?<\/entry>/g) || [];
+    const entries = rssEntries.length > 0 ? rssEntries : atomEntries;
 
-        const xml = await response.text();
-        const rssEntries = xml.match(/<item>[\s\S]*?<\/item>/g) || [];
-        const atomEntries = xml.match(/<entry>[\s\S]*?<\/entry>/g) || [];
-        const entries = rssEntries.length > 0 ? rssEntries : atomEntries;
+    const items: IntelItem[] = [];
+    entries.slice(0, 30).forEach((entry) => {
+      const title = extractTag(entry, 'title');
+      const description = extractTag(entry, 'description') || extractTag(entry, 'summary');
+      const link = extractTag(entry, 'link') || extractAtomLink(entry);
+      const publishedAt =
+        extractTag(entry, 'pubDate') || extractTag(entry, 'updated') || extractTag(entry, 'published');
 
-        entries.slice(0, 30).forEach((entry) => {
-          const title = extractTag(entry, 'title');
-          const description = extractTag(entry, 'description') || extractTag(entry, 'summary');
-          const link = extractTag(entry, 'link') || extractAtomLink(entry);
-          const publishedAt =
-            extractTag(entry, 'pubDate') || extractTag(entry, 'updated') || extractTag(entry, 'published');
+      const combined = `${title} ${description}`;
 
-          const combined = `${title} ${description}`;
+      if (!title || !link) return;
+      if (!isCanadaAiRelevant(combined)) return;
 
-          if (!title || !link) return;
-          if (!isCanadaAiRelevant(combined)) return;
+      items.push(buildItem({ sourceDef, title, description, link, publishedAt }));
+    });
 
-          const entities = findEntities(combined);
-
-          allItems.push({
-            id: generateId(),
-            type: feed.type,
-            title,
-            description: description || 'No summary available.',
-            url: link,
-            source: feed.name,
-            publishedAt: publishedAt ? new Date(publishedAt).toISOString() : new Date().toISOString(),
-            discoveredAt: new Date().toISOString(),
-            relevanceScore: calculateRelevance(combined, entities),
-            entities: entities.length > 0 ? entities : ['Canada AI'],
-            category: feed.category,
-            region: 'Canada',
-          });
-        });
-      } catch (error) {
-        console.error(`Curated feed scan failed: ${feed.name}`, error);
-      }
-    }),
-  );
-
-  return deduplicateByTitle(deduplicateByUrl(allItems));
+    return deduplicateByTitle(deduplicateByUrl(items));
+  } catch (error) {
+    console.error(`RSS scan failed for source: ${sourceDef.name}`, error);
+    return [];
+  }
 }
 
-export async function scanNews(): Promise<IntelItem[]> {
-  const queries = [
-    'artificial intelligence Canada',
-    'generative AI Canada',
-    'Canadian AI startup',
-    'AI adoption Canada business',
-    'AI health care Canada',
-    'site:cbc.ca AI Canada',
-    'site:theglobeandmail.com AI Canada',
-    'site:nationalpost.com AI Canada',
-  ];
-
-  const queryResults = await Promise.all(
-    queries.map((query) => scanGoogleNewsFeed({ query, type: 'news', category: 'News and Analysis' })),
-  );
-
-  const feedResults = await scanCuratedFeeds();
-
-  return deduplicateByTitle(deduplicateByUrl([...queryResults.flat(), ...feedResults.filter((item) => item.type === 'news')]));
-}
-
-export async function scanPolicy(): Promise<IntelItem[]> {
-  const queries = [
-    'Government of Canada AI policy',
-    'Canada AI regulation',
-    'Treasury Board AI Canada',
-    'ISED generative AI Canada',
-    'site:canada.ca artificial intelligence policy',
-    'site:ontario.ca artificial intelligence',
-    'site:quebec.ca intelligence artificielle',
-    'site:alberta.ca artificial intelligence',
-    'site:bc.ca artificial intelligence',
-  ];
-
-  const results = await Promise.all(
-    queries.map((query) => scanGoogleNewsFeed({ query, type: 'policy', category: 'Policy and Governance' })),
-  );
-
-  return deduplicateByTitle(deduplicateByUrl(results.flat()));
-}
-
-export async function scanFunding(): Promise<IntelItem[]> {
-  const queries = [
-    'Canada AI funding round',
-    'Canadian AI investment',
-    'venture capital AI Canada',
-    'federal funding AI Canada',
-    'site:betakit.com AI funding',
-    'site:thelogic.co AI funding Canada',
-    'Scale AI supercluster funding',
-  ];
-
-  const queryResults = await Promise.all(
-    queries.map((query) => scanGoogleNewsFeed({ query, type: 'funding', category: 'Capital and Funding' })),
-  );
-
-  const feedResults = await scanCuratedFeeds();
-
-  return deduplicateByTitle(
-    deduplicateByUrl([...queryResults.flat(), ...feedResults.filter((item) => item.type === 'funding')]),
-  );
-}
-
-export async function scanResearch(): Promise<IntelItem[]> {
+async function scanArxivSources(sourceDefs: SourceDefinition[]): Promise<IntelItem[]> {
   const items: IntelItem[] = [];
 
-  const queries = [
-    'all:"artificial intelligence" AND (all:"Canada" OR all:"Canadian")',
-    'all:"generative" AND all:"Canada"',
-    'all:"machine learning" AND (all:"Mila" OR all:"Vector Institute" OR all:"Amii")',
-    'all:"CIFAR" AND all:"artificial intelligence"',
-  ];
+  for (const sourceDef of sourceDefs) {
+    if (!sourceDef.query) continue;
 
-  for (const query of queries) {
     try {
       const response = await fetchWithTimeout(
-        `https://export.arxiv.org/api/query?search_query=${encodeURIComponent(query)}&start=0&max_results=20&sortBy=submittedDate&sortOrder=descending`,
+        `https://export.arxiv.org/api/query?search_query=${encodeURIComponent(sourceDef.query)}&start=0&max_results=20&sortBy=submittedDate&sortOrder=descending`,
       );
 
       if (!response.ok) continue;
@@ -385,41 +302,25 @@ export async function scanResearch(): Promise<IntelItem[]> {
         if (!title || !url) return;
         if (!isCanadaAiRelevant(combined)) return;
 
-        const entities = findEntities(combined);
-
-        items.push({
-          id: generateId(),
-          type: 'research',
-          title,
-          description: summary.slice(0, 500),
-          url,
-          source: 'arXiv',
-          publishedAt: publishedAt || new Date().toISOString(),
-          discoveredAt: new Date().toISOString(),
-          relevanceScore: calculateRelevance(combined, entities),
-          entities: entities.length > 0 ? entities : ['Canada AI Research'],
-          category: 'Academic Research',
-          region: 'Canada',
-        });
+        items.push(buildItem({ sourceDef, title, description: summary.slice(0, 500), link: url, publishedAt }));
       });
     } catch (error) {
-      console.error(`arXiv scan failed for query: ${query}`, error);
+      console.error(`arXiv scan failed for source: ${sourceDef.name}`, error);
     }
   }
 
-  const feedResults = await scanCuratedFeeds();
-
-  return deduplicateByTitle(
-    deduplicateByUrl([...items, ...feedResults.filter((item) => item.type === 'research')]),
-  );
+  return deduplicateByTitle(deduplicateByUrl(items));
 }
 
-export async function scanGitHub(): Promise<IntelItem[]> {
-  const items: IntelItem[] = [];
+async function scanGithubSources(sourceDefs: SourceDefinition[]): Promise<IntelItem[]> {
   const token = process.env.GITHUB_TOKEN;
+  const headers: Record<string, string> = {
+    Accept: 'application/vnd.github.v3+json',
+    'User-Agent': 'CanadaAIPulse',
+  };
+  if (token) headers.Authorization = `token ${token}`;
 
-  const queries = [
-    'Canada artificial intelligence',
+  const fallbackQueries = [
     'Canadian generative AI startup',
     'Mila deep learning',
     'Vector Institute machine learning',
@@ -427,12 +328,10 @@ export async function scanGitHub(): Promise<IntelItem[]> {
     'Cohere LLM',
   ];
 
-  const headers: Record<string, string> = {
-    Accept: 'application/vnd.github.v3+json',
-    'User-Agent': 'CanadaAIPulse',
-  };
+  const seededQueries = sourceDefs.map((entry) => entry.query).filter(Boolean) as string[];
+  const queries = Array.from(new Set([...seededQueries, ...fallbackQueries]));
 
-  if (token) headers.Authorization = `token ${token}`;
+  const items: IntelItem[] = [];
 
   for (const query of queries) {
     try {
@@ -445,6 +344,8 @@ export async function scanGitHub(): Promise<IntelItem[]> {
 
       const data = await response.json();
       const repos = data.items || [];
+      const sourceDef = sourceDefs[0] || SOURCE_REGISTRY.find((entry) => entry.kind === 'github-api');
+      if (!sourceDef) continue;
 
       repos.forEach((repo: Record<string, unknown>) => {
         const name = String(repo.full_name || '');
@@ -454,22 +355,15 @@ export async function scanGitHub(): Promise<IntelItem[]> {
 
         if (!isCanadaAiRelevant(combined)) return;
 
-        const entities = findEntities(combined);
-
-        items.push({
-          id: generateId(),
-          type: 'github',
-          title: name,
-          description,
-          url: String(repo.html_url || ''),
-          source: 'GitHub',
-          publishedAt: String(repo.updated_at || new Date().toISOString()),
-          discoveredAt: new Date().toISOString(),
-          relevanceScore: calculateRelevance(combined, entities),
-          entities: entities.length > 0 ? entities : ['Canada OSS'],
-          category: `${String(repo.language || 'Unknown')} | ${String(repo.stargazers_count || 0)} stars`,
-          region: 'Canada',
-        });
+        items.push(
+          buildItem({
+            sourceDef,
+            title: name,
+            description,
+            link: String(repo.html_url || ''),
+            publishedAt: String(repo.updated_at || new Date().toISOString()),
+          }),
+        );
       });
     } catch (error) {
       console.error(`GitHub scan failed for query: ${query}`, error);
@@ -528,20 +422,71 @@ function historicalSeedData(): IntelItem[] {
     },
   ];
 
-  return baseline.map((entry) => ({
-    id: `historical-${entry.type}-${entry.date}`,
-    type: entry.type,
-    title: entry.title,
-    description: entry.description,
-    url: entry.url,
-    source: 'AI Canada Pulse Baseline',
-    publishedAt: entry.date,
-    discoveredAt: new Date().toISOString(),
-    relevanceScore: 4,
-    entities: ['Canada AI'],
-    category: entry.category,
-    region: 'Canada',
-  }));
+  const baselineSource = SOURCE_REGISTRY.find((entry) => entry.kind === 'baseline');
+
+  return baseline.map((entry) => {
+    const regionTag = inferRegionTag(`${entry.title} ${entry.description}`, entry.url);
+    return {
+      id: `historical-${entry.type}-${entry.date}`,
+      type: entry.type,
+      title: entry.title,
+      description: entry.description,
+      url: entry.url,
+      source: baselineSource?.name || 'AI Canada Pulse Baseline',
+      sourceId: baselineSource?.id,
+      publishedAt: entry.date,
+      discoveredAt: new Date().toISOString(),
+      relevanceScore: 4,
+      entities: ['Canada AI'],
+      category: entry.category,
+      region: regionTag.province,
+      regionTag,
+    };
+  });
+}
+
+export async function scanNews(): Promise<IntelItem[]> {
+  const defs = SOURCE_REGISTRY.filter((entry) => entry.type === 'news' && (entry.kind === 'google-news' || entry.kind === 'rss'));
+  const googleDefs = defs.filter((entry) => entry.kind === 'google-news');
+  const rssDefs = defs.filter((entry) => entry.kind === 'rss');
+
+  const queryResults = await Promise.all(googleDefs.map((sourceDef) => scanGoogleNewsSource(sourceDef)));
+  const feedResults = await Promise.all(rssDefs.map((sourceDef) => scanRssSource(sourceDef)));
+
+  return deduplicateByTitle(deduplicateByUrl([...queryResults.flat(), ...feedResults.flat()]));
+}
+
+export async function scanPolicy(): Promise<IntelItem[]> {
+  const defs = SOURCE_REGISTRY.filter((entry) => entry.type === 'policy' && entry.kind === 'google-news');
+  const results = await Promise.all(defs.map((sourceDef) => scanGoogleNewsSource(sourceDef)));
+  return deduplicateByTitle(deduplicateByUrl(results.flat()));
+}
+
+export async function scanFunding(): Promise<IntelItem[]> {
+  const defs = SOURCE_REGISTRY.filter((entry) => entry.type === 'funding' && (entry.kind === 'google-news' || entry.kind === 'rss'));
+  const queryResults = await Promise.all(
+    defs.filter((entry) => entry.kind === 'google-news').map((sourceDef) => scanGoogleNewsSource(sourceDef)),
+  );
+  const feedResults = await Promise.all(
+    defs.filter((entry) => entry.kind === 'rss').map((sourceDef) => scanRssSource(sourceDef)),
+  );
+
+  return deduplicateByTitle(deduplicateByUrl([...queryResults.flat(), ...feedResults.flat()]));
+}
+
+export async function scanResearch(): Promise<IntelItem[]> {
+  const arxivDefs = SOURCE_REGISTRY.filter((entry) => entry.type === 'research' && entry.kind === 'arxiv');
+  const rssDefs = SOURCE_REGISTRY.filter((entry) => entry.type === 'research' && entry.kind === 'rss');
+
+  const arxivItems = await scanArxivSources(arxivDefs);
+  const rssItems = await Promise.all(rssDefs.map((sourceDef) => scanRssSource(sourceDef)));
+
+  return deduplicateByTitle(deduplicateByUrl([...arxivItems, ...rssItems.flat()]));
+}
+
+export async function scanGitHub(): Promise<IntelItem[]> {
+  const defs = SOURCE_REGISTRY.filter((entry) => entry.type === 'github' && entry.kind === 'github-api');
+  return scanGithubSources(defs);
 }
 
 export async function runFullScan(): Promise<{
@@ -598,4 +543,3 @@ export async function runFullScan(): Promise<{
 
   return { news, research, policy, github, funding, errors };
 }
-
