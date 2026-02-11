@@ -25,7 +25,16 @@ export interface IntelItem {
   category: string;
   region?: string;
   regionTag?: RegionTag;
+  provenance?: IntelProvenance;
   imageUrl?: string;
+}
+
+export interface IntelProvenance {
+  sourceReliability: number;
+  sourceKind: SourceKind;
+  cadenceMinutes: number;
+  ingestedAt: string;
+  regionConfidence: 'high' | 'medium' | 'low';
 }
 
 export interface SourceDefinition {
@@ -115,6 +124,59 @@ export interface RegulatorySnapshot {
   mentions24h: number;
   mentions7d: number;
   timeline: TimelinePoint[];
+  threshold: {
+    low: number;
+    medium: number;
+    high: number;
+  };
+}
+
+export interface Nudge {
+  id: string;
+  severity: 'info' | 'warning' | 'critical';
+  title: string;
+  detail: string;
+  actionLabel: string;
+  actionTarget: string;
+  createdAt: string;
+}
+
+export interface GraphNode {
+  id: string;
+  label: string;
+  type: 'entity' | 'source' | 'region';
+  weight: number;
+}
+
+export interface GraphLink {
+  source: string;
+  target: string;
+  weight: number;
+}
+
+export interface RelationshipGraph {
+  nodes: GraphNode[];
+  links: GraphLink[];
+}
+
+export interface CollaborationNote {
+  id: string;
+  targetType: 'entity' | 'cluster';
+  targetId: string;
+  text: string;
+  createdAt: string;
+}
+
+export interface AssistantResponse {
+  reply: string;
+  filters?: {
+    watchlist?: string;
+    type?: IntelType;
+    region?: string;
+    source?: string;
+    query?: string;
+  };
+  suggestion?: string;
 }
 
 export interface EntitySummary {
@@ -159,6 +221,8 @@ export interface DashboardStats {
   eventClusters: EventCluster[];
   momentum: MomentumItem[];
   regulatory: RegulatorySnapshot;
+  nudges: Nudge[];
+  relationshipGraph: RelationshipGraph;
   briefings: {
     daily: Briefing;
     weekly: Briefing;

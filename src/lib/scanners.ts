@@ -194,6 +194,13 @@ function buildItem(params: {
     category: params.sourceDef.category,
     region: regionTag.province,
     regionTag,
+    provenance: {
+      sourceReliability: params.sourceDef.reliability,
+      sourceKind: params.sourceDef.kind,
+      cadenceMinutes: params.sourceDef.cadenceMinutes,
+      ingestedAt: new Date().toISOString(),
+      regionConfidence: regionTag.city ? 'high' : regionTag.province !== 'National' ? 'medium' : 'low',
+    },
   };
 }
 
@@ -441,6 +448,13 @@ function historicalSeedData(): IntelItem[] {
       category: entry.category,
       region: regionTag.province,
       regionTag,
+      provenance: {
+        sourceReliability: baselineSource?.reliability || 80,
+        sourceKind: 'baseline',
+        cadenceMinutes: baselineSource?.cadenceMinutes || 1440,
+        ingestedAt: new Date().toISOString(),
+        regionConfidence: regionTag.city ? 'high' : regionTag.province !== 'National' ? 'medium' : 'low',
+      },
     };
   });
 }

@@ -7,6 +7,9 @@
   EventCluster,
   IntelItem,
   IntelType,
+  Nudge,
+  RelationshipGraph,
+  CollaborationNote,
   MomentumItem,
   REGULATORY_TERMS,
   SOURCE_REGISTRY,
@@ -21,6 +24,7 @@ import { Redis } from '@upstash/redis';
 
 const INTEL_KEY = 'canada_ai_intel_items';
 const LAST_SCAN_KEY = 'canada_ai_intel_last_scan';
+const NOTES_KEY = 'canada_ai_intel_notes';
 
 let redis: Redis | null = null;
 
@@ -38,9 +42,10 @@ function getRedis(): Redis | null {
   return null;
 }
 
-const memoryStore: { items: IntelItem[]; lastScan: string } = {
+const memoryStore: { items: IntelItem[]; lastScan: string; notes: CollaborationNote[] } = {
   items: [],
   lastScan: 'Never',
+  notes: [],
 };
 
 const SOURCE_SCORE_HINTS: { term: string; score: number }[] = [
@@ -99,6 +104,28 @@ function getItemDate(item: IntelItem): Date {
   const parsed = new Date(item.publishedAt);
   if (!Number.isNaN(parsed.getTime())) return parsed;
   return new Date(item.discoveredAt);
+}
+
+function inferRegionConfidence(item: IntelItem): 'high' | 'medium' | 'low' {
+  if (item.regionTag?.city && item.regionTag?.hub) return 'high';
+  if (item.regionTag?.province && item.regionTag.province !== 'National') return 'medium';
+  return 'low';
+}
+
+function normalizeItem(item: IntelItem): IntelItem {
+  if (item.provenance) return item;
+  const registry = item.sourceId ? SOURCE_REGISTRY.find((entry) => entry.id === item.sourceId) : undefined;
+  const reliability = getSourceScore(item.source, item.url);
+  return {
+    ...item,
+    provenance: {
+      sourceReliability: reliability,
+      sourceKind: registry?.kind || 'google-news',
+      cadenceMinutes: registry?.cadenceMinutes || 120,
+      ingestedAt: item.discoveredAt || new Date().toISOString(),
+      regionConfidence: inferRegionConfidence(item),
+    },
+  };
 }
 
 function createDateKey(date: Date): string {
@@ -599,15 +626,127 @@ function buildRegulatorySnapshot(items: IntelItem[]) {
   const rawScore = Math.min(100, Math.round(mentions7d * 6 + mentions24h * 10 + avgHits * 18));
   const level: 'high' | 'medium' | 'low' = rawScore >= 70 ? 'high' : rawScore >= 35 ? 'medium' : 'low';
 
+  const threshold = { low: 35, medium: 70, high: 90 };
+
   return {
     score: rawScore,
     level,
     mentions24h,
     mentions7d,
+    threshold,
     timeline: buildDailyTimeline(
       weighted.filter((entry) => entry.termHits > 0).map((entry) => entry.item),
       30,
     ),
+  };
+}
+
+function buildNudges(stats: {
+  regulatory: DashboardStats['regulatory'];
+  momentum: MomentumItem[];
+  watchlists: WatchlistSnapshot[];
+  eventClusters: EventCluster[];
+}): Nudge[] {
+  const nudges: Nudge[] = [];
+  const now = new Date().toISOString();
+
+  if (stats.regulatory.level !== 'low') {
+    nudges.push({
+      id: 'regulatory-pressure',
+      severity: stats.regulatory.level === 'high' ? 'critical' : 'warning',
+      title: 'Regulatory pressure rising',
+      detail: `${stats.regulatory.mentions7d} policy mentions in 7 days. Review policy feed.`,
+      actionLabel: 'Open Policy Signals',
+      actionTarget: '/signals?type=policy',
+      createdAt: now,
+    });
+  }
+
+  const topMomentum = stats.momentum[0];
+  if (topMomentum && topMomentum.direction === 'up' && topMomentum.deltaPercent >= 40) {
+    nudges.push({
+      id: 'momentum-spike',
+      severity: 'info',
+      title: `${topMomentum.name} is spiking`,
+      detail: `Mentions up ${topMomentum.deltaPercent}% week-over-week.`,
+      actionLabel: 'Open Entity',
+      actionTarget: `/entities/${encodeURIComponent(topMomentum.name)}`,
+      createdAt: now,
+    });
+  }
+
+  const policyWatch = stats.watchlists.find((entry) => entry.id === 'public-policy');
+  if (policyWatch && policyWatch.count >= 8) {
+    nudges.push({
+      id: 'policy-watchlist-density',
+      severity: 'warning',
+      title: 'Policy watchlist is dense',
+      detail: `${policyWatch.count} items this week in public-policy lane.`,
+      actionLabel: 'Open Watchlist',
+      actionTarget: '/watchlists',
+      createdAt: now,
+    });
+  }
+
+  const cluster = stats.eventClusters[0];
+  if (cluster) {
+    nudges.push({
+      id: 'top-cluster-review',
+      severity: 'info',
+      title: 'Top storyline needs review',
+      detail: `${cluster.itemCount} items across ${cluster.sources.length} sources.`,
+      actionLabel: 'Open Cluster Source',
+      actionTarget: cluster.topUrl,
+      createdAt: now,
+    });
+  }
+
+  return nudges.slice(0, 6);
+}
+
+function buildRelationshipGraph(items: IntelItem[]): RelationshipGraph {
+  const recent = items.slice(0, 200);
+  const nodeMap = new Map<string, { id: string; label: string; type: 'entity' | 'source' | 'region'; weight: number }>();
+  const linkMap = new Map<string, { source: string; target: string; weight: number }>();
+
+  const addNode = (id: string, label: string, type: 'entity' | 'source' | 'region') => {
+    const existing = nodeMap.get(id);
+    if (existing) {
+      existing.weight += 1;
+      return;
+    }
+    nodeMap.set(id, { id, label, type, weight: 1 });
+  };
+
+  const addLink = (source: string, target: string) => {
+    const key = `${source}->${target}`;
+    const existing = linkMap.get(key);
+    if (existing) {
+      existing.weight += 1;
+      return;
+    }
+    linkMap.set(key, { source, target, weight: 1 });
+  };
+
+  recent.forEach((item) => {
+    const sourceId = `source:${item.source}`;
+    const region = item.regionTag?.province || item.region || 'Canada';
+    const regionId = `region:${region}`;
+    addNode(sourceId, item.source, 'source');
+    addNode(regionId, region, 'region');
+    addLink(sourceId, regionId);
+
+    item.entities.slice(0, 4).forEach((entity) => {
+      const entityId = `entity:${entity}`;
+      addNode(entityId, entity, 'entity');
+      addLink(entityId, sourceId);
+      addLink(entityId, regionId);
+    });
+  });
+
+  return {
+    nodes: Array.from(nodeMap.values()).sort((a, b) => b.weight - a.weight).slice(0, 120),
+    links: Array.from(linkMap.values()).sort((a, b) => b.weight - a.weight).slice(0, 240),
   };
 }
 
@@ -617,20 +756,20 @@ export async function getIntelItems(): Promise<IntelItem[]> {
   if (client) {
     try {
       const items = await client.get<IntelItem[]>(INTEL_KEY);
-      return items || [];
+      return (items || []).map(normalizeItem);
     } catch (error) {
       console.error('Redis error, using memory fallback:', error);
     }
   }
 
-  return memoryStore.items;
+  return memoryStore.items.map(normalizeItem);
 }
 
 export async function addIntelItems(newItems: IntelItem[]): Promise<number> {
   const existing = await getIntelItems();
   const existingUrls = new Set(existing.map((item) => item.url));
 
-  const uniqueNewItems = newItems.filter((item) => !existingUrls.has(item.url));
+  const uniqueNewItems = newItems.map(normalizeItem).filter((item) => !existingUrls.has(item.url));
 
   if (uniqueNewItems.length > 0) {
     const combined = [...uniqueNewItems, ...existing]
@@ -710,6 +849,8 @@ export async function getDashboardStats(): Promise<DashboardStats> {
   const watchlists = buildWatchlists(items);
   const regionalBreakdown = buildRegionalBreakdown(items);
   const regulatory = buildRegulatorySnapshot(items);
+  const relationshipGraph = buildRelationshipGraph(items);
+  const nudges = buildNudges({ regulatory, momentum, watchlists, eventClusters });
 
   const totalRelevance = items.reduce((sum, item) => sum + item.relevanceScore, 0);
   const avgRelevance = items.length > 0 ? Number((totalRelevance / items.length).toFixed(2)) : 0;
@@ -757,6 +898,8 @@ export async function getDashboardStats(): Promise<DashboardStats> {
     eventClusters,
     momentum,
     regulatory,
+    nudges,
+    relationshipGraph,
     briefings: {
       daily: buildBriefing(items, eventClusters, 'daily'),
       weekly: buildBriefing(items, eventClusters, 'weekly'),
@@ -879,6 +1022,74 @@ export async function searchItems(query: string, limit = 50): Promise<IntelItem[
         item.entities.some((entry) => entry.toLowerCase().includes(lower)),
     )
     .slice(0, limit);
+}
+
+export async function getCollaborationNotes(targetType?: 'entity' | 'cluster', targetId?: string): Promise<CollaborationNote[]> {
+  const client = getRedis();
+  let notes: CollaborationNote[] = [];
+
+  if (client) {
+    try {
+      notes = (await client.get<CollaborationNote[]>(NOTES_KEY)) || [];
+    } catch {
+      notes = memoryStore.notes;
+    }
+  } else {
+    notes = memoryStore.notes;
+  }
+
+  const filtered = notes.filter((note) => {
+    if (targetType && note.targetType !== targetType) return false;
+    if (targetId && note.targetId !== targetId) return false;
+    return true;
+  });
+
+  return filtered.sort((a, b) => (a.createdAt > b.createdAt ? -1 : 1)).slice(0, 200);
+}
+
+export async function addCollaborationNote(input: {
+  targetType: 'entity' | 'cluster';
+  targetId: string;
+  text: string;
+}): Promise<CollaborationNote> {
+  const note: CollaborationNote = {
+    id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+    targetType: input.targetType,
+    targetId: input.targetId,
+    text: input.text.trim(),
+    createdAt: new Date().toISOString(),
+  };
+
+  const existing = await getCollaborationNotes();
+  const combined = [note, ...existing].slice(0, 500);
+  const client = getRedis();
+  if (client) {
+    try {
+      await client.set(NOTES_KEY, combined);
+    } catch {
+      memoryStore.notes = combined;
+    }
+  } else {
+    memoryStore.notes = combined;
+  }
+  return note;
+}
+
+export function buildExportBriefing(stats: DashboardStats): string {
+  const lines = [
+    `AI Canada Pulse Briefing - ${new Date().toISOString()}`,
+    '',
+    `Total signals: ${stats.totalItems}`,
+    `Policy heat: ${stats.regulatory.score} (${stats.regulatory.level})`,
+    `Top storyline: ${stats.eventClusters[0]?.headline || 'n/a'}`,
+    '',
+    'Top entities:',
+    ...stats.topEntities.slice(0, 8).map((entry) => `- ${entry.name}: ${entry.count}`),
+    '',
+    'Nudges:',
+    ...stats.nudges.map((nudge) => `- [${nudge.severity}] ${nudge.title}: ${nudge.detail}`),
+  ];
+  return lines.join('\n');
 }
 
 export function isStorageConfigured(): boolean {

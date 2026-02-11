@@ -2,10 +2,22 @@
 
 import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Briefing, DashboardStats, EventCluster, IntelItem, IntelType, MomentumItem, TimelinePoint, WATCHLISTS } from '@/lib/types';
+import {
+  Briefing,
+  CollaborationNote,
+  DashboardStats,
+  EventCluster,
+  IntelItem,
+  IntelType,
+  MomentumItem,
+  Nudge,
+  TimelinePoint,
+  WATCHLISTS,
+} from '@/lib/types';
 
 type TimelineMode = 'daily' | 'weekly' | 'monthly' | 'yearly';
 type BriefMode = 'daily' | 'weekly' | 'monthly';
+type DashboardMode = 'explorer' | 'briefing';
 
 const TYPE_META: Record<IntelType, { label: string; color: string }> = {
   news: { label: 'News', color: '#3da8ff' },
@@ -20,6 +32,11 @@ export default function Dashboard() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [scanning, setScanning] = useState(false);
+  const [mode, setMode] = useState<DashboardMode>('briefing');
+  const [notes, setNotes] = useState<CollaborationNote[]>([]);
+  const [assistantInput, setAssistantInput] = useState('');
+  const [assistantReply, setAssistantReply] = useState('');
+  const [actionResult, setActionResult] = useState('');
 
   const [activeType, setActiveType] = useState<IntelType | 'all'>('all');
   const [activeWatchlist, setActiveWatchlist] = useState<string>('all');
@@ -39,19 +56,52 @@ export default function Dashboard() {
       if (activeRegion !== 'all') params.set('region', activeRegion);
       if (activeSource !== 'all') params.set('source', activeSource);
 
-      const [intelRes, statsRes] = await Promise.all([fetch(`/api/intel?${params.toString()}`), fetch('/api/stats')]);
+      const [intelRes, statsRes, notesRes] = await Promise.all([
+        fetch(`/api/intel?${params.toString()}`),
+        fetch('/api/stats'),
+        fetch('/api/notes'),
+      ]);
 
       const intelData = await intelRes.json();
       const statsData = await statsRes.json();
+      const notesData = await notesRes.json();
 
       if (intelData.success) setItems(intelData.items);
       if (statsData.success) setStats(statsData.stats);
+      if (notesData.success) setNotes(notesData.notes);
     } catch (error) {
       console.error('Failed to fetch dashboard data:', error);
     } finally {
       setLoading(false);
     }
   }, [activeType, activeWatchlist, activeRegion, activeSource]);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const type = params.get('type') as IntelType | null;
+    const watchlist = params.get('watchlist');
+    const region = params.get('region');
+    const source = params.get('source');
+    const q = params.get('q');
+
+    if (type) setActiveType(type);
+    if (watchlist) setActiveWatchlist(watchlist);
+    if (region) setActiveRegion(region);
+    if (source) setActiveSource(source);
+    if (q) setQuery(q);
+  }, []);
+
+  useEffect(() => {
+    const params = new URLSearchParams();
+    if (activeType !== 'all') params.set('type', activeType);
+    if (activeWatchlist !== 'all') params.set('watchlist', activeWatchlist);
+    if (activeRegion !== 'all') params.set('region', activeRegion);
+    if (activeSource !== 'all') params.set('source', activeSource);
+    if (query.trim()) params.set('q', query.trim());
+    const next = params.toString();
+    const path = next ? `/?${next}` : '/';
+    window.history.replaceState({}, '', path);
+  }, [activeType, activeWatchlist, activeRegion, activeSource, query]);
 
   useEffect(() => {
     fetchData();
@@ -70,6 +120,73 @@ export default function Dashboard() {
     }
   };
 
+  const runAssistant = async () => {
+    if (!assistantInput.trim()) return;
+    try {
+      const res = await fetch('/api/assistant', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: assistantInput }),
+      });
+      const data = await res.json();
+      if (!data.success) {
+        setAssistantReply(data.error || 'Assistant failed.');
+        return;
+      }
+      const response = data.response;
+      setAssistantReply(response.reply + (response.suggestion ? ` ${response.suggestion}` : ''));
+      if (response.filters?.type) setActiveType(response.filters.type);
+      if (response.filters?.watchlist) setActiveWatchlist(response.filters.watchlist);
+      if (response.filters?.region) setActiveRegion(response.filters.region);
+      if (response.filters?.source) setActiveSource(response.filters.source);
+      if (response.filters?.query) setQuery(response.filters.query);
+    } catch (error) {
+      setAssistantReply(String(error));
+    }
+  };
+
+  const postNote = async (targetType: 'entity' | 'cluster', targetId: string) => {
+    const text = window.prompt('Add annotation');
+    if (!text || !text.trim()) return;
+    try {
+      const res = await fetch('/api/notes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ targetType, targetId, text }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setActionResult('Annotation saved.');
+        await fetchData();
+      }
+    } catch (error) {
+      setActionResult(String(error));
+    }
+  };
+
+  const runAction = async (
+    action: 'simulate-budget-shift' | 'create-watchlist-from-cluster' | 'subscribe-entity' | 'export-briefing',
+    payload?: Record<string, string>,
+  ) => {
+    try {
+      const res = await fetch('/api/actions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action, ...(payload || {}) }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        const message = data.result?.message || 'Action complete.';
+        const extra = data.result?.text ? `\n\n${data.result.text}` : '';
+        setActionResult(`${message}${extra}`);
+      } else {
+        setActionResult(data.error || 'Action failed.');
+      }
+    } catch (error) {
+      setActionResult(String(error));
+    }
+  };
+
   const filteredItems = useMemo(() => {
     if (!query.trim()) return items;
     const lower = query.toLowerCase();
@@ -80,6 +197,7 @@ export default function Dashboard() {
   }, [items, query]);
 
   const timelinePoints: TimelinePoint[] = useMemo(() => (stats ? stats.timeline[timelineMode] : []), [stats, timelineMode]);
+  const regulatoryTimeline: TimelinePoint[] = useMemo(() => stats?.regulatory.timeline || [], [stats]);
   const activeBrief: Briefing | null = useMemo(() => (stats ? stats.briefings[briefMode] : null), [stats, briefMode]);
 
   const avgTimeline = useMemo(() => {
@@ -104,7 +222,7 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-[var(--bg)] text-[var(--text)]">
+    <div className={`min-h-screen bg-[var(--bg)] text-[var(--text)] ${mode === 'explorer' ? 'theme-explorer' : 'theme-briefing'}`}>
       <div className="noise-layer" />
 
       <header className="sticky top-0 z-40 border-b border-[var(--line)] bg-[color:var(--panel-solid)]/92 backdrop-blur-xl">
@@ -116,7 +234,25 @@ export default function Dashboard() {
               Live Canada AI monitoring from the ChatGPT moment onward with entity, region, and policy tracking.
             </p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="inline-flex rounded-full border border-[var(--line)] bg-[var(--surface-2)] p-1" role="tablist" aria-label="Dashboard mode switch">
+              <button
+                className={`rounded-full px-3 py-1 text-xs uppercase tracking-[0.14em] ${mode === 'briefing' ? 'bg-[var(--accent)] text-white' : 'text-[var(--muted)]'}`}
+                onClick={() => setMode('briefing')}
+                role="tab"
+                aria-selected={mode === 'briefing'}
+              >
+                Briefing
+              </button>
+              <button
+                className={`rounded-full px-3 py-1 text-xs uppercase tracking-[0.14em] ${mode === 'explorer' ? 'bg-[var(--accent)] text-white' : 'text-[var(--muted)]'}`}
+                onClick={() => setMode('explorer')}
+                role="tab"
+                aria-selected={mode === 'explorer'}
+              >
+                Explorer
+              </button>
+            </div>
             <span className="rounded-full border border-[var(--line)] bg-white/5 px-3 py-1 text-xs text-[var(--muted)]">
               Last scan: {stats?.lastScan && stats.lastScan !== 'Never' ? formatRelative(stats.lastScan) : 'never'}
             </span>
@@ -142,39 +278,109 @@ export default function Dashboard() {
           <KpiCard label="Policy Heat" value={stats?.regulatory.score || 0} detail={`Level: ${stats?.regulatory.level || 'low'}`} />
         </section>
 
-        <section className="grid gap-4 xl:grid-cols-[2fr_1fr]">
+        <section className="grid gap-4 xl:grid-cols-[1.8fr_1.2fr]">
           <div className="panel p-4 md:p-5">
-            <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-              <div>
-                <h2 className="text-lg font-semibold">Signal Velocity</h2>
-                <p className="text-sm text-[var(--muted)]">Volume trend windows.</p>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {(['daily', 'weekly', 'monthly', 'yearly'] as TimelineMode[]).map((mode) => (
-                  <Chip key={mode} active={timelineMode === mode} onClick={() => setTimelineMode(mode)} label={mode} />
-                ))}
-              </div>
+            <div className="mb-3 flex items-center justify-between">
+              <h2 className="text-base font-semibold">Agent Layer</h2>
+              <button
+                onClick={() => runAction('simulate-budget-shift')}
+                className="rounded-lg border border-[var(--line)] bg-[var(--surface-2)] px-3 py-1.5 text-xs uppercase tracking-[0.14em] text-[var(--muted)]"
+              >
+                Safe Simulation
+              </button>
             </div>
-            <LineChart points={timelinePoints} />
-            <div className="mt-4 grid gap-3 md:grid-cols-3">
-              <MiniMetric label="Window Avg" value={avgTimeline} />
-              <MiniMetric label="Peak" value={Math.max(...timelinePoints.map((p) => p.count), 0)} />
-              <MiniMetric label="Policy 7d" value={stats?.regulatory.mentions7d || 0} />
+            <div className="flex flex-wrap gap-2">
+              <input
+                aria-label="Ask assistant"
+                value={assistantInput}
+                onChange={(event) => setAssistantInput(event.target.value)}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter') runAssistant();
+                }}
+                placeholder="Ask: show policy risk in Ontario"
+                className="min-w-[260px] flex-1 rounded-lg border border-[var(--line)] bg-[var(--surface-2)] px-3 py-2 text-sm"
+              />
+              <button onClick={runAssistant} className="rounded-lg border border-[var(--line)] bg-[var(--accent)] px-3 py-2 text-sm font-semibold text-white">
+                Apply
+              </button>
             </div>
+            {assistantReply ? <p className="mt-2 text-sm text-[var(--muted)]">{assistantReply}</p> : null}
+            {actionResult ? <pre className="mt-2 max-h-28 overflow-auto rounded-lg border border-[var(--line)] bg-[var(--surface-2)] p-2 text-xs text-[var(--muted)]">{actionResult}</pre> : null}
           </div>
 
           <div className="panel p-4 md:p-5">
-            <div className="mb-3 flex items-center justify-between">
-              <h2 className="text-lg font-semibold">AI Briefing</h2>
-              <div className="flex gap-2">
-                {(['daily', 'weekly', 'monthly'] as BriefMode[]).map((mode) => (
-                  <Chip key={mode} active={briefMode === mode} onClick={() => setBriefMode(mode)} label={mode} />
-                ))}
-              </div>
+            <h2 className="text-base font-semibold">Proactive Nudges</h2>
+            <div className="mt-3 space-y-2">
+              {(stats?.nudges || []).map((nudge) => (
+                <NudgeCard key={nudge.id} nudge={nudge} />
+              ))}
+              {!(stats?.nudges || []).length ? <p className="text-sm text-[var(--muted)]">No nudges yet.</p> : null}
             </div>
-            {activeBrief ? <BriefCard brief={activeBrief} /> : <p className="text-sm text-[var(--muted)]">Loading...</p>}
           </div>
         </section>
+
+        {mode === 'briefing' ? (
+          <section className="grid gap-4 xl:grid-cols-[2fr_1fr]">
+            <div className="panel p-4 md:p-5">
+              <div className="mb-3 flex items-center justify-between">
+                <h2 className="text-lg font-semibold">Executive Briefing</h2>
+                <div className="flex gap-2">
+                  {(['daily', 'weekly', 'monthly'] as BriefMode[]).map((entry) => (
+                    <Chip key={entry} active={briefMode === entry} onClick={() => setBriefMode(entry)} label={entry} />
+                  ))}
+                </div>
+              </div>
+              {activeBrief ? <BriefCard brief={activeBrief} /> : <p className="text-sm text-[var(--muted)]">Loading...</p>}
+              <div className="mt-3 flex flex-wrap gap-2">
+                <button onClick={() => runAction('export-briefing')} className="rounded-lg border border-[var(--line)] bg-[var(--surface-2)] px-3 py-1.5 text-xs uppercase tracking-[0.14em] text-[var(--muted)]">
+                  Export Briefing
+                </button>
+                <Link href="/briefings" className="rounded-lg border border-[var(--line)] bg-[var(--surface-2)] px-3 py-1.5 text-xs uppercase tracking-[0.14em] text-[var(--muted)]">
+                  Open Briefings
+                </Link>
+              </div>
+            </div>
+
+            <div className="panel p-4 md:p-5">
+              <h3 className="text-base font-semibold">Regulatory Thermometer</h3>
+              <p className="mt-1 text-sm text-[var(--muted)]">
+                Score {stats?.regulatory.score || 0} with threshold L/M/H at{' '}
+                {stats?.regulatory.threshold.low || 0}/{stats?.regulatory.threshold.medium || 0}/{stats?.regulatory.threshold.high || 0}
+              </p>
+              <MiniBars points={regulatoryTimeline} />
+            </div>
+          </section>
+        ) : (
+          <section className="grid gap-4 xl:grid-cols-[2fr_1fr]">
+            <div className="panel p-4 md:p-5">
+              <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <h2 className="text-lg font-semibold">Signal Velocity</h2>
+                  <p className="text-sm text-[var(--muted)]">Volume trend windows.</p>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {(['daily', 'weekly', 'monthly', 'yearly'] as TimelineMode[]).map((entry) => (
+                    <Chip key={entry} active={timelineMode === entry} onClick={() => setTimelineMode(entry)} label={entry} />
+                  ))}
+                </div>
+              </div>
+              <LineChart points={timelinePoints} />
+              <div className="mt-4 grid gap-3 md:grid-cols-3">
+                <MiniMetric label="Window Avg" value={avgTimeline} />
+                <MiniMetric label="Peak" value={Math.max(...timelinePoints.map((p) => p.count), 0)} />
+                <MiniMetric label="Policy 7d" value={stats?.regulatory.mentions7d || 0} />
+              </div>
+            </div>
+            <div className="panel p-4 md:p-5">
+              <h3 className="text-base font-semibold">Entity Graph</h3>
+              <p className="mb-3 text-sm text-[var(--muted)]">Relationship network across entities, sources, and regions.</p>
+              <GraphPreview stats={stats} />
+              <Link href="/graph" className="mt-3 inline-flex rounded-lg border border-[var(--line)] bg-[var(--surface-2)] px-3 py-1.5 text-xs uppercase tracking-[0.14em] text-[var(--muted)]">
+                Open Graph View
+              </Link>
+            </div>
+          </section>
+        )}
 
         <section className="grid gap-4 xl:grid-cols-[1.2fr_1fr_1fr]">
           <div className="panel p-4 md:p-5">
@@ -182,7 +388,12 @@ export default function Dashboard() {
             <p className="mb-3 text-sm text-[var(--muted)]">Embedding-based storyline clusters.</p>
             <div className="space-y-2">
               {(stats?.eventClusters || []).slice(0, 6).map((cluster) => (
-                <ClusterCard key={cluster.id} cluster={cluster} />
+                <ClusterCard
+                  key={cluster.id}
+                  cluster={cluster}
+                  onNote={() => postNote('cluster', cluster.id)}
+                  onCreateWatchlist={() => runAction('create-watchlist-from-cluster', { clusterId: cluster.id })}
+                />
               ))}
               {!stats?.eventClusters?.length && <p className="text-sm text-[var(--muted)]">No event clusters yet.</p>}
             </div>
@@ -199,17 +410,16 @@ export default function Dashboard() {
           </div>
 
           <div className="panel p-4 md:p-5">
-            <h3 className="text-base font-semibold">Regional Intelligence</h3>
-            <p className="mb-3 text-sm text-[var(--muted)]">Click a province to filter the live feed.</p>
-            <div className="flex flex-wrap gap-2">
-              {(stats?.regionalBreakdown || []).slice(0, 10).map((region) => (
-                <button
-                  key={region.region}
-                  onClick={() => setActiveRegion(region.region)}
-                  className="rounded-full border border-[var(--line)] bg-[var(--surface-2)] px-3 py-1 text-xs transition hover:bg-white"
-                >
-                  {region.region} ({region.count})
-                </button>
+            <h3 className="text-base font-semibold">Collaboration Notes</h3>
+            <p className="mb-3 text-sm text-[var(--muted)]">Threaded annotations for entities and clusters.</p>
+            <div className="space-y-2">
+              {notes.slice(0, 8).map((note) => (
+                <article key={note.id} className="rounded-lg border border-[var(--line)] bg-[var(--surface-2)] p-2">
+                  <p className="text-[11px] uppercase tracking-[0.14em] text-[var(--muted)]">
+                    {note.targetType} - {note.targetId}
+                  </p>
+                  <p className="mt-1 text-xs">{note.text}</p>
+                </article>
               ))}
             </div>
           </div>
@@ -282,6 +492,9 @@ export default function Dashboard() {
                     <span>{item.source}</span>
                     <span>{item.regionTag?.province || item.region || 'Canada'}</span>
                     <span>{formatRelative(item.publishedAt)}</span>
+                    <span>
+                      provenance {item.provenance?.sourceKind || 'unknown'} / {item.provenance?.sourceReliability || 0}
+                    </span>
                   </div>
 
                   <a href={item.url} target="_blank" rel="noopener noreferrer" className="mt-2 block text-base font-semibold leading-snug transition hover:text-[var(--accent)]">
@@ -301,6 +514,20 @@ export default function Dashboard() {
                       </Link>
                     ))}
                   </div>
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    <button
+                      onClick={() => runAction('subscribe-entity', { entity: item.entities[0] || item.source })}
+                      className="rounded-lg border border-[var(--line)] bg-[var(--surface-2)] px-2.5 py-1 text-[11px] uppercase tracking-[0.14em] text-[var(--muted)]"
+                    >
+                      Subscribe
+                    </button>
+                    <button
+                      onClick={() => postNote('entity', item.entities[0] || item.source)}
+                      className="rounded-lg border border-[var(--line)] bg-[var(--surface-2)] px-2.5 py-1 text-[11px] uppercase tracking-[0.14em] text-[var(--muted)]"
+                    >
+                      Annotate
+                    </button>
+                  </div>
                 </article>
               ))}
             </div>
@@ -311,15 +538,15 @@ export default function Dashboard() {
   );
 }
 
-function KpiCard(props: { label: string; value: number; detail: string; precision?: number }) {
+function KpiCard(props: { label: string; value: number; detail: string; precision?: number; onClick?: () => void }) {
   const value = props.precision !== undefined ? props.value.toFixed(props.precision) : props.value.toLocaleString();
 
   return (
-    <div className="panel p-4">
+    <button onClick={props.onClick} className="panel p-4 text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]">
       <p className="text-xs uppercase tracking-[0.2em] text-[var(--muted)]">{props.label}</p>
       <p className="mt-1 text-2xl font-semibold">{value}</p>
       <p className="mt-1 text-xs text-[var(--muted)]">{props.detail}</p>
-    </div>
+    </button>
   );
 }
 
@@ -336,7 +563,7 @@ function Chip(props: { active: boolean; label: string; onClick: () => void }) {
   return (
     <button
       onClick={props.onClick}
-      className={`rounded-full border px-3 py-1.5 text-xs uppercase tracking-[0.16em] transition ${
+      className={`rounded-full border px-3 py-1.5 text-xs uppercase tracking-[0.16em] transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)] ${
         props.active
           ? 'border-[var(--accent)] bg-[var(--accent)] text-white'
           : 'border-[var(--line)] bg-[var(--surface-2)] text-[var(--muted)] hover:bg-white'
@@ -344,6 +571,21 @@ function Chip(props: { active: boolean; label: string; onClick: () => void }) {
     >
       {props.label}
     </button>
+  );
+}
+
+function NudgeCard(props: { nudge: Nudge }) {
+  const icon = props.nudge.severity === 'critical' ? '!' : props.nudge.severity === 'warning' ? '^' : 'i';
+  const tone = props.nudge.severity === 'critical' ? 'text-rose-700' : props.nudge.severity === 'warning' ? 'text-amber-700' : 'text-sky-700';
+
+  return (
+    <a href={props.nudge.actionTarget} className="block rounded-lg border border-[var(--line)] bg-[var(--surface-2)] p-2 transition hover:bg-white">
+      <p className={`text-xs font-semibold ${tone}`}>
+        {icon} {props.nudge.title}
+      </p>
+      <p className="mt-1 text-xs text-[var(--muted)]">{props.nudge.detail}</p>
+      <p className="mt-1 text-[11px] uppercase tracking-[0.14em] text-[var(--muted)]">{props.nudge.actionLabel}</p>
+    </a>
   );
 }
 
@@ -363,15 +605,12 @@ function BriefCard(props: { brief: Briefing }) {
   );
 }
 
-function ClusterCard(props: { cluster: EventCluster }) {
+function ClusterCard(props: { cluster: EventCluster; onNote: () => void; onCreateWatchlist: () => void }) {
   return (
-    <a
-      href={props.cluster.topUrl}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="block w-full rounded-xl border border-[var(--line)] bg-[var(--surface-2)] p-3 text-left transition hover:bg-white"
-    >
-      <p className="line-clamp-2 text-sm font-semibold">{props.cluster.headline}</p>
+    <article className="rounded-xl border border-[var(--line)] bg-[var(--surface-2)] p-3">
+      <a href={props.cluster.topUrl} target="_blank" rel="noopener noreferrer" className="line-clamp-2 text-sm font-semibold hover:text-[var(--accent)]">
+        {props.cluster.headline}
+      </a>
       <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-[var(--muted)]">
         <span>{props.cluster.itemCount} items</span>
         <span>{props.cluster.sources.length} sources</span>
@@ -385,7 +624,48 @@ function ClusterCard(props: { cluster: EventCluster }) {
         ))}
       </div>
       <p className="mt-2 text-[11px] text-[var(--muted)]">Keywords: {props.cluster.keywordVector.join(', ') || 'n/a'}</p>
-    </a>
+      <div className="mt-2 flex flex-wrap gap-2">
+        <button onClick={props.onCreateWatchlist} className="rounded-lg border border-[var(--line)] bg-white/80 px-2 py-1 text-[11px] uppercase tracking-[0.14em] text-[var(--muted)]">
+          Draft Watchlist
+        </button>
+        <button onClick={props.onNote} className="rounded-lg border border-[var(--line)] bg-white/80 px-2 py-1 text-[11px] uppercase tracking-[0.14em] text-[var(--muted)]">
+          Annotate
+        </button>
+      </div>
+    </article>
+  );
+}
+
+function MiniBars(props: { points: TimelinePoint[] }) {
+  const max = Math.max(...props.points.map((entry) => entry.count), 1);
+  return (
+    <div className="mt-3 grid grid-cols-10 gap-1">
+      {props.points.slice(-30).map((entry) => {
+        const height = Math.max(6, Math.round((entry.count / max) * 40));
+        return (
+          <div key={entry.label} className="rounded-[3px] bg-[var(--surface-2)] p-[1px]" title={`${entry.label}: ${entry.count}`}>
+            <div className="w-full rounded-[2px] bg-[#ff9d6a]" style={{ height }} />
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function GraphPreview(props: { stats: DashboardStats | null }) {
+  if (!props.stats || !props.stats.relationshipGraph.nodes.length) {
+    return <p className="text-sm text-[var(--muted)]">No graph data yet.</p>;
+  }
+
+  const nodes = props.stats.relationshipGraph.nodes.slice(0, 20);
+  return (
+    <div className="flex flex-wrap gap-1.5">
+      {nodes.map((node) => (
+        <span key={node.id} className="rounded-full border border-[var(--line)] bg-[var(--surface-2)] px-2 py-0.5 text-[11px] text-[var(--muted)]">
+          {node.label}
+        </span>
+      ))}
+    </div>
   );
 }
 
