@@ -13,6 +13,14 @@ function decodeHtmlEntities(input: string): string {
     .replace(/&quot;/g, '"')
     .replace(/&#39;/g, "'")
     .replace(/&#x2F;/g, '/')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function cleanFeedText(input: string): string {
+  return decodeHtmlEntities(input)
+    .replace(/<[^>]+>/g, ' ')
     .replace(/\s+/g, ' ')
     .trim();
 }
@@ -219,7 +227,7 @@ async function scanGoogleNewsSource(sourceDef: SourceDefinition): Promise<IntelI
 
     entries.slice(0, 30).forEach((entry) => {
       const rawTitle = extractTag(entry, 'title');
-      const description = extractTag(entry, 'description');
+      const description = cleanFeedText(extractTag(entry, 'description'));
       const link = extractTag(entry, 'link');
       const publishedAt = extractTag(entry, 'pubDate');
       const source = extractTag(entry, 'source');
@@ -230,11 +238,15 @@ async function scanGoogleNewsSource(sourceDef: SourceDefinition): Promise<IntelI
       if (!title || !link) return;
       if (!isCanadaAiRelevant(combined)) return;
 
+      const normalizedDescription = description.toLowerCase().includes(title.toLowerCase())
+        ? 'Source coverage detected in Canada AI feed.'
+        : description;
+
       items.push(
         buildItem({
           sourceDef,
           title,
-          description,
+          description: normalizedDescription,
           link,
           publishedAt,
           sourceNameOverride: source || sourceHint || sourceDef.name,
@@ -263,7 +275,7 @@ async function scanRssSource(sourceDef: SourceDefinition): Promise<IntelItem[]> 
     const items: IntelItem[] = [];
     entries.slice(0, 30).forEach((entry) => {
       const title = extractTag(entry, 'title');
-      const description = extractTag(entry, 'description') || extractTag(entry, 'summary');
+      const description = cleanFeedText(extractTag(entry, 'description') || extractTag(entry, 'summary'));
       const link = extractTag(entry, 'link') || extractAtomLink(entry);
       const publishedAt =
         extractTag(entry, 'pubDate') || extractTag(entry, 'updated') || extractTag(entry, 'published');
