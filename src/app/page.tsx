@@ -18,6 +18,8 @@ import {
 type TimelineMode = 'daily' | 'weekly' | 'monthly' | 'yearly';
 type BriefMode = 'daily' | 'weekly' | 'monthly';
 type DashboardMode = 'explorer' | 'briefing';
+type ThemeMode = 'light' | 'dark';
+type SectionId = 'agent' | 'nudges' | 'core' | 'radar' | 'feed';
 
 const TYPE_META: Record<IntelType, { label: string; color: string }> = {
   news: { label: 'News', color: '#3da8ff' },
@@ -33,6 +35,7 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [scanning, setScanning] = useState(false);
   const [mode, setMode] = useState<DashboardMode>('briefing');
+  const [theme, setTheme] = useState<ThemeMode>('light');
   const [notes, setNotes] = useState<CollaborationNote[]>([]);
   const [assistantInput, setAssistantInput] = useState('');
   const [assistantReply, setAssistantReply] = useState('');
@@ -46,6 +49,13 @@ export default function Dashboard() {
 
   const [timelineMode, setTimelineMode] = useState<TimelineMode>('monthly');
   const [briefMode, setBriefMode] = useState<BriefMode>('weekly');
+  const [hiddenSections, setHiddenSections] = useState<Record<SectionId, boolean>>({
+    agent: false,
+    nudges: false,
+    core: false,
+    radar: false,
+    feed: false,
+  });
 
   const fetchData = useCallback(async () => {
     try {
@@ -90,6 +100,28 @@ export default function Dashboard() {
     if (source) setActiveSource(source);
     if (q) setQuery(q);
   }, []);
+
+  useEffect(() => {
+    const savedTheme = window.localStorage.getItem('dashboard-theme') as ThemeMode | null;
+    const savedSections = window.localStorage.getItem('dashboard-hidden-sections');
+    if (savedTheme === 'dark' || savedTheme === 'light') setTheme(savedTheme);
+    if (savedSections) {
+      try {
+        const parsed = JSON.parse(savedSections) as Record<SectionId, boolean>;
+        setHiddenSections((prev) => ({ ...prev, ...parsed }));
+      } catch {
+        // ignore malformed local storage
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    window.localStorage.setItem('dashboard-theme', theme);
+  }, [theme]);
+
+  useEffect(() => {
+    window.localStorage.setItem('dashboard-hidden-sections', JSON.stringify(hiddenSections));
+  }, [hiddenSections]);
 
   useEffect(() => {
     const params = new URLSearchParams();
@@ -205,6 +237,12 @@ export default function Dashboard() {
     return Math.round(timelinePoints.reduce((sum, point) => sum + point.count, 0) / timelinePoints.length);
   }, [timelinePoints]);
 
+  const weekVsToday = useMemo(() => {
+    const week = stats?.itemsThisWeek || 0;
+    const today = stats?.itemsToday || 0;
+    return week === 0 ? 0 : Number(((today / week) * 100).toFixed(1));
+  }, [stats]);
+
   const regionOptions = useMemo(() => ['all', ...(stats?.regionalBreakdown.map((entry) => entry.region) || [])], [stats]);
   const sourceOptions = useMemo(() => ['all', ...(stats?.bySource.map((entry) => entry.name) || [])], [stats]);
 
@@ -222,7 +260,7 @@ export default function Dashboard() {
   };
 
   return (
-    <div className={`min-h-screen bg-[var(--bg)] text-[var(--text)] ${mode === 'explorer' ? 'theme-explorer' : 'theme-briefing'}`}>
+    <div className={`min-h-screen bg-[var(--bg)] text-[var(--text)] ${mode === 'explorer' ? 'theme-explorer' : 'theme-briefing'} ${theme === 'dark' ? 'theme-dark' : ''}`}>
       <div className="noise-layer" />
 
       <header className="sticky top-0 z-40 border-b border-[var(--line)] bg-[color:var(--panel-solid)]/92 backdrop-blur-xl">
@@ -268,18 +306,60 @@ export default function Dashboard() {
       </header>
 
       <main className="relative z-10 mx-auto max-w-[1400px] space-y-5 px-4 py-6 md:px-8 md:py-7">
-        <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-7">
-          <KpiCard label="Signals" value={stats?.totalItems || 0} detail="All tracked items" />
-          <KpiCard label="Today" value={stats?.itemsToday || 0} detail="New in 24h" />
-          <KpiCard label="Week" value={stats?.itemsThisWeek || 0} detail="Last 7 days" />
-          <KpiCard label="Month" value={stats?.itemsThisMonth || 0} detail="Current month" />
-          <KpiCard label="Rel. Score" value={stats?.quality.avgRelevance || 0} detail="Average relevance" precision={2} />
-          <KpiCard label="Source Trust" value={stats?.quality.avgReliability || 0} detail={`${stats?.quality.sourceDiversity || 0} active sources`} precision={1} />
-          <KpiCard label="Policy Heat" value={stats?.regulatory.score || 0} detail={`Level: ${stats?.regulatory.level || 'low'}`} />
+        <section className="grid gap-4 xl:grid-cols-[2fr_1fr]">
+          <article className="panel p-4 md:p-5">
+            <p className="text-xs uppercase tracking-[0.2em] text-[var(--muted)]">Executive Snapshot</p>
+            <h2 className="mt-1 text-xl font-semibold">Canada AI signal flow is {stats?.regulatory.level || 'low'} risk with {stats?.totalItems || 0} tracked items.</h2>
+            <p className="mt-2 text-sm text-[var(--muted)]">
+              Today contributes {weekVsToday}% of this week&apos;s volume. Top storyline:
+              {' '}
+              {stats?.eventClusters[0]?.headline || 'No dominant cluster yet.'}
+            </p>
+          </article>
+          <article className="panel p-4 md:p-5">
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-semibold uppercase tracking-[0.16em] text-[var(--muted)]">Display Settings</h3>
+              <button
+                onClick={() => setTheme((prev) => (prev === 'light' ? 'dark' : 'light'))}
+                className="rounded-lg border border-[var(--line)] bg-[var(--surface-2)] px-2.5 py-1 text-xs uppercase tracking-[0.14em] text-[var(--muted)]"
+                title="Toggle light and dark dashboard theme"
+              >
+                Theme: {theme}
+              </button>
+            </div>
+            <div className="mt-3 grid grid-cols-2 gap-2">
+              {(['agent', 'nudges', 'core', 'radar', 'feed'] as SectionId[]).map((section) => (
+                <button
+                  key={section}
+                  onClick={() =>
+                    setHiddenSections((prev) => ({
+                      ...prev,
+                      [section]: !prev[section],
+                    }))
+                  }
+                  className="rounded-lg border border-[var(--line)] bg-[var(--surface-2)] px-2 py-1 text-xs uppercase tracking-[0.14em] text-[var(--muted)] transition hover:bg-white"
+                  title="Show or hide section"
+                >
+                  {hiddenSections[section] ? `Show ${section}` : `Hide ${section}`}
+                </button>
+              ))}
+            </div>
+          </article>
         </section>
 
+        <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-7">
+          <KpiCard label="Signals" value={stats?.totalItems || 0} detail="All tracked items" onClick={() => setActiveType('all')} />
+          <KpiCard label="Today" value={stats?.itemsToday || 0} detail="New in 24h" onClick={() => setQuery('today')} />
+          <KpiCard label="Week" value={stats?.itemsThisWeek || 0} detail="Last 7 days" onClick={() => setTimelineMode('weekly')} />
+          <KpiCard label="Month" value={stats?.itemsThisMonth || 0} detail="Current month" onClick={() => setTimelineMode('monthly')} />
+          <KpiCard label="Rel. Score" value={stats?.quality.avgRelevance || 0} detail="Average relevance" precision={2} onClick={() => setMode('explorer')} />
+          <KpiCard label="Source Trust" value={stats?.quality.avgReliability || 0} detail={`${stats?.quality.sourceDiversity || 0} active sources`} precision={1} onClick={() => setActiveSource('all')} />
+          <KpiCard label="Policy Heat" value={stats?.regulatory.score || 0} detail={`Level: ${stats?.regulatory.level || 'low'}`} onClick={() => setActiveType('policy')} />
+        </section>
+
+        {!hiddenSections.agent || !hiddenSections.nudges ? (
         <section className="grid gap-4 xl:grid-cols-[1.8fr_1.2fr]">
-          <div className="panel p-4 md:p-5">
+          {!hiddenSections.agent ? <div className="panel p-4 md:p-5">
             <div className="mb-3 flex items-center justify-between">
               <h2 className="text-base font-semibold">Agent Layer</h2>
               <button
@@ -306,9 +386,9 @@ export default function Dashboard() {
             </div>
             {assistantReply ? <p className="mt-2 text-sm text-[var(--muted)]">{assistantReply}</p> : null}
             {actionResult ? <pre className="mt-2 max-h-28 overflow-auto rounded-lg border border-[var(--line)] bg-[var(--surface-2)] p-2 text-xs text-[var(--muted)]">{actionResult}</pre> : null}
-          </div>
+          </div> : <div className="panel p-4 md:p-5"><p className="text-sm text-[var(--muted)]">Agent panel is hidden in display settings.</p></div>}
 
-          <div className="panel p-4 md:p-5">
+          {!hiddenSections.nudges ? <div className="panel p-4 md:p-5">
             <h2 className="text-base font-semibold">Proactive Nudges</h2>
             <div className="mt-3 space-y-2">
               {(stats?.nudges || []).map((nudge) => (
@@ -316,10 +396,11 @@ export default function Dashboard() {
               ))}
               {!(stats?.nudges || []).length ? <p className="text-sm text-[var(--muted)]">No nudges yet.</p> : null}
             </div>
-          </div>
+          </div> : <div className="panel p-4 md:p-5"><p className="text-sm text-[var(--muted)]">Nudges are hidden in display settings.</p></div>}
         </section>
+        ) : null}
 
-        {mode === 'briefing' ? (
+        {!hiddenSections.core ? (mode === 'briefing' ? (
           <section className="grid gap-4 xl:grid-cols-[2fr_1fr]">
             <div className="panel p-4 md:p-5">
               <div className="mb-3 flex items-center justify-between">
@@ -380,8 +461,9 @@ export default function Dashboard() {
               </Link>
             </div>
           </section>
-        )}
+        )) : null}
 
+        {!hiddenSections.radar ? (
         <section className="grid gap-4 xl:grid-cols-[1.2fr_1fr_1fr]">
           <div className="panel p-4 md:p-5">
             <h3 className="text-base font-semibold">Semantic Event Radar</h3>
@@ -424,7 +506,9 @@ export default function Dashboard() {
             </div>
           </div>
         </section>
+        ) : null}
 
+        {!hiddenSections.feed ? (
         <section className="panel p-4 md:p-5">
           <div className="mb-4 flex flex-wrap items-center gap-3">
             <div className="flex flex-wrap gap-2">
@@ -435,6 +519,7 @@ export default function Dashboard() {
             </div>
             <div className="ml-auto flex w-full flex-wrap gap-2 md:w-auto">
               <select
+                aria-label="Watchlist filter"
                 value={activeWatchlist}
                 onChange={(event) => setActiveWatchlist(event.target.value)}
                 className="rounded-lg border border-[var(--line)] bg-[var(--surface-2)] px-3 py-2 text-sm text-[var(--text)]"
@@ -447,6 +532,7 @@ export default function Dashboard() {
                 ))}
               </select>
               <select
+                aria-label="Region filter"
                 value={activeRegion}
                 onChange={(event) => setActiveRegion(event.target.value)}
                 className="rounded-lg border border-[var(--line)] bg-[var(--surface-2)] px-3 py-2 text-sm text-[var(--text)]"
@@ -458,6 +544,7 @@ export default function Dashboard() {
                 ))}
               </select>
               <select
+                aria-label="Source filter"
                 value={activeSource}
                 onChange={(event) => setActiveSource(event.target.value)}
                 className="rounded-lg border border-[var(--line)] bg-[var(--surface-2)] px-3 py-2 text-sm text-[var(--text)]"
@@ -469,6 +556,7 @@ export default function Dashboard() {
                 ))}
               </select>
               <input
+                aria-label="Search signals"
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
                 placeholder="Search entities, sources, or themes"
@@ -533,6 +621,7 @@ export default function Dashboard() {
             </div>
           )}
         </section>
+        ) : null}
       </main>
     </div>
   );
@@ -542,7 +631,12 @@ function KpiCard(props: { label: string; value: number; detail: string; precisio
   const value = props.precision !== undefined ? props.value.toFixed(props.precision) : props.value.toLocaleString();
 
   return (
-    <button onClick={props.onClick} className="panel p-4 text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]">
+    <button
+      type="button"
+      onClick={props.onClick}
+      title="Click to drill down"
+      className="panel p-4 text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]"
+    >
       <p className="text-xs uppercase tracking-[0.2em] text-[var(--muted)]">{props.label}</p>
       <p className="mt-1 text-2xl font-semibold">{value}</p>
       <p className="mt-1 text-xs text-[var(--muted)]">{props.detail}</p>
@@ -722,6 +816,15 @@ function LineChart(props: { points: TimelinePoint[] }) {
 
         <path d={areaPath} fill="url(#areaGradient)" />
         <path d={path} fill="none" stroke="url(#lineGradient)" strokeWidth={3} />
+        {coordinates
+          .map((coord, index) => ({ coord, index }))
+          .filter((entry) => entry.index % Math.ceil(coordinates.length / 10) === 0)
+          .map((entry) => (
+          <g key={`${entry.coord.x}-${entry.coord.y}-${entry.index}`}>
+            <circle cx={entry.coord.x} cy={entry.coord.y} r={3} fill="#2ce2b2" />
+            <title>{`${props.points[entry.index]?.label || ''}: ${props.points[entry.index]?.count || 0}`}</title>
+          </g>
+        ))}
       </svg>
     </div>
   );

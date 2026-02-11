@@ -26,6 +26,17 @@
   --bg: #f3f8ff;
 }
 
+.theme-dark {
+  --bg: #0b1320;
+  --panel-solid: #101b2d;
+  --text: #e8f1ff;
+  --muted: #9eb5d3;
+  --line: #2a3d5a;
+  --accent: #3fc7a7;
+  --accent-soft: rgba(63, 199, 167, 0.2);
+  --surface-2: rgba(15, 28, 43, 0.9);
+}
+
 @theme inline {
   --color-background: var(--bg);
   --color-foreground: var(--text);
@@ -58,6 +69,12 @@ a {
   border-radius: 18px;
   background: linear-gradient(168deg, rgba(255, 255, 255, 0.95), rgba(248, 252, 255, 0.9));
   box-shadow: 0 12px 30px rgba(18, 51, 84, 0.08);
+  transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease;
+}
+
+.panel:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 16px 34px rgba(18, 51, 84, 0.11);
 }
 
 .noise-layer {
