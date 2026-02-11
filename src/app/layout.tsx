@@ -1,20 +1,21 @@
-import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
-import "./globals.css";
+import type { Metadata } from 'next';
+import { Space_Grotesk, Source_Code_Pro } from 'next/font/google';
+import './globals.css';
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
+const spaceGrotesk = Space_Grotesk({
+  variable: '--font-space-grotesk',
+  subsets: ['latin'],
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+const sourceCode = Source_Code_Pro({
+  variable: '--font-source-code',
+  subsets: ['latin'],
 });
 
 export const metadata: Metadata = {
-  title: "Grain Intelligence Monitor",
-  description: "Automated monitoring of the grain quality assessment ecosystem - news, research, patents, and code",
+  title: 'AI Canada Pulse',
+  description:
+    'Live and interactive intelligence dashboard for AI activity in Canada, with daily, weekly, monthly, yearly, and since-ChatGPT timelines.',
 };
 
 export default function RootLayout({
@@ -24,11 +25,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        {children}
-      </body>
+      <body className={`${spaceGrotesk.variable} ${sourceCode.variable} antialiased`}>{children}</body>
     </html>
   );
 }

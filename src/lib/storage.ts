@@ -1,10 +1,9 @@
-import { IntelItem, DashboardStats, IntelType } from './types';
+import { CHATGPT_MOMENT_ISO, DashboardStats, IntelItem, IntelType, TimelinePoint } from './types';
 import { Redis } from '@upstash/redis';
 
-const INTEL_KEY = 'grain_intel_items';
-const LAST_SCAN_KEY = 'grain_intel_last_scan';
+const INTEL_KEY = 'canada_ai_intel_items';
+const LAST_SCAN_KEY = 'canada_ai_intel_last_scan';
 
-// Initialize Redis client if credentials are available
 let redis: Redis | null = null;
 
 function getRedis(): Redis | null {
@@ -21,13 +20,107 @@ function getRedis(): Redis | null {
   return null;
 }
 
-// In-memory fallback for when Redis is not configured
-let memoryStore: { items: IntelItem[]; lastScan: string } = {
+const memoryStore: { items: IntelItem[]; lastScan: string } = {
   items: [],
-  lastScan: 'Never'
+  lastScan: 'Never',
 };
 
-// Get all intelligence items
+function getItemDate(item: IntelItem): Date {
+  const parsed = new Date(item.publishedAt);
+  if (!Number.isNaN(parsed.getTime())) return parsed;
+  return new Date(item.discoveredAt);
+}
+
+function createDateKey(date: Date): string {
+  return date.toISOString().split('T')[0];
+}
+
+function buildDailyTimeline(items: IntelItem[], days = 30): TimelinePoint[] {
+  const counts: Record<string, number> = {};
+  const now = new Date();
+
+  for (let i = days - 1; i >= 0; i -= 1) {
+    const day = new Date(now.getFullYear(), now.getMonth(), now.getDate() - i);
+    const key = createDateKey(day);
+    counts[key] = 0;
+  }
+
+  items.forEach((item) => {
+    const date = getItemDate(item);
+    const key = createDateKey(date);
+    if (counts[key] !== undefined) counts[key] += 1;
+  });
+
+  return Object.entries(counts).map(([key, count]) => ({ label: key, count }));
+}
+
+function buildWeeklyTimeline(items: IntelItem[], weeks = 16): TimelinePoint[] {
+  const now = new Date();
+  const counts: Record<string, number> = {};
+
+  for (let i = weeks - 1; i >= 0; i -= 1) {
+    const end = new Date(now.getFullYear(), now.getMonth(), now.getDate() - i * 7);
+    const start = new Date(end.getFullYear(), end.getMonth(), end.getDate() - 6);
+    const label = `${createDateKey(start)} to ${createDateKey(end)}`;
+    counts[label] = 0;
+  }
+
+  items.forEach((item) => {
+    const date = getItemDate(item);
+    Object.keys(counts).forEach((label) => {
+      const [startRaw, endRaw] = label.split(' to ');
+      const start = new Date(startRaw);
+      const end = new Date(endRaw);
+      if (date >= start && date <= new Date(end.getFullYear(), end.getMonth(), end.getDate(), 23, 59, 59)) {
+        counts[label] += 1;
+      }
+    });
+  });
+
+  return Object.entries(counts).map(([label, count]) => ({ label, count }));
+}
+
+function buildMonthlyTimeline(items: IntelItem[], months = 24): TimelinePoint[] {
+  const now = new Date();
+  const keys: string[] = [];
+
+  for (let i = months - 1; i >= 0; i -= 1) {
+    const monthDate = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const key = `${monthDate.getFullYear()}-${String(monthDate.getMonth() + 1).padStart(2, '0')}`;
+    keys.push(key);
+  }
+
+  const counts = keys.reduce<Record<string, number>>((acc, key) => {
+    acc[key] = 0;
+    return acc;
+  }, {});
+
+  items.forEach((item) => {
+    const date = getItemDate(item);
+    const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+    if (counts[key] !== undefined) counts[key] += 1;
+  });
+
+  return keys.map((label) => ({ label, count: counts[label] || 0 }));
+}
+
+function buildYearlyTimeline(items: IntelItem[]): TimelinePoint[] {
+  const startYear = new Date(CHATGPT_MOMENT_ISO).getFullYear();
+  const currentYear = new Date().getFullYear();
+  const counts: Record<string, number> = {};
+
+  for (let year = startYear; year <= currentYear; year += 1) {
+    counts[String(year)] = 0;
+  }
+
+  items.forEach((item) => {
+    const year = String(getItemDate(item).getFullYear());
+    if (counts[year] !== undefined) counts[year] += 1;
+  });
+
+  return Object.entries(counts).map(([label, count]) => ({ label, count }));
+}
+
 export async function getIntelItems(): Promise<IntelItem[]> {
   const client = getRedis();
 
@@ -43,17 +136,16 @@ export async function getIntelItems(): Promise<IntelItem[]> {
   return memoryStore.items;
 }
 
-// Add new intelligence items (deduplicates by URL)
 export async function addIntelItems(newItems: IntelItem[]): Promise<number> {
   const existing = await getIntelItems();
-  const existingUrls = new Set(existing.map(item => item.url));
+  const existingUrls = new Set(existing.map((item) => item.url));
 
-  const uniqueNewItems = newItems.filter(item => !existingUrls.has(item.url));
+  const uniqueNewItems = newItems.filter((item) => !existingUrls.has(item.url));
 
   if (uniqueNewItems.length > 0) {
     const combined = [...uniqueNewItems, ...existing]
-      .sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime())
-      .slice(0, 1000); // Keep last 1000 items
+      .sort((a, b) => getItemDate(b).getTime() - getItemDate(a).getTime())
+      .slice(0, 5000);
 
     const client = getRedis();
     if (client) {
@@ -71,43 +163,62 @@ export async function addIntelItems(newItems: IntelItem[]): Promise<number> {
   return uniqueNewItems.length;
 }
 
-// Get dashboard statistics
 export async function getDashboardStats(): Promise<DashboardStats> {
   const items = await getIntelItems();
+
   const now = new Date();
   const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   const weekStart = new Date(todayStart.getTime() - 7 * 24 * 60 * 60 * 1000);
+  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+  const yearStart = new Date(now.getFullYear(), 0, 1);
 
   const byType: Record<IntelType, number> = {
-    news: 0, research: 0, patent: 0, github: 0, funding: 0
+    news: 0,
+    research: 0,
+    policy: 0,
+    github: 0,
+    funding: 0,
   };
 
+  const sourceCounts: Record<string, number> = {};
   const entityCounts: Record<string, number> = {};
+
   let itemsToday = 0;
   let itemsThisWeek = 0;
+  let itemsThisMonth = 0;
+  let itemsThisYear = 0;
 
-  items.forEach(item => {
+  items.forEach((item) => {
     byType[item.type] = (byType[item.type] || 0) + 1;
 
-    const itemDate = new Date(item.discoveredAt);
-    if (itemDate >= todayStart) itemsToday++;
-    if (itemDate >= weekStart) itemsThisWeek++;
+    sourceCounts[item.source] = (sourceCounts[item.source] || 0) + 1;
 
-    item.entities.forEach(entity => {
+    item.entities.forEach((entity) => {
       entityCounts[entity] = (entityCounts[entity] || 0) + 1;
     });
+
+    const itemDate = getItemDate(item);
+    if (itemDate >= todayStart) itemsToday += 1;
+    if (itemDate >= weekStart) itemsThisWeek += 1;
+    if (itemDate >= monthStart) itemsThisMonth += 1;
+    if (itemDate >= yearStart) itemsThisYear += 1;
   });
 
   const topEntities = Object.entries(entityCounts)
     .map(([name, count]) => ({ name, count }))
     .sort((a, b) => b.count - a.count)
-    .slice(0, 10);
+    .slice(0, 12);
+
+  const bySource = Object.entries(sourceCounts)
+    .map(([name, count]) => ({ name, count }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 12);
 
   let lastScan = 'Never';
   const client = getRedis();
   if (client) {
     try {
-      lastScan = await client.get<string>(LAST_SCAN_KEY) || 'Never';
+      lastScan = (await client.get<string>(LAST_SCAN_KEY)) || 'Never';
     } catch {
       lastScan = memoryStore.lastScan;
     }
@@ -119,13 +230,21 @@ export async function getDashboardStats(): Promise<DashboardStats> {
     totalItems: items.length,
     itemsToday,
     itemsThisWeek,
+    itemsThisMonth,
+    itemsThisYear,
     byType,
+    bySource,
     topEntities,
-    lastScan
+    timeline: {
+      daily: buildDailyTimeline(items, 30),
+      weekly: buildWeeklyTimeline(items, 16),
+      monthly: buildMonthlyTimeline(items, 24),
+      yearly: buildYearlyTimeline(items),
+    },
+    lastScan,
   };
 }
 
-// Update last scan timestamp
 export async function updateLastScan(): Promise<void> {
   const timestamp = new Date().toISOString();
   const client = getRedis();
@@ -141,34 +260,32 @@ export async function updateLastScan(): Promise<void> {
   }
 }
 
-// Get items by type
 export async function getItemsByType(type: IntelType, limit = 50): Promise<IntelItem[]> {
   const items = await getIntelItems();
-  return items.filter(item => item.type === type).slice(0, limit);
+  return items.filter((item) => item.type === type).slice(0, limit);
 }
 
-// Get items by entity
 export async function getItemsByEntity(entity: string, limit = 50): Promise<IntelItem[]> {
   const items = await getIntelItems();
   return items
-    .filter(item => item.entities.some(e => e.toLowerCase().includes(entity.toLowerCase())))
+    .filter((item) => item.entities.some((entry) => entry.toLowerCase().includes(entity.toLowerCase())))
     .slice(0, limit);
 }
 
-// Search items
 export async function searchItems(query: string, limit = 50): Promise<IntelItem[]> {
   const items = await getIntelItems();
-  const lowerQuery = query.toLowerCase();
+  const lower = query.toLowerCase();
   return items
-    .filter(item =>
-      item.title.toLowerCase().includes(lowerQuery) ||
-      item.description.toLowerCase().includes(lowerQuery) ||
-      item.entities.some(e => e.toLowerCase().includes(lowerQuery))
+    .filter(
+      (item) =>
+        item.title.toLowerCase().includes(lower) ||
+        item.description.toLowerCase().includes(lower) ||
+        item.source.toLowerCase().includes(lower) ||
+        item.entities.some((entry) => entry.toLowerCase().includes(lower)),
     )
     .slice(0, limit);
 }
 
-// Check if storage is configured
 export function isStorageConfigured(): boolean {
   return getRedis() !== null;
 }

@@ -1,6 +1,4 @@
-// Intelligence data types
-
-export type IntelType = 'news' | 'research' | 'patent' | 'github' | 'funding';
+export type IntelType = 'news' | 'research' | 'policy' | 'github' | 'funding';
 
 export interface IntelItem {
   id: string;
@@ -12,9 +10,33 @@ export interface IntelItem {
   publishedAt: string;
   discoveredAt: string;
   relevanceScore: number;
-  entities: string[]; // Companies/products mentioned
+  entities: string[];
   category: string;
+  region?: string;
   imageUrl?: string;
+}
+
+export interface TimelinePoint {
+  label: string;
+  count: number;
+}
+
+export interface DashboardStats {
+  totalItems: number;
+  itemsToday: number;
+  itemsThisWeek: number;
+  itemsThisMonth: number;
+  itemsThisYear: number;
+  byType: Record<IntelType, number>;
+  bySource: { name: string; count: number }[];
+  topEntities: { name: string; count: number }[];
+  timeline: {
+    daily: TimelinePoint[];
+    weekly: TimelinePoint[];
+    monthly: TimelinePoint[];
+    yearly: TimelinePoint[];
+  };
+  lastScan: string;
 }
 
 export interface ScanResult {
@@ -26,37 +48,47 @@ export interface ScanResult {
   errors?: string[];
 }
 
-export interface DashboardStats {
-  totalItems: number;
-  itemsToday: number;
-  itemsThisWeek: number;
-  byType: Record<IntelType, number>;
-  topEntities: { name: string; count: number }[];
-  lastScan: string;
-}
+export const CHATGPT_MOMENT_ISO = '2022-11-30T00:00:00.000Z';
 
-// Companies and products to monitor
 export const MONITORED_ENTITIES = {
-  companies: {
-    established: [
-      'Cgrain', 'Cropify', 'Deimos', 'EasyODM', 'FOSS', 'Ground Truth Ag',
-      'Platypus Vision', 'Nebulaa', 'QualySense', 'Upjao', 'Vibe Imaging Analytics',
-      'Videometer', 'Zeutec', 'ZoomAgri'
-    ],
-    emerging: [
-      'GoMicro', 'Inarix', 'Grain Discovery', 'SuperGeo AI Tech', 'Agsure',
-      'GrainSense', 'Grainkart', 'Hongsheng Technology', 'Keyetech'
-    ]
-  },
-  products: [
-    'Value Pro', 'Value Sorter', 'Opal grain', 'EyeFoss', 'Platypus grain analyzer',
-    'MATT Automatic Grain Analyser', 'QSorter Explorer', 'Upjao Easy', 'Upjao Ultra',
-    'QM3i Analyzers', 'SeedLab', 'SeedSorter', 'SpectraAlyzer GRAIN VISION AI',
-    'ZoomVARIETIES', 'ZoomSPEX'
+  nationalInstitutions: [
+    'Vector Institute',
+    'Mila',
+    'Amii',
+    'CIFAR',
+    'NRC',
+    'Treasury Board of Canada Secretariat',
+    'ISED',
+    'Scale AI',
+  ],
+  companies: [
+    'Cohere',
+    'Waabi',
+    'Hopper',
+    'Tenstorrent',
+    'Ada',
+    'ApplyBoard',
+    'Shopify',
+    'Google Canada',
+    'Microsoft Canada',
+    'OpenAI',
+  ],
+  provinces: [
+    'Ontario',
+    'Quebec',
+    'British Columbia',
+    'Alberta',
+    'Nova Scotia',
+    'Manitoba',
+    'Saskatchewan',
   ],
   topics: [
-    'grain quality assessment', 'grain analyzer AI', 'seed quality machine learning',
-    'grain sorting automation', 'agricultural computer vision', 'grain inspection system',
-    'wheat quality detection', 'corn kernel analysis', 'grain grading technology'
-  ]
+    'artificial intelligence Canada',
+    'generative AI Canada',
+    'AI policy Canada',
+    'Canadian AI startup funding',
+    'AI regulation Canada',
+    'AI research Canada',
+    'public sector AI Canada',
+  ],
 };

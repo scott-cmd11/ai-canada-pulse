@@ -1,36 +1,77 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# AI Canada Pulse
 
-## Getting Started
+Live and interactive dashboard for tracking AI activity in Canada across news, research, policy, funding, and open-source signals.
 
-First, run the development server:
+The dashboard supports:
+- Live feed with search and filtering
+- Daily, weekly, monthly, and yearly trend views
+- Historical baseline anchored to the ChatGPT moment (`2022-11-30`)
+- Scheduled scans with persistent storage
 
+## Local Run
+
+1. Install dependencies:
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2. Create local env file:
+```bash
+cp .env.example .env.local
+```
+On Windows PowerShell:
+```powershell
+Copy-Item .env.example .env.local
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+3. Fill required env values in `.env.local`:
+- `KV_REST_API_URL`
+- `KV_REST_API_TOKEN`
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+4. Start app:
+```bash
+npm run dev
+```
 
-## Learn More
+5. Open:
+- `http://localhost:3000`
 
-To learn more about Next.js, take a look at the following resources:
+6. Trigger first aggregation:
+- Click `Scan Now` in the UI
+- Or call `POST /api/scan`
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Environment Variables
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+See `.env.example`.
 
-## Deploy on Vercel
+Required for persistence:
+- `KV_REST_API_URL`
+- `KV_REST_API_TOKEN`
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Optional:
+- `UPSTASH_REDIS_REST_URL`
+- `UPSTASH_REDIS_REST_TOKEN`
+- `CRON_SECRET` (recommended in production; protects cron GET endpoint)
+- `GITHUB_TOKEN` (higher GitHub API rate limits)
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Scheduling
+
+`vercel.json` is configured to run:
+- `/api/scan` every 6 hours (`0 */6 * * *`, UTC)
+
+## Deploy (Vercel)
+
+1. Push this project to a Git repository.
+2. Import the repo into Vercel.
+3. Add environment variables in Vercel Project Settings.
+4. Deploy.
+5. Verify:
+- `GET /api/stats`
+- `POST /api/scan`
+- Dashboard at `/`
+
+## Notes
+
+- If Redis env vars are missing, the app falls back to in-memory storage (not persistent).
+- Scanning uses a mix of Google News RSS queries, curated Canadian feeds, arXiv, and GitHub search.
+- Feed/network availability can vary; scan errors are captured and returned in the scan response.

@@ -12,13 +12,12 @@ export async function POST() {
 
     const redis = new Redis({ url, token });
 
-    // Clear all grain intel keys
-    await redis.del('grain_intel_items');
-    await redis.del('grain_intel_last_scan');
+    await redis.del('canada_ai_intel_items');
+    await redis.del('canada_ai_intel_last_scan');
 
     return NextResponse.json({
       success: true,
-      message: 'Database cleared. Run a new scan to populate with filtered results.'
+      message: 'Canada AI dashboard cache cleared. Run /api/scan to repopulate.',
     });
   } catch (error) {
     return NextResponse.json({ error: String(error) }, { status: 500 });

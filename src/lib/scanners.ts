@@ -1,412 +1,589 @@
-import { IntelItem, MONITORED_ENTITIES } from './types';
+import { CHATGPT_MOMENT_ISO, IntelItem, IntelType, MONITORED_ENTITIES } from './types';
 
-// Generate unique ID
+interface FeedSource {
+  name: string;
+  url: string;
+  type: IntelType;
+  category: string;
+}
+
 function generateId(): string {
-  return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+  return `${Date.now()}-${Math.random().toString(36).slice(2, 11)}`;
 }
 
-// Official grain types from Canadian Grain Grading Guide - SPECIFIC crop names only
-const GRAIN_CROPS = [
-  'wheat', 'rye', 'barley', 'oats', 'triticale', 'buckwheat', 'corn', 'maize',
-  'canola', 'rapeseed', 'flaxseed', 'mustard seed', 'sunflower seed', 'safflower seed', 'canary seed',
-  'peas', 'lentils', 'beans', 'soybeans', 'soybean', 'faba beans', 'chickpeas',
-  'rice', 'sorghum', 'millet'
-];
-
-// Phrases that indicate actual grain/crop context (not ML jargon)
-const GRAIN_CONTEXT_PHRASES = [
-  'grain quality', 'grain grading', 'grain classification', 'grain sorting', 'grain inspection',
-  'wheat quality', 'wheat grading', 'wheat kernel', 'wheat grain',
-  'rice quality', 'rice grading', 'rice grain',
-  'corn kernel', 'corn quality', 'maize kernel', 'maize quality',
-  'barley quality', 'barley grading', 'malting barley',
-  'oat quality', 'oats grading',
-  'soybean quality', 'soybean grading',
-  'lentil quality', 'lentil grading', 'lentil sorting',
-  'canola quality', 'canola grading',
-  'seed quality', 'seed grading', 'seed classification', 'seed sorting',
-  'crop quality', 'crop grading',
-  'cereal grain', 'cereal quality',
-  'pulse quality', 'pulse grading',
-  'oilseed quality', 'oilseed grading',
-  'kernel damage', 'damaged kernel', 'broken kernel',
-  'test weight', 'hectolitre weight', 'bulk density',
-  'moisture content', 'grain moisture',
-  'foreign material', 'dockage',
-  'fusarium', 'mycotoxin', 'don level', 'deoxynivalenol', 'vomitoxin',
-  'sprouted grain', 'sprouting damage', 'falling number',
-  'frost damage', 'heat damage', 'weather damage',
-  'protein content', 'grain protein',
-  'hard vitreous', 'vitreous kernel',
-  'milling quality', 'baking quality', 'malting quality',
-  'grain defect', 'seed defect',
-  'grain analyzer', 'grain analyser', 'grain inspection system'
-];
-
-// Terms to EXCLUDE - ML jargon that creates false positives
-const EXCLUDE_TERMS = [
-  'fine-grained', 'coarse-grained', 'multi-grained',
-  'kernel method', 'kernel function', 'gaussian kernel', 'rbf kernel',
-  'kernel trick', 'kernel matrix', 'kernel density',
-  'attention kernel', 'convolution kernel',
-  'linux kernel', 'operating system kernel',
-  'exoplanet', 'astronomy', 'astrophysics',
-  'fabric defect', 'textile', 'tableware',
-  'timber', 'wood moisture', 'lumber',
-  'sand grain', 'aeolian', 'sediment'
-];
-
-// Check if content is STRICTLY relevant to grain grading
-function isStrictlyRelevant(text: string): boolean {
-  const lowerText = text.toLowerCase();
-
-  // First, EXCLUDE papers with ML jargon or unrelated topics
-  for (const exclude of EXCLUDE_TERMS) {
-    if (lowerText.includes(exclude)) return false;
-  }
-
-  // Must contain a grain context phrase (specific to agricultural grain)
-  const hasGrainContext = GRAIN_CONTEXT_PHRASES.some(phrase => lowerText.includes(phrase));
-
-  // OR must contain a specific crop name + quality/grading related term
-  const hasCropName = GRAIN_CROPS.some(crop => {
-    const cropPattern = new RegExp(`\\b${crop}\\b`, 'i');
-    return cropPattern.test(text);
-  });
-
-  const hasQualityTerm = [
-    'quality', 'grading', 'grade', 'sorting', 'classification', 'detection',
-    'defect', 'damage', 'inspection', 'assessment', 'evaluation', 'analysis'
-  ].some(term => lowerText.includes(term));
-
-  const hasMLTerm = [
-    'machine learning', 'deep learning', 'neural network', 'cnn', 'computer vision',
-    'image processing', 'classification model', 'detection model', 'yolo', 'resnet',
-    'tensorflow', 'pytorch', 'automated', 'automation'
-  ].some(term => lowerText.includes(term));
-
-  // Accept if: has grain context phrase, OR (has crop name AND quality term AND ML term)
-  return hasGrainContext || (hasCropName && hasQualityTerm && hasMLTerm);
+function decodeHtmlEntities(input: string): string {
+  return input
+    .replace(/<!\[CDATA\[|\]\]>/g, '')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&#x2F;/g, '/')
+    .replace(/\s+/g, ' ')
+    .trim();
 }
 
-// Find which monitored entities are mentioned
-function findEntities(text: string): string[] {
-  const lowerText = text.toLowerCase();
-  const found: string[] = [];
+function extractTag(entry: string, tag: string): string {
+  const match = entry.match(new RegExp(`<${tag}[^>]*>([\\s\\S]*?)<\\/${tag}>`, 'i'));
+  return match ? decodeHtmlEntities(match[1]) : '';
+}
 
-  [...MONITORED_ENTITIES.companies.established, ...MONITORED_ENTITIES.companies.emerging]
-    .forEach(company => {
-      if (lowerText.includes(company.toLowerCase())) {
-        found.push(company);
-      }
+function extractAtomLink(entry: string): string {
+  const hrefMatch = entry.match(/<link[^>]*href="([^"]+)"[^>]*\/?>(?:<\/link>)?/i);
+  return hrefMatch ? decodeHtmlEntities(hrefMatch[1]) : '';
+}
+
+async function fetchWithTimeout(url: string, timeoutMs = 12000): Promise<Response> {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
+
+  try {
+    return await fetch(url, {
+      signal: controller.signal,
+      headers: {
+        'User-Agent': 'CanadaAIPulse/1.0',
+      },
     });
-
-  MONITORED_ENTITIES.products.forEach(product => {
-    if (lowerText.includes(product.toLowerCase())) {
-      found.push(product);
-    }
-  });
-
-  return found;
+  } finally {
+    clearTimeout(timeout);
+  }
 }
 
-// Calculate relevance score
+function findEntities(text: string): string[] {
+  const lower = text.toLowerCase();
+  const entities = [
+    ...MONITORED_ENTITIES.nationalInstitutions,
+    ...MONITORED_ENTITIES.companies,
+    ...MONITORED_ENTITIES.provinces,
+  ];
+
+  return entities.filter((entity) => lower.includes(entity.toLowerCase()));
+}
+
 function calculateRelevance(text: string, entities: string[]): number {
-  const lowerText = text.toLowerCase();
-  let score = 2;
+  const lower = text.toLowerCase();
+  let score = 1.8;
 
-  score += Math.min(entities.length * 0.5, 1.5);
+  if (lower.includes('canada') || lower.includes('canadian')) score += 1;
+  if (lower.includes('artificial intelligence') || lower.includes('generative ai')) score += 0.9;
+  if (lower.includes('policy') || lower.includes('regulation') || lower.includes('governance')) score += 0.5;
+  if (lower.includes('funding') || lower.includes('investment')) score += 0.5;
 
-  const criticalFactors = ['fusarium', 'test weight', 'moisture content', 'protein content', 'falling number', 'grain grading', 'grain quality'];
-  criticalFactors.forEach(factor => {
-    if (lowerText.includes(factor)) score += 0.3;
-  });
-
-  const mlBonus = ['deep learning', 'cnn', 'neural network', 'computer vision', 'yolo'].some(t => lowerText.includes(t));
-  if (mlBonus) score += 0.5;
-
+  score += Math.min(entities.length * 0.35, 1.2);
   return Math.min(Math.round(score * 10) / 10, 5);
 }
 
-// Deduplicate by URL
+function isCanadaAiRelevant(text: string): boolean {
+  const lower = text.toLowerCase();
+
+  const canadaSignals = [
+    'canada',
+    'canadian',
+    'toronto',
+    'montreal',
+    'vancouver',
+    'ottawa',
+    'quebec',
+    'ontario',
+    'alberta',
+    'mila',
+    'vector institute',
+    'amii',
+    'cifar',
+  ];
+
+  const aiSignals = [
+    'artificial intelligence',
+    'generative ai',
+    'ai model',
+    'ai strategy',
+    'large language model',
+    'machine learning',
+    'deep learning',
+    'foundation model',
+    'llm',
+  ];
+
+  return canadaSignals.some((term) => lower.includes(term)) && aiSignals.some((term) => lower.includes(term));
+}
+
 function deduplicateByUrl(items: IntelItem[]): IntelItem[] {
   const seen = new Set<string>();
-  return items.filter(item => {
+  return items.filter((item) => {
     if (seen.has(item.url)) return false;
     seen.add(item.url);
     return true;
   });
 }
 
-// Deduplicate by similar titles
 function deduplicateByTitle(items: IntelItem[]): IntelItem[] {
-  const result: IntelItem[] = [];
-  const seenTitles: string[] = [];
-
-  for (const item of items) {
-    const normalizedTitle = item.title.toLowerCase().replace(/[^a-z0-9]/g, '');
-
-    const isDuplicate = seenTitles.some(seen => {
-      if (normalizedTitle.length < 20) return normalizedTitle === seen;
-      const shorter = normalizedTitle.length < seen.length ? normalizedTitle : seen;
-      const longer = normalizedTitle.length >= seen.length ? normalizedTitle : seen;
-      return longer.includes(shorter) || shorter.includes(longer.slice(0, shorter.length));
-    });
-
-    if (!isDuplicate) {
-      result.push(item);
-      seenTitles.push(normalizedTitle);
-    }
-  }
-
-  return result;
+  const seen = new Set<string>();
+  return items.filter((item) => {
+    const normalized = item.title.toLowerCase().replace(/[^a-z0-9]/g, '');
+    if (seen.has(normalized)) return false;
+    seen.add(normalized);
+    return true;
+  });
 }
 
-// Scan GNews API for news
-export async function scanNews(): Promise<IntelItem[]> {
-  const items: IntelItem[] = [];
-  const apiKey = process.env.GNEWS_API_KEY;
-
-  if (!apiKey) {
-    console.log('GNews API key not configured');
-    return items;
+function normalizeTitle(rawTitle: string): { title: string; sourceHint: string } {
+  const title = decodeHtmlEntities(rawTitle);
+  const parts = title.split(' - ');
+  if (parts.length >= 2) {
+    const sourceHint = parts[parts.length - 1];
+    return {
+      title: parts.slice(0, -1).join(' - ').trim(),
+      sourceHint: sourceHint.trim(),
+    };
   }
 
-  const searchQueries = [
-    '"grain grading" technology',
-    '"wheat quality" assessment',
-    '"grain inspection" automation',
-    '"fusarium" wheat detection',
-    '"grain sorting" machine',
-    ...MONITORED_ENTITIES.companies.established.slice(0, 3).map(c => `"${c}" grain`)
-  ];
+  return { title, sourceHint: '' };
+}
 
-  for (const query of searchQueries) {
-    try {
-      const response = await fetch(
-        `https://gnews.io/api/v4/search?q=${encodeURIComponent(query)}&lang=en&max=5&apikey=${apiKey}`
-      );
+async function scanGoogleNewsFeed(params: {
+  query: string;
+  type: IntelType;
+  category: string;
+}): Promise<IntelItem[]> {
+  const { query, type, category } = params;
+  const items: IntelItem[] = [];
 
-      if (!response.ok) continue;
+  const url = `https://news.google.com/rss/search?q=${encodeURIComponent(query)}&hl=en-CA&gl=CA&ceid=CA:en`;
 
-      const data = await response.json();
+  try {
+    const response = await fetchWithTimeout(url);
+    if (!response.ok) return items;
 
-      if (data.articles) {
-        for (const article of data.articles) {
-          const fullText = `${article.title} ${article.description || ''}`;
+    const xml = await response.text();
+    const entries = xml.match(/<item>[\s\S]*?<\/item>/g) || [];
 
-          if (!isStrictlyRelevant(fullText)) continue;
+    entries.slice(0, 30).forEach((entry) => {
+      const rawTitle = extractTag(entry, 'title');
+      const description = extractTag(entry, 'description');
+      const link = extractTag(entry, 'link');
+      const publishedAt = extractTag(entry, 'pubDate');
+      const source = extractTag(entry, 'source');
 
-          const entities = findEntities(fullText);
+      const { title, sourceHint } = normalizeTitle(rawTitle);
+      const combined = `${title} ${description}`;
 
-          items.push({
-            id: generateId(),
-            type: 'news',
-            title: article.title,
-            description: article.description || '',
-            url: article.url,
-            source: article.source?.name || 'Unknown',
-            publishedAt: article.publishedAt,
-            discoveredAt: new Date().toISOString(),
-            relevanceScore: calculateRelevance(fullText, entities),
-            entities: entities.length > 0 ? entities : ['Industry'],
-            category: 'Industry News',
-            imageUrl: article.image
-          });
-        }
-      }
+      if (!title || !link) return;
+      if (!isCanadaAiRelevant(combined)) return;
 
-      await new Promise(resolve => setTimeout(resolve, 1000));
-    } catch (error) {
-      console.error(`Error scanning news for "${query}":`, error);
-    }
+      const entities = findEntities(combined);
+
+      items.push({
+        id: generateId(),
+        type,
+        title,
+        description: description || 'No summary available.',
+        url: link,
+        source: source || sourceHint || 'Google News',
+        publishedAt: publishedAt ? new Date(publishedAt).toISOString() : new Date().toISOString(),
+        discoveredAt: new Date().toISOString(),
+        relevanceScore: calculateRelevance(combined, entities),
+        entities: entities.length > 0 ? entities : ['Canada AI'],
+        category,
+        region: 'Canada',
+      });
+    });
+  } catch (error) {
+    console.error(`Google News scan failed for query: ${query}`, error);
   }
 
   return deduplicateByTitle(deduplicateByUrl(items));
 }
 
-// Scan arXiv - VERY specific queries only
+async function scanCuratedFeeds(): Promise<IntelItem[]> {
+  const feeds: FeedSource[] = [
+    {
+      name: 'CBC Technology',
+      url: 'https://www.cbc.ca/webfeed/rss/rss-technology',
+      type: 'news',
+      category: 'Canadian Media',
+    },
+    {
+      name: 'BetaKit',
+      url: 'https://betakit.com/feed/',
+      type: 'funding',
+      category: 'Startup and Funding',
+    },
+    {
+      name: 'Mila News',
+      url: 'https://mila.quebec/en/feed/',
+      type: 'research',
+      category: 'Research Institute',
+    },
+    {
+      name: 'Amii News',
+      url: 'https://www.amii.ca/latest-news/feed/',
+      type: 'research',
+      category: 'Research Institute',
+    },
+    {
+      name: 'Vector Institute Insights',
+      url: 'https://vectorinstitute.ai/feed/',
+      type: 'research',
+      category: 'Research Institute',
+    },
+  ];
+
+  const allItems: IntelItem[] = [];
+
+  await Promise.all(
+    feeds.map(async (feed) => {
+      try {
+        const response = await fetchWithTimeout(feed.url);
+        if (!response.ok) return;
+
+        const xml = await response.text();
+        const rssEntries = xml.match(/<item>[\s\S]*?<\/item>/g) || [];
+        const atomEntries = xml.match(/<entry>[\s\S]*?<\/entry>/g) || [];
+        const entries = rssEntries.length > 0 ? rssEntries : atomEntries;
+
+        entries.slice(0, 30).forEach((entry) => {
+          const title = extractTag(entry, 'title');
+          const description = extractTag(entry, 'description') || extractTag(entry, 'summary');
+          const link = extractTag(entry, 'link') || extractAtomLink(entry);
+          const publishedAt =
+            extractTag(entry, 'pubDate') || extractTag(entry, 'updated') || extractTag(entry, 'published');
+
+          const combined = `${title} ${description}`;
+
+          if (!title || !link) return;
+          if (!isCanadaAiRelevant(combined)) return;
+
+          const entities = findEntities(combined);
+
+          allItems.push({
+            id: generateId(),
+            type: feed.type,
+            title,
+            description: description || 'No summary available.',
+            url: link,
+            source: feed.name,
+            publishedAt: publishedAt ? new Date(publishedAt).toISOString() : new Date().toISOString(),
+            discoveredAt: new Date().toISOString(),
+            relevanceScore: calculateRelevance(combined, entities),
+            entities: entities.length > 0 ? entities : ['Canada AI'],
+            category: feed.category,
+            region: 'Canada',
+          });
+        });
+      } catch (error) {
+        console.error(`Curated feed scan failed: ${feed.name}`, error);
+      }
+    }),
+  );
+
+  return deduplicateByTitle(deduplicateByUrl(allItems));
+}
+
+export async function scanNews(): Promise<IntelItem[]> {
+  const queries = [
+    'artificial intelligence Canada',
+    'generative AI Canada',
+    'Canadian AI startup',
+    'AI adoption Canada business',
+    'AI health care Canada',
+    'site:cbc.ca AI Canada',
+    'site:theglobeandmail.com AI Canada',
+    'site:nationalpost.com AI Canada',
+  ];
+
+  const queryResults = await Promise.all(
+    queries.map((query) => scanGoogleNewsFeed({ query, type: 'news', category: 'News and Analysis' })),
+  );
+
+  const feedResults = await scanCuratedFeeds();
+
+  return deduplicateByTitle(deduplicateByUrl([...queryResults.flat(), ...feedResults.filter((item) => item.type === 'news')]));
+}
+
+export async function scanPolicy(): Promise<IntelItem[]> {
+  const queries = [
+    'Government of Canada AI policy',
+    'Canada AI regulation',
+    'Treasury Board AI Canada',
+    'ISED generative AI Canada',
+    'site:canada.ca artificial intelligence policy',
+    'site:ontario.ca artificial intelligence',
+    'site:quebec.ca intelligence artificielle',
+    'site:alberta.ca artificial intelligence',
+    'site:bc.ca artificial intelligence',
+  ];
+
+  const results = await Promise.all(
+    queries.map((query) => scanGoogleNewsFeed({ query, type: 'policy', category: 'Policy and Governance' })),
+  );
+
+  return deduplicateByTitle(deduplicateByUrl(results.flat()));
+}
+
+export async function scanFunding(): Promise<IntelItem[]> {
+  const queries = [
+    'Canada AI funding round',
+    'Canadian AI investment',
+    'venture capital AI Canada',
+    'federal funding AI Canada',
+    'site:betakit.com AI funding',
+    'site:thelogic.co AI funding Canada',
+    'Scale AI supercluster funding',
+  ];
+
+  const queryResults = await Promise.all(
+    queries.map((query) => scanGoogleNewsFeed({ query, type: 'funding', category: 'Capital and Funding' })),
+  );
+
+  const feedResults = await scanCuratedFeeds();
+
+  return deduplicateByTitle(
+    deduplicateByUrl([...queryResults.flat(), ...feedResults.filter((item) => item.type === 'funding')]),
+  );
+}
+
 export async function scanResearch(): Promise<IntelItem[]> {
   const items: IntelItem[] = [];
 
-  // Highly specific queries that should only return grain-related papers
-  const searchQueries = [
-    'ti:"wheat" AND ti:"quality" AND abs:"deep learning"',
-    'ti:"grain" AND ti:"grading" AND abs:"classification"',
-    'ti:"rice" AND ti:"quality" AND abs:"machine learning"',
-    'ti:"wheat" AND ti:"kernel" AND abs:"detection"',
-    'ti:"corn" AND ti:"kernel" AND abs:"classification"',
-    'ti:"soybean" AND ti:"quality" AND abs:"classification"',
-    'ti:"lentil" AND abs:"sorting" AND abs:"machine"',
-    'ti:"barley" AND ti:"quality" AND abs:"neural"',
-    'abs:"grain sorting" AND abs:"computer vision"',
-    'abs:"fusarium" AND abs:"wheat" AND abs:"detection"',
-    'abs:"seed quality" AND abs:"deep learning"',
-    'ti:"cereal" AND abs:"grading" AND abs:"image"'
+  const queries = [
+    'all:"artificial intelligence" AND (all:"Canada" OR all:"Canadian")',
+    'all:"generative" AND all:"Canada"',
+    'all:"machine learning" AND (all:"Mila" OR all:"Vector Institute" OR all:"Amii")',
+    'all:"CIFAR" AND all:"artificial intelligence"',
   ];
 
-  for (const query of searchQueries) {
+  for (const query of queries) {
     try {
-      const response = await fetch(
-        `https://export.arxiv.org/api/query?search_query=${encodeURIComponent(query)}&start=0&max_results=5&sortBy=submittedDate&sortOrder=descending`
+      const response = await fetchWithTimeout(
+        `https://export.arxiv.org/api/query?search_query=${encodeURIComponent(query)}&start=0&max_results=20&sortBy=submittedDate&sortOrder=descending`,
       );
 
       if (!response.ok) continue;
 
-      const text = await response.text();
-      const entries = text.match(/<entry>([\s\S]*?)<\/entry>/g) || [];
+      const xml = await response.text();
+      const entries = xml.match(/<entry>[\s\S]*?<\/entry>/g) || [];
 
-      for (const entry of entries) {
-        const title = entry.match(/<title>([\s\S]*?)<\/title>/)?.[1]?.trim() || '';
-        const summary = entry.match(/<summary>([\s\S]*?)<\/summary>/)?.[1]?.trim() || '';
-        const link = entry.match(/<id>([\s\S]*?)<\/id>/)?.[1]?.trim() || '';
-        const published = entry.match(/<published>([\s\S]*?)<\/published>/)?.[1]?.trim() || '';
+      entries.forEach((entry) => {
+        const title = extractTag(entry, 'title');
+        const summary = extractTag(entry, 'summary');
+        const url = extractTag(entry, 'id');
+        const publishedAt = extractTag(entry, 'published');
 
-        if (title && link) {
-          const fullText = `${title} ${summary}`;
+        const combined = `${title} ${summary}`;
+        if (!title || !url) return;
+        if (!isCanadaAiRelevant(combined)) return;
 
-          // Apply strict relevance filter
-          if (!isStrictlyRelevant(fullText)) continue;
+        const entities = findEntities(combined);
 
-          const entities = findEntities(fullText);
-
-          items.push({
-            id: generateId(),
-            type: 'research',
-            title: title.replace(/\n/g, ' ').trim(),
-            description: summary.replace(/\n/g, ' ').slice(0, 500).trim(),
-            url: link,
-            source: 'arXiv',
-            publishedAt: published,
-            discoveredAt: new Date().toISOString(),
-            relevanceScore: calculateRelevance(fullText, entities),
-            entities: entities.length > 0 ? entities : ['Research'],
-            category: 'Academic Research'
-          });
-        }
-      }
-
-      await new Promise(resolve => setTimeout(resolve, 500));
+        items.push({
+          id: generateId(),
+          type: 'research',
+          title,
+          description: summary.slice(0, 500),
+          url,
+          source: 'arXiv',
+          publishedAt: publishedAt || new Date().toISOString(),
+          discoveredAt: new Date().toISOString(),
+          relevanceScore: calculateRelevance(combined, entities),
+          entities: entities.length > 0 ? entities : ['Canada AI Research'],
+          category: 'Academic Research',
+          region: 'Canada',
+        });
+      });
     } catch (error) {
-      console.error(`Error scanning arXiv for "${query}":`, error);
+      console.error(`arXiv scan failed for query: ${query}`, error);
     }
   }
 
-  return deduplicateByTitle(deduplicateByUrl(items));
+  const feedResults = await scanCuratedFeeds();
+
+  return deduplicateByTitle(
+    deduplicateByUrl([...items, ...feedResults.filter((item) => item.type === 'research')]),
+  );
 }
 
-// Scan GitHub - strict grain grading focus
 export async function scanGitHub(): Promise<IntelItem[]> {
   const items: IntelItem[] = [];
   const token = process.env.GITHUB_TOKEN;
 
-  const searchQueries = [
-    'wheat grain quality classification',
-    'rice grain grading deep learning',
-    'grain defect detection CNN',
-    'wheat kernel classification',
-    'soybean quality machine learning',
-    'corn kernel defect detection',
-    'lentil sorting classification',
-    'seed quality assessment neural network'
+  const queries = [
+    'Canada artificial intelligence',
+    'Canadian generative AI startup',
+    'Mila deep learning',
+    'Vector Institute machine learning',
+    'Amii machine learning',
+    'Cohere LLM',
   ];
 
   const headers: Record<string, string> = {
-    'Accept': 'application/vnd.github.v3+json',
-    'User-Agent': 'GrainIntelMonitor'
+    Accept: 'application/vnd.github.v3+json',
+    'User-Agent': 'CanadaAIPulse',
   };
 
-  if (token) {
-    headers['Authorization'] = `token ${token}`;
-  }
+  if (token) headers.Authorization = `token ${token}`;
 
-  for (const query of searchQueries) {
+  for (const query of queries) {
     try {
-      const response = await fetch(
-        `https://api.github.com/search/repositories?q=${encodeURIComponent(query)}&sort=stars&order=desc&per_page=5`,
-        { headers }
+      const response = await fetchWithTimeout(
+        `https://api.github.com/search/repositories?q=${encodeURIComponent(query)}&sort=updated&order=desc&per_page=20`,
+        15000,
       );
 
       if (!response.ok) continue;
 
       const data = await response.json();
+      const repos = data.items || [];
 
-      if (data.items) {
-        for (const repo of data.items) {
-          const fullText = `${repo.name} ${repo.description || ''} ${repo.topics?.join(' ') || ''}`;
+      repos.forEach((repo: Record<string, unknown>) => {
+        const name = String(repo.full_name || '');
+        const description = String(repo.description || 'No description provided.');
+        const topics = Array.isArray(repo.topics) ? repo.topics.join(' ') : '';
+        const combined = `${name} ${description} ${topics}`;
 
-          if (!isStrictlyRelevant(fullText)) continue;
+        if (!isCanadaAiRelevant(combined)) return;
 
-          const entities = findEntities(fullText);
+        const entities = findEntities(combined);
 
-          items.push({
-            id: generateId(),
-            type: 'github',
-            title: repo.full_name,
-            description: repo.description || 'No description',
-            url: repo.html_url,
-            source: 'GitHub',
-            publishedAt: repo.updated_at,
-            discoveredAt: new Date().toISOString(),
-            relevanceScore: calculateRelevance(fullText, entities),
-            entities: entities.length > 0 ? entities : ['Open Source'],
-            category: `${repo.stargazers_count} stars | ${repo.language || 'Unknown'}`
-          });
-        }
-      }
-
-      await new Promise(resolve => setTimeout(resolve, 2000));
+        items.push({
+          id: generateId(),
+          type: 'github',
+          title: name,
+          description,
+          url: String(repo.html_url || ''),
+          source: 'GitHub',
+          publishedAt: String(repo.updated_at || new Date().toISOString()),
+          discoveredAt: new Date().toISOString(),
+          relevanceScore: calculateRelevance(combined, entities),
+          entities: entities.length > 0 ? entities : ['Canada OSS'],
+          category: `${String(repo.language || 'Unknown')} | ${String(repo.stargazers_count || 0)} stars`,
+          region: 'Canada',
+        });
+      });
     } catch (error) {
-      console.error(`Error scanning GitHub for "${query}":`, error);
+      console.error(`GitHub scan failed for query: ${query}`, error);
     }
   }
 
-  return deduplicateByTitle(deduplicateByUrl(items));
+  return deduplicateByTitle(deduplicateByUrl(items.filter((item) => item.url)));
 }
 
-// Scan for patents
-export async function scanPatents(): Promise<IntelItem[]> {
-  return [];
+function historicalSeedData(): IntelItem[] {
+  const baseline = [
+    {
+      date: CHATGPT_MOMENT_ISO,
+      type: 'news' as IntelType,
+      title: 'ChatGPT moment starts the current AI cycle',
+      description:
+        'Historical baseline marker for the start of the modern generative AI wave. This seeded marker anchors long-range Canada AI trend charts.',
+      url: 'https://en.wikipedia.org/wiki/ChatGPT',
+      category: 'Historical Baseline',
+    },
+    {
+      date: '2023-06-01T00:00:00.000Z',
+      type: 'policy' as IntelType,
+      title: 'Canadian institutions accelerate AI governance planning',
+      description:
+        'Seeded baseline marker to represent increased federal and institutional governance activity in 2023.',
+      url: 'https://www.canada.ca/en/government/system/digital-government/digital-government-innovations/responsible-use-ai.html',
+      category: 'Historical Baseline',
+    },
+    {
+      date: '2023-10-01T00:00:00.000Z',
+      type: 'research' as IntelType,
+      title: 'Canada AI labs increase output on foundation-model research',
+      description:
+        'Seeded baseline marker for growing publication momentum across major Canadian AI institutes.',
+      url: 'https://mila.quebec/en/',
+      category: 'Historical Baseline',
+    },
+    {
+      date: '2024-04-01T00:00:00.000Z',
+      type: 'funding' as IntelType,
+      title: 'Compute and commercialization become core AI funding themes in Canada',
+      description:
+        'Seeded baseline marker for the shift from experimentation to scaled deployment and compute investment.',
+      url: 'https://ised-isde.canada.ca/site/ised/en',
+      category: 'Historical Baseline',
+    },
+    {
+      date: '2025-01-01T00:00:00.000Z',
+      type: 'news' as IntelType,
+      title: 'Enterprise AI adoption expands across Canadian sectors',
+      description:
+        'Seeded baseline marker for broad cross-industry AI integration in operations, products, and services.',
+      url: 'https://www150.statcan.gc.ca/',
+      category: 'Historical Baseline',
+    },
+  ];
+
+  return baseline.map((entry) => ({
+    id: `historical-${entry.type}-${entry.date}`,
+    type: entry.type,
+    title: entry.title,
+    description: entry.description,
+    url: entry.url,
+    source: 'AI Canada Pulse Baseline',
+    publishedAt: entry.date,
+    discoveredAt: new Date().toISOString(),
+    relevanceScore: 4,
+    entities: ['Canada AI'],
+    category: entry.category,
+    region: 'Canada',
+  }));
 }
 
-// Main scan function
 export async function runFullScan(): Promise<{
   news: IntelItem[];
   research: IntelItem[];
+  policy: IntelItem[];
   github: IntelItem[];
-  patents: IntelItem[];
+  funding: IntelItem[];
   errors: string[];
 }> {
   const errors: string[] = [];
 
   let news: IntelItem[] = [];
   let research: IntelItem[] = [];
+  let policy: IntelItem[] = [];
   let github: IntelItem[] = [];
-  let patents: IntelItem[] = [];
+  let funding: IntelItem[] = [];
 
   try {
     news = await scanNews();
-  } catch (e) {
-    errors.push(`News scan failed: ${e}`);
+  } catch (error) {
+    errors.push(`News scan failed: ${String(error)}`);
   }
 
   try {
     research = await scanResearch();
-  } catch (e) {
-    errors.push(`Research scan failed: ${e}`);
+  } catch (error) {
+    errors.push(`Research scan failed: ${String(error)}`);
+  }
+
+  try {
+    policy = await scanPolicy();
+  } catch (error) {
+    errors.push(`Policy scan failed: ${String(error)}`);
   }
 
   try {
     github = await scanGitHub();
-  } catch (e) {
-    errors.push(`GitHub scan failed: ${e}`);
+  } catch (error) {
+    errors.push(`GitHub scan failed: ${String(error)}`);
   }
 
   try {
-    patents = await scanPatents();
-  } catch (e) {
-    errors.push(`Patent scan failed: ${e}`);
+    funding = await scanFunding();
+  } catch (error) {
+    errors.push(`Funding scan failed: ${String(error)}`);
   }
 
-  return { news, research, github, patents, errors };
+  const baseline = historicalSeedData();
+  news = deduplicateByTitle(deduplicateByUrl([...news, ...baseline.filter((item) => item.type === 'news')]));
+  policy = deduplicateByTitle(deduplicateByUrl([...policy, ...baseline.filter((item) => item.type === 'policy')]));
+  research = deduplicateByTitle(deduplicateByUrl([...research, ...baseline.filter((item) => item.type === 'research')]));
+  funding = deduplicateByTitle(deduplicateByUrl([...funding, ...baseline.filter((item) => item.type === 'funding')]));
+
+  return { news, research, policy, github, funding, errors };
 }

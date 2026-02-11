@@ -1,14 +1,16 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
-import { IntelItem, IntelType, DashboardStats } from '@/lib/types';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { DashboardStats, IntelItem, IntelType, TimelinePoint } from '@/lib/types';
 
-const TYPE_LABELS: Record<IntelType, { label: string; icon: string; color: string }> = {
-  news: { label: 'News', icon: '📰', color: 'bg-blue-500' },
-  research: { label: 'Research', icon: '🔬', color: 'bg-purple-500' },
-  github: { label: 'GitHub', icon: '💻', color: 'bg-gray-700' },
-  patent: { label: 'Patents', icon: '📜', color: 'bg-amber-500' },
-  funding: { label: 'Funding', icon: '💰', color: 'bg-green-500' },
+type TimelineMode = 'daily' | 'weekly' | 'monthly' | 'yearly';
+
+const TYPE_LABELS: Record<IntelType, { label: string; accent: string }> = {
+  news: { label: 'News', accent: 'bg-sky-500' },
+  research: { label: 'Research', accent: 'bg-cyan-500' },
+  policy: { label: 'Policy', accent: 'bg-amber-500' },
+  github: { label: 'GitHub', accent: 'bg-slate-500' },
+  funding: { label: 'Funding', accent: 'bg-emerald-500' },
 };
 
 export default function Dashboard() {
@@ -16,27 +18,29 @@ export default function Dashboard() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [scanning, setScanning] = useState(false);
-  const [activeFilter, setActiveFilter] = useState<IntelType | 'all'>('all');
-  const [searchQuery, setSearchQuery] = useState('');
+  const [activeType, setActiveType] = useState<IntelType | 'all'>('all');
+  const [timelineMode, setTimelineMode] = useState<TimelineMode>('monthly');
+  const [query, setQuery] = useState('');
 
   const fetchData = useCallback(async () => {
     try {
-      const [itemsRes, statsRes] = await Promise.all([
-        fetch(`/api/intel?${activeFilter !== 'all' ? `type=${activeFilter}&` : ''}limit=100`),
-        fetch('/api/stats')
+      const filter = activeType === 'all' ? '' : `type=${activeType}&`;
+      const [intelRes, statsRes] = await Promise.all([
+        fetch(`/api/intel?${filter}limit=250`),
+        fetch('/api/stats'),
       ]);
 
-      const itemsData = await itemsRes.json();
+      const intelData = await intelRes.json();
       const statsData = await statsRes.json();
 
-      if (itemsData.success) setItems(itemsData.items);
+      if (intelData.success) setItems(intelData.items);
       if (statsData.success) setStats(statsData.stats);
     } catch (error) {
-      console.error('Error fetching data:', error);
+      console.error('Failed to load dashboard data:', error);
     } finally {
       setLoading(false);
     }
-  }, [activeFilter]);
+  }, [activeType]);
 
   useEffect(() => {
     fetchData();
@@ -45,253 +49,256 @@ export default function Dashboard() {
   const runScan = async () => {
     setScanning(true);
     try {
-      const res = await fetch('/api/scan', { method: 'POST' });
-      const data = await res.json();
-      if (data.success) {
-        await fetchData();
-        alert(`Scan complete! Found ${data.itemsFound} items (${data.newItems} new)`);
-      }
+      const response = await fetch('/api/scan', { method: 'POST' });
+      const data = await response.json();
+      if (data.success) await fetchData();
     } catch (error) {
       console.error('Scan failed:', error);
-      alert('Scan failed. Check console for details.');
     } finally {
       setScanning(false);
     }
   };
 
-  const filteredItems = items.filter(item => {
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase();
-      return (
-        item.title.toLowerCase().includes(query) ||
-        item.description.toLowerCase().includes(query) ||
-        item.entities.some(e => e.toLowerCase().includes(query))
-      );
-    }
-    return true;
-  });
+  const filteredItems = useMemo(() => {
+    if (!query.trim()) return items;
 
-  const formatDate = (dateStr: string) => {
-    const date = new Date(dateStr);
-    const now = new Date();
-    const diffMs = now.getTime() - date.getTime();
-    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+    const lower = query.toLowerCase();
+    return items.filter(
+      (item) =>
+        item.title.toLowerCase().includes(lower) ||
+        item.description.toLowerCase().includes(lower) ||
+        item.source.toLowerCase().includes(lower) ||
+        item.entities.some((entity) => entity.toLowerCase().includes(lower)),
+    );
+  }, [items, query]);
 
-    if (diffHours < 1) return 'Just now';
-    if (diffHours < 24) return `${diffHours}h ago`;
-    if (diffDays < 7) return `${diffDays}d ago`;
+  const timelinePoints: TimelinePoint[] = useMemo(() => {
+    if (!stats) return [];
+    return stats.timeline[timelineMode];
+  }, [stats, timelineMode]);
+
+  const maxTimelineCount = Math.max(...timelinePoints.map((point) => point.count), 1);
+
+  const formatRelative = (dateRaw: string) => {
+    const date = new Date(dateRaw);
+    const diff = Date.now() - date.getTime();
+    const hours = Math.floor(diff / (1000 * 60 * 60));
+    const days = Math.floor(hours / 24);
+
+    if (hours < 1) return 'just now';
+    if (hours < 24) return `${hours}h ago`;
+    if (days < 30) return `${days}d ago`;
     return date.toLocaleDateString();
   };
 
   return (
-    <div className="min-h-screen bg-slate-900 text-white">
-      {/* Header */}
-      <header className="border-b border-slate-700 bg-slate-800">
-        <div className="max-w-7xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-bold text-emerald-400">
-                🌾 Grain Intelligence Monitor
-              </h1>
-              <p className="text-sm text-slate-400 mt-1">
-                Automated monitoring of grain quality assessment ecosystem
-              </p>
-            </div>
-            <div className="flex items-center gap-4">
-              <div className="text-right text-sm">
-                <div className="text-slate-400">Last scan</div>
-                <div className="text-white">
-                  {stats?.lastScan ? formatDate(stats.lastScan) : 'Never'}
-                </div>
-              </div>
-              <button
-                onClick={runScan}
-                disabled={scanning}
-                className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-600 rounded-lg font-medium transition-colors"
-              >
-                {scanning ? '⏳ Scanning...' : '🔄 Scan Now'}
-              </button>
-            </div>
+    <div className="min-h-screen bg-[var(--bg)] text-[var(--text)]">
+      <header className="border-b border-white/10 bg-[var(--panel)]/85 backdrop-blur-lg">
+        <div className="mx-auto flex w-full max-w-7xl items-center justify-between px-4 py-5 sm:px-8">
+          <div>
+            <p className="text-xs uppercase tracking-[0.25em] text-[var(--muted)]">AI Canada Pulse</p>
+            <h1 className="mt-1 text-3xl font-semibold leading-tight sm:text-4xl">
+              Live Intelligence Dashboard For Canada AI
+            </h1>
+            <p className="mt-2 text-sm text-[var(--muted)]">
+              Multi-source tracking across news, policy, research, GitHub, and funding since November 30, 2022.
+            </p>
           </div>
+          <button
+            onClick={runScan}
+            disabled={scanning}
+            className="rounded-xl border border-[var(--line)] bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-black transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {scanning ? 'Scanning' : 'Scan Now'}
+          </button>
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 py-6">
-        {/* Stats Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-          <div className="bg-slate-800 rounded-xl p-4 border border-slate-700">
-            <div className="text-3xl font-bold text-white">{stats?.totalItems || 0}</div>
-            <div className="text-slate-400 text-sm">Total Items</div>
-          </div>
-          <div className="bg-slate-800 rounded-xl p-4 border border-slate-700">
-            <div className="text-3xl font-bold text-emerald-400">{stats?.itemsToday || 0}</div>
-            <div className="text-slate-400 text-sm">New Today</div>
-          </div>
-          <div className="bg-slate-800 rounded-xl p-4 border border-slate-700">
-            <div className="text-3xl font-bold text-blue-400">{stats?.itemsThisWeek || 0}</div>
-            <div className="text-slate-400 text-sm">This Week</div>
-          </div>
-          <div className="bg-slate-800 rounded-xl p-4 border border-slate-700">
-            <div className="text-3xl font-bold text-purple-400">
-              {stats?.topEntities?.[0]?.count || 0}
-            </div>
-            <div className="text-slate-400 text-sm truncate">
-              {stats?.topEntities?.[0]?.name || 'Top Entity'}
-            </div>
-          </div>
-        </div>
+      <main className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-8">
+        <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+          <MetricCard label="Total" value={stats?.totalItems || 0} />
+          <MetricCard label="Today" value={stats?.itemsToday || 0} />
+          <MetricCard label="This Week" value={stats?.itemsThisWeek || 0} />
+          <MetricCard label="This Month" value={stats?.itemsThisMonth || 0} />
+          <MetricCard label="This Year" value={stats?.itemsThisYear || 0} />
+        </section>
 
-        {/* Type Stats */}
-        <div className="grid grid-cols-5 gap-2 mb-6">
-          {Object.entries(TYPE_LABELS).map(([type, { label, icon, color }]) => (
-            <div
-              key={type}
-              className="bg-slate-800 rounded-lg p-3 border border-slate-700 text-center"
-            >
-              <div className="text-2xl">{icon}</div>
-              <div className="text-lg font-bold">
-                {stats?.byType?.[type as IntelType] || 0}
-              </div>
-              <div className="text-xs text-slate-400">{label}</div>
-            </div>
-          ))}
-        </div>
-
-        {/* Filters and Search */}
-        <div className="flex flex-wrap items-center gap-4 mb-6">
-          <div className="flex gap-2">
-            <button
-              onClick={() => setActiveFilter('all')}
-              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                activeFilter === 'all'
-                  ? 'bg-emerald-600 text-white'
-                  : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
-              }`}
-            >
-              All
-            </button>
-            {Object.entries(TYPE_LABELS).map(([type, { label, icon }]) => (
-              <button
-                key={type}
-                onClick={() => setActiveFilter(type as IntelType)}
-                className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                  activeFilter === type
-                    ? 'bg-emerald-600 text-white'
-                    : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
-                }`}
-              >
-                {icon} {label}
-              </button>
-            ))}
-          </div>
-          <input
-            type="text"
-            placeholder="Search intelligence..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="flex-1 min-w-[200px] px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-          />
-        </div>
-
-        {/* Intel Feed */}
-        {loading ? (
-          <div className="text-center py-12 text-slate-400">
-            <div className="text-4xl mb-4">⏳</div>
-            Loading intelligence data...
-          </div>
-        ) : filteredItems.length === 0 ? (
-          <div className="text-center py-12 text-slate-400">
-            <div className="text-4xl mb-4">📭</div>
-            <p>No intelligence items found.</p>
-            <p className="text-sm mt-2">Click "Scan Now" to fetch the latest data.</p>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            {filteredItems.map((item) => (
-              <article
-                key={item.id}
-                className="bg-slate-800 rounded-xl p-4 border border-slate-700 hover:border-slate-600 transition-colors"
-              >
-                <div className="flex items-start gap-4">
-                  {item.imageUrl && (
-                    <img
-                      src={item.imageUrl}
-                      alt=""
-                      className="w-24 h-24 object-cover rounded-lg flex-shrink-0"
-                    />
-                  )}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-2">
-                      <span
-                        className={`px-2 py-0.5 rounded text-xs font-medium ${
-                          TYPE_LABELS[item.type].color
-                        }`}
-                      >
-                        {TYPE_LABELS[item.type].icon} {TYPE_LABELS[item.type].label}
-                      </span>
-                      <span className="text-slate-500 text-sm">{item.source}</span>
-                      <span className="text-slate-600 text-sm">•</span>
-                      <span className="text-slate-500 text-sm">
-                        {formatDate(item.publishedAt)}
-                      </span>
-                      <span className="ml-auto text-amber-400 text-sm">
-                        {'⭐'.repeat(Math.round(item.relevanceScore))}
-                      </span>
-                    </div>
-                    <a
-                      href={item.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-lg font-semibold text-white hover:text-emerald-400 transition-colors line-clamp-2"
-                    >
-                      {item.title}
-                    </a>
-                    <p className="text-slate-400 text-sm mt-2 line-clamp-2">
-                      {item.description}
-                    </p>
-                    <div className="flex flex-wrap gap-2 mt-3">
-                      {item.entities.map((entity) => (
-                        <span
-                          key={entity}
-                          className="px-2 py-1 bg-slate-700 rounded text-xs text-slate-300"
-                        >
-                          {entity}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </article>
-            ))}
-          </div>
-        )}
-
-        {/* Top Entities Sidebar */}
-        {stats?.topEntities && stats.topEntities.length > 0 && (
-          <div className="mt-8 bg-slate-800 rounded-xl p-4 border border-slate-700">
-            <h3 className="text-lg font-semibold mb-4">🏢 Top Mentioned Entities</h3>
+        <section className="mt-4 rounded-2xl border border-[var(--line)] bg-[var(--panel)] p-4">
+          <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="flex flex-wrap gap-2">
-              {stats.topEntities.map((entity) => (
-                <button
-                  key={entity.name}
-                  onClick={() => setSearchQuery(entity.name)}
-                  className="px-3 py-1 bg-slate-700 hover:bg-slate-600 rounded-full text-sm transition-colors"
+              <FilterButton active={activeType === 'all'} onClick={() => setActiveType('all')}>
+                All Types
+              </FilterButton>
+              {Object.entries(TYPE_LABELS).map(([type, config]) => (
+                <FilterButton
+                  key={type}
+                  active={activeType === type}
+                  onClick={() => setActiveType(type as IntelType)}
                 >
-                  {entity.name} ({entity.count})
-                </button>
+                  {config.label}
+                </FilterButton>
+              ))}
+            </div>
+            <input
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder="Search entities, topics, and sources"
+              className="w-full rounded-lg border border-[var(--line)] bg-black/20 px-3 py-2 text-sm text-white outline-none ring-[var(--accent)]/30 transition focus:ring sm:max-w-sm"
+            />
+          </div>
+        </section>
+
+        <section className="mt-4 grid gap-4 lg:grid-cols-[2fr_1fr]">
+          <div className="rounded-2xl border border-[var(--line)] bg-[var(--panel)] p-4">
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+              <h2 className="text-lg font-semibold">Activity Timeline</h2>
+              <div className="flex gap-2">
+                {(['daily', 'weekly', 'monthly', 'yearly'] as TimelineMode[]).map((mode) => (
+                  <FilterButton key={mode} active={timelineMode === mode} onClick={() => setTimelineMode(mode)}>
+                    {mode}
+                  </FilterButton>
+                ))}
+              </div>
+            </div>
+            <div className="space-y-2">
+              {timelinePoints.map((point) => (
+                <div key={point.label} className="grid grid-cols-[1fr_4fr_auto] items-center gap-3">
+                  <span className="truncate text-xs text-[var(--muted)]">{point.label}</span>
+                  <div className="h-2 rounded-full bg-black/30">
+                    <div
+                      className="h-2 rounded-full bg-[var(--accent)]"
+                      style={{ width: `${Math.max((point.count / maxTimelineCount) * 100, point.count > 0 ? 3 : 0)}%` }}
+                    />
+                  </div>
+                  <span className="text-xs text-[var(--muted)]">{point.count}</span>
+                </div>
               ))}
             </div>
           </div>
-        )}
-      </main>
 
-      {/* Footer */}
-      <footer className="border-t border-slate-700 bg-slate-800 mt-8">
-        <div className="max-w-7xl mx-auto px-4 py-4 text-center text-slate-400 text-sm">
-          Grain Intelligence Monitor • Auto-scans every 6 hours • Monitoring 23 companies, 21 products, 6 datasets
-        </div>
-      </footer>
+          <div className="space-y-4">
+            <div className="rounded-2xl border border-[var(--line)] bg-[var(--panel)] p-4">
+              <h3 className="mb-3 text-sm font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">By Type</h3>
+              <div className="space-y-2">
+                {Object.entries(TYPE_LABELS).map(([type, config]) => (
+                  <div key={type} className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className={`h-2.5 w-2.5 rounded-full ${config.accent}`} />
+                      <span className="text-sm">{config.label}</span>
+                    </div>
+                    <span className="text-sm text-[var(--muted)]">{stats?.byType[type as IntelType] || 0}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="rounded-2xl border border-[var(--line)] bg-[var(--panel)] p-4">
+              <h3 className="mb-3 text-sm font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">Top Sources</h3>
+              <div className="space-y-2">
+                {(stats?.bySource || []).slice(0, 8).map((source) => (
+                  <button
+                    key={source.name}
+                    onClick={() => setQuery(source.name)}
+                    className="flex w-full items-center justify-between rounded-lg px-2 py-1 text-left text-sm transition hover:bg-white/5"
+                  >
+                    <span className="truncate">{source.name}</span>
+                    <span className="text-[var(--muted)]">{source.count}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="rounded-2xl border border-[var(--line)] bg-[var(--panel)] p-4">
+              <h3 className="mb-3 text-sm font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">Top Entities</h3>
+              <div className="flex flex-wrap gap-2">
+                {(stats?.topEntities || []).slice(0, 12).map((entity) => (
+                  <button
+                    key={entity.name}
+                    onClick={() => setQuery(entity.name)}
+                    className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs transition hover:bg-white/10"
+                  >
+                    {entity.name} ({entity.count})
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="mt-4 rounded-2xl border border-[var(--line)] bg-[var(--panel)] p-4">
+          <div className="mb-3 flex items-center justify-between">
+            <h2 className="text-lg font-semibold">Live Feed</h2>
+            <span className="text-xs text-[var(--muted)]">
+              Last scan: {stats?.lastScan && stats.lastScan !== 'Never' ? formatRelative(stats.lastScan) : 'never'}
+            </span>
+          </div>
+
+          {loading ? (
+            <p className="py-10 text-center text-sm text-[var(--muted)]">Loading intelligence feed...</p>
+          ) : filteredItems.length === 0 ? (
+            <p className="py-10 text-center text-sm text-[var(--muted)]">No items yet. Run scan to populate.</p>
+          ) : (
+            <div className="space-y-3">
+              {filteredItems.map((item) => (
+                <article key={item.id} className="rounded-xl border border-white/10 bg-black/20 p-3">
+                  <div className="flex flex-wrap items-center gap-2 text-xs text-[var(--muted)]">
+                    <span className={`rounded-full px-2 py-0.5 text-black ${TYPE_LABELS[item.type].accent}`}>
+                      {TYPE_LABELS[item.type].label}
+                    </span>
+                    <span>{item.source}</span>
+                    <span>{formatRelative(item.publishedAt)}</span>
+                    <span>Relevance {item.relevanceScore.toFixed(1)}</span>
+                  </div>
+                  <a
+                    href={item.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-2 block text-base font-semibold transition hover:text-[var(--accent)]"
+                  >
+                    {item.title}
+                  </a>
+                  <p className="mt-1 text-sm text-[var(--muted)]">{item.description}</p>
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {item.entities.map((entity) => (
+                      <button
+                        key={`${item.id}-${entity}`}
+                        onClick={() => setQuery(entity)}
+                        className="rounded-full border border-white/10 px-2 py-0.5 text-xs text-[var(--muted)] hover:bg-white/5"
+                      >
+                        {entity}
+                      </button>
+                    ))}
+                  </div>
+                </article>
+              ))}
+            </div>
+          )}
+        </section>
+      </main>
     </div>
+  );
+}
+
+function MetricCard(props: { label: string; value: number }) {
+  return (
+    <div className="rounded-2xl border border-[var(--line)] bg-[var(--panel)] p-4">
+      <p className="text-xs uppercase tracking-[0.2em] text-[var(--muted)]">{props.label}</p>
+      <p className="mt-1 text-2xl font-semibold">{props.value}</p>
+    </div>
+  );
+}
+
+function FilterButton(props: { active: boolean; onClick: () => void; children: React.ReactNode }) {
+  return (
+    <button
+      onClick={props.onClick}
+      className={`rounded-lg border px-3 py-1.5 text-xs uppercase tracking-[0.15em] transition ${
+        props.active
+          ? 'border-[var(--accent)] bg-[var(--accent)] text-black'
+          : 'border-white/10 bg-white/5 text-[var(--muted)] hover:bg-white/10'
+      }`}
+    >
+      {props.children}
+    </button>
   );
 }
