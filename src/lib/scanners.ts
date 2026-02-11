@@ -1,4 +1,4 @@
-import { CHATGPT_MOMENT_ISO, IntelItem, IntelType, MONITORED_ENTITIES } from './types';
+﻿import { CHATGPT_MOMENT_ISO, IntelItem, IntelType, MONITORED_ENTITIES } from './types';
 
 interface FeedSource {
   name: string;
@@ -34,6 +34,10 @@ function extractAtomLink(entry: string): string {
   return hrefMatch ? decodeHtmlEntities(hrefMatch[1]) : '';
 }
 
+function escapeRegex(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
 async function fetchWithTimeout(url: string, timeoutMs = 12000): Promise<Response> {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), timeoutMs);
@@ -58,7 +62,14 @@ function findEntities(text: string): string[] {
     ...MONITORED_ENTITIES.provinces,
   ];
 
-  return entities.filter((entity) => lower.includes(entity.toLowerCase()));
+  return entities.filter((entity) => {
+    const normalized = entity.toLowerCase();
+    if (normalized.length <= 4) {
+      const strict = new RegExp(`\\b${escapeRegex(normalized)}\\b`, 'i');
+      return strict.test(text);
+    }
+    return lower.includes(normalized);
+  });
 }
 
 function calculateRelevance(text: string, entities: string[]): number {
@@ -587,3 +598,4 @@ export async function runFullScan(): Promise<{
 
   return { news, research, policy, github, funding, errors };
 }
+

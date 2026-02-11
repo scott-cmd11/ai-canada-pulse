@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useMemo } from 'react';
 import { useIntelData } from '@/components/use-intel-data';
@@ -35,21 +35,21 @@ export default function WatchlistsPage() {
                   <h2 className="text-lg font-semibold">{watch.name}</h2>
                   <button
                     onClick={() => setActiveWatchlist(watch.id)}
-                    className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1 text-xs uppercase tracking-[0.14em] text-[var(--muted)] transition hover:bg-white/[0.08]"
+                    className="rounded-full border border-[var(--line)] bg-[var(--surface-2)] px-3 py-1 text-xs uppercase tracking-[0.14em] text-[var(--muted)] transition hover:bg-white"
                   >
                     Filter Feed
                   </button>
                 </div>
                 <p className="mt-1 text-sm text-[var(--muted)]">{watch.description}</p>
                 <p className="mt-2 text-xs text-[var(--muted)]">
-                  {snapshot?.count || 0} items this week • {snapshot?.deltaPercent || 0}% delta
+                  {snapshot?.count || 0} items this week â€¢ {snapshot?.deltaPercent || 0}% delta
                 </p>
                 <div className="mt-3 space-y-2">
                   {(snapshot?.topItems || []).map((item) => (
                     <button
                       key={item.id}
                       onClick={() => setQuery(item.title)}
-                      className="w-full rounded-lg border border-white/10 bg-white/[0.03] p-2 text-left transition hover:bg-white/[0.08]"
+                      className="w-full rounded-lg border border-[var(--line)] bg-[var(--surface-2)] p-2 text-left transition hover:bg-white"
                     >
                       <p className="line-clamp-2 text-sm font-medium">{item.title}</p>
                       <p className="mt-1 text-xs text-[var(--muted)]">{item.source}</p>
@@ -64,3 +64,5 @@ export default function WatchlistsPage() {
     </main>
   );
 }
+
+

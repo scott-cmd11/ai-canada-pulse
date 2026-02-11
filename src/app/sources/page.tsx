@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useIntelData } from '@/components/use-intel-data';
 
@@ -31,11 +31,11 @@ export default function SourcesPage() {
                 <button
                   key={source.name}
                   onClick={() => setQuery(source.name)}
-                  className="flex w-full items-center gap-3 rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2 text-left transition hover:bg-white/[0.08]"
+                  className="flex w-full items-center gap-3 rounded-lg border border-[var(--line)] bg-[var(--surface-2)] px-3 py-2 text-left transition hover:bg-white"
                 >
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-medium">{source.name}</p>
-                    <p className="text-xs text-[var(--muted)]">{source.count} items • {source.tier} tier</p>
+                    <p className="text-xs text-[var(--muted)]">{source.count} items â€¢ {source.tier} tier</p>
                   </div>
                   <div className="h-2 w-40 overflow-hidden rounded-full bg-black/30">
                     <div className="h-2 rounded-full bg-gradient-to-r from-[#3da8ff] to-[#2ce2b2]" style={{ width: `${source.score}%` }} />
@@ -59,3 +59,5 @@ function Metric(props: { label: string; value: string }) {
     </div>
   );
 }
+
+

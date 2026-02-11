@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -15,7 +15,7 @@ export function GlobalNav() {
   const pathname = usePathname();
 
   return (
-    <header className="sticky top-0 z-50 border-b border-white/10 bg-[color:var(--panel-solid)]/92 backdrop-blur-xl">
+    <header className="sticky top-0 z-50 border-b border-[var(--line)] bg-[color:var(--panel-solid)]/92 backdrop-blur-xl">
       <div className="mx-auto flex w-full max-w-[1400px] flex-wrap items-center justify-between gap-3 px-4 py-3 md:px-8">
         <Link href="/" className="text-sm font-semibold tracking-[0.2em] text-[var(--text)]">
           AI CANADA PULSE
@@ -30,7 +30,7 @@ export function GlobalNav() {
                 className={`rounded-full border px-3 py-1.5 text-xs uppercase tracking-[0.16em] transition ${
                   active
                     ? 'border-[var(--accent)] bg-[var(--accent)] text-black'
-                    : 'border-white/10 bg-white/[0.03] text-[var(--muted)] hover:bg-white/[0.09]'
+                    : 'border-[var(--line)] bg-[var(--surface-2)] text-[var(--muted)] hover:bg-white'
                 }`}
               >
                 {item.label}
@@ -42,3 +42,4 @@ export function GlobalNav() {
     </header>
   );
 }
+

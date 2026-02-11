@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useMemo } from 'react';
 import { useIntelData } from '@/components/use-intel-data';
@@ -38,8 +38,8 @@ export default function SignalsPage() {
               onClick={() => setActiveType(type)}
               className={`rounded-full border px-3 py-1.5 text-xs uppercase tracking-[0.15em] transition ${
                 activeType === type
-                  ? 'border-[var(--accent)] bg-[var(--accent)] text-black'
-                  : 'border-white/10 bg-white/[0.03] text-[var(--muted)] hover:bg-white/[0.09]'
+                  ? 'border-[var(--accent)] bg-[var(--accent)] text-white'
+                  : 'border-[var(--line)] bg-[var(--surface-2)] text-[var(--muted)] hover:bg-white'
               }`}
             >
               {type}
@@ -48,7 +48,7 @@ export default function SignalsPage() {
           <select
             value={activeWatchlist}
             onChange={(event) => setActiveWatchlist(event.target.value)}
-            className="ml-auto rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2 text-sm text-[var(--text)]"
+            className="ml-auto rounded-lg border border-[var(--line)] bg-[var(--surface-2)] px-3 py-2 text-sm text-[var(--text)]"
           >
             <option value="all">All Watchlists</option>
             {WATCHLISTS.map((watch) => (
@@ -61,7 +61,7 @@ export default function SignalsPage() {
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             placeholder="Search title, entity, source"
-            className="min-w-[260px] rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2 text-sm text-[var(--text)] outline-none ring-[var(--accent)]/30 transition focus:ring"
+            className="min-w-[260px] rounded-lg border border-[var(--line)] bg-[var(--surface-2)] px-3 py-2 text-sm text-[var(--text)] outline-none ring-[var(--accent)]/30 transition focus:ring"
           />
         </div>
       </section>
@@ -74,9 +74,9 @@ export default function SignalsPage() {
         ) : (
           <div className="space-y-2">
             {topResults.map((item) => (
-              <article key={item.id} className="rounded-lg border border-white/10 bg-black/20 p-3">
+              <article key={item.id} className="rounded-lg border border-[var(--line)] bg-white/70 p-3">
                 <div className="flex flex-wrap items-center gap-2 text-xs text-[var(--muted)]">
-                  <span className="rounded-full border border-white/10 px-2 py-0.5">{item.type}</span>
+                  <span className="rounded-full border border-[var(--line)] px-2 py-0.5">{item.type}</span>
                   <span>{item.source}</span>
                   <span>{new Date(item.publishedAt).toLocaleDateString()}</span>
                   <span>rel {item.relevanceScore.toFixed(1)}</span>
@@ -93,3 +93,5 @@ export default function SignalsPage() {
     </main>
   );
 }
+
+

@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useIntelData } from '@/components/use-intel-data';
 
@@ -19,7 +19,7 @@ export default function BriefingsPage() {
           <button
             onClick={runScan}
             disabled={scanning}
-            className="rounded-xl border border-[var(--line)] bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-black transition hover:brightness-110 disabled:opacity-60"
+            className="rounded-xl border border-[var(--line)] bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-white transition hover:brightness-110 disabled:opacity-60"
           >
             {scanning ? 'Scanning...' : 'Refresh Signals'}
           </button>
@@ -39,7 +39,7 @@ export default function BriefingsPage() {
                 <ul className="mt-3 space-y-1">
                   {brief.bullets.map((bullet) => (
                     <li key={bullet} className="text-xs text-[var(--muted)]">
-                      • {bullet}
+                      â€¢ {bullet}
                     </li>
                   ))}
                 </ul>
@@ -54,10 +54,10 @@ export default function BriefingsPage() {
             </p>
             <div className="space-y-2">
               {stats.eventClusters.slice(0, 8).map((cluster) => (
-                <article key={cluster.id} className="rounded-lg border border-white/10 bg-white/[0.03] p-3">
+                <article key={cluster.id} className="rounded-lg border border-[var(--line)] bg-[var(--surface-2)] p-3">
                   <p className="text-sm font-semibold">{cluster.headline}</p>
                   <p className="mt-1 text-xs text-[var(--muted)]">
-                    {cluster.itemCount} items • {cluster.sources.length} sources • score {cluster.score.toFixed(1)}
+                    {cluster.itemCount} items â€¢ {cluster.sources.length} sources â€¢ score {cluster.score.toFixed(1)}
                   </p>
                 </article>
               ))}
@@ -68,3 +68,5 @@ export default function BriefingsPage() {
     </main>
   );
 }
+
+

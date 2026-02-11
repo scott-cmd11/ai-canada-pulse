@@ -1,13 +1,14 @@
 ﻿@import 'tailwindcss';
 
 :root {
-  --bg: #040b12;
-  --panel-solid: #081929;
-  --text: #edf7ff;
-  --muted: #9cb2c5;
-  --line: #1d3d57;
-  --accent: #2ce2b2;
-  --accent-soft: rgba(44, 226, 178, 0.12);
+  --bg: #f3f8ff;
+  --panel-solid: #ffffff;
+  --text: #13283f;
+  --muted: #5c7894;
+  --line: #d6e4f3;
+  --accent: #1fc1a4;
+  --accent-soft: rgba(31, 193, 164, 0.16);
+  --surface-2: rgba(255, 255, 255, 0.86);
 }
 
 @theme inline {
@@ -26,9 +27,9 @@ body {
   min-height: 100vh;
   color: var(--text);
   background:
-    radial-gradient(circle at 12% -8%, rgba(61, 168, 255, 0.24), transparent 48%),
-    radial-gradient(circle at 90% 2%, rgba(44, 226, 178, 0.22), transparent 42%),
-    linear-gradient(180deg, #071320 0%, #040b12 100%);
+    radial-gradient(circle at 12% -8%, rgba(46, 136, 255, 0.17), transparent 46%),
+    radial-gradient(circle at 89% 8%, rgba(31, 193, 164, 0.2), transparent 41%),
+    linear-gradient(180deg, #f8fcff 0%, #eef5fd 100%);
   font-family: var(--font-space-grotesk), 'Segoe UI', sans-serif;
 }
 
@@ -38,10 +39,10 @@ a {
 }
 
 .panel {
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--line);
   border-radius: 18px;
-  background: linear-gradient(168deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.02));
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 18px 40px rgba(0, 0, 0, 0.25);
+  background: linear-gradient(168deg, rgba(255, 255, 255, 0.95), rgba(248, 252, 255, 0.9));
+  box-shadow: 0 12px 30px rgba(18, 51, 84, 0.08);
 }
 
 .noise-layer {
@@ -50,14 +51,15 @@ a {
   z-index: 0;
   pointer-events: none;
   background-image:
-    linear-gradient(transparent 0, rgba(255, 255, 255, 0.03) 100%),
+    linear-gradient(transparent 0, rgba(58, 96, 133, 0.02) 100%),
     repeating-linear-gradient(
       90deg,
       transparent,
       transparent 2px,
-      rgba(255, 255, 255, 0.02) 3px,
+      rgba(58, 96, 133, 0.018) 3px,
       transparent 4px
     );
-  opacity: 0.18;
+  opacity: 0.35;
 }
+
 

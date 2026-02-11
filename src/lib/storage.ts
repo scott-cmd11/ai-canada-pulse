@@ -42,19 +42,27 @@ const memoryStore: { items: IntelItem[]; lastScan: string } = {
 
 const SOURCE_SCORE_HINTS: { term: string; score: number }[] = [
   { term: 'canada.ca', score: 92 },
+  { term: 'gc.ca', score: 92 },
   { term: 'statcan', score: 90 },
-  { term: 'cbc', score: 84 },
-  { term: 'the globe and mail', score: 82 },
-  { term: 'national post', score: 78 },
-  { term: 'betakit', score: 76 },
-  { term: 'thelogic', score: 76 },
   { term: 'vector institute', score: 89 },
   { term: 'mila', score: 90 },
   { term: 'amii', score: 89 },
   { term: 'cifar', score: 88 },
+  { term: 'cbc', score: 84 },
+  { term: 'the globe and mail', score: 82 },
+  { term: 'reuters', score: 83 },
+  { term: 'bloomberg', score: 84 },
+  { term: 'financial times', score: 84 },
+  { term: 'national post', score: 78 },
+  { term: 'betakit', score: 76 },
+  { term: 'the logic', score: 77 },
+  { term: 'policy options', score: 74 },
+  { term: 'kpmg', score: 72 },
   { term: 'arxiv', score: 81 },
   { term: 'github', score: 70 },
-  { term: 'google news', score: 66 },
+  { term: 'newswire', score: 68 },
+  { term: 'morningstar', score: 69 },
+  { term: 'google news', score: 67 },
 ];
 
 const STOP_WORDS = new Set([
@@ -86,17 +94,58 @@ function createDateKey(date: Date): string {
   return date.toISOString().split('T')[0];
 }
 
-function matchesWatchTerms(item: IntelItem, watchlist: WatchlistDefinition): boolean {
-  const text = `${item.title} ${item.description} ${item.category} ${item.entities.join(' ')}`.toLowerCase();
-  return watchlist.terms.some((term) => text.includes(term.toLowerCase()));
+function tokenize(text: string): string[] {
+  return text
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, ' ')
+    .split(/\s+/)
+    .filter((token) => token.length > 2 && !STOP_WORDS.has(token));
 }
 
-function getSourceScore(source: string): number {
-  const lower = source.toLowerCase();
-  for (const hint of SOURCE_SCORE_HINTS) {
-    if (lower.includes(hint.term)) return hint.score;
+function getWatchlistMatchScore(item: IntelItem, watchlist: WatchlistDefinition): number {
+  const text = `${item.title} ${item.description} ${item.category} ${item.entities.join(' ')}`.toLowerCase();
+  let score = 0;
+
+  watchlist.terms.forEach((term) => {
+    const normalized = term.toLowerCase();
+    if (text.includes(normalized)) {
+      score += normalized.includes(' ') ? 2 : 1;
+    }
+  });
+
+  if (item.type === 'funding' && watchlist.id === 'startup-capital') score += 1;
+  if (item.type === 'policy' && watchlist.id === 'public-policy') score += 1;
+  if (item.type === 'research' && watchlist.id === 'foundation-models') score += 1;
+
+  return score;
+}
+
+function matchesWatchTerms(item: IntelItem, watchlist: WatchlistDefinition): boolean {
+  return getWatchlistMatchScore(item, watchlist) > 0;
+}
+
+function extractHost(url: string): string {
+  try {
+    return new URL(url).hostname.toLowerCase();
+  } catch {
+    return '';
   }
-  return 65;
+}
+
+function getSourceScore(source: string, url?: string): number {
+  const lower = source.toLowerCase();
+  const host = extractHost(url || '');
+
+  const merged = `${lower} ${host}`.trim();
+  for (const hint of SOURCE_SCORE_HINTS) {
+    if (merged.includes(hint.term)) return hint.score;
+  }
+
+  if (host.endsWith('.gc.ca') || host.endsWith('.gov')) return 90;
+  if (host.includes('github.com')) return 70;
+  if (host.includes('arxiv.org')) return 81;
+  if (host.includes('wikipedia.org')) return 62;
+  return 66;
 }
 
 function getReliabilityTier(score: number): 'high' | 'medium' | 'low' {
@@ -220,18 +269,20 @@ function buildHeatmap(items: IntelItem[], days = 84): ActivityHeatmapCell[] {
 }
 
 function buildSourceReliability(items: IntelItem[]): SourceReliability[] {
-  const grouped: Record<string, { count: number; score: number }> = {};
+  const grouped: Record<string, { count: number; weightedScore: number }> = {};
 
   items.forEach((item) => {
-    if (!grouped[item.source]) grouped[item.source] = { count: 0, score: getSourceScore(item.source) };
+    if (!grouped[item.source]) grouped[item.source] = { count: 0, weightedScore: 0 };
+    const itemScore = getSourceScore(item.source, item.url);
     grouped[item.source].count += 1;
+    grouped[item.source].weightedScore += itemScore;
   });
 
   return Object.entries(grouped)
     .map(([name, data]) => ({
       name,
-      score: data.score,
-      tier: getReliabilityTier(data.score),
+      score: Number((data.weightedScore / data.count).toFixed(1)),
+      tier: getReliabilityTier(data.weightedScore / data.count),
       count: data.count,
     }))
     .sort((a, b) => b.score - a.score || b.count - a.count)
@@ -250,41 +301,51 @@ function buildSignalMix(sourceReliability: SourceReliability[]): { high: number;
   );
 }
 
-function clusterKey(item: IntelItem): string {
-  const tokens = `${item.title} ${item.entities.join(' ')}`
-    .toLowerCase()
-    .replace(/[^a-z0-9\s]/g, ' ')
-    .split(/\s+/)
-    .filter((token) => token.length > 2 && !STOP_WORDS.has(token));
-
-  const unique = Array.from(new Set(tokens)).slice(0, 6);
-  return unique.join(' ');
-}
-
 function buildEventClusters(items: IntelItem[]): EventCluster[] {
   const now = Date.now();
   const recent = items.filter((item) => now - getItemDate(item).getTime() <= 30 * 24 * 60 * 60 * 1000);
-  const groups: Record<string, IntelItem[]> = {};
+  const buckets: Array<{ seed: IntelItem; tokens: Set<string>; items: IntelItem[] }> = [];
 
   recent.forEach((item) => {
-    const key = clusterKey(item);
-    if (!key) return;
-    if (!groups[key]) groups[key] = [];
-    groups[key].push(item);
+    const tokens = new Set(tokenize(`${item.title} ${item.entities.join(' ')}`).slice(0, 10));
+    if (tokens.size === 0) return;
+
+    let matchedBucket: { seed: IntelItem; tokens: Set<string>; items: IntelItem[] } | null = null;
+
+    for (const bucket of buckets) {
+      const overlap = Array.from(tokens).filter((token) => bucket.tokens.has(token)).length;
+      const denominator = Math.max(Math.min(tokens.size, bucket.tokens.size), 1);
+      const overlapRatio = overlap / denominator;
+
+      if (overlap >= 3 || overlapRatio >= 0.45) {
+        matchedBucket = bucket;
+        break;
+      }
+    }
+
+    if (matchedBucket) {
+      matchedBucket.items.push(item);
+      tokens.forEach((token) => matchedBucket?.tokens.add(token));
+    } else {
+      buckets.push({ seed: item, tokens, items: [item] });
+    }
   });
 
-  return Object.entries(groups)
-    .filter(([, group]) => group.length >= 2)
-    .map(([key, group]) => {
-      const sources = Array.from(new Set(group.map((item) => item.source))).slice(0, 6);
-      const entities = Array.from(new Set(group.flatMap((item) => item.entities))).slice(0, 8);
+  return buckets
+    .filter((bucket) => bucket.items.length >= 2)
+    .map((bucket) => {
+      const group = bucket.items;
+      const sources = Array.from(new Set(group.map((item) => item.source))).slice(0, 8);
+      const entities = Array.from(new Set(group.flatMap((item) => item.entities))).slice(0, 10);
       const types = Array.from(new Set(group.map((item) => item.type)));
       const topItem = [...group].sort((a, b) => b.relevanceScore - a.relevanceScore)[0];
       const avgRel = group.reduce((sum, item) => sum + item.relevanceScore, 0) / group.length;
-      const score = Number((group.length * 0.65 + sources.length * 0.8 + avgRel).toFixed(1));
+      const score = Number((group.length * 0.7 + sources.length * 0.9 + avgRel).toFixed(1));
+
+      const id = `${bucket.seed.type}-${tokenize(bucket.seed.title).slice(0, 4).join('-') || bucket.seed.id}`;
 
       return {
-        id: key,
+        id,
         headline: topItem.title,
         itemCount: group.length,
         sources,
@@ -418,7 +479,13 @@ function buildWatchlists(items: IntelItem[]): WatchlistSnapshot[] {
       deltaPercent: pctDelta(currentItems.length, previousItems.length),
       direction: trendDirection(currentItems.length, previousItems.length),
       topItems: [...currentItems]
-        .sort((a, b) => b.relevanceScore - a.relevanceScore)
+        .sort((a, b) => {
+          const matchDelta = getWatchlistMatchScore(b, watchlist) - getWatchlistMatchScore(a, watchlist);
+          if (matchDelta !== 0) return matchDelta;
+          const relevanceDelta = b.relevanceScore - a.relevanceScore;
+          if (relevanceDelta !== 0) return relevanceDelta;
+          return getItemDate(b).getTime() - getItemDate(a).getTime();
+        })
         .slice(0, 3),
     };
   });
@@ -608,7 +675,14 @@ export async function getItemsByWatchlist(watchlistId: string, limit = 50): Prom
   const watchlist = WATCHLISTS.find((entry) => entry.id === watchlistId);
   if (!watchlist) return [];
 
-  return items.filter((item) => matchesWatchTerms(item, watchlist)).slice(0, limit);
+  return items
+    .filter((item) => matchesWatchTerms(item, watchlist))
+    .sort((a, b) => {
+      const matchDelta = getWatchlistMatchScore(b, watchlist) - getWatchlistMatchScore(a, watchlist);
+      if (matchDelta !== 0) return matchDelta;
+      return getItemDate(b).getTime() - getItemDate(a).getTime();
+    })
+    .slice(0, limit);
 }
 
 export async function searchItems(query: string, limit = 50): Promise<IntelItem[]> {
@@ -629,4 +703,5 @@ export async function searchItems(query: string, limit = 50): Promise<IntelItem[
 export function isStorageConfigured(): boolean {
   return getRedis() !== null;
 }
+
 

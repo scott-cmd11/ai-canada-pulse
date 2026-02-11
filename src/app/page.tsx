@@ -116,7 +116,7 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen bg-[var(--bg)] text-[var(--text)]">
       <div className="noise-layer" />
-      <header className="sticky top-0 z-40 border-b border-white/10 bg-[color:var(--panel-solid)]/92 backdrop-blur-xl">
+      <header className="sticky top-0 z-40 border-b border-[var(--line)] bg-[color:var(--panel-solid)]/92 backdrop-blur-xl">
         <div className="mx-auto flex max-w-[1400px] flex-wrap items-center justify-between gap-3 px-4 py-4 md:px-8">
           <div>
             <p className="text-[11px] uppercase tracking-[0.28em] text-[var(--muted)]">AI Canada Pulse</p>
@@ -126,13 +126,13 @@ export default function Dashboard() {
             </p>
           </div>
           <div className="flex items-center gap-2">
-            <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-[var(--muted)]">
+            <span className="rounded-full border border-[var(--line)] bg-white/5 px-3 py-1 text-xs text-[var(--muted)]">
               Last scan: {stats?.lastScan && stats.lastScan !== 'Never' ? formatRelative(stats.lastScan) : 'never'}
             </span>
             <button
               onClick={runScan}
               disabled={scanning}
-              className="rounded-xl border border-[var(--line)] bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-black transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60"
+              className="rounded-xl border border-[var(--line)] bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-white transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {scanning ? 'Scanning...' : 'Scan Now'}
             </button>
@@ -240,13 +240,13 @@ export default function Dashboard() {
                 <button
                   key={source.name}
                   onClick={() => setQuery(source.name)}
-                  className="group flex w-full items-center gap-3 rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2 text-left transition hover:bg-white/[0.08]"
+                  className="group flex w-full items-center gap-3 rounded-lg border border-[var(--line)] bg-[var(--surface-2)] px-3 py-2 text-left transition hover:bg-white"
                 >
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-medium">{source.name}</p>
                     <p className="text-xs text-[var(--muted)]">{source.count} items</p>
                   </div>
-                  <div className="h-2 w-28 overflow-hidden rounded-full bg-black/30">
+                  <div className="h-2 w-28 overflow-hidden rounded-full bg-slate-200/70">
                     <div className="h-2 rounded-full bg-gradient-to-r from-[#3da8ff] to-[#2ce2b2]" style={{ width: `${source.score}%` }} />
                   </div>
                   <span className="w-10 text-right text-xs text-[var(--muted)]">{source.score}</span>
@@ -265,7 +265,7 @@ export default function Dashboard() {
                   className={`w-full rounded-xl border px-3 py-2 text-left transition ${
                     activeWatchlist === watch.id
                       ? 'border-[var(--accent)] bg-[var(--accent-soft)]'
-                      : 'border-white/10 bg-white/[0.03] hover:bg-white/[0.08]'
+                      : 'border-[var(--line)] bg-[var(--surface-2)] hover:bg-white'
                   }`}
                 >
                   <div className="flex items-center justify-between">
@@ -280,7 +280,7 @@ export default function Dashboard() {
 
             <button
               onClick={() => setActiveWatchlist('all')}
-              className="mt-3 w-full rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2 text-xs uppercase tracking-[0.18em] text-[var(--muted)] transition hover:bg-white/[0.08]"
+              className="mt-3 w-full rounded-lg border border-[var(--line)] bg-[var(--surface-2)] px-3 py-2 text-xs uppercase tracking-[0.18em] text-[var(--muted)] transition hover:bg-white"
             >
               Show all watchlists
             </button>
@@ -299,7 +299,7 @@ export default function Dashboard() {
               <select
                 value={activeWatchlist}
                 onChange={(event) => setActiveWatchlist(event.target.value)}
-                className="rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2 text-sm text-[var(--text)]"
+                className="rounded-lg border border-[var(--line)] bg-[var(--surface-2)] px-3 py-2 text-sm text-[var(--text)]"
               >
                 <option value="all">All Watchlists</option>
                 {WATCHLISTS.map((watch) => (
@@ -312,7 +312,7 @@ export default function Dashboard() {
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
                 placeholder="Search entities, sources, or themes"
-                className="min-w-[260px] flex-1 rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2 text-sm text-[var(--text)] outline-none ring-[var(--accent)]/25 transition focus:ring"
+                className="min-w-[260px] flex-1 rounded-lg border border-[var(--line)] bg-[var(--surface-2)] px-3 py-2 text-sm text-[var(--text)] outline-none ring-[var(--accent)]/25 transition focus:ring"
               />
             </div>
           </div>
@@ -324,7 +324,7 @@ export default function Dashboard() {
           ) : (
             <div className="space-y-2">
               {filteredItems.slice(0, 80).map((item) => (
-                <article key={item.id} className="rounded-xl border border-white/10 bg-black/20 p-3 transition hover:border-white/20">
+                <article key={item.id} className="rounded-xl border border-[var(--line)] bg-white/70 p-3 transition hover:border-white/20">
                   <div className="flex flex-wrap items-center gap-2 text-xs text-[var(--muted)]">
                     <span
                       className="rounded-full px-2 py-0.5 font-medium"
@@ -353,7 +353,7 @@ export default function Dashboard() {
                       <button
                         key={`${item.id}-${entity}`}
                         onClick={() => setQuery(entity)}
-                        className="rounded-full border border-white/10 px-2 py-0.5 text-xs text-[var(--muted)] transition hover:bg-white/5"
+                        className="rounded-full border border-[var(--line)] px-2 py-0.5 text-xs text-[var(--muted)] transition hover:bg-white/5"
                       >
                         {entity}
                       </button>
@@ -383,7 +383,7 @@ function KpiCard(props: { label: string; value: number; detail: string; precisio
 
 function MiniMetric(props: { label: string; value: number | string }) {
   return (
-    <div className="rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2">
+    <div className="rounded-lg border border-[var(--line)] bg-[var(--surface-2)] px-3 py-2">
       <p className="text-xs uppercase tracking-[0.18em] text-[var(--muted)]">{props.label}</p>
       <p className="mt-1 text-lg font-semibold">{props.value}</p>
     </div>
@@ -396,8 +396,8 @@ function Chip(props: { active: boolean; label: string; onClick: () => void }) {
       onClick={props.onClick}
       className={`rounded-full border px-3 py-1.5 text-xs uppercase tracking-[0.16em] transition ${
         props.active
-          ? 'border-[var(--accent)] bg-[var(--accent)] text-black'
-          : 'border-white/10 bg-white/[0.03] text-[var(--muted)] hover:bg-white/[0.09]'
+          ? 'border-[var(--accent)] bg-[var(--accent)] text-white'
+          : 'border-[var(--line)] bg-[var(--surface-2)] text-[var(--muted)] hover:bg-white'
       }`}
     >
       {props.label}
@@ -407,7 +407,7 @@ function Chip(props: { active: boolean; label: string; onClick: () => void }) {
 
 function BriefCard(props: { brief: Briefing }) {
   return (
-    <div className="rounded-xl border border-white/10 bg-gradient-to-br from-white/[0.08] to-transparent p-3">
+    <div className="rounded-xl border border-[var(--line)] bg-gradient-to-br from-white/[0.08] to-transparent p-3">
       <p className="text-sm font-semibold">{props.brief.headline}</p>
       <p className="mt-1 text-sm text-[var(--muted)]">{props.brief.summary}</p>
       <ul className="mt-3 space-y-1">
@@ -423,7 +423,7 @@ function BriefCard(props: { brief: Briefing }) {
 
 function ClusterCard(props: { cluster: EventCluster }) {
   return (
-    <button className="w-full rounded-xl border border-white/10 bg-white/[0.03] p-3 text-left transition hover:bg-white/[0.08]">
+    <button className="w-full rounded-xl border border-[var(--line)] bg-[var(--surface-2)] p-3 text-left transition hover:bg-white">
       <p className="line-clamp-2 text-sm font-semibold">{props.cluster.headline}</p>
       <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-[var(--muted)]">
         <span>{props.cluster.itemCount} items</span>
@@ -432,7 +432,7 @@ function ClusterCard(props: { cluster: EventCluster }) {
       </div>
       <div className="mt-2 flex flex-wrap gap-1">
         {props.cluster.entities.slice(0, 3).map((entity) => (
-          <span key={entity} className="rounded-full border border-white/10 px-2 py-0.5 text-[11px] text-[var(--muted)]">
+          <span key={entity} className="rounded-full border border-[var(--line)] px-2 py-0.5 text-[11px] text-[var(--muted)]">
             {entity}
           </span>
         ))}
@@ -445,7 +445,7 @@ function MomentumRow(props: { item: MomentumItem; onClick: () => void }) {
   return (
     <button
       onClick={props.onClick}
-      className="flex w-full items-center justify-between rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2 text-left transition hover:bg-white/[0.08]"
+      className="flex w-full items-center justify-between rounded-lg border border-[var(--line)] bg-[var(--surface-2)] px-3 py-2 text-left transition hover:bg-white"
     >
       <div>
         <p className="text-sm font-medium">{props.item.name}</p>
@@ -460,7 +460,7 @@ function MomentumRow(props: { item: MomentumItem; onClick: () => void }) {
 
 function DeltaTag(props: { direction: TrendDirection; delta: number }) {
   const sign = props.direction === 'up' ? '+' : props.direction === 'down' ? '' : '±';
-  const color = props.direction === 'up' ? 'text-emerald-300' : props.direction === 'down' ? 'text-rose-300' : 'text-slate-300';
+  const color = props.direction === 'up' ? 'text-emerald-700' : props.direction === 'down' ? 'text-rose-700' : 'text-slate-600';
 
   return <span className={`text-xs font-semibold ${color}`}>{`${sign}${props.delta}%`}</span>;
 }
@@ -503,7 +503,7 @@ function LineChart(props: { points: TimelinePoint[] }) {
 
         {[0, 1, 2, 3, 4].map((step) => {
           const y = padding + (step / 4) * (height - padding * 2);
-          return <line key={step} x1={padding} y1={y} x2={width - padding} y2={y} stroke="rgba(255,255,255,0.09)" />;
+          return <line key={step} x1={padding} y1={y} x2={width - padding} y2={y} stroke="rgba(19,40,63,0.14)" />;
         })}
 
         <path d={areaPath} fill="url(#areaGradient)" />
@@ -512,7 +512,7 @@ function LineChart(props: { points: TimelinePoint[] }) {
         {coordinates.filter((_, index) => index % Math.ceil(coordinates.length / 8) === 0).map((coord) => (
           <g key={`${coord.label}-${coord.x}`}>
             <circle cx={coord.x} cy={coord.y} r={4} fill="#2ce2b2" />
-            <text x={coord.x} y={height - 8} textAnchor="middle" fill="rgba(235,247,255,0.65)" fontSize="11">
+            <text x={coord.x} y={height - 8} textAnchor="middle" fill="rgba(19,40,63,0.55)" fontSize="11">
               {coord.label.slice(5)}
             </text>
           </g>
@@ -545,4 +545,6 @@ function Heatmap(props: { cells: { date: string; count: number }[] }) {
     </div>
   );
 }
+
+
 
