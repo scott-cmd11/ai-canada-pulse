@@ -55,6 +55,9 @@ export default function WatchlistsPage() {
                     >
                       <p className="line-clamp-2 text-sm font-medium">{item.title}</p>
                       <p className="mt-1 text-xs text-[var(--muted)]">{item.source}</p>
+                      <span className="mt-2 inline-flex rounded-full border border-[var(--line)] bg-[var(--surface-2)] px-2.5 py-1 text-[11px] uppercase tracking-[0.14em] text-[var(--muted)]">
+                        Open Source
+                      </span>
                     </a>
                   ))}
                 </div>

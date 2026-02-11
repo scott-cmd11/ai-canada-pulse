@@ -347,6 +347,16 @@ export default function Dashboard() {
                   </a>
 
                   <p className="mt-1 text-sm text-[var(--muted)]">{item.description}</p>
+                  <div className="mt-2">
+                    <a
+                      href={item.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex rounded-full border border-[var(--line)] bg-[var(--surface-2)] px-2.5 py-1 text-[11px] uppercase tracking-[0.14em] text-[var(--muted)] transition hover:bg-white"
+                    >
+                      Open Source
+                    </a>
+                  </div>
 
                   <div className="mt-2 flex flex-wrap gap-2">
                     {item.entities.map((entity) => (
@@ -442,6 +452,9 @@ function ClusterCard(props: { cluster: EventCluster }) {
           </span>
         ))}
       </div>
+      <span className="mt-2 inline-flex rounded-full border border-[var(--line)] bg-[var(--surface-2)] px-2.5 py-1 text-[11px] uppercase tracking-[0.14em] text-[var(--muted)]">
+        Open Source
+      </span>
     </a>
   );
 }

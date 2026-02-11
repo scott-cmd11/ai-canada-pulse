@@ -73,21 +73,31 @@ export default function SignalsPage() {
           <p className="py-8 text-center text-sm text-[var(--muted)]">No matching signals.</p>
         ) : (
           <div className="space-y-2">
-            {topResults.map((item) => (
-              <article key={item.id} className="rounded-lg border border-[var(--line)] bg-white/70 p-3">
+              {topResults.map((item) => (
+                <article key={item.id} className="rounded-lg border border-[var(--line)] bg-white/70 p-3">
                 <div className="flex flex-wrap items-center gap-2 text-xs text-[var(--muted)]">
                   <span className="rounded-full border border-[var(--line)] px-2 py-0.5">{item.type}</span>
                   <span>{item.source}</span>
                   <span>{new Date(item.publishedAt).toLocaleDateString()}</span>
                   <span>rel {item.relevanceScore.toFixed(1)}</span>
                 </div>
-                <a href={item.url} target="_blank" rel="noopener noreferrer" className="mt-2 block text-sm font-semibold hover:text-[var(--accent)]">
-                  {item.title}
-                </a>
-                <p className="mt-1 text-xs text-[var(--muted)]">{item.description}</p>
-              </article>
-            ))}
-          </div>
+                  <a href={item.url} target="_blank" rel="noopener noreferrer" className="mt-2 block text-sm font-semibold hover:text-[var(--accent)]">
+                    {item.title}
+                  </a>
+                  <p className="mt-1 text-xs text-[var(--muted)]">{item.description}</p>
+                  <div className="mt-2">
+                    <a
+                      href={item.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex rounded-full border border-[var(--line)] bg-[var(--surface-2)] px-2.5 py-1 text-[11px] uppercase tracking-[0.14em] text-[var(--muted)] transition hover:bg-white"
+                    >
+                      Open Source
+                    </a>
+                  </div>
+                </article>
+              ))}
+            </div>
         )}
       </section>
     </main>
