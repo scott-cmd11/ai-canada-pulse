@@ -1,16 +1,27 @@
-'use client';
+﻿'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { DashboardStats, IntelItem, IntelType, TimelinePoint } from '@/lib/types';
+import {
+  Briefing,
+  DashboardStats,
+  EventCluster,
+  IntelItem,
+  IntelType,
+  MomentumItem,
+  TimelinePoint,
+  TrendDirection,
+  WATCHLISTS,
+} from '@/lib/types';
 
 type TimelineMode = 'daily' | 'weekly' | 'monthly' | 'yearly';
+type BriefMode = 'daily' | 'weekly' | 'monthly';
 
-const TYPE_LABELS: Record<IntelType, { label: string; accent: string }> = {
-  news: { label: 'News', accent: 'bg-sky-500' },
-  research: { label: 'Research', accent: 'bg-cyan-500' },
-  policy: { label: 'Policy', accent: 'bg-amber-500' },
-  github: { label: 'GitHub', accent: 'bg-slate-500' },
-  funding: { label: 'Funding', accent: 'bg-emerald-500' },
+const TYPE_META: Record<IntelType, { label: string; color: string }> = {
+  news: { label: 'News', color: '#3da8ff' },
+  research: { label: 'Research', color: '#35d6c9' },
+  policy: { label: 'Policy', color: '#f4b645' },
+  github: { label: 'GitHub', color: '#9aa4b8' },
+  funding: { label: 'Funding', color: '#2ce2b2' },
 };
 
 export default function Dashboard() {
@@ -18,17 +29,22 @@ export default function Dashboard() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [scanning, setScanning] = useState(false);
+
   const [activeType, setActiveType] = useState<IntelType | 'all'>('all');
-  const [timelineMode, setTimelineMode] = useState<TimelineMode>('monthly');
+  const [activeWatchlist, setActiveWatchlist] = useState<string>('all');
   const [query, setQuery] = useState('');
+
+  const [timelineMode, setTimelineMode] = useState<TimelineMode>('monthly');
+  const [briefMode, setBriefMode] = useState<BriefMode>('weekly');
 
   const fetchData = useCallback(async () => {
     try {
-      const filter = activeType === 'all' ? '' : `type=${activeType}&`;
-      const [intelRes, statsRes] = await Promise.all([
-        fetch(`/api/intel?${filter}limit=250`),
-        fetch('/api/stats'),
-      ]);
+      const params = new URLSearchParams();
+      params.set('limit', '400');
+      if (activeType !== 'all') params.set('type', activeType);
+      if (activeWatchlist !== 'all') params.set('watchlist', activeWatchlist);
+
+      const [intelRes, statsRes] = await Promise.all([fetch(`/api/intel?${params.toString()}`), fetch('/api/stats')]);
 
       const intelData = await intelRes.json();
       const statsData = await statsRes.json();
@@ -36,11 +52,11 @@ export default function Dashboard() {
       if (intelData.success) setItems(intelData.items);
       if (statsData.success) setStats(statsData.stats);
     } catch (error) {
-      console.error('Failed to load dashboard data:', error);
+      console.error('Failed to fetch dashboard data:', error);
     } finally {
       setLoading(false);
     }
-  }, [activeType]);
+  }, [activeType, activeWatchlist]);
 
   useEffect(() => {
     fetchData();
@@ -49,8 +65,8 @@ export default function Dashboard() {
   const runScan = async () => {
     setScanning(true);
     try {
-      const response = await fetch('/api/scan', { method: 'POST' });
-      const data = await response.json();
+      const res = await fetch('/api/scan', { method: 'POST' });
+      const data = await res.json();
       if (data.success) await fetchData();
     } catch (error) {
       console.error('Scan failed:', error);
@@ -63,13 +79,10 @@ export default function Dashboard() {
     if (!query.trim()) return items;
 
     const lower = query.toLowerCase();
-    return items.filter(
-      (item) =>
-        item.title.toLowerCase().includes(lower) ||
-        item.description.toLowerCase().includes(lower) ||
-        item.source.toLowerCase().includes(lower) ||
-        item.entities.some((entity) => entity.toLowerCase().includes(lower)),
-    );
+    return items.filter((item) => {
+      const fullText = `${item.title} ${item.description} ${item.source} ${item.entities.join(' ')}`.toLowerCase();
+      return fullText.includes(lower);
+    });
   }, [items, query]);
 
   const timelinePoints: TimelinePoint[] = useMemo(() => {
@@ -77,10 +90,19 @@ export default function Dashboard() {
     return stats.timeline[timelineMode];
   }, [stats, timelineMode]);
 
-  const maxTimelineCount = Math.max(...timelinePoints.map((point) => point.count), 1);
+  const activeBrief: Briefing | null = useMemo(() => {
+    if (!stats) return null;
+    return stats.briefings[briefMode];
+  }, [stats, briefMode]);
+
+  const avgTimeline = useMemo(() => {
+    if (!timelinePoints.length) return 0;
+    return Math.round(timelinePoints.reduce((sum, point) => sum + point.count, 0) / timelinePoints.length);
+  }, [timelinePoints]);
 
   const formatRelative = (dateRaw: string) => {
     const date = new Date(dateRaw);
+    if (Number.isNaN(date.getTime())) return 'unknown';
     const diff = Date.now() - date.getTime();
     const hours = Math.floor(diff / (1000 * 60 * 60));
     const days = Math.floor(hours / 24);
@@ -93,177 +115,245 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-[var(--bg)] text-[var(--text)]">
-      <header className="border-b border-white/10 bg-[var(--panel)]/85 backdrop-blur-lg">
-        <div className="mx-auto flex w-full max-w-7xl items-center justify-between px-4 py-5 sm:px-8">
+      <div className="noise-layer" />
+      <header className="sticky top-0 z-40 border-b border-white/10 bg-[color:var(--panel-solid)]/92 backdrop-blur-xl">
+        <div className="mx-auto flex max-w-[1400px] flex-wrap items-center justify-between gap-3 px-4 py-4 md:px-8">
           <div>
-            <p className="text-xs uppercase tracking-[0.25em] text-[var(--muted)]">AI Canada Pulse</p>
-            <h1 className="mt-1 text-3xl font-semibold leading-tight sm:text-4xl">
-              Live Intelligence Dashboard For Canada AI
-            </h1>
-            <p className="mt-2 text-sm text-[var(--muted)]">
-              Multi-source tracking across news, policy, research, GitHub, and funding since November 30, 2022.
+            <p className="text-[11px] uppercase tracking-[0.28em] text-[var(--muted)]">AI Canada Pulse</p>
+            <h1 className="text-2xl font-semibold leading-tight md:text-3xl">National AI Intelligence Cockpit</h1>
+            <p className="mt-1 text-sm text-[var(--muted)]">
+              Executive-grade monitoring across policy, research, funding, open source, and media since 2022-11-30.
             </p>
           </div>
-          <button
-            onClick={runScan}
-            disabled={scanning}
-            className="rounded-xl border border-[var(--line)] bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-black transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            {scanning ? 'Scanning' : 'Scan Now'}
-          </button>
+          <div className="flex items-center gap-2">
+            <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-[var(--muted)]">
+              Last scan: {stats?.lastScan && stats.lastScan !== 'Never' ? formatRelative(stats.lastScan) : 'never'}
+            </span>
+            <button
+              onClick={runScan}
+              disabled={scanning}
+              className="rounded-xl border border-[var(--line)] bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-black transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {scanning ? 'Scanning...' : 'Scan Now'}
+            </button>
+          </div>
         </div>
       </header>
 
-      <main className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-8">
-        <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
-          <MetricCard label="Total" value={stats?.totalItems || 0} />
-          <MetricCard label="Today" value={stats?.itemsToday || 0} />
-          <MetricCard label="This Week" value={stats?.itemsThisWeek || 0} />
-          <MetricCard label="This Month" value={stats?.itemsThisMonth || 0} />
-          <MetricCard label="This Year" value={stats?.itemsThisYear || 0} />
+      <main className="relative z-10 mx-auto max-w-[1400px] space-y-5 px-4 py-6 md:px-8 md:py-7">
+        <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-6">
+          <KpiCard label="Signals" value={stats?.totalItems || 0} detail="All tracked items" />
+          <KpiCard label="Today" value={stats?.itemsToday || 0} detail="New in 24h" />
+          <KpiCard label="Week" value={stats?.itemsThisWeek || 0} detail="Last 7 days" />
+          <KpiCard label="Month" value={stats?.itemsThisMonth || 0} detail="Current month" />
+          <KpiCard
+            label="Rel. Score"
+            value={stats?.quality.avgRelevance || 0}
+            detail="Average relevance"
+            precision={2}
+          />
+          <KpiCard
+            label="Source Trust"
+            value={stats?.quality.avgReliability || 0}
+            detail={`${stats?.quality.sourceDiversity || 0} active sources`}
+            precision={1}
+          />
         </section>
 
-        <section className="mt-4 rounded-2xl border border-[var(--line)] bg-[var(--panel)] p-4">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div className="flex flex-wrap gap-2">
-              <FilterButton active={activeType === 'all'} onClick={() => setActiveType('all')}>
-                All Types
-              </FilterButton>
-              {Object.entries(TYPE_LABELS).map(([type, config]) => (
-                <FilterButton
-                  key={type}
-                  active={activeType === type}
-                  onClick={() => setActiveType(type as IntelType)}
-                >
-                  {config.label}
-                </FilterButton>
-              ))}
-            </div>
-            <input
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-              placeholder="Search entities, topics, and sources"
-              className="w-full rounded-lg border border-[var(--line)] bg-black/20 px-3 py-2 text-sm text-white outline-none ring-[var(--accent)]/30 transition focus:ring sm:max-w-sm"
-            />
-          </div>
-        </section>
-
-        <section className="mt-4 grid gap-4 lg:grid-cols-[2fr_1fr]">
-          <div className="rounded-2xl border border-[var(--line)] bg-[var(--panel)] p-4">
-            <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
-              <h2 className="text-lg font-semibold">Activity Timeline</h2>
-              <div className="flex gap-2">
-                {(['daily', 'weekly', 'monthly', 'yearly'] as TimelineMode[]).map((mode) => (
-                  <FilterButton key={mode} active={timelineMode === mode} onClick={() => setTimelineMode(mode)}>
-                    {mode}
-                  </FilterButton>
-                ))}
+        <section className="grid gap-4 xl:grid-cols-[2fr_1fr]">
+          <div className="panel p-4 md:p-5">
+            <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 className="text-lg font-semibold">Signal Velocity</h2>
+                <p className="text-sm text-[var(--muted)]">Volume over time, with dynamic window control.</p>
               </div>
-            </div>
-            <div className="space-y-2">
-              {timelinePoints.map((point) => (
-                <div key={point.label} className="grid grid-cols-[1fr_4fr_auto] items-center gap-3">
-                  <span className="truncate text-xs text-[var(--muted)]">{point.label}</span>
-                  <div className="h-2 rounded-full bg-black/30">
-                    <div
-                      className="h-2 rounded-full bg-[var(--accent)]"
-                      style={{ width: `${Math.max((point.count / maxTimelineCount) * 100, point.count > 0 ? 3 : 0)}%` }}
-                    />
-                  </div>
-                  <span className="text-xs text-[var(--muted)]">{point.count}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="space-y-4">
-            <div className="rounded-2xl border border-[var(--line)] bg-[var(--panel)] p-4">
-              <h3 className="mb-3 text-sm font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">By Type</h3>
-              <div className="space-y-2">
-                {Object.entries(TYPE_LABELS).map(([type, config]) => (
-                  <div key={type} className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <span className={`h-2.5 w-2.5 rounded-full ${config.accent}`} />
-                      <span className="text-sm">{config.label}</span>
-                    </div>
-                    <span className="text-sm text-[var(--muted)]">{stats?.byType[type as IntelType] || 0}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="rounded-2xl border border-[var(--line)] bg-[var(--panel)] p-4">
-              <h3 className="mb-3 text-sm font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">Top Sources</h3>
-              <div className="space-y-2">
-                {(stats?.bySource || []).slice(0, 8).map((source) => (
-                  <button
-                    key={source.name}
-                    onClick={() => setQuery(source.name)}
-                    className="flex w-full items-center justify-between rounded-lg px-2 py-1 text-left text-sm transition hover:bg-white/5"
-                  >
-                    <span className="truncate">{source.name}</span>
-                    <span className="text-[var(--muted)]">{source.count}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div className="rounded-2xl border border-[var(--line)] bg-[var(--panel)] p-4">
-              <h3 className="mb-3 text-sm font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">Top Entities</h3>
               <div className="flex flex-wrap gap-2">
-                {(stats?.topEntities || []).slice(0, 12).map((entity) => (
-                  <button
-                    key={entity.name}
-                    onClick={() => setQuery(entity.name)}
-                    className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs transition hover:bg-white/10"
-                  >
-                    {entity.name} ({entity.count})
-                  </button>
+                {(['daily', 'weekly', 'monthly', 'yearly'] as TimelineMode[]).map((mode) => (
+                  <Chip
+                    key={mode}
+                    active={timelineMode === mode}
+                    onClick={() => setTimelineMode(mode)}
+                    label={mode}
+                  />
                 ))}
               </div>
             </div>
+
+            <LineChart points={timelinePoints} />
+
+            <div className="mt-4 grid gap-3 md:grid-cols-3">
+              <MiniMetric label="Window Avg" value={avgTimeline} />
+              <MiniMetric label="Peak" value={Math.max(...timelinePoints.map((p) => p.count), 0)} />
+              <MiniMetric label="Signal Mix" value={`${stats?.signalMix.high || 0}/${stats?.signalMix.medium || 0}/${stats?.signalMix.low || 0}`} />
+            </div>
+          </div>
+
+          <div className="panel p-4 md:p-5">
+            <div className="mb-3 flex items-center justify-between">
+              <h2 className="text-lg font-semibold">AI Briefing</h2>
+              <div className="flex gap-2">
+                {(['daily', 'weekly', 'monthly'] as BriefMode[]).map((mode) => (
+                  <Chip key={mode} active={briefMode === mode} onClick={() => setBriefMode(mode)} label={mode} />
+                ))}
+              </div>
+            </div>
+
+            {activeBrief ? <BriefCard brief={activeBrief} /> : <p className="text-sm text-[var(--muted)]">Loading...</p>}
           </div>
         </section>
 
-        <section className="mt-4 rounded-2xl border border-[var(--line)] bg-[var(--panel)] p-4">
-          <div className="mb-3 flex items-center justify-between">
-            <h2 className="text-lg font-semibold">Live Feed</h2>
-            <span className="text-xs text-[var(--muted)]">
-              Last scan: {stats?.lastScan && stats.lastScan !== 'Never' ? formatRelative(stats.lastScan) : 'never'}
-            </span>
+        <section className="grid gap-4 xl:grid-cols-[1.2fr_1fr_1fr]">
+          <div className="panel p-4 md:p-5">
+            <h3 className="text-base font-semibold">Event Radar</h3>
+            <p className="mb-3 text-sm text-[var(--muted)]">Clustered multi-source narratives with highest strategic weight.</p>
+            <div className="space-y-2">
+              {(stats?.eventClusters || []).slice(0, 6).map((cluster) => (
+                <ClusterCard key={cluster.id} cluster={cluster} />
+              ))}
+              {!stats?.eventClusters?.length && <p className="text-sm text-[var(--muted)]">No event clusters yet.</p>}
+            </div>
+          </div>
+
+          <div className="panel p-4 md:p-5">
+            <h3 className="text-base font-semibold">Momentum Movers</h3>
+            <p className="mb-3 text-sm text-[var(--muted)]">Entity mention change vs previous week.</p>
+            <div className="space-y-1.5">
+              {(stats?.momentum || []).slice(0, 10).map((item) => (
+                <MomentumRow key={item.name} item={item} onClick={() => setQuery(item.name)} />
+              ))}
+              {!stats?.momentum?.length && <p className="text-sm text-[var(--muted)]">Momentum data unavailable.</p>}
+            </div>
+          </div>
+
+          <div className="panel p-4 md:p-5">
+            <h3 className="text-base font-semibold">Activity Heatmap</h3>
+            <p className="mb-3 text-sm text-[var(--muted)]">84-day signal intensity matrix.</p>
+            <Heatmap cells={stats?.heatmap || []} />
+          </div>
+        </section>
+
+        <section className="grid gap-4 xl:grid-cols-[1.2fr_1fr]">
+          <div className="panel p-4 md:p-5">
+            <h3 className="mb-3 text-base font-semibold">Source Quality Matrix</h3>
+            <div className="space-y-2">
+              {(stats?.sourceReliability || []).slice(0, 10).map((source) => (
+                <button
+                  key={source.name}
+                  onClick={() => setQuery(source.name)}
+                  className="group flex w-full items-center gap-3 rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2 text-left transition hover:bg-white/[0.08]"
+                >
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-medium">{source.name}</p>
+                    <p className="text-xs text-[var(--muted)]">{source.count} items</p>
+                  </div>
+                  <div className="h-2 w-28 overflow-hidden rounded-full bg-black/30">
+                    <div className="h-2 rounded-full bg-gradient-to-r from-[#3da8ff] to-[#2ce2b2]" style={{ width: `${source.score}%` }} />
+                  </div>
+                  <span className="w-10 text-right text-xs text-[var(--muted)]">{source.score}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="panel p-4 md:p-5">
+            <h3 className="mb-3 text-base font-semibold">Watchlists</h3>
+            <div className="space-y-2">
+              {(stats?.watchlists || []).map((watch) => (
+                <button
+                  key={watch.id}
+                  onClick={() => setActiveWatchlist(watch.id)}
+                  className={`w-full rounded-xl border px-3 py-2 text-left transition ${
+                    activeWatchlist === watch.id
+                      ? 'border-[var(--accent)] bg-[var(--accent-soft)]'
+                      : 'border-white/10 bg-white/[0.03] hover:bg-white/[0.08]'
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm font-semibold">{watch.name}</p>
+                    <DeltaTag direction={watch.direction} delta={watch.deltaPercent} />
+                  </div>
+                  <p className="mt-1 line-clamp-2 text-xs text-[var(--muted)]">{watch.description}</p>
+                  <p className="mt-1 text-xs text-[var(--muted)]">{watch.count} items this week</p>
+                </button>
+              ))}
+            </div>
+
+            <button
+              onClick={() => setActiveWatchlist('all')}
+              className="mt-3 w-full rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2 text-xs uppercase tracking-[0.18em] text-[var(--muted)] transition hover:bg-white/[0.08]"
+            >
+              Show all watchlists
+            </button>
+          </div>
+        </section>
+
+        <section className="panel p-4 md:p-5">
+          <div className="mb-4 flex flex-wrap items-center gap-3">
+            <div className="flex flex-wrap gap-2">
+              <Chip active={activeType === 'all'} onClick={() => setActiveType('all')} label="all types" />
+              {(Object.keys(TYPE_META) as IntelType[]).map((type) => (
+                <Chip key={type} active={activeType === type} onClick={() => setActiveType(type)} label={TYPE_META[type].label} />
+              ))}
+            </div>
+            <div className="ml-auto flex w-full flex-wrap gap-2 md:w-auto">
+              <select
+                value={activeWatchlist}
+                onChange={(event) => setActiveWatchlist(event.target.value)}
+                className="rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2 text-sm text-[var(--text)]"
+              >
+                <option value="all">All Watchlists</option>
+                {WATCHLISTS.map((watch) => (
+                  <option key={watch.id} value={watch.id}>
+                    {watch.name}
+                  </option>
+                ))}
+              </select>
+              <input
+                value={query}
+                onChange={(event) => setQuery(event.target.value)}
+                placeholder="Search entities, sources, or themes"
+                className="min-w-[260px] flex-1 rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2 text-sm text-[var(--text)] outline-none ring-[var(--accent)]/25 transition focus:ring"
+              />
+            </div>
           </div>
 
           {loading ? (
-            <p className="py-10 text-center text-sm text-[var(--muted)]">Loading intelligence feed...</p>
+            <p className="py-12 text-center text-sm text-[var(--muted)]">Loading signal feed...</p>
           ) : filteredItems.length === 0 ? (
-            <p className="py-10 text-center text-sm text-[var(--muted)]">No items yet. Run scan to populate.</p>
+            <p className="py-12 text-center text-sm text-[var(--muted)]">No signals match current filters.</p>
           ) : (
-            <div className="space-y-3">
-              {filteredItems.map((item) => (
-                <article key={item.id} className="rounded-xl border border-white/10 bg-black/20 p-3">
+            <div className="space-y-2">
+              {filteredItems.slice(0, 80).map((item) => (
+                <article key={item.id} className="rounded-xl border border-white/10 bg-black/20 p-3 transition hover:border-white/20">
                   <div className="flex flex-wrap items-center gap-2 text-xs text-[var(--muted)]">
-                    <span className={`rounded-full px-2 py-0.5 text-black ${TYPE_LABELS[item.type].accent}`}>
-                      {TYPE_LABELS[item.type].label}
+                    <span
+                      className="rounded-full px-2 py-0.5 font-medium"
+                      style={{ backgroundColor: TYPE_META[item.type].color, color: '#051018' }}
+                    >
+                      {TYPE_META[item.type].label}
                     </span>
                     <span>{item.source}</span>
                     <span>{formatRelative(item.publishedAt)}</span>
-                    <span>Relevance {item.relevanceScore.toFixed(1)}</span>
+                    <span>relevance {item.relevanceScore.toFixed(1)}</span>
                   </div>
+
                   <a
                     href={item.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="mt-2 block text-base font-semibold transition hover:text-[var(--accent)]"
+                    className="mt-2 block text-base font-semibold leading-snug transition hover:text-[var(--accent)]"
                   >
                     {item.title}
                   </a>
+
                   <p className="mt-1 text-sm text-[var(--muted)]">{item.description}</p>
+
                   <div className="mt-2 flex flex-wrap gap-2">
                     {item.entities.map((entity) => (
                       <button
                         key={`${item.id}-${entity}`}
                         onClick={() => setQuery(entity)}
-                        className="rounded-full border border-white/10 px-2 py-0.5 text-xs text-[var(--muted)] hover:bg-white/5"
+                        className="rounded-full border border-white/10 px-2 py-0.5 text-xs text-[var(--muted)] transition hover:bg-white/5"
                       >
                         {entity}
                       </button>
@@ -279,26 +369,180 @@ export default function Dashboard() {
   );
 }
 
-function MetricCard(props: { label: string; value: number }) {
+function KpiCard(props: { label: string; value: number; detail: string; precision?: number }) {
+  const value = props.precision !== undefined ? props.value.toFixed(props.precision) : props.value.toLocaleString();
+
   return (
-    <div className="rounded-2xl border border-[var(--line)] bg-[var(--panel)] p-4">
+    <div className="panel p-4">
       <p className="text-xs uppercase tracking-[0.2em] text-[var(--muted)]">{props.label}</p>
-      <p className="mt-1 text-2xl font-semibold">{props.value}</p>
+      <p className="mt-1 text-2xl font-semibold">{value}</p>
+      <p className="mt-1 text-xs text-[var(--muted)]">{props.detail}</p>
     </div>
   );
 }
 
-function FilterButton(props: { active: boolean; onClick: () => void; children: React.ReactNode }) {
+function MiniMetric(props: { label: string; value: number | string }) {
+  return (
+    <div className="rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2">
+      <p className="text-xs uppercase tracking-[0.18em] text-[var(--muted)]">{props.label}</p>
+      <p className="mt-1 text-lg font-semibold">{props.value}</p>
+    </div>
+  );
+}
+
+function Chip(props: { active: boolean; label: string; onClick: () => void }) {
   return (
     <button
       onClick={props.onClick}
-      className={`rounded-lg border px-3 py-1.5 text-xs uppercase tracking-[0.15em] transition ${
+      className={`rounded-full border px-3 py-1.5 text-xs uppercase tracking-[0.16em] transition ${
         props.active
           ? 'border-[var(--accent)] bg-[var(--accent)] text-black'
-          : 'border-white/10 bg-white/5 text-[var(--muted)] hover:bg-white/10'
+          : 'border-white/10 bg-white/[0.03] text-[var(--muted)] hover:bg-white/[0.09]'
       }`}
     >
-      {props.children}
+      {props.label}
     </button>
   );
 }
+
+function BriefCard(props: { brief: Briefing }) {
+  return (
+    <div className="rounded-xl border border-white/10 bg-gradient-to-br from-white/[0.08] to-transparent p-3">
+      <p className="text-sm font-semibold">{props.brief.headline}</p>
+      <p className="mt-1 text-sm text-[var(--muted)]">{props.brief.summary}</p>
+      <ul className="mt-3 space-y-1">
+        {props.brief.bullets.map((bullet) => (
+          <li key={bullet} className="text-xs text-[var(--muted)]">
+            • {bullet}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+function ClusterCard(props: { cluster: EventCluster }) {
+  return (
+    <button className="w-full rounded-xl border border-white/10 bg-white/[0.03] p-3 text-left transition hover:bg-white/[0.08]">
+      <p className="line-clamp-2 text-sm font-semibold">{props.cluster.headline}</p>
+      <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-[var(--muted)]">
+        <span>{props.cluster.itemCount} items</span>
+        <span>{props.cluster.sources.length} sources</span>
+        <span>score {props.cluster.score.toFixed(1)}</span>
+      </div>
+      <div className="mt-2 flex flex-wrap gap-1">
+        {props.cluster.entities.slice(0, 3).map((entity) => (
+          <span key={entity} className="rounded-full border border-white/10 px-2 py-0.5 text-[11px] text-[var(--muted)]">
+            {entity}
+          </span>
+        ))}
+      </div>
+    </button>
+  );
+}
+
+function MomentumRow(props: { item: MomentumItem; onClick: () => void }) {
+  return (
+    <button
+      onClick={props.onClick}
+      className="flex w-full items-center justify-between rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2 text-left transition hover:bg-white/[0.08]"
+    >
+      <div>
+        <p className="text-sm font-medium">{props.item.name}</p>
+        <p className="text-xs text-[var(--muted)]">
+          {props.item.current} now vs {props.item.previous} prior
+        </p>
+      </div>
+      <DeltaTag direction={props.item.direction} delta={props.item.deltaPercent} />
+    </button>
+  );
+}
+
+function DeltaTag(props: { direction: TrendDirection; delta: number }) {
+  const sign = props.direction === 'up' ? '+' : props.direction === 'down' ? '' : '±';
+  const color = props.direction === 'up' ? 'text-emerald-300' : props.direction === 'down' ? 'text-rose-300' : 'text-slate-300';
+
+  return <span className={`text-xs font-semibold ${color}`}>{`${sign}${props.delta}%`}</span>;
+}
+
+function LineChart(props: { points: TimelinePoint[] }) {
+  const width = 940;
+  const height = 260;
+  const padding = 28;
+
+  if (!props.points.length) {
+    return <div className="flex h-[260px] items-center justify-center text-sm text-[var(--muted)]">No timeline data.</div>;
+  }
+
+  const max = Math.max(...props.points.map((point) => point.count), 1);
+  const min = Math.min(...props.points.map((point) => point.count), 0);
+  const range = Math.max(max - min, 1);
+
+  const coordinates = props.points.map((point, index) => {
+    const x = padding + (index / Math.max(props.points.length - 1, 1)) * (width - padding * 2);
+    const y = padding + (1 - (point.count - min) / range) * (height - padding * 2);
+    return { x, y, label: point.label, count: point.count };
+  });
+
+  const path = coordinates.map((coord, index) => `${index === 0 ? 'M' : 'L'} ${coord.x} ${coord.y}`).join(' ');
+  const areaPath = `${path} L ${coordinates[coordinates.length - 1].x} ${height - padding} L ${coordinates[0].x} ${height - padding} Z`;
+
+  return (
+    <div className="overflow-x-auto">
+      <svg viewBox={`0 0 ${width} ${height}`} className="h-[260px] w-full min-w-[640px]">
+        <defs>
+          <linearGradient id="lineGradient" x1="0" x2="1" y1="0" y2="0">
+            <stop offset="0%" stopColor="#3da8ff" />
+            <stop offset="100%" stopColor="#2ce2b2" />
+          </linearGradient>
+          <linearGradient id="areaGradient" x1="0" x2="0" y1="0" y2="1">
+            <stop offset="0%" stopColor="rgba(61,168,255,0.28)" />
+            <stop offset="100%" stopColor="rgba(44,226,178,0.03)" />
+          </linearGradient>
+        </defs>
+
+        {[0, 1, 2, 3, 4].map((step) => {
+          const y = padding + (step / 4) * (height - padding * 2);
+          return <line key={step} x1={padding} y1={y} x2={width - padding} y2={y} stroke="rgba(255,255,255,0.09)" />;
+        })}
+
+        <path d={areaPath} fill="url(#areaGradient)" />
+        <path d={path} fill="none" stroke="url(#lineGradient)" strokeWidth={3} />
+
+        {coordinates.filter((_, index) => index % Math.ceil(coordinates.length / 8) === 0).map((coord) => (
+          <g key={`${coord.label}-${coord.x}`}>
+            <circle cx={coord.x} cy={coord.y} r={4} fill="#2ce2b2" />
+            <text x={coord.x} y={height - 8} textAnchor="middle" fill="rgba(235,247,255,0.65)" fontSize="11">
+              {coord.label.slice(5)}
+            </text>
+          </g>
+        ))}
+      </svg>
+    </div>
+  );
+}
+
+function Heatmap(props: { cells: { date: string; count: number }[] }) {
+  if (!props.cells.length) return <p className="text-sm text-[var(--muted)]">No heatmap data.</p>;
+
+  const max = Math.max(...props.cells.map((cell) => cell.count), 1);
+
+  return (
+    <div className="grid grid-cols-14 gap-1">
+      {props.cells.map((cell) => {
+        const intensity = cell.count / max;
+        const alpha = intensity === 0 ? 0.12 : 0.2 + intensity * 0.8;
+
+        return (
+          <div
+            key={cell.date}
+            title={`${cell.date}: ${cell.count}`}
+            className="h-3.5 rounded-[3px] border border-black/20"
+            style={{ backgroundColor: `rgba(44, 226, 178, ${alpha})` }}
+          />
+        );
+      })}
+    </div>
+  );
+}
+

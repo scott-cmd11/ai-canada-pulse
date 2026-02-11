@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { Space_Grotesk, Source_Code_Pro } from 'next/font/google';
+import { GlobalNav } from '@/components/global-nav';
 import './globals.css';
 
 const spaceGrotesk = Space_Grotesk({
@@ -15,7 +16,7 @@ const sourceCode = Source_Code_Pro({
 export const metadata: Metadata = {
   title: 'AI Canada Pulse',
   description:
-    'Live and interactive intelligence dashboard for AI activity in Canada, with daily, weekly, monthly, yearly, and since-ChatGPT timelines.',
+    'Canada AI intelligence platform with live signals, briefings, watchlists, and source-quality analysis.',
 };
 
 export default function RootLayout({
@@ -25,7 +26,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${spaceGrotesk.variable} ${sourceCode.variable} antialiased`}>{children}</body>
+      <body className={`${spaceGrotesk.variable} ${sourceCode.variable} antialiased`}>
+        <GlobalNav />
+        {children}
+      </body>
     </html>
   );
 }
