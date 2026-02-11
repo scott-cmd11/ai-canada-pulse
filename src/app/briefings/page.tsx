@@ -39,7 +39,7 @@ export default function BriefingsPage() {
                 <ul className="mt-3 space-y-1">
                   {brief.bullets.map((bullet) => (
                     <li key={bullet} className="text-xs text-[var(--muted)]">
-                      â€¢ {bullet}
+                       -  {bullet}
                     </li>
                   ))}
                 </ul>
@@ -57,7 +57,7 @@ export default function BriefingsPage() {
                 <article key={cluster.id} className="rounded-lg border border-[var(--line)] bg-[var(--surface-2)] p-3">
                   <p className="text-sm font-semibold">{cluster.headline}</p>
                   <p className="mt-1 text-xs text-[var(--muted)]">
-                    {cluster.itemCount} items â€¢ {cluster.sources.length} sources â€¢ score {cluster.score.toFixed(1)}
+                    {cluster.itemCount} items  -  {cluster.sources.length} sources  -  score {cluster.score.toFixed(1)}
                   </p>
                 </article>
               ))}
@@ -68,5 +68,6 @@ export default function BriefingsPage() {
     </main>
   );
 }
+
 
 

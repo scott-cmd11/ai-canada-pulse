@@ -35,7 +35,7 @@ export default function SourcesPage() {
                 >
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-medium">{source.name}</p>
-                    <p className="text-xs text-[var(--muted)]">{source.count} items â€¢ {source.tier} tier</p>
+                    <p className="text-xs text-[var(--muted)]">{source.count} items  -  {source.tier} tier</p>
                   </div>
                   <div className="h-2 w-40 overflow-hidden rounded-full bg-black/30">
                     <div className="h-2 rounded-full bg-gradient-to-r from-[#3da8ff] to-[#2ce2b2]" style={{ width: `${source.score}%` }} />
@@ -59,5 +59,6 @@ function Metric(props: { label: string; value: string }) {
     </div>
   );
 }
+
 
 

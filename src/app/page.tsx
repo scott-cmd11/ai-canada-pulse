@@ -413,7 +413,7 @@ function BriefCard(props: { brief: Briefing }) {
       <ul className="mt-3 space-y-1">
         {props.brief.bullets.map((bullet) => (
           <li key={bullet} className="text-xs text-[var(--muted)]">
-            • {bullet}
+            - {bullet}
           </li>
         ))}
       </ul>
@@ -459,7 +459,7 @@ function MomentumRow(props: { item: MomentumItem; onClick: () => void }) {
 }
 
 function DeltaTag(props: { direction: TrendDirection; delta: number }) {
-  const sign = props.direction === 'up' ? '+' : props.direction === 'down' ? '' : '±';
+  const sign = props.direction === 'up' ? '+' : props.direction === 'down' ? '' : '~';
   const color = props.direction === 'up' ? 'text-emerald-700' : props.direction === 'down' ? 'text-rose-700' : 'text-slate-600';
 
   return <span className={`text-xs font-semibold ${color}`}>{`${sign}${props.delta}%`}</span>;
@@ -545,6 +545,7 @@ function Heatmap(props: { cells: { date: string; count: number }[] }) {
     </div>
   );
 }
+
 
 
 

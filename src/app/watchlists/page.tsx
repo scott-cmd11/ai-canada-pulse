@@ -42,7 +42,7 @@ export default function WatchlistsPage() {
                 </div>
                 <p className="mt-1 text-sm text-[var(--muted)]">{watch.description}</p>
                 <p className="mt-2 text-xs text-[var(--muted)]">
-                  {snapshot?.count || 0} items this week â€¢ {snapshot?.deltaPercent || 0}% delta
+                  {snapshot?.count || 0} items this week  -  {snapshot?.deltaPercent || 0}% delta
                 </p>
                 <div className="mt-3 space-y-2">
                   {(snapshot?.topItems || []).map((item) => (
@@ -64,5 +64,6 @@ export default function WatchlistsPage() {
     </main>
   );
 }
+
 
 
