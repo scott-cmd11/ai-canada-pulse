@@ -5,7 +5,7 @@ import { useIntelData } from '@/components/use-intel-data';
 import { WATCHLISTS, WatchlistSnapshot } from '@/lib/types';
 
 export default function WatchlistsPage() {
-  const { stats, loading, setActiveWatchlist, setQuery } = useIntelData({ limit: 350 });
+  const { stats, loading, setActiveWatchlist } = useIntelData({ limit: 350 });
 
   const watchById = useMemo(() => {
     const map = new Map<string, WatchlistSnapshot>();
@@ -46,14 +46,16 @@ export default function WatchlistsPage() {
                 </p>
                 <div className="mt-3 space-y-2">
                   {(snapshot?.topItems || []).map((item) => (
-                    <button
+                    <a
                       key={item.id}
-                      onClick={() => setQuery(item.title)}
-                      className="w-full rounded-lg border border-[var(--line)] bg-[var(--surface-2)] p-2 text-left transition hover:bg-white"
+                      href={item.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="block w-full rounded-lg border border-[var(--line)] bg-[var(--surface-2)] p-2 text-left transition hover:bg-white"
                     >
                       <p className="line-clamp-2 text-sm font-medium">{item.title}</p>
                       <p className="mt-1 text-xs text-[var(--muted)]">{item.source}</p>
-                    </button>
+                    </a>
                   ))}
                 </div>
               </article>

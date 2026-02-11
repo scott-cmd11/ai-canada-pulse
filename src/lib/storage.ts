@@ -347,6 +347,7 @@ function buildEventClusters(items: IntelItem[]): EventCluster[] {
       return {
         id,
         headline: topItem.title,
+        topUrl: topItem.url,
         itemCount: group.length,
         sources,
         entities,

@@ -55,7 +55,14 @@ export default function BriefingsPage() {
             <div className="space-y-2">
               {stats.eventClusters.slice(0, 8).map((cluster) => (
                 <article key={cluster.id} className="rounded-lg border border-[var(--line)] bg-[var(--surface-2)] p-3">
-                  <p className="text-sm font-semibold">{cluster.headline}</p>
+                  <a
+                    href={cluster.topUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm font-semibold hover:text-[var(--accent)]"
+                  >
+                    {cluster.headline}
+                  </a>
                   <p className="mt-1 text-xs text-[var(--muted)]">
                     {cluster.itemCount} items  -  {cluster.sources.length} sources  -  score {cluster.score.toFixed(1)}
                   </p>

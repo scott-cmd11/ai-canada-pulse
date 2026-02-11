@@ -423,7 +423,12 @@ function BriefCard(props: { brief: Briefing }) {
 
 function ClusterCard(props: { cluster: EventCluster }) {
   return (
-    <button className="w-full rounded-xl border border-[var(--line)] bg-[var(--surface-2)] p-3 text-left transition hover:bg-white">
+    <a
+      href={props.cluster.topUrl}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="block w-full rounded-xl border border-[var(--line)] bg-[var(--surface-2)] p-3 text-left transition hover:bg-white"
+    >
       <p className="line-clamp-2 text-sm font-semibold">{props.cluster.headline}</p>
       <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-[var(--muted)]">
         <span>{props.cluster.itemCount} items</span>
@@ -437,7 +442,7 @@ function ClusterCard(props: { cluster: EventCluster }) {
           </span>
         ))}
       </div>
-    </button>
+    </a>
   );
 }
 

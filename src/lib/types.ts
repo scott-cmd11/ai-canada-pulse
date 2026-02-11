@@ -32,6 +32,7 @@ export interface SourceReliability {
 export interface EventCluster {
   id: string;
   headline: string;
+  topUrl: string;
   itemCount: number;
   sources: string[];
   entities: string[];
