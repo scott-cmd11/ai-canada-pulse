@@ -266,9 +266,9 @@ export default function Dashboard() {
       <header className="sticky top-0 z-40 border-b border-[var(--line)] bg-[color:var(--panel-solid)]/92 backdrop-blur-xl">
         <div className="mx-auto flex max-w-[1400px] flex-wrap items-center justify-between gap-3 px-4 py-4 md:px-8">
           <div>
-            <p className="text-[11px] uppercase tracking-[0.28em] text-[var(--muted)]">AI Canada Pulse</p>
-            <h1 className="text-2xl font-semibold leading-tight md:text-3xl">National AI Intelligence Cockpit</h1>
-            <p className="mt-1 text-sm text-[var(--muted)]">
+            <p className="type-eyebrow text-[var(--muted)]">AI Canada Pulse</p>
+            <h1 className="type-display">National AI Intelligence Cockpit</h1>
+            <p className="type-body-sm mt-1 text-[var(--muted)]">
               Live Canada AI monitoring from the ChatGPT moment onward with entity, region, and policy tracking.
             </p>
           </div>
@@ -305,12 +305,12 @@ export default function Dashboard() {
         </div>
       </header>
 
-      <main className="relative z-10 mx-auto max-w-[1400px] space-y-5 px-4 py-6 md:px-8 md:py-7">
+      <main className="relative z-10 mx-auto max-w-[1400px] space-y-6 px-4 py-6 md:px-8 md:py-8">
         <section className="grid gap-4 xl:grid-cols-[2fr_1fr]">
           <article className="panel p-4 md:p-5">
-            <p className="text-xs uppercase tracking-[0.2em] text-[var(--muted)]">Executive Snapshot</p>
-            <h2 className="mt-1 text-xl font-semibold">Canada AI signal flow is {stats?.regulatory.level || 'low'} risk with {stats?.totalItems || 0} tracked items.</h2>
-            <p className="mt-2 text-sm text-[var(--muted)]">
+            <p className="type-eyebrow text-[var(--muted)]">Executive Snapshot</p>
+            <h2 className="type-title mt-1">Canada AI signal flow is {stats?.regulatory.level || 'low'} risk with {stats?.totalItems || 0} tracked items.</h2>
+            <p className="type-body-sm mt-2 text-[var(--muted)]">
               Today contributes {weekVsToday}% of this week&apos;s volume. Top storyline:
               {' '}
               {stats?.eventClusters[0]?.headline || 'No dominant cluster yet.'}
@@ -318,7 +318,7 @@ export default function Dashboard() {
           </article>
           <article className="panel p-4 md:p-5">
             <div className="flex items-center justify-between">
-              <h3 className="text-sm font-semibold uppercase tracking-[0.16em] text-[var(--muted)]">Display Settings</h3>
+              <h3 className="type-eyebrow text-[var(--muted)]">Display Settings</h3>
               <button
                 onClick={() => setTheme((prev) => (prev === 'light' ? 'dark' : 'light'))}
                 className="rounded-lg border border-[var(--line)] bg-[var(--surface-2)] px-2.5 py-1 text-xs uppercase tracking-[0.14em] text-[var(--muted)]"
@@ -361,7 +361,7 @@ export default function Dashboard() {
         <section className="grid gap-4 xl:grid-cols-[1.8fr_1.2fr]">
           {!hiddenSections.agent ? <div className="panel p-4 md:p-5">
             <div className="mb-3 flex items-center justify-between">
-              <h2 className="text-base font-semibold">Agent Layer</h2>
+              <h2 className="type-title">Agent Layer</h2>
               <button
                 onClick={() => runAction('simulate-budget-shift')}
                 className="rounded-lg border border-[var(--line)] bg-[var(--surface-2)] px-3 py-1.5 text-xs uppercase tracking-[0.14em] text-[var(--muted)]"
@@ -389,7 +389,7 @@ export default function Dashboard() {
           </div> : <div className="panel p-4 md:p-5"><p className="text-sm text-[var(--muted)]">Agent panel is hidden in display settings.</p></div>}
 
           {!hiddenSections.nudges ? <div className="panel p-4 md:p-5">
-            <h2 className="text-base font-semibold">Proactive Nudges</h2>
+            <h2 className="type-title">Proactive Nudges</h2>
             <div className="mt-3 space-y-2">
               {(stats?.nudges || []).map((nudge) => (
                 <NudgeCard key={nudge.id} nudge={nudge} />
@@ -404,7 +404,7 @@ export default function Dashboard() {
           <section className="grid gap-4 xl:grid-cols-[2fr_1fr]">
             <div className="panel p-4 md:p-5">
               <div className="mb-3 flex items-center justify-between">
-                <h2 className="text-lg font-semibold">Executive Briefing</h2>
+                <h2 className="type-title">Executive Briefing</h2>
                 <div className="flex gap-2">
                   {(['daily', 'weekly', 'monthly'] as BriefMode[]).map((entry) => (
                     <Chip key={entry} active={briefMode === entry} onClick={() => setBriefMode(entry)} label={entry} />
@@ -423,8 +423,8 @@ export default function Dashboard() {
             </div>
 
             <div className="panel p-4 md:p-5">
-              <h3 className="text-base font-semibold">Regulatory Thermometer</h3>
-              <p className="mt-1 text-sm text-[var(--muted)]">
+              <h3 className="type-title">Regulatory Thermometer</h3>
+              <p className="type-body-sm mt-1 text-[var(--muted)]">
                 Score {stats?.regulatory.score || 0} with threshold L/M/H at{' '}
                 {stats?.regulatory.threshold.low || 0}/{stats?.regulatory.threshold.medium || 0}/{stats?.regulatory.threshold.high || 0}
               </p>
@@ -436,8 +436,8 @@ export default function Dashboard() {
             <div className="panel p-4 md:p-5">
               <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
                 <div>
-                  <h2 className="text-lg font-semibold">Signal Velocity</h2>
-                  <p className="text-sm text-[var(--muted)]">Volume trend windows.</p>
+                  <h2 className="type-title">Signal Velocity</h2>
+                  <p className="type-body-sm text-[var(--muted)]">Volume trend windows.</p>
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {(['daily', 'weekly', 'monthly', 'yearly'] as TimelineMode[]).map((entry) => (
@@ -453,8 +453,8 @@ export default function Dashboard() {
               </div>
             </div>
             <div className="panel p-4 md:p-5">
-              <h3 className="text-base font-semibold">Entity Graph</h3>
-              <p className="mb-3 text-sm text-[var(--muted)]">Relationship network across entities, sources, and regions.</p>
+              <h3 className="type-title">Entity Graph</h3>
+              <p className="type-body-sm mb-3 text-[var(--muted)]">Relationship network across entities, sources, and regions.</p>
               <GraphPreview stats={stats} />
               <Link href="/graph" className="mt-3 inline-flex rounded-lg border border-[var(--line)] bg-[var(--surface-2)] px-3 py-1.5 text-xs uppercase tracking-[0.14em] text-[var(--muted)]">
                 Open Graph View
@@ -466,8 +466,8 @@ export default function Dashboard() {
         {!hiddenSections.radar ? (
         <section className="grid gap-4 xl:grid-cols-[1.2fr_1fr_1fr]">
           <div className="panel p-4 md:p-5">
-            <h3 className="text-base font-semibold">Semantic Event Radar</h3>
-            <p className="mb-3 text-sm text-[var(--muted)]">Embedding-based storyline clusters.</p>
+            <h3 className="type-title">Semantic Event Radar</h3>
+            <p className="type-body-sm mb-3 text-[var(--muted)]">Embedding-based storyline clusters.</p>
             <div className="space-y-2">
               {(stats?.eventClusters || []).slice(0, 6).map((cluster) => (
                 <ClusterCard
@@ -482,8 +482,8 @@ export default function Dashboard() {
           </div>
 
           <div className="panel p-4 md:p-5">
-            <h3 className="text-base font-semibold">Momentum Movers</h3>
-            <p className="mb-3 text-sm text-[var(--muted)]">Entity mention change vs previous week.</p>
+            <h3 className="type-title">Momentum Movers</h3>
+            <p className="type-body-sm mb-3 text-[var(--muted)]">Entity mention change vs previous week.</p>
             <div className="space-y-1.5">
               {(stats?.momentum || []).slice(0, 10).map((item) => (
                 <MomentumRow key={item.name} item={item} onClick={() => setQuery(item.name)} />
@@ -492,8 +492,8 @@ export default function Dashboard() {
           </div>
 
           <div className="panel p-4 md:p-5">
-            <h3 className="text-base font-semibold">Collaboration Notes</h3>
-            <p className="mb-3 text-sm text-[var(--muted)]">Threaded annotations for entities and clusters.</p>
+            <h3 className="type-title">Collaboration Notes</h3>
+            <p className="type-body-sm mb-3 text-[var(--muted)]">Threaded annotations for entities and clusters.</p>
             <div className="space-y-2">
               {notes.slice(0, 8).map((note) => (
                 <article key={note.id} className="rounded-lg border border-[var(--line)] bg-[var(--surface-2)] p-2">
@@ -637,9 +637,9 @@ function KpiCard(props: { label: string; value: number; detail: string; precisio
       title="Click to drill down"
       className="panel p-4 text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]"
     >
-      <p className="text-xs uppercase tracking-[0.2em] text-[var(--muted)]">{props.label}</p>
-      <p className="mt-1 text-2xl font-semibold">{value}</p>
-      <p className="mt-1 text-xs text-[var(--muted)]">{props.detail}</p>
+      <p className="type-eyebrow text-[var(--muted)]">{props.label}</p>
+      <p className="type-metric mt-1">{value}</p>
+      <p className="type-body-sm mt-1 text-[var(--muted)]">{props.detail}</p>
     </button>
   );
 }
@@ -647,8 +647,8 @@ function KpiCard(props: { label: string; value: number; detail: string; precisio
 function MiniMetric(props: { label: string; value: number | string }) {
   return (
     <div className="rounded-lg border border-[var(--line)] bg-[var(--surface-2)] px-3 py-2">
-      <p className="text-xs uppercase tracking-[0.18em] text-[var(--muted)]">{props.label}</p>
-      <p className="mt-1 text-lg font-semibold">{props.value}</p>
+      <p className="type-eyebrow text-[var(--muted)]">{props.label}</p>
+      <p className="type-title mt-1">{props.value}</p>
     </div>
   );
 }
