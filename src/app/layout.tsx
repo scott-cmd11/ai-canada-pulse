@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { Space_Grotesk, Source_Code_Pro } from 'next/font/google';
-import { GlobalNav } from '@/components/global-nav';
+import { AppShell } from '@/components/app-shell';
 import './globals.css';
 
 const spaceGrotesk = Space_Grotesk({
@@ -27,8 +27,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${spaceGrotesk.variable} ${sourceCode.variable} antialiased`}>
-        <GlobalNav />
-        {children}
+        <AppShell>
+          {children}
+        </AppShell>
       </body>
     </html>
   );

@@ -133,6 +133,23 @@ a {
   outline-offset: 2px;
 }
 
+/* Sidebar transition */
+.sidebar-enter {
+  transform: translateX(100%);
+}
+.sidebar-open {
+  transform: translateX(0);
+}
+
+/* Dark theme body background */
+.theme-dark body,
+.theme-explorer body {
+  background:
+    radial-gradient(circle at 12% -8%, rgba(31, 193, 164, 0.12), transparent 46%),
+    radial-gradient(circle at 89% 8%, rgba(46, 136, 255, 0.1), transparent 41%),
+    linear-gradient(180deg, var(--bg) 0%, var(--bg) 100%);
+}
+
 @media (max-width: 768px) {
   .panel {
     border-radius: 14px;

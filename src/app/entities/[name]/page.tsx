@@ -1,6 +1,5 @@
 'use client';
 
-import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { EntitySummary } from '@/lib/types';
 
@@ -36,10 +35,7 @@ export default function EntityPage({ params }: { params: Promise<{ name: string 
   return (
     <main className="relative z-10 mx-auto max-w-[1200px] space-y-4 px-4 py-6 md:px-8">
       <section className="panel p-5">
-        <Link href="/" className="text-xs uppercase tracking-[0.2em] text-[var(--muted)] hover:text-[var(--accent)]">
-          Back to overview
-        </Link>
-        <h1 className="mt-2 text-2xl font-semibold">Entity Intelligence: {name || '...'}</h1>
+        <h1 className="text-2xl font-semibold">Entity Intelligence: {name || '...'}</h1>
       </section>
 
       {loading ? (

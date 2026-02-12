@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import Link from 'next/link';
 import { RelationshipGraph } from '@/lib/types';
 
 export default function GraphPage() {
@@ -26,10 +25,7 @@ export default function GraphPage() {
   return (
     <main className="relative z-10 mx-auto max-w-[1250px] space-y-4 px-4 py-6 md:px-8">
       <section className="panel p-5">
-        <Link href="/" className="text-xs uppercase tracking-[0.2em] text-[var(--muted)] hover:text-[var(--accent)]">
-          Back to overview
-        </Link>
-        <h1 className="mt-2 text-2xl font-semibold">Relationship Graph Workspace</h1>
+        <h1 className="text-2xl font-semibold">Relationship Graph Workspace</h1>
         <p className="mt-1 text-sm text-[var(--muted)]">
           Entity-source-region links derived from latest intelligence items.
         </p>
