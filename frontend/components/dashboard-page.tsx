@@ -171,6 +171,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
   const [nowTs, setNowTs] = useState(Date.now());
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [lastRefreshAt, setLastRefreshAt] = useState("");
+  const [density, setDensity] = useState<"comfortable" | "compact">("comfortable");
 
   const scenarioPresets: ScenarioPreset[] = useMemo(
     () => [
@@ -397,6 +398,21 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
     const timer = setInterval(() => setNowTs(Date.now()), 60000);
     return () => clearInterval(timer);
   }, []);
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem("dashboard_density");
+      if (raw === "compact" || raw === "comfortable") {
+        setDensity(raw);
+      }
+    } catch {
+      return;
+    }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem("dashboard_density", density);
+  }, [density]);
 
   const topInsights = useMemo(() => {
     const counts = new Map<string, number>();
@@ -776,6 +792,12 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
             >
               {mode === "policy" ? t("mode.policy") : t("mode.research")}
             </button>
+            <button
+              onClick={() => setDensity((prev) => (prev === "comfortable" ? "compact" : "comfortable"))}
+              className="rounded border border-borderSoft px-3 py-2 text-sm"
+            >
+              {density === "comfortable" ? t("density.comfortable") : t("density.compact")}
+            </button>
           </div>
         </div>
       </header>
@@ -1114,10 +1136,13 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
                 </div>
               )}
             </div>
-            <div className="max-h-[900px] space-y-3 overflow-y-auto pr-1">
+            <div className={`max-h-[900px] overflow-y-auto pr-1 ${density === "compact" ? "space-y-2" : "space-y-3"}`}>
               {feed.map((item) => (
-                <article key={item.id} className="rounded-lg border border-borderSoft bg-surface p-4 transition-all hover:-translate-y-0.5 hover:shadow-sm">
-                  <div className="flex flex-wrap items-center gap-2 text-xs text-textMuted">
+                <article
+                  key={item.id}
+                  className={`rounded-lg border border-borderSoft bg-surface transition-all hover:-translate-y-0.5 hover:shadow-sm ${density === "compact" ? "p-3" : "p-4"}`}
+                >
+                  <div className={`flex flex-wrap items-center text-textMuted ${density === "compact" ? "gap-1 text-[11px]" : "gap-2 text-xs"}`}>
                     <span>{new Date(item.published_at).toLocaleString()}</span>
                     <RelativeTime value={item.published_at} />
                     <span className="rounded-full border px-2 py-0.5" style={{ borderColor: categoryColor[item.category], color: categoryColor[item.category] }}>
@@ -1128,17 +1153,22 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
                     <span className="rounded border border-borderSoft px-2">{item.language.toUpperCase()}</span>
                     {mode === "research" && <span>{t("feed.confidence")}: {item.confidence.toFixed(2)}</span>}
                   </div>
-                  <h4 className="mt-2 text-lg font-semibold">
+                  <h4 className={`${density === "compact" ? "mt-1 text-base font-semibold leading-tight" : "mt-2 text-lg font-semibold"}`}>
                     <a href={item.url} target="_blank" rel="noreferrer">{item.title}</a>
                   </h4>
                   {mode === "research" && (
-                    <div className="mt-2 flex flex-wrap gap-2 text-xs">
+                    <div className={`flex flex-wrap text-xs ${density === "compact" ? "mt-1 gap-1" : "mt-2 gap-2"}`}>
                       {item.tags.map((tag) => (
                         <span key={tag} className="rounded border border-borderSoft px-2 py-0.5">{tag}</span>
                       ))}
                     </div>
                   )}
-                  <button onClick={() => setSelected(item)} className="mt-3 rounded border border-borderSoft px-3 py-1.5 text-sm">Details</button>
+                  <button
+                    onClick={() => setSelected(item)}
+                    className={`rounded border border-borderSoft text-sm ${density === "compact" ? "mt-2 px-2 py-1" : "mt-3 px-3 py-1.5"}`}
+                  >
+                    Details
+                  </button>
                 </article>
               ))}
             </div>

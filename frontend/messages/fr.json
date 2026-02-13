@@ -8,6 +8,10 @@
     "policy": "Mode Politique",
     "research": "Mode Recherche"
   },
+  "density": {
+    "comfortable": "Confort",
+    "compact": "Compact"
+  },
   "filters": {
     "timeWindow": "Fenetre temporelle",
     "category": "Categorie",
