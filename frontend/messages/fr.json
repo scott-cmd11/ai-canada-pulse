@@ -98,6 +98,12 @@
     "topPublisher": "Editeur dominant",
     "highAlerts": "Alertes elevees"
   },
+  "briefing": {
+    "title": "Brief du matin (pret a partager)",
+    "copy": "Copier Markdown",
+    "copied": "Copie",
+    "copyFailed": "Echec copie"
+  },
   "compare": {
     "title": "Canada vs Monde",
     "canada": "Elements Canada",

@@ -98,6 +98,12 @@
     "topPublisher": "Top Publisher",
     "highAlerts": "High Alerts"
   },
+  "briefing": {
+    "title": "Morning Brief (Share-Ready)",
+    "copy": "Copy Markdown",
+    "copied": "Copied",
+    "copyFailed": "Copy failed"
+  },
   "compare": {
     "title": "Canada vs Global",
     "canada": "Canada Items",

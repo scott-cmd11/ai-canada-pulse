@@ -150,6 +150,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
     weekly: true,
   });
   const [copyState, setCopyState] = useState<"idle" | "copied" | "failed">("idle");
+  const [briefCopyState, setBriefCopyState] = useState<"idle" | "copied" | "failed">("idle");
 
   const otherLocale = locale === "en" ? "fr" : "en";
   const pagePath = scope === "canada" ? "canada" : "world";
@@ -567,6 +568,56 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
     }
   }
 
+  const morningBriefMarkdown = useMemo(() => {
+    const lines: string[] = [];
+    lines.push(`# ${scope === "canada" ? "Canada" : "World"} AI Pulse Brief`);
+    lines.push(`- Window: ${timeWindow}`);
+    lines.push(`- Generated: ${new Date().toISOString()}`);
+    lines.push("");
+    lines.push("## Momentum");
+    lines.push(`- New items 15m: ${kpis?.m15.current ?? 0} (${(kpis?.m15.delta_percent ?? 0).toFixed(1)}%)`);
+    lines.push(`- New items 1h: ${kpis?.h1.current ?? 0} (${(kpis?.h1.delta_percent ?? 0).toFixed(1)}%)`);
+    lines.push(`- New items 7d: ${kpis?.d7.current ?? 0} (${(kpis?.d7.delta_percent ?? 0).toFixed(1)}%)`);
+    lines.push("");
+    lines.push("## Snapshot");
+    lines.push(`- Total items: ${brief?.total_items ?? 0}`);
+    lines.push(`- Top category: ${brief?.top_category?.name || "-"}`);
+    lines.push(`- Top jurisdiction: ${brief?.top_jurisdiction?.name || "-"}`);
+    lines.push(`- Top publisher: ${brief?.top_publisher?.name || "-"}`);
+    lines.push(`- High alerts: ${brief?.high_alert_count ?? 0}`);
+    lines.push("");
+    lines.push("## Scope Compare");
+    lines.push(`- Canada: ${compare?.canada ?? 0}`);
+    lines.push(`- Global: ${compare?.global ?? 0}`);
+    lines.push(`- Other: ${compare?.other ?? 0}`);
+    lines.push("");
+    lines.push("## Risk");
+    lines.push(
+      `- Concentration (combined): ${(concentration?.combined_hhi ?? 0).toFixed(3)} (${concentration?.combined_level ?? "low"})`
+    );
+    lines.push(`- Confidence average: ${(confidenceProfile?.average_confidence ?? 0).toFixed(2)}`);
+    if (alerts.length > 0) {
+      lines.push("- Top alerts:");
+      alerts.slice(0, 3).forEach((item) => {
+        lines.push(`  - ${item.category} ${item.direction} ${item.delta_percent.toFixed(1)}%`);
+      });
+    } else {
+      lines.push("- Top alerts: none");
+    }
+    return lines.join("\n");
+  }, [scope, timeWindow, kpis, brief, compare, concentration, confidenceProfile, alerts]);
+
+  async function copyMorningBrief() {
+    try {
+      await navigator.clipboard.writeText(morningBriefMarkdown);
+      setBriefCopyState("copied");
+      setTimeout(() => setBriefCopyState("idle"), 1600);
+    } catch {
+      setBriefCopyState("failed");
+      setTimeout(() => setBriefCopyState("idle"), 1600);
+    }
+  }
+
   return (
     <div className="min-h-screen bg-bg text-text">
       <header className="border-b border-borderSoft bg-surface">
@@ -744,6 +795,21 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
               <p className="mt-1 font-semibold">{brief?.high_alert_count ?? 0}</p>
             </div>
           </div>
+        </section>
+        <section className="rounded-lg border border-borderSoft bg-surface p-4">
+          <div className="mb-2 flex items-center justify-between">
+            <h3 className="text-sm font-semibold text-textSecondary">{t("briefing.title")}</h3>
+            <button onClick={copyMorningBrief} className="rounded border border-borderSoft px-2 py-1 text-xs">
+              {briefCopyState === "copied"
+                ? t("briefing.copied")
+                : briefCopyState === "failed"
+                  ? t("briefing.copyFailed")
+                  : t("briefing.copy")}
+            </button>
+          </div>
+          <pre className="overflow-x-auto rounded border border-borderSoft bg-bg p-3 text-xs text-textSecondary">
+            {morningBriefMarkdown}
+          </pre>
         </section>
         <section className="rounded-lg border border-borderSoft bg-surface p-4">
           <h3 className="mb-2 text-sm font-semibold text-textSecondary">{t("compare.title")}</h3>
