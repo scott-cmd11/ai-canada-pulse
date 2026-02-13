@@ -21,6 +21,12 @@ It is a monorepo with:
 - Source health panel (per-source fetched/accepted/inserted/duplicates/errors)
 - Source mix analytics endpoint (`/api/v1/stats/sources`)
 
+## Project Control Docs
+
+- `ROADMAP.md`: prioritized delivery path (`Now`, `Next`, `Later`)
+- `STATUS.md`: current system status, risks, and immediate next actions
+- `RUNBOOK.md`: operations playbook and continuous autonomous pass protocol
+
 ## Metadata-Only Policy
 
 The project stores metadata only:
@@ -103,3 +109,4 @@ curl.exe -s http://localhost:8000/api/v1/backfill/status
 
 - Source ingestion is dedupe-heavy once the dataset is warm; `inserted=0` on a run is normal when all items are already known.
 - Use `/sources/health` and the Source Health panel to inspect ingestion behavior by source.
+- CI runs on push/PR via `.github/workflows/ci.yml` and validates Python compile + frontend build.
