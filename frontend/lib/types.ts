@@ -121,3 +121,9 @@ export interface SourcesBreakdownResponse {
   publishers: SourcesBreakdownEntry[];
   source_types: SourcesBreakdownEntry[];
 }
+
+export interface JurisdictionsBreakdownResponse {
+  time_window: TimeWindow;
+  total: number;
+  jurisdictions: SourcesBreakdownEntry[];
+}

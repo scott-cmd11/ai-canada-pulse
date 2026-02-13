@@ -84,7 +84,8 @@
     "runStatus": "Statut execution",
     "insertedTotal": "Total insere",
     "candidatesTotal": "Candidats",
-    "skippedLockCount": "Sauts verrou"
+    "skippedLockCount": "Sauts verrou",
+    "jurisdictions": "Principales juridictions"
   },
   "methods": {
     "title": "Methodes",

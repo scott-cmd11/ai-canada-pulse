@@ -187,3 +187,32 @@ async def fetch_sources_breakdown(db: AsyncSession, *, time_window: str = "7d", 
         "publishers": [{"name": str(name), "count": int(count)} for name, count in publishers_rows],
         "source_types": [{"name": _enum_name(name), "count": int(count)} for name, count in types_rows],
     }
+
+
+async def fetch_jurisdictions_breakdown(db: AsyncSession, *, time_window: str = "7d", limit: int = 12) -> dict[str, object]:
+    now = datetime.now(UTC)
+    since = now - (
+        {
+            "1h": timedelta(hours=1),
+            "24h": timedelta(hours=24),
+            "7d": timedelta(days=7),
+            "30d": timedelta(days=30),
+        }.get(time_window, timedelta(days=7))
+    )
+
+    total_stmt = select(func.count(AIDevelopment.id)).where(AIDevelopment.published_at >= since)
+    total = int((await db.execute(total_stmt)).scalar_one())
+
+    jurisdictions_stmt = (
+        select(AIDevelopment.jurisdiction, func.count(AIDevelopment.id).label("count"))
+        .where(AIDevelopment.published_at >= since)
+        .group_by(AIDevelopment.jurisdiction)
+        .order_by(text("count DESC"))
+        .limit(max(1, min(limit, 25)))
+    )
+    rows = (await db.execute(jurisdictions_stmt)).all()
+    return {
+        "time_window": time_window,
+        "total": total,
+        "jurisdictions": [{"name": str(name), "count": int(count)} for name, count in rows],
+    }

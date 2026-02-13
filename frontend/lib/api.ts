@@ -4,6 +4,7 @@ import type {
   BackfillStatus,
   EChartsResponse,
   FeedResponse,
+  JurisdictionsBreakdownResponse,
   KPIsResponse,
   PurgeSyntheticResponse,
   SourcesBreakdownResponse,
@@ -116,5 +117,11 @@ export async function fetchSourcesHealth(): Promise<SourcesHealthResponse> {
 export async function fetchSourcesBreakdown(time_window: TimeWindow = "7d"): Promise<SourcesBreakdownResponse> {
   const res = await fetch(`${API_BASE}/stats/sources?time_window=${time_window}&limit=8`, { cache: "no-store" });
   if (!res.ok) throw new Error("Failed to fetch sources breakdown");
+  return res.json();
+}
+
+export async function fetchJurisdictionsBreakdown(time_window: TimeWindow = "7d"): Promise<JurisdictionsBreakdownResponse> {
+  const res = await fetch(`${API_BASE}/stats/jurisdictions?time_window=${time_window}&limit=12`, { cache: "no-store" });
+  if (!res.ok) throw new Error("Failed to fetch jurisdictions breakdown");
   return res.json();
 }

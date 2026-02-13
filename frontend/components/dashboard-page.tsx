@@ -12,6 +12,7 @@ import {
   fetchBackfillStatus,
   fetchFeed,
   fetchHourly,
+  fetchJurisdictionsBreakdown,
   fetchKpis,
   fetchSourcesBreakdown,
   fetchSourcesHealth,
@@ -30,6 +31,7 @@ import type {
   SourcesBreakdownResponse,
   TimeWindow,
 } from "../lib/types";
+import type { JurisdictionsBreakdownResponse } from "../lib/types";
 import { useMode } from "./mode-provider";
 import { useTheme } from "./theme-provider";
 
@@ -81,6 +83,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
   const [sourceHealthCandidatesTotal, setSourceHealthCandidatesTotal] = useState(0);
   const [sourceHealthSkippedLockCount, setSourceHealthSkippedLockCount] = useState(0);
   const [sourcesBreakdown, setSourcesBreakdown] = useState<SourcesBreakdownResponse | null>(null);
+  const [jurisdictionsBreakdown, setJurisdictionsBreakdown] = useState<JurisdictionsBreakdownResponse | null>(null);
 
   const otherLocale = locale === "en" ? "fr" : "en";
   const pagePath = scope === "canada" ? "canada" : "world";
@@ -134,10 +137,11 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
 
     const poll = async () => {
       try {
-        const [status, sources, breakdown] = await Promise.all([
+        const [status, sources, breakdown, jurisdictions] = await Promise.all([
           fetchBackfillStatus(),
           fetchSourcesHealth(),
           fetchSourcesBreakdown("7d"),
+          fetchJurisdictionsBreakdown("7d"),
         ]);
         if (!mounted) return;
         setBackfillStatus(status);
@@ -149,6 +153,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
         setSourceHealthCandidatesTotal(sources.candidates_total ?? 0);
         setSourceHealthSkippedLockCount(sources.skipped_lock_count ?? 0);
         setSourcesBreakdown(breakdown);
+        setJurisdictionsBreakdown(jurisdictions);
       } catch {
         if (!mounted) return;
         setBackfillError("Unable to fetch backfill status.");
@@ -614,6 +619,19 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
                       ))}
                     </div>
                   </div>
+                </div>
+              </section>
+            )}
+            {mode === "research" && (
+              <section className="rounded-lg border border-borderSoft bg-surface p-3">
+                <h3 className="mb-2 text-sm font-semibold text-textSecondary">{t("sources.jurisdictions")}</h3>
+                <div className="space-y-1 text-xs">
+                  {(jurisdictionsBreakdown?.jurisdictions ?? []).slice(0, 8).map((item) => (
+                    <div key={item.name} className="flex justify-between">
+                      <span className="truncate pr-2">{item.name}</span>
+                      <span>{item.count}</span>
+                    </div>
+                  ))}
                 </div>
               </section>
             )}

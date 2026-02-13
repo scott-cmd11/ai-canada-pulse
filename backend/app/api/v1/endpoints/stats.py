@@ -3,7 +3,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.app.db.session import get_db
 from backend.app.schemas.ai_development import EChartsTimeseriesResponse, KPIsResponse
-from backend.app.services.stats import fetch_hourly_timeseries, fetch_kpis, fetch_sources_breakdown, fetch_weekly_timeseries
+from backend.app.services.stats import (
+    fetch_hourly_timeseries,
+    fetch_jurisdictions_breakdown,
+    fetch_kpis,
+    fetch_sources_breakdown,
+    fetch_weekly_timeseries,
+)
 
 router = APIRouter(prefix="/stats")
 
@@ -30,3 +36,12 @@ async def get_sources_breakdown(
     db: AsyncSession = Depends(get_db),
 ) -> dict[str, object]:
     return await fetch_sources_breakdown(db, time_window=time_window, limit=limit)
+
+
+@router.get("/jurisdictions")
+async def get_jurisdictions_breakdown(
+    time_window: str = Query("7d", pattern="^(1h|24h|7d|30d)$"),
+    limit: int = Query(12, ge=1, le=25),
+    db: AsyncSession = Depends(get_db),
+) -> dict[str, object]:
+    return await fetch_jurisdictions_breakdown(db, time_window=time_window, limit=limit)
