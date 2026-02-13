@@ -110,7 +110,10 @@
     "refreshing": "Actualisation...",
     "lastRefresh": "Derniere actualisation",
     "autoRefresh": "Auto",
-    "autoOff": "Arret"
+    "autoOff": "Arret",
+    "sort": "Tri",
+    "sortNewest": "Plus recent",
+    "sortConfidence": "Confiance la plus haute"
   },
   "charts": {
     "hourly": "Tendance horaire (24 h)",

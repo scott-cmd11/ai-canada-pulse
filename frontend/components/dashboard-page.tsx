@@ -195,6 +195,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
   const [lastRefreshAt, setLastRefreshAt] = useState("");
   const [autoRefreshSec, setAutoRefreshSec] = useState<0 | 15 | 30 | 60>(30);
   const [density, setDensity] = useState<"comfortable" | "compact">("comfortable");
+  const [feedSort, setFeedSort] = useState<"newest" | "confidence">("newest");
   const [pinnedItems, setPinnedItems] = useState<FeedItem[]>([]);
   const [savedBriefs, setSavedBriefs] = useState<SavedBrief[]>([]);
   const [dismissedAlertIds, setDismissedAlertIds] = useState<string[]>([]);
@@ -456,6 +457,21 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
 
   useEffect(() => {
     try {
+      const raw = localStorage.getItem("dashboard_feed_sort");
+      if (raw === "newest" || raw === "confidence") {
+        setFeedSort(raw);
+      }
+    } catch {
+      return;
+    }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem("dashboard_feed_sort", feedSort);
+  }, [feedSort]);
+
+  useEffect(() => {
+    try {
       const raw = localStorage.getItem("dashboard_auto_refresh_sec");
       const parsed = Number(raw);
       if (parsed === 0 || parsed === 15 || parsed === 30 || parsed === 60) {
@@ -555,6 +571,16 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
       .slice(0, 3)
       .map(([cat, count]) => `${cat}: ${count}`);
   }, [feed]);
+
+  const sortedFeed = useMemo(() => {
+    const next = [...feed];
+    if (feedSort === "confidence") {
+      next.sort((a, b) => b.confidence - a.confidence);
+      return next;
+    }
+    next.sort((a, b) => new Date(b.published_at).getTime() - new Date(a.published_at).getTime());
+    return next;
+  }, [feed, feedSort]);
 
   const executivePulse = useMemo(() => {
     const insights: string[] = [];
@@ -851,6 +877,17 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
     setSearch("");
   }
 
+  const activeFilters = useMemo(() => {
+    const chips: Array<{ id: string; label: string; clear: () => void }> = [];
+    chips.push({ id: "tw", label: `${t("filters.timeWindow")}: ${timeWindow}`, clear: () => setTimeWindow("24h") });
+    if (category) chips.push({ id: "cat", label: `${t("filters.category")}: ${category}`, clear: () => setCategory("") });
+    if (jurisdiction) chips.push({ id: "jur", label: `${t("filters.region")}: ${jurisdiction}`, clear: () => setJurisdiction(scope === "canada" ? "Canada" : "Global") });
+    if (language) chips.push({ id: "lang", label: `${t("feed.language")}: ${language.toUpperCase()}`, clear: () => setLanguage("") });
+    if (search) chips.push({ id: "q", label: `${t("filters.keyword")}: ${search}`, clear: () => setSearch("") });
+    chips.push({ id: "sort", label: `${t("feed.sort")}: ${feedSort === "newest" ? t("feed.sortNewest") : t("feed.sortConfidence")}`, clear: () => setFeedSort("newest") });
+    return chips;
+  }, [t, timeWindow, category, jurisdiction, scope, language, search, feedSort]);
+
   function deletePreset(id: string) {
     setPresets((prev) => prev.filter((item) => item.id !== id));
   }
@@ -1129,6 +1166,13 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
               />
             </div>
           </label>
+          <label className="text-sm">
+            <div className="mb-1 text-textSecondary">{t("feed.sort")}</div>
+            <select className="w-full rounded border border-borderSoft bg-surface px-2 py-2" value={feedSort} onChange={(e) => setFeedSort(e.target.value as "newest" | "confidence")}>
+              <option value="newest">{t("feed.sortNewest")}</option>
+              <option value="confidence">{t("feed.sortConfidence")}</option>
+            </select>
+          </label>
         </div>
         <div className="mx-auto flex max-w-[1400px] flex-wrap items-center gap-2 px-4 pb-3">
           <button onClick={savePreset} className="rounded border border-borderSoft px-2 py-1 text-xs">
@@ -1153,6 +1197,13 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
                 x
               </button>
             </div>
+          ))}
+        </div>
+        <div className="mx-auto flex max-w-[1400px] flex-wrap items-center gap-2 px-4 pb-3">
+          {activeFilters.map((chip) => (
+            <button key={chip.id} onClick={chip.clear} className="rounded border border-borderSoft bg-surface px-2 py-1 text-xs">
+              {chip.label} x
+            </button>
           ))}
         </div>
         <div className="mx-auto grid max-w-[1400px] grid-cols-1 gap-2 px-4 pb-3 md:grid-cols-5">
@@ -1457,7 +1508,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
               )}
             </div>
             <div className={`max-h-[900px] overflow-y-auto pr-1 ${density === "compact" ? "space-y-2" : "space-y-3"}`}>
-              {feed.map((item) => (
+              {sortedFeed.map((item) => (
                 <article
                   key={item.id}
                   className={`rounded-lg border border-borderSoft bg-surface transition-all hover:-translate-y-0.5 hover:shadow-sm ${density === "compact" ? "p-3" : "p-4"}`}

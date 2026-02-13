@@ -110,7 +110,10 @@
     "refreshing": "Refreshing...",
     "lastRefresh": "Last refresh",
     "autoRefresh": "Auto",
-    "autoOff": "Off"
+    "autoOff": "Off",
+    "sort": "Sort",
+    "sortNewest": "Newest",
+    "sortConfidence": "Highest confidence"
   },
   "charts": {
     "hourly": "Hourly Trend (24h)",
