@@ -169,6 +169,8 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
   const [copyState, setCopyState] = useState<"idle" | "copied" | "failed">("idle");
   const [briefCopyState, setBriefCopyState] = useState<"idle" | "copied" | "failed">("idle");
   const [nowTs, setNowTs] = useState(Date.now());
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [lastRefreshAt, setLastRefreshAt] = useState("");
 
   const scenarioPresets: ScenarioPreset[] = useMemo(
     () => [
@@ -235,36 +237,42 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
   const pagePath = scope === "canada" ? "canada" : "world";
 
   async function refreshData() {
-    const [feedResponse, kpiResponse, hourlyResponse, weeklyResponse, jurisdictionsResponse, briefResponse, compareResponse, confidenceResponse, concentrationResponse, momentumResponse] = await Promise.all([
-      fetchFeed({
-        time_window: timeWindow,
-        category: category || undefined,
-        jurisdiction: jurisdiction || undefined,
-        language: language || undefined,
-        search: search || undefined,
-        page: 1,
-        page_size: 50,
-      }),
-      fetchKpis(),
-      fetchHourly(),
-      fetchWeekly(),
-      fetchJurisdictionsBreakdown(timeWindow),
-      fetchBrief(timeWindow),
-      fetchCompare(timeWindow),
-      fetchConfidence(timeWindow),
-      fetchConcentration(timeWindow),
-      fetchMomentum(timeWindow, 8),
-    ]);
-    setFeed(feedResponse.items);
-    setKpis(kpiResponse);
-    setHourly(hourlyResponse);
-    setWeekly(weeklyResponse);
-    setJurisdictionsBreakdown(jurisdictionsResponse);
-    setBrief(briefResponse);
-    setCompare(compareResponse);
-    setConfidenceProfile(confidenceResponse);
-    setConcentration(concentrationResponse);
-    setMomentum(momentumResponse);
+    setIsRefreshing(true);
+    try {
+      const [feedResponse, kpiResponse, hourlyResponse, weeklyResponse, jurisdictionsResponse, briefResponse, compareResponse, confidenceResponse, concentrationResponse, momentumResponse] = await Promise.all([
+        fetchFeed({
+          time_window: timeWindow,
+          category: category || undefined,
+          jurisdiction: jurisdiction || undefined,
+          language: language || undefined,
+          search: search || undefined,
+          page: 1,
+          page_size: 50,
+        }),
+        fetchKpis(),
+        fetchHourly(),
+        fetchWeekly(),
+        fetchJurisdictionsBreakdown(timeWindow),
+        fetchBrief(timeWindow),
+        fetchCompare(timeWindow),
+        fetchConfidence(timeWindow),
+        fetchConcentration(timeWindow),
+        fetchMomentum(timeWindow, 8),
+      ]);
+      setFeed(feedResponse.items);
+      setKpis(kpiResponse);
+      setHourly(hourlyResponse);
+      setWeekly(weeklyResponse);
+      setJurisdictionsBreakdown(jurisdictionsResponse);
+      setBrief(briefResponse);
+      setCompare(compareResponse);
+      setConfidenceProfile(confidenceResponse);
+      setConcentration(concentrationResponse);
+      setMomentum(momentumResponse);
+      setLastRefreshAt(new Date().toISOString());
+    } finally {
+      setIsRefreshing(false);
+    }
   }
 
   useEffect(() => {
@@ -1041,10 +1049,18 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
           <div className="xl:col-span-3">
             <div className="mb-2 flex items-center justify-between">
               <h3 className="text-lg font-semibold">{t("feed.live")}</h3>
-              <span className="rounded border border-borderSoft px-2 py-1 text-xs">
-                {t("feed.liveStatus")}: {t(`feed.status_${sseStatus}`)}
-                {lastLiveAt ? ` - ${new Date(lastLiveAt).toLocaleTimeString()}` : ""}
-              </span>
+              <div className="flex items-center gap-2">
+                <span className="rounded border border-borderSoft px-2 py-1 text-xs">
+                  {t("feed.liveStatus")}: {t(`feed.status_${sseStatus}`)}
+                  {lastLiveAt ? ` - ${new Date(lastLiveAt).toLocaleTimeString()}` : ""}
+                </span>
+                <button onClick={() => refreshData().catch(() => undefined)} className="rounded border border-borderSoft px-2 py-1 text-xs">
+                  {isRefreshing ? t("feed.refreshing") : t("feed.refresh")}
+                </button>
+                <span className="text-xs text-textMuted">
+                  {t("feed.lastRefresh")}: {lastRefreshAt ? new Date(lastRefreshAt).toLocaleTimeString() : "-"}
+                </span>
+              </div>
               {mode === "research" && (
                 <div className="flex gap-2">
                   <a

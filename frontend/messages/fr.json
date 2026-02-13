@@ -93,7 +93,10 @@
     "copyUrl": "Copier URL",
     "copied": "Copie",
     "copyFailed": "Echec copie",
-    "close": "Fermer"
+    "close": "Fermer",
+    "refresh": "Actualiser",
+    "refreshing": "Actualisation...",
+    "lastRefresh": "Derniere actualisation"
   },
   "charts": {
     "hourly": "Tendance horaire (24 h)",
