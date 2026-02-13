@@ -65,6 +65,9 @@
     "sourceConcentration": "Concentration des sources :",
     "theme": "Concentration des themes :"
   },
+  "summary": {
+    "title": "Resume signaux"
+  },
   "panels": {
     "title": "Personnaliser les panneaux",
     "backfill": "Backfill",

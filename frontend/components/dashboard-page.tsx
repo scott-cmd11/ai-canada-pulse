@@ -21,6 +21,7 @@ import {
   fetchMomentum,
   fetchRiskTrend,
   fetchRiskIndex,
+  fetchSummary,
   fetchFeed,
   fetchHourly,
   fetchJurisdictionsBreakdown,
@@ -46,6 +47,7 @@ import type {
   RiskIndexResponse,
   EntityMomentumResponse,
   RiskTrendResponse,
+  SummaryResponse,
   KPIsResponse,
   PurgeSyntheticResponse,
   SourceHealthEntry,
@@ -162,6 +164,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
   const [riskIndex, setRiskIndex] = useState<RiskIndexResponse | null>(null);
   const [entityMomentum, setEntityMomentum] = useState<EntityMomentumResponse | null>(null);
   const [riskTrend, setRiskTrend] = useState<RiskTrendResponse | null>(null);
+  const [summary, setSummary] = useState<SummaryResponse | null>(null);
   const [sseStatus, setSseStatus] = useState<"connecting" | "live" | "error">("connecting");
   const [lastLiveAt, setLastLiveAt] = useState("");
   const [presets, setPresets] = useState<FilterPreset[]>([]);
@@ -267,7 +270,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
   async function refreshData() {
     setIsRefreshing(true);
     try {
-      const [feedResponse, kpiResponse, hourlyResponse, weeklyResponse, jurisdictionsResponse, briefResponse, compareResponse, confidenceResponse, concentrationResponse, momentumResponse, riskResponse, entityMomentumResponse, riskTrendResponse] = await Promise.all([
+      const [feedResponse, kpiResponse, hourlyResponse, weeklyResponse, jurisdictionsResponse, briefResponse, compareResponse, confidenceResponse, concentrationResponse, momentumResponse, riskResponse, entityMomentumResponse, riskTrendResponse, summaryResponse] = await Promise.all([
         fetchFeed({
           time_window: timeWindow,
           category: category || undefined,
@@ -289,6 +292,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
       fetchRiskIndex(timeWindow),
       fetchEntityMomentum(timeWindow, 10),
       fetchRiskTrend(timeWindow),
+      fetchSummary(timeWindow),
     ]);
       setFeed(feedResponse.items);
       setKpis(kpiResponse);
@@ -303,6 +307,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
       setRiskIndex(riskResponse);
       setEntityMomentum(entityMomentumResponse);
       setRiskTrend(riskTrendResponse);
+      setSummary(summaryResponse);
       setLastRefreshAt(new Date().toISOString());
     } finally {
       setIsRefreshing(false);
@@ -1261,6 +1266,14 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
           <h3 className="text-sm font-semibold text-textSecondary">{t("narrative.title")}</h3>
           <ul className="mt-2 list-disc space-y-1 pl-4 text-sm text-textSecondary">
             {strategicNarrative.map((line) => (
+              <li key={line}>{line}</li>
+            ))}
+          </ul>
+        </section>
+        <section className="rounded-lg border border-borderSoft bg-surface p-4">
+          <h3 className="text-sm font-semibold text-textSecondary">{t("summary.title")}</h3>
+          <ul className="mt-2 list-disc space-y-1 pl-4 text-sm text-textSecondary">
+            {(summary?.bullets ?? []).map((line) => (
               <li key={line}>{line}</li>
             ))}
           </ul>

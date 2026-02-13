@@ -16,6 +16,7 @@ import type {
   MomentumResponse,
   EntityMomentumResponse,
   RiskTrendResponse,
+  SummaryResponse,
   RiskIndexResponse,
   TagsBreakdownResponse,
   SourcesBreakdownResponse,
@@ -203,5 +204,11 @@ export async function fetchEntityMomentum(time_window: TimeWindow = "24h", limit
 export async function fetchRiskTrend(time_window: TimeWindow = "24h"): Promise<RiskTrendResponse> {
   const res = await fetch(`${API_BASE}/stats/risk-trend?time_window=${time_window}`, { cache: "no-store" });
   if (!res.ok) throw new Error("Failed to fetch risk trend");
+  return res.json();
+}
+
+export async function fetchSummary(time_window: TimeWindow = "24h"): Promise<SummaryResponse> {
+  const res = await fetch(`${API_BASE}/stats/summary?time_window=${time_window}`, { cache: "no-store" });
+  if (!res.ok) throw new Error("Failed to fetch summary");
   return res.json();
 }

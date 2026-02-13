@@ -932,6 +932,38 @@ async def fetch_risk_trend(db: AsyncSession, *, time_window: str = "24h") -> dic
     }
 
 
+async def fetch_summary(db: AsyncSession, *, time_window: str = "24h") -> dict[str, object]:
+    now = datetime.now(UTC)
+    kpis = await fetch_kpis(db)
+    brief = await fetch_brief_snapshot(db, time_window=time_window)
+    risk = await fetch_risk_index(db, time_window=time_window)
+    concentration = await fetch_concentration(db, time_window=time_window)
+    momentum = await fetch_momentum(db, time_window=time_window, limit=3)
+
+    bullets: list[str] = []
+    bullets.append(f"Volume {kpis.h1.current} in last hour ({kpis.h1.delta_percent:+.1f}% vs previous hour).")
+    top_category = brief.get("top_category", {}).get("name", "")
+    if top_category:
+        bullets.append(f"Top category: {top_category}.")
+    top_jurisdiction = brief.get("top_jurisdiction", {}).get("name", "")
+    if top_jurisdiction:
+        bullets.append(f"Top jurisdiction: {top_jurisdiction}.")
+    bullets.append(f"Risk index: {risk.get('score', 0):.1f} ({risk.get('level', 'low')}).")
+    bullets.append(f"Concentration: {concentration.get('combined_hhi', 0):.3f} ({concentration.get('combined_level', 'low')}).")
+
+    mover = (momentum.get("categories") or [None])[0]
+    if mover and isinstance(mover, dict):
+        name = mover.get("name", "")
+        change = mover.get("change", 0)
+        bullets.append(f"Top category mover: {name} ({change:+d}).")
+
+    return {
+        "generated_at": now.isoformat(),
+        "time_window": time_window,
+        "bullets": bullets[:6],
+    }
+
+
 async def fetch_alerts(
     db: AsyncSession,
     *,

@@ -276,3 +276,9 @@ export interface RiskTrendResponse {
   incidents_ratio_pct: number[];
   low_confidence_ratio_pct: number[];
 }
+
+export interface SummaryResponse {
+  generated_at: string;
+  time_window: TimeWindow;
+  bullets: string[];
+}

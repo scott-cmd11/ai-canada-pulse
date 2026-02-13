@@ -13,6 +13,7 @@ from backend.app.services.stats import (
     fetch_momentum,
     fetch_risk_index,
     fetch_risk_trend,
+    fetch_summary,
     fetch_scope_compare,
     fetch_hourly_timeseries,
     fetch_jurisdictions_breakdown,
@@ -140,6 +141,14 @@ async def get_risk_trend(
     db: AsyncSession = Depends(get_db),
 ) -> dict[str, object]:
     return await fetch_risk_trend(db, time_window=time_window)
+
+
+@router.get("/summary")
+async def get_summary(
+    time_window: str = Query("24h", pattern="^(1h|24h|7d|30d)$"),
+    db: AsyncSession = Depends(get_db),
+) -> dict[str, object]:
+    return await fetch_summary(db, time_window=time_window)
 
 
 @router.get("/alerts", response_model=StatsAlertsResponse)

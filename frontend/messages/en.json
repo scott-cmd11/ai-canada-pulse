@@ -65,6 +65,9 @@
     "sourceConcentration": "Source concentration:",
     "theme": "Theme concentration:"
   },
+  "summary": {
+    "title": "Signal Summary"
+  },
   "panels": {
     "title": "Customize Panels",
     "backfill": "Backfill",
