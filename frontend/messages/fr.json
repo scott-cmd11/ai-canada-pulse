@@ -21,7 +21,10 @@
     "savePreset": "Sauver preset",
     "presetNamePrompt": "Nom du preset",
     "deletePreset": "Supprimer preset",
-    "clear": "Reinitialiser"
+    "clear": "Reinitialiser",
+    "share": "Partager vue",
+    "shareCopied": "Lien copie",
+    "shareFailed": "Echec copie"
   },
   "scenarios": {
     "policyPulse": "Pulse Politique",

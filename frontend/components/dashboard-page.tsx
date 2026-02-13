@@ -184,6 +184,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
   const [copyState, setCopyState] = useState<"idle" | "copied" | "failed">("idle");
   const [briefCopyState, setBriefCopyState] = useState<"idle" | "copied" | "failed">("idle");
   const [saveBriefState, setSaveBriefState] = useState<"idle" | "saved">("idle");
+  const [shareState, setShareState] = useState<"idle" | "copied" | "failed">("idle");
   const [nowTs, setNowTs] = useState(Date.now());
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [lastRefreshAt, setLastRefreshAt] = useState("");
@@ -490,6 +491,36 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
   useEffect(() => {
     localStorage.setItem(`saved_briefs_${scope}`, JSON.stringify(savedBriefs));
   }, [savedBriefs, scope]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    const tw = params.get("tw");
+    const cat = params.get("cat");
+    const jur = params.get("jur");
+    const lang = params.get("lang");
+    const q = params.get("q");
+    const m = params.get("m");
+    if (tw === "1h" || tw === "24h" || tw === "7d" || tw === "30d") setTimeWindow(tw);
+    if (cat) setCategory(cat);
+    if (jur) setJurisdiction(jur);
+    if (lang) setLanguage(lang);
+    if (q) setSearch(q);
+    if (m === "policy" || m === "research") setMode(m);
+  }, [setMode]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams();
+    params.set("tw", timeWindow);
+    if (category) params.set("cat", category);
+    if (jurisdiction) params.set("jur", jurisdiction);
+    if (language) params.set("lang", language);
+    if (search) params.set("q", search);
+    params.set("m", mode);
+    const next = `${window.location.pathname}?${params.toString()}`;
+    window.history.replaceState(null, "", next);
+  }, [timeWindow, category, jurisdiction, language, search, mode]);
 
   const topInsights = useMemo(() => {
     const counts = new Map<string, number>();
@@ -894,6 +925,18 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
     setTimeout(() => setSaveBriefState("idle"), 1600);
   }
 
+  async function copyShareLink() {
+    if (typeof window === "undefined") return;
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+      setShareState("copied");
+      setTimeout(() => setShareState("idle"), 1600);
+    } catch {
+      setShareState("failed");
+      setTimeout(() => setShareState("idle"), 1600);
+    }
+  }
+
   return (
     <div className="min-h-screen bg-bg text-text">
       <header className="border-b border-borderSoft bg-surface">
@@ -994,6 +1037,13 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
           </button>
           <button onClick={clearFilters} className="rounded border border-borderSoft px-2 py-1 text-xs">
             {t("filters.clear")}
+          </button>
+          <button onClick={copyShareLink} className="rounded border border-borderSoft px-2 py-1 text-xs">
+            {shareState === "copied"
+              ? t("filters.shareCopied")
+              : shareState === "failed"
+                ? t("filters.shareFailed")
+                : t("filters.share")}
           </button>
           {presets.map((preset) => (
             <div key={preset.id} className="flex items-center gap-1 rounded border border-borderSoft px-2 py-1 text-xs">
