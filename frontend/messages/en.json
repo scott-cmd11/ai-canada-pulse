@@ -147,6 +147,23 @@
     "medium": "Medium",
     "high": "High"
   },
+  "risk": {
+    "title": "Composite Risk Index",
+    "score": "Risk Score",
+    "incidents": "Incidents",
+    "lowConfidence": "Low Confidence",
+    "highAlerts": "High Alerts",
+    "low": "Low",
+    "medium": "Medium",
+    "high": "High"
+  },
+  "riskReason": {
+    "incident_ratio_elevated": "Incident ratio elevated",
+    "low_confidence_share_elevated": "Low-confidence share elevated",
+    "signal_concentration_high": "Signal concentration high",
+    "multiple_high_alerts": "Multiple high alerts",
+    "stable_signal_profile": "Stable signal profile"
+  },
   "backfill": {
     "title": "Historical Backfill",
     "startDate": "Start Date",

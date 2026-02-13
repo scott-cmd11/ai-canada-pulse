@@ -238,3 +238,18 @@ export interface MomentumResponse {
   categories: MomentumItem[];
   publishers: MomentumItem[];
 }
+
+export interface RiskIndexResponse {
+  generated_at: string;
+  time_window: TimeWindow;
+  score: number;
+  level: "low" | "medium" | "high";
+  total: number;
+  incidents: number;
+  low_confidence: number;
+  high_alert_count: number;
+  incidents_ratio: number;
+  low_confidence_ratio: number;
+  combined_hhi: number;
+  reasons: string[];
+}

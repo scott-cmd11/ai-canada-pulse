@@ -147,6 +147,23 @@
     "medium": "Moyenne",
     "high": "Elevee"
   },
+  "risk": {
+    "title": "Indice de risque compose",
+    "score": "Score risque",
+    "incidents": "Incidents",
+    "lowConfidence": "Faible confiance",
+    "highAlerts": "Alertes elevees",
+    "low": "Faible",
+    "medium": "Moyenne",
+    "high": "Elevee"
+  },
+  "riskReason": {
+    "incident_ratio_elevated": "Ratio incidents eleve",
+    "low_confidence_share_elevated": "Part faible confiance elevee",
+    "signal_concentration_high": "Concentration signaux elevee",
+    "multiple_high_alerts": "Plusieurs alertes elevees",
+    "stable_signal_profile": "Profil de signal stable"
+  },
   "backfill": {
     "title": "Backfill Historique",
     "startDate": "Date de debut",

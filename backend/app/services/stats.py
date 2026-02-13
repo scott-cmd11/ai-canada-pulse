@@ -673,6 +673,75 @@ async def fetch_momentum(db: AsyncSession, *, time_window: str = "24h", limit: i
     }
 
 
+async def fetch_risk_index(db: AsyncSession, *, time_window: str = "24h") -> dict[str, object]:
+    now = datetime.now(UTC)
+    since = now - (
+        {
+            "1h": timedelta(hours=1),
+            "24h": timedelta(hours=24),
+            "7d": timedelta(days=7),
+            "30d": timedelta(days=30),
+        }.get(time_window, timedelta(hours=24))
+    )
+    total_stmt = select(func.count(AIDevelopment.id)).where(AIDevelopment.published_at >= since)
+    incidents_stmt = select(func.count(AIDevelopment.id)).where(
+        and_(AIDevelopment.published_at >= since, AIDevelopment.category == CategoryType.incidents)
+    )
+    low_conf_stmt = select(func.count(AIDevelopment.id)).where(
+        and_(AIDevelopment.published_at >= since, AIDevelopment.confidence < 0.5)
+    )
+    total = int((await db.execute(total_stmt)).scalar_one())
+    incidents = int((await db.execute(incidents_stmt)).scalar_one())
+    low_confidence = int((await db.execute(low_conf_stmt)).scalar_one())
+
+    incidents_ratio = incidents / max(1, total)
+    low_confidence_ratio = low_confidence / max(1, total)
+    concentration = await fetch_concentration(db, time_window=time_window)
+    alerts = await fetch_alerts(db, time_window=time_window, min_baseline=3, min_delta_percent=35.0)
+    high_alert_count = len([item for item in alerts.alerts if item.severity == "high"])
+
+    score = (
+        incidents_ratio * 35.0
+        + low_confidence_ratio * 25.0
+        + float(concentration.get("combined_hhi", 0.0)) * 40.0
+        + min(20.0, high_alert_count * 5.0)
+    ) * 100.0 / 100.0
+    score = max(0.0, min(100.0, round(score, 2)))
+
+    level = "low"
+    if score >= 70:
+        level = "high"
+    elif score >= 40:
+        level = "medium"
+
+    reasons: list[str] = []
+    if incidents_ratio >= 0.08:
+        reasons.append("incident_ratio_elevated")
+    if low_confidence_ratio >= 0.15:
+        reasons.append("low_confidence_share_elevated")
+    if float(concentration.get("combined_hhi", 0.0)) >= 0.4:
+        reasons.append("signal_concentration_high")
+    if high_alert_count >= 2:
+        reasons.append("multiple_high_alerts")
+    if len(reasons) == 0:
+        reasons.append("stable_signal_profile")
+
+    return {
+        "generated_at": now.isoformat(),
+        "time_window": time_window,
+        "score": score,
+        "level": level,
+        "total": total,
+        "incidents": incidents,
+        "low_confidence": low_confidence,
+        "high_alert_count": high_alert_count,
+        "incidents_ratio": round(incidents_ratio, 4),
+        "low_confidence_ratio": round(low_confidence_ratio, 4),
+        "combined_hhi": round(float(concentration.get("combined_hhi", 0.0)), 4),
+        "reasons": reasons,
+    }
+
+
 async def fetch_alerts(
     db: AsyncSession,
     *,

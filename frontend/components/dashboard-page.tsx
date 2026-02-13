@@ -18,6 +18,7 @@ import {
   fetchConcentration,
   fetchConfidence,
   fetchMomentum,
+  fetchRiskIndex,
   fetchFeed,
   fetchHourly,
   fetchJurisdictionsBreakdown,
@@ -40,6 +41,7 @@ import type {
   ConfidenceProfileResponse,
   ConcentrationResponse,
   MomentumResponse,
+  RiskIndexResponse,
   KPIsResponse,
   PurgeSyntheticResponse,
   SourceHealthEntry,
@@ -147,6 +149,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
   const [confidenceProfile, setConfidenceProfile] = useState<ConfidenceProfileResponse | null>(null);
   const [concentration, setConcentration] = useState<ConcentrationResponse | null>(null);
   const [momentum, setMomentum] = useState<MomentumResponse | null>(null);
+  const [riskIndex, setRiskIndex] = useState<RiskIndexResponse | null>(null);
   const [sseStatus, setSseStatus] = useState<"connecting" | "live" | "error">("connecting");
   const [lastLiveAt, setLastLiveAt] = useState("");
   const [presets, setPresets] = useState<FilterPreset[]>([]);
@@ -243,7 +246,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
   async function refreshData() {
     setIsRefreshing(true);
     try {
-      const [feedResponse, kpiResponse, hourlyResponse, weeklyResponse, jurisdictionsResponse, briefResponse, compareResponse, confidenceResponse, concentrationResponse, momentumResponse] = await Promise.all([
+    const [feedResponse, kpiResponse, hourlyResponse, weeklyResponse, jurisdictionsResponse, briefResponse, compareResponse, confidenceResponse, concentrationResponse, momentumResponse, riskResponse] = await Promise.all([
         fetchFeed({
           time_window: timeWindow,
           category: category || undefined,
@@ -260,9 +263,10 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
         fetchBrief(timeWindow),
         fetchCompare(timeWindow),
         fetchConfidence(timeWindow),
-        fetchConcentration(timeWindow),
-        fetchMomentum(timeWindow, 8),
-      ]);
+      fetchConcentration(timeWindow),
+      fetchMomentum(timeWindow, 8),
+      fetchRiskIndex(timeWindow),
+    ]);
       setFeed(feedResponse.items);
       setKpis(kpiResponse);
       setHourly(hourlyResponse);
@@ -273,6 +277,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
       setConfidenceProfile(confidenceResponse);
       setConcentration(concentrationResponse);
       setMomentum(momentumResponse);
+      setRiskIndex(riskResponse);
       setLastRefreshAt(new Date().toISOString());
     } finally {
       setIsRefreshing(false);
@@ -795,6 +800,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
     }
     lines.push("");
     lines.push("## Risk");
+    lines.push(`- Risk index: ${(riskIndex?.score ?? 0).toFixed(1)} (${riskIndex?.level ?? "low"})`);
     lines.push(
       `- Concentration (combined): ${(concentration?.combined_hhi ?? 0).toFixed(3)} (${concentration?.combined_level ?? "low"})`
     );
@@ -808,7 +814,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
       lines.push("- Top alerts: none");
     }
     return lines.join("\n");
-  }, [scope, timeWindow, kpis, brief, compare, concentration, confidenceProfile, alerts, sourceFreshness, pinnedItems]);
+  }, [scope, timeWindow, kpis, brief, compare, concentration, confidenceProfile, riskIndex, alerts, sourceFreshness, pinnedItems]);
 
   async function copyMorningBrief() {
     try {
@@ -1115,6 +1121,39 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
                 </span>
               </p>
             </div>
+          </div>
+        </section>
+        <section className="rounded-lg border border-borderSoft bg-surface p-4">
+          <h3 className="mb-2 text-sm font-semibold text-textSecondary">{t("risk.title")}</h3>
+          <div className="grid grid-cols-1 gap-2 text-xs md:grid-cols-4">
+            <div className="rounded border border-borderSoft bg-bg p-2">
+              <p className="text-textMuted">{t("risk.score")}</p>
+              <p className="mt-1 font-semibold">
+                {(riskIndex?.score ?? 0).toFixed(1)}{" "}
+                <span style={{ color: concentrationTone(riskIndex?.level ?? "low") }}>
+                  {t(`risk.${riskIndex?.level ?? "low"}`)}
+                </span>
+              </p>
+            </div>
+            <div className="rounded border border-borderSoft bg-bg p-2">
+              <p className="text-textMuted">{t("risk.incidents")}</p>
+              <p className="mt-1 font-semibold">{riskIndex?.incidents ?? 0}</p>
+            </div>
+            <div className="rounded border border-borderSoft bg-bg p-2">
+              <p className="text-textMuted">{t("risk.lowConfidence")}</p>
+              <p className="mt-1 font-semibold">{riskIndex?.low_confidence ?? 0}</p>
+            </div>
+            <div className="rounded border border-borderSoft bg-bg p-2">
+              <p className="text-textMuted">{t("risk.highAlerts")}</p>
+              <p className="mt-1 font-semibold">{riskIndex?.high_alert_count ?? 0}</p>
+            </div>
+          </div>
+          <div className="mt-2 flex flex-wrap gap-2 text-xs">
+            {(riskIndex?.reasons ?? []).map((reason) => (
+              <span key={reason} className="rounded border border-borderSoft px-2 py-1 text-textSecondary">
+                {t(`riskReason.${reason}`)}
+              </span>
+            ))}
           </div>
         </section>
         <section className="rounded-lg border border-borderSoft bg-surface p-4">
