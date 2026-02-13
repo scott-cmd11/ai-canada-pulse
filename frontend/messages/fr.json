@@ -23,6 +23,10 @@
   },
   "feed": {
     "live": "Flux en direct",
+    "liveStatus": "Flux",
+    "status_connecting": "Connexion",
+    "status_live": "Actif",
+    "status_error": "Degrade",
     "publisher": "Editeur",
     "language": "Langue",
     "jurisdiction": "Juridiction",

@@ -23,6 +23,10 @@
   },
   "feed": {
     "live": "Live Feed",
+    "liveStatus": "Stream",
+    "status_connecting": "Connecting",
+    "status_live": "Live",
+    "status_error": "Degraded",
     "publisher": "Publisher",
     "language": "Language",
     "jurisdiction": "Jurisdiction",

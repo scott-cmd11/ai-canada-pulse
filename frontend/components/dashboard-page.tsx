@@ -90,6 +90,8 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
   const [jurisdictionsBreakdown, setJurisdictionsBreakdown] = useState<JurisdictionsBreakdownResponse | null>(null);
   const [entitiesBreakdown, setEntitiesBreakdown] = useState<EntitiesBreakdownResponse | null>(null);
   const [alerts, setAlerts] = useState<StatsAlertItem[]>([]);
+  const [sseStatus, setSseStatus] = useState<"connecting" | "live" | "error">("connecting");
+  const [lastLiveAt, setLastLiveAt] = useState("");
 
   const otherLocale = locale === "en" ? "fr" : "en";
   const pagePath = scope === "canada" ? "canada" : "world";
@@ -120,12 +122,21 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
   }, [timeWindow, category, jurisdiction, language, search]);
 
   useEffect(() => {
+    setSseStatus("connecting");
     const source = new EventSource(sseUrl());
+    source.onopen = () => {
+      setSseStatus("live");
+    };
+    source.onerror = () => {
+      setSseStatus("error");
+    };
     const handler = (event: MessageEvent) => {
       try {
         const payload = JSON.parse(event.data) as FeedItem;
         if (scope === "canada" && payload.jurisdiction !== "Canada") return;
         if (scope === "world" && payload.jurisdiction === "Canada") return;
+        setSseStatus("live");
+        setLastLiveAt(new Date().toISOString());
         setFeed((prev) => [payload, ...prev].slice(0, 100));
       } catch {
         return;
@@ -407,6 +418,10 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
           <div className="xl:col-span-3">
             <div className="mb-2 flex items-center justify-between">
               <h3 className="text-lg font-semibold">{t("feed.live")}</h3>
+              <span className="rounded border border-borderSoft px-2 py-1 text-xs">
+                {t("feed.liveStatus")}: {t(`feed.status_${sseStatus}`)}
+                {lastLiveAt ? ` - ${new Date(lastLiveAt).toLocaleTimeString()}` : ""}
+              </span>
               {mode === "research" && (
                 <div className="flex gap-2">
                   <a
