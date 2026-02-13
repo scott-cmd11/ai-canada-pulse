@@ -172,6 +172,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
   const [nowTs, setNowTs] = useState(Date.now());
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [lastRefreshAt, setLastRefreshAt] = useState("");
+  const [autoRefreshSec, setAutoRefreshSec] = useState<0 | 15 | 30 | 60>(30);
   const [density, setDensity] = useState<"comfortable" | "compact">("comfortable");
   const [pinnedItems, setPinnedItems] = useState<FeedItem[]>([]);
 
@@ -281,6 +282,14 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
   useEffect(() => {
     refreshData().catch(() => undefined);
   }, [timeWindow, category, jurisdiction, language, search]);
+
+  useEffect(() => {
+    if (autoRefreshSec === 0) return;
+    const timer = setInterval(() => {
+      refreshData().catch(() => undefined);
+    }, autoRefreshSec * 1000);
+    return () => clearInterval(timer);
+  }, [autoRefreshSec, timeWindow, category, jurisdiction, language, search]);
 
   useEffect(() => {
     setSseStatus("connecting");
@@ -415,6 +424,22 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
   useEffect(() => {
     localStorage.setItem("dashboard_density", density);
   }, [density]);
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem("dashboard_auto_refresh_sec");
+      const parsed = Number(raw);
+      if (parsed === 0 || parsed === 15 || parsed === 30 || parsed === 60) {
+        setAutoRefreshSec(parsed);
+      }
+    } catch {
+      return;
+    }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem("dashboard_auto_refresh_sec", String(autoRefreshSec));
+  }, [autoRefreshSec]);
 
   useEffect(() => {
     try {
@@ -1136,8 +1161,19 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
                 <button onClick={() => refreshData().catch(() => undefined)} className="rounded border border-borderSoft px-2 py-1 text-xs">
                   {isRefreshing ? t("feed.refreshing") : t("feed.refresh")}
                 </button>
+                <select
+                  value={String(autoRefreshSec)}
+                  onChange={(e) => setAutoRefreshSec(Number(e.target.value) as 0 | 15 | 30 | 60)}
+                  className="rounded border border-borderSoft bg-surface px-2 py-1 text-xs"
+                  aria-label={t("feed.autoRefresh")}
+                >
+                  <option value="0">{t("feed.autoOff")}</option>
+                  <option value="15">15s</option>
+                  <option value="30">30s</option>
+                  <option value="60">60s</option>
+                </select>
                 <span className="text-xs text-textMuted">
-                  {t("feed.lastRefresh")}: {lastRefreshAt ? new Date(lastRefreshAt).toLocaleTimeString() : "-"}
+                  {t("feed.autoRefresh")}: {autoRefreshSec === 0 ? t("feed.autoOff") : `${autoRefreshSec}s`} | {t("feed.lastRefresh")}: {lastRefreshAt ? new Date(lastRefreshAt).toLocaleTimeString() : "-"}
                 </span>
               </div>
               {mode === "research" && (

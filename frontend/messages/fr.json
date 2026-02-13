@@ -101,7 +101,9 @@
     "close": "Fermer",
     "refresh": "Actualiser",
     "refreshing": "Actualisation...",
-    "lastRefresh": "Derniere actualisation"
+    "lastRefresh": "Derniere actualisation",
+    "autoRefresh": "Auto",
+    "autoOff": "Arret"
   },
   "charts": {
     "hourly": "Tendance horaire (24 h)",

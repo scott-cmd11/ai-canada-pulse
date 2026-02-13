@@ -101,7 +101,9 @@
     "close": "Close",
     "refresh": "Refresh",
     "refreshing": "Refreshing...",
-    "lastRefresh": "Last refresh"
+    "lastRefresh": "Last refresh",
+    "autoRefresh": "Auto",
+    "autoOff": "Off"
   },
   "charts": {
     "hourly": "Hourly Trend (24h)",
