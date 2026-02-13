@@ -742,6 +742,89 @@ async def fetch_risk_index(db: AsyncSession, *, time_window: str = "24h") -> dic
     }
 
 
+async def fetch_entity_momentum(db: AsyncSession, *, time_window: str = "24h", limit: int = 10) -> dict[str, object]:
+    now = datetime.now(UTC)
+    window = {
+        "1h": timedelta(hours=1),
+        "24h": timedelta(hours=24),
+        "7d": timedelta(days=7),
+        "30d": timedelta(days=30),
+    }.get(time_window, timedelta(hours=24))
+    current_start = now - window
+    previous_start = now - (window * 2)
+
+    current_rows = (
+        await db.execute(
+            text(
+                """
+                SELECT entity_name AS name, COUNT(*)::int AS count
+                FROM ai_developments,
+                LATERAL jsonb_array_elements_text(COALESCE(entities, '[]'::jsonb)) AS entity_name
+                WHERE published_at >= :current_start
+                  AND published_at < :now
+                  AND entity_name <> ''
+                GROUP BY entity_name
+                ORDER BY count DESC
+                LIMIT 120
+                """
+            ),
+            {"current_start": current_start, "now": now},
+        )
+    ).all()
+    previous_rows = (
+        await db.execute(
+            text(
+                """
+                SELECT entity_name AS name, COUNT(*)::int AS count
+                FROM ai_developments,
+                LATERAL jsonb_array_elements_text(COALESCE(entities, '[]'::jsonb)) AS entity_name
+                WHERE published_at >= :previous_start
+                  AND published_at < :current_start
+                  AND entity_name <> ''
+                GROUP BY entity_name
+                ORDER BY count DESC
+                LIMIT 120
+                """
+            ),
+            {"previous_start": previous_start, "current_start": current_start},
+        )
+    ).all()
+
+    def _delta(current: int, previous: int) -> float:
+        if previous == 0:
+            return 100.0 if current > 0 else 0.0
+        return round(((current - previous) / previous) * 100.0, 2)
+
+    current_map = {str(name): int(count) for name, count in current_rows}
+    previous_map = {str(name): int(count) for name, count in previous_rows}
+    names = sorted(set(current_map.keys()) | set(previous_map.keys()))
+
+    movers: list[dict[str, object]] = []
+    for name in names:
+        current = current_map.get(name, 0)
+        previous = previous_map.get(name, 0)
+        change = current - previous
+        if current == 0 and previous == 0:
+            continue
+        movers.append(
+            {
+                "name": name,
+                "current": current,
+                "previous": previous,
+                "change": change,
+                "delta_percent": _delta(current, previous),
+            }
+        )
+
+    movers.sort(key=lambda item: abs(int(item["change"])), reverse=True)
+    bounded = max(1, min(limit, 20))
+    return {
+        "generated_at": now.isoformat(),
+        "time_window": time_window,
+        "entities": movers[:bounded],
+    }
+
+
 async def fetch_alerts(
     db: AsyncSession,
     *,

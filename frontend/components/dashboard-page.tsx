@@ -17,6 +17,7 @@ import {
   fetchCompare,
   fetchConcentration,
   fetchConfidence,
+  fetchEntityMomentum,
   fetchMomentum,
   fetchRiskIndex,
   fetchFeed,
@@ -42,6 +43,7 @@ import type {
   ConcentrationResponse,
   MomentumResponse,
   RiskIndexResponse,
+  EntityMomentumResponse,
   KPIsResponse,
   PurgeSyntheticResponse,
   SourceHealthEntry,
@@ -156,6 +158,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
   const [concentration, setConcentration] = useState<ConcentrationResponse | null>(null);
   const [momentum, setMomentum] = useState<MomentumResponse | null>(null);
   const [riskIndex, setRiskIndex] = useState<RiskIndexResponse | null>(null);
+  const [entityMomentum, setEntityMomentum] = useState<EntityMomentumResponse | null>(null);
   const [sseStatus, setSseStatus] = useState<"connecting" | "live" | "error">("connecting");
   const [lastLiveAt, setLastLiveAt] = useState("");
   const [presets, setPresets] = useState<FilterPreset[]>([]);
@@ -168,6 +171,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
     sourceQuality: true,
     confidenceProfile: true,
     momentum: true,
+    entityMomentum: true,
     pinnedSignals: true,
     briefHistory: true,
     alerts: true,
@@ -255,7 +259,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
   async function refreshData() {
     setIsRefreshing(true);
     try {
-    const [feedResponse, kpiResponse, hourlyResponse, weeklyResponse, jurisdictionsResponse, briefResponse, compareResponse, confidenceResponse, concentrationResponse, momentumResponse, riskResponse] = await Promise.all([
+      const [feedResponse, kpiResponse, hourlyResponse, weeklyResponse, jurisdictionsResponse, briefResponse, compareResponse, confidenceResponse, concentrationResponse, momentumResponse, riskResponse, entityMomentumResponse] = await Promise.all([
         fetchFeed({
           time_window: timeWindow,
           category: category || undefined,
@@ -275,6 +279,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
       fetchConcentration(timeWindow),
       fetchMomentum(timeWindow, 8),
       fetchRiskIndex(timeWindow),
+      fetchEntityMomentum(timeWindow, 10),
     ]);
       setFeed(feedResponse.items);
       setKpis(kpiResponse);
@@ -287,6 +292,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
       setConcentration(concentrationResponse);
       setMomentum(momentumResponse);
       setRiskIndex(riskResponse);
+      setEntityMomentum(entityMomentumResponse);
       setLastRefreshAt(new Date().toISOString());
     } finally {
       setIsRefreshing(false);
@@ -1630,6 +1636,29 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
                   {(momentum?.publishers ?? []).slice(0, 5).map((item) => (
                     <button
                       key={`pub-${item.name}`}
+                      onClick={() => {
+                        setSearch(item.name);
+                        setMode("research");
+                      }}
+                      className="flex w-full items-center justify-between rounded border border-borderSoft px-2 py-1 text-left"
+                    >
+                      <span className="truncate pr-2">{item.name}</span>
+                      <span style={{ color: item.change >= 0 ? "var(--research)" : "var(--incidents)" }}>
+                        {item.change >= 0 ? "+" : ""}
+                        {item.change} ({item.delta_percent.toFixed(1)}%)
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </section>
+            )}
+            {mode === "research" && panelVisibility.entityMomentum && (
+              <section className="rounded-lg border border-borderSoft bg-surface p-3">
+                <h3 className="mb-2 text-sm font-semibold text-textSecondary">{t("entityMomentum.title")}</h3>
+                <div className="space-y-2 text-xs">
+                  {(entityMomentum?.entities ?? []).slice(0, 8).map((item) => (
+                    <button
+                      key={`entity-${item.name}`}
                       onClick={() => {
                         setSearch(item.name);
                         setMode("research");

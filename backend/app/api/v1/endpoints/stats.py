@@ -9,6 +9,7 @@ from backend.app.services.stats import (
     fetch_brief_snapshot,
     fetch_concentration,
     fetch_confidence_profile,
+    fetch_entity_momentum,
     fetch_momentum,
     fetch_risk_index,
     fetch_scope_compare,
@@ -121,6 +122,15 @@ async def get_risk_index(
     db: AsyncSession = Depends(get_db),
 ) -> dict[str, object]:
     return await fetch_risk_index(db, time_window=time_window)
+
+
+@router.get("/entity-momentum")
+async def get_entity_momentum(
+    time_window: str = Query("24h", pattern="^(1h|24h|7d|30d)$"),
+    limit: int = Query(10, ge=1, le=20),
+    db: AsyncSession = Depends(get_db),
+) -> dict[str, object]:
+    return await fetch_entity_momentum(db, time_window=time_window, limit=limit)
 
 
 @router.get("/alerts", response_model=StatsAlertsResponse)

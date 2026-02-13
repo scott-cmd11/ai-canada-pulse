@@ -253,3 +253,17 @@ export interface RiskIndexResponse {
   combined_hhi: number;
   reasons: string[];
 }
+
+export interface EntityMomentumItem {
+  name: string;
+  current: number;
+  previous: number;
+  change: number;
+  delta_percent: number;
+}
+
+export interface EntityMomentumResponse {
+  generated_at: string;
+  time_window: TimeWindow;
+  entities: EntityMomentumItem[];
+}

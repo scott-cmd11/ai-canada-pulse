@@ -72,6 +72,7 @@
     "sourceQuality": "Qualite sources",
     "confidenceProfile": "Confiance",
     "momentum": "Momentum",
+    "entityMomentum": "Momentum entites",
     "pinnedSignals": "Epingles",
     "briefHistory": "Historique brief",
     "alerts": "Alertes",
@@ -247,6 +248,9 @@
     "title": "Moteurs de momentum",
     "categories": "Mouvements categorie",
     "publishers": "Mouvements editeur"
+  },
+  "entityMomentum": {
+    "title": "Momentum entites"
   },
   "pins": {
     "title": "Signaux epingles",

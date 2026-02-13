@@ -14,6 +14,7 @@ import type {
   ConfidenceProfileResponse,
   ConcentrationResponse,
   MomentumResponse,
+  EntityMomentumResponse,
   RiskIndexResponse,
   TagsBreakdownResponse,
   SourcesBreakdownResponse,
@@ -189,5 +190,11 @@ export async function fetchMomentum(time_window: TimeWindow = "24h", limit = 8):
 export async function fetchRiskIndex(time_window: TimeWindow = "24h"): Promise<RiskIndexResponse> {
   const res = await fetch(`${API_BASE}/stats/risk-index?time_window=${time_window}`, { cache: "no-store" });
   if (!res.ok) throw new Error("Failed to fetch risk index");
+  return res.json();
+}
+
+export async function fetchEntityMomentum(time_window: TimeWindow = "24h", limit = 10): Promise<EntityMomentumResponse> {
+  const res = await fetch(`${API_BASE}/stats/entity-momentum?time_window=${time_window}&limit=${limit}`, { cache: "no-store" });
+  if (!res.ok) throw new Error("Failed to fetch entity momentum");
   return res.json();
 }
