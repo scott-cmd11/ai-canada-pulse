@@ -17,6 +17,7 @@ import type {
   EntityMomentumResponse,
   RiskTrendResponse,
   SummaryResponse,
+  CoverageResponse,
   RiskIndexResponse,
   TagsBreakdownResponse,
   SourcesBreakdownResponse,
@@ -210,5 +211,11 @@ export async function fetchRiskTrend(time_window: TimeWindow = "24h"): Promise<R
 export async function fetchSummary(time_window: TimeWindow = "24h"): Promise<SummaryResponse> {
   const res = await fetch(`${API_BASE}/stats/summary?time_window=${time_window}`, { cache: "no-store" });
   if (!res.ok) throw new Error("Failed to fetch summary");
+  return res.json();
+}
+
+export async function fetchCoverage(time_window: TimeWindow = "7d", limit = 8): Promise<CoverageResponse> {
+  const res = await fetch(`${API_BASE}/stats/coverage?time_window=${time_window}&limit=${limit}`, { cache: "no-store" });
+  if (!res.ok) throw new Error("Failed to fetch coverage");
   return res.json();
 }

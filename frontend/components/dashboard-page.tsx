@@ -8,6 +8,7 @@ import { BarChart3, Globe2, Landmark, Moon, Search, Sun } from "lucide-react";
 
 import {
   fetchAlerts,
+  fetchCoverage,
   fetchEntitiesBreakdown,
   fetchTagsBreakdown,
   executeSyntheticPurge,
@@ -41,6 +42,7 @@ import type {
   StatsAlertItem,
   StatsBriefResponse,
   ScopeCompareResponse,
+  CoverageResponse,
   ConfidenceProfileResponse,
   ConcentrationResponse,
   MomentumResponse,
@@ -165,6 +167,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
   const [entityMomentum, setEntityMomentum] = useState<EntityMomentumResponse | null>(null);
   const [riskTrend, setRiskTrend] = useState<RiskTrendResponse | null>(null);
   const [summary, setSummary] = useState<SummaryResponse | null>(null);
+  const [coverage, setCoverage] = useState<CoverageResponse | null>(null);
   const [sseStatus, setSseStatus] = useState<"connecting" | "live" | "error">("connecting");
   const [lastLiveAt, setLastLiveAt] = useState("");
   const [presets, setPresets] = useState<FilterPreset[]>([]);
@@ -174,6 +177,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
     sourceHealth: true,
     sourceFreshness: true,
     sourceMix: true,
+    coverageMatrix: true,
     sourceQuality: true,
     confidenceProfile: true,
     riskTrend: true,
@@ -270,7 +274,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
   async function refreshData() {
     setIsRefreshing(true);
     try {
-      const [feedResponse, kpiResponse, hourlyResponse, weeklyResponse, jurisdictionsResponse, briefResponse, compareResponse, confidenceResponse, concentrationResponse, momentumResponse, riskResponse, entityMomentumResponse, riskTrendResponse, summaryResponse] = await Promise.all([
+      const [feedResponse, kpiResponse, hourlyResponse, weeklyResponse, jurisdictionsResponse, briefResponse, compareResponse, confidenceResponse, concentrationResponse, momentumResponse, riskResponse, entityMomentumResponse, riskTrendResponse, summaryResponse, coverageResponse] = await Promise.all([
         fetchFeed({
           time_window: timeWindow,
           category: category || undefined,
@@ -293,6 +297,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
       fetchEntityMomentum(timeWindow, 10),
       fetchRiskTrend(timeWindow),
       fetchSummary(timeWindow),
+      fetchCoverage(timeWindow, 8),
     ]);
       setFeed(feedResponse.items);
       setKpis(kpiResponse);
@@ -308,6 +313,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
       setEntityMomentum(entityMomentumResponse);
       setRiskTrend(riskTrendResponse);
       setSummary(summaryResponse);
+      setCoverage(coverageResponse);
       setLastRefreshAt(new Date().toISOString());
     } finally {
       setIsRefreshing(false);
@@ -661,6 +667,16 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
       })
       .sort((a, b) => b.minutes - a.minutes);
   }, [sourceHealth, nowTs]);
+
+  const coverageGroups = useMemo(
+    () => [
+      { key: "categories", label: t("coverage.categories"), rows: coverage?.categories ?? [] },
+      { key: "source_types", label: t("coverage.sourceTypes"), rows: coverage?.source_types ?? [] },
+      { key: "languages", label: t("coverage.languages"), rows: coverage?.languages ?? [] },
+      { key: "jurisdictions", label: t("coverage.jurisdictions"), rows: coverage?.jurisdictions ?? [] },
+    ],
+    [coverage, t]
+  );
 
   const alertCenterItems = useMemo(() => {
     const items: Array<{ id: string; severity: "high" | "medium"; message: string }> = [];
@@ -1774,6 +1790,32 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
                       ))}
                     </div>
                   </div>
+                </div>
+              </section>
+            )}
+            {mode === "research" && panelVisibility.coverageMatrix && (
+              <section className="rounded-lg border border-borderSoft bg-surface p-3">
+                <h3 className="mb-2 text-sm font-semibold text-textSecondary">{t("coverage.title")}</h3>
+                <p className="mb-2 text-xs text-textMuted">
+                  {t("coverage.total")}: {coverage?.total ?? 0}
+                </p>
+                <div className="grid grid-cols-2 gap-2 text-xs">
+                  {coverageGroups.map((group) => (
+                    <div key={group.key} className="rounded border border-borderSoft p-2">
+                      <p className="mb-1 font-medium text-textSecondary">{group.label}</p>
+                      <div className="space-y-1">
+                        {group.rows.length === 0 && <p className="text-textMuted">-</p>}
+                        {group.rows.slice(0, 5).map((item) => (
+                          <div key={`${group.key}-${item.name}`} className="flex items-center justify-between gap-2">
+                            <span className="truncate pr-2">{item.name}</span>
+                            <span className="whitespace-nowrap">
+                              {item.count} ({item.percent.toFixed(1)}%)
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </section>
             )}

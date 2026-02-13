@@ -964,6 +964,81 @@ async def fetch_summary(db: AsyncSession, *, time_window: str = "24h") -> dict[s
     }
 
 
+async def fetch_coverage(db: AsyncSession, *, time_window: str = "7d", limit: int = 8) -> dict[str, object]:
+    now = datetime.now(UTC)
+    since = now - (
+        {
+            "1h": timedelta(hours=1),
+            "24h": timedelta(hours=24),
+            "7d": timedelta(days=7),
+            "30d": timedelta(days=30),
+        }.get(time_window, timedelta(days=7))
+    )
+    bounded_limit = max(1, min(limit, 20))
+    total_stmt = select(func.count(AIDevelopment.id)).where(AIDevelopment.published_at >= since)
+    total = int((await db.execute(total_stmt)).scalar_one())
+
+    categories_rows = (
+        await db.execute(
+            select(AIDevelopment.category, func.count(AIDevelopment.id).label("count"))
+            .where(AIDevelopment.published_at >= since)
+            .group_by(AIDevelopment.category)
+            .order_by(text("count DESC"))
+        )
+    ).all()
+    source_type_rows = (
+        await db.execute(
+            select(AIDevelopment.source_type, func.count(AIDevelopment.id).label("count"))
+            .where(AIDevelopment.published_at >= since)
+            .group_by(AIDevelopment.source_type)
+            .order_by(text("count DESC"))
+        )
+    ).all()
+    language_rows = (
+        await db.execute(
+            select(AIDevelopment.language, func.count(AIDevelopment.id).label("count"))
+            .where(AIDevelopment.published_at >= since)
+            .group_by(AIDevelopment.language)
+            .order_by(text("count DESC"))
+            .limit(bounded_limit)
+        )
+    ).all()
+    jurisdiction_rows = (
+        await db.execute(
+            select(AIDevelopment.jurisdiction, func.count(AIDevelopment.id).label("count"))
+            .where(AIDevelopment.published_at >= since)
+            .group_by(AIDevelopment.jurisdiction)
+            .order_by(text("count DESC"))
+            .limit(bounded_limit)
+        )
+    ).all()
+
+    def _pct(count: int) -> float:
+        return round((count / max(1, total)) * 100.0, 2)
+
+    return {
+        "generated_at": now.isoformat(),
+        "time_window": time_window,
+        "total": total,
+        "categories": [
+            {"name": _enum_name(name), "count": int(count), "percent": _pct(int(count))}
+            for name, count in categories_rows
+        ],
+        "source_types": [
+            {"name": _enum_name(name), "count": int(count), "percent": _pct(int(count))}
+            for name, count in source_type_rows
+        ],
+        "languages": [
+            {"name": str(name), "count": int(count), "percent": _pct(int(count))}
+            for name, count in language_rows
+        ],
+        "jurisdictions": [
+            {"name": str(name), "count": int(count), "percent": _pct(int(count))}
+            for name, count in jurisdiction_rows
+        ],
+    }
+
+
 async def fetch_alerts(
     db: AsyncSession,
     *,

@@ -282,3 +282,19 @@ export interface SummaryResponse {
   time_window: TimeWindow;
   bullets: string[];
 }
+
+export interface CoverageRow {
+  name: string;
+  count: number;
+  percent: number;
+}
+
+export interface CoverageResponse {
+  generated_at: string;
+  time_window: TimeWindow;
+  total: number;
+  categories: CoverageRow[];
+  source_types: CoverageRow[];
+  languages: CoverageRow[];
+  jurisdictions: CoverageRow[];
+}

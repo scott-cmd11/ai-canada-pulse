@@ -75,6 +75,7 @@
     "sourceHealth": "Source Health",
     "sourceFreshness": "Freshness",
     "sourceMix": "Source Mix",
+    "coverageMatrix": "Coverage",
     "sourceQuality": "Source Quality",
     "confidenceProfile": "Confidence",
     "riskTrend": "Risk Trend",
@@ -253,6 +254,14 @@
     "fresh": "Fresh",
     "aging": "Aging",
     "stale": "Stale"
+  },
+  "coverage": {
+    "title": "Coverage Matrix",
+    "total": "Total",
+    "categories": "Categories",
+    "sourceTypes": "Source Types",
+    "languages": "Languages",
+    "jurisdictions": "Jurisdictions"
   },
   "confidence": {
     "title": "Confidence Profile",
