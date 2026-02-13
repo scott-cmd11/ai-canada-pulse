@@ -47,7 +47,7 @@ docker compose up --build -d
 ```
 
 Services:
-- Frontend: `http://localhost:3000`
+- Frontend: `http://localhost:3001`
 - API: `http://localhost:8000`
 
 ## Key API Endpoints

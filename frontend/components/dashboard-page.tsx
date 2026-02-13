@@ -1694,12 +1694,43 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
                   <div className={`flex flex-wrap items-center text-textMuted ${density === "compact" ? "gap-1 text-[11px]" : "gap-2 text-xs"}`}>
                     <span>{new Date(item.published_at).toLocaleString()}</span>
                     <RelativeTime value={item.published_at} />
-                    <span className="rounded-full border px-2 py-0.5" style={{ borderColor: categoryColor[item.category], color: categoryColor[item.category] }}>
+                    <button
+                      onClick={() => {
+                        setCategory(item.category);
+                        setMode("research");
+                      }}
+                      className="rounded-full border px-2 py-0.5 hover:bg-bg"
+                      style={{ borderColor: categoryColor[item.category], color: categoryColor[item.category] }}
+                    >
                       {item.category}
-                    </span>
-                    <span>{item.publisher}</span>
-                    <span>{item.jurisdiction}</span>
-                    <span className="rounded border border-borderSoft px-2">{item.language.toUpperCase()}</span>
+                    </button>
+                    <button
+                      onClick={() => {
+                        setSearch(item.publisher);
+                        setMode("research");
+                      }}
+                      className="rounded border border-borderSoft px-2 py-0.5 hover:bg-bg"
+                    >
+                      {item.publisher}
+                    </button>
+                    <button
+                      onClick={() => {
+                        setJurisdiction(item.jurisdiction);
+                        setMode("research");
+                      }}
+                      className="rounded border border-borderSoft px-2 py-0.5 hover:bg-bg"
+                    >
+                      {item.jurisdiction}
+                    </button>
+                    <button
+                      onClick={() => {
+                        setLanguage(item.language);
+                        setMode("research");
+                      }}
+                      className="rounded border border-borderSoft px-2 py-0.5 hover:bg-bg"
+                    >
+                      {item.language.toUpperCase()}
+                    </button>
                     {mode === "research" && <span>{t("feed.confidence")}: {item.confidence.toFixed(2)}</span>}
                   </div>
                   <h4 className={`${density === "compact" ? "mt-1 text-base font-semibold leading-tight" : "mt-2 text-lg font-semibold"}`}>
