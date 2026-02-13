@@ -51,6 +51,7 @@
     "backfill": "Backfill",
     "cleanup": "Nettoyage",
     "sourceHealth": "Sante sources",
+    "sourceFreshness": "Fraicheur",
     "sourceMix": "Mix sources",
     "sourceQuality": "Qualite sources",
     "confidenceProfile": "Confiance",
@@ -155,6 +156,7 @@
   },
   "sources": {
     "title": "Sante des sources",
+    "freshnessTitle": "Fraicheur des sources",
     "mixTitle": "Repartition des sources (7j)",
     "qualityTitle": "Indice qualite sources",
     "total": "Total",
@@ -176,6 +178,11 @@
     "jurisdictions": "Principales juridictions",
     "entities": "Principales entites",
     "tags": "Principales etiquettes"
+    ,
+    "lastRun": "Derniere execution",
+    "fresh": "Frais",
+    "aging": "Vieillissant",
+    "stale": "Perime"
   },
   "confidence": {
     "title": "Profil de confiance",

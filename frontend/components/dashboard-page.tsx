@@ -142,6 +142,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
     backfill: true,
     cleanup: true,
     sourceHealth: true,
+    sourceFreshness: true,
     sourceMix: true,
     sourceQuality: true,
     confidenceProfile: true,
@@ -155,6 +156,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
   });
   const [copyState, setCopyState] = useState<"idle" | "copied" | "failed">("idle");
   const [briefCopyState, setBriefCopyState] = useState<"idle" | "copied" | "failed">("idle");
+  const [nowTs, setNowTs] = useState(Date.now());
 
   const otherLocale = locale === "en" ? "fr" : "en";
   const pagePath = scope === "canada" ? "canada" : "world";
@@ -310,6 +312,11 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
     return () => window.removeEventListener("keydown", handler);
   }, [selected]);
 
+  useEffect(() => {
+    const timer = setInterval(() => setNowTs(Date.now()), 60000);
+    return () => clearInterval(timer);
+  }, []);
+
   const topInsights = useMemo(() => {
     const counts = new Map<string, number>();
     feed.forEach((item) => {
@@ -384,6 +391,17 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
       .sort((a, b) => b.score - a.score)
       .slice(0, 8);
   }, [sourceHealth]);
+
+  const sourceFreshness = useMemo(() => {
+    return (sourceHealth ?? [])
+      .map((src) => {
+        const last = src.last_run ? new Date(src.last_run).getTime() : 0;
+        const minutes = last > 0 ? Math.max(0, Math.floor((nowTs - last) / 60000)) : 9999;
+        const level = minutes > 60 ? "stale" : minutes > 20 ? "aging" : "fresh";
+        return { ...src, minutes, level };
+      })
+      .sort((a, b) => b.minutes - a.minutes);
+  }, [sourceHealth, nowTs]);
 
   const confidenceTone: Record<string, string> = {
     very_high: "var(--research)",
@@ -597,6 +615,15 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
     lines.push(`- Global: ${compare?.global ?? 0}`);
     lines.push(`- Other: ${compare?.other ?? 0}`);
     lines.push("");
+    const staleSources = sourceFreshness.filter((s) => s.level === "stale");
+    lines.push("## Source Freshness");
+    lines.push(`- Freshness stale count: ${staleSources.length}`);
+    if (staleSources.length > 0) {
+      staleSources.slice(0, 3).forEach((src) => {
+        lines.push(`  - ${src.source}: ${src.minutes}m since last run`);
+      });
+    }
+    lines.push("");
     lines.push("## Risk");
     lines.push(
       `- Concentration (combined): ${(concentration?.combined_hhi ?? 0).toFixed(3)} (${concentration?.combined_level ?? "low"})`
@@ -611,7 +638,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
       lines.push("- Top alerts: none");
     }
     return lines.join("\n");
-  }, [scope, timeWindow, kpis, brief, compare, concentration, confidenceProfile, alerts]);
+  }, [scope, timeWindow, kpis, brief, compare, concentration, confidenceProfile, alerts, sourceFreshness]);
 
   async function copyMorningBrief() {
     try {
@@ -1133,6 +1160,36 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
                         <span>{t("sources.duration")}: {src.duration_ms}ms</span>
                       </div>
                       {src.error ? <p className="mt-1 text-red-600">{t("sources.error")}: {src.error}</p> : null}
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
+            {mode === "research" && panelVisibility.sourceFreshness && (
+              <section className="rounded-lg border border-borderSoft bg-surface p-3">
+                <h3 className="mb-2 text-sm font-semibold text-textSecondary">{t("sources.freshnessTitle")}</h3>
+                <div className="space-y-2 text-xs">
+                  {sourceFreshness.length === 0 && <p className="text-textMuted">-</p>}
+                  {sourceFreshness.slice(0, 8).map((src) => (
+                    <div key={`${src.source}-fresh`} className="rounded border border-borderSoft px-2 py-2">
+                      <div className="flex items-center justify-between">
+                        <span className="font-medium">{src.source}</span>
+                        <span
+                          style={{
+                            color:
+                              src.level === "stale"
+                                ? "var(--incidents)"
+                                : src.level === "aging"
+                                  ? "var(--warning)"
+                                  : "var(--research)",
+                          }}
+                        >
+                          {src.minutes}m
+                        </span>
+                      </div>
+                      <p className="mt-1 text-textSecondary">
+                        {t("sources.lastRun")}: {src.last_run ? new Date(src.last_run).toLocaleString() : "-"} | {t(`sources.${src.level}`)}
+                      </p>
                     </div>
                   ))}
                 </div>

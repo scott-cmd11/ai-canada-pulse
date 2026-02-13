@@ -51,6 +51,7 @@
     "backfill": "Backfill",
     "cleanup": "Cleanup",
     "sourceHealth": "Source Health",
+    "sourceFreshness": "Freshness",
     "sourceMix": "Source Mix",
     "sourceQuality": "Source Quality",
     "confidenceProfile": "Confidence",
@@ -155,6 +156,7 @@
   },
   "sources": {
     "title": "Source Health",
+    "freshnessTitle": "Source Freshness",
     "mixTitle": "Source Mix (7d)",
     "qualityTitle": "Source Quality Index",
     "total": "Total",
@@ -177,6 +179,11 @@
     "jurisdictions": "Top Jurisdictions",
     "entities": "Top Entities",
     "tags": "Top Tags"
+    ,
+    "lastRun": "Last run",
+    "fresh": "Fresh",
+    "aging": "Aging",
+    "stale": "Stale"
   },
   "confidence": {
     "title": "Confidence Profile",
