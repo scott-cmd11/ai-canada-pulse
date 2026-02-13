@@ -53,6 +53,19 @@
     "currentMonth": "Mois courant",
     "error": "Erreur"
   },
+  "cleanup": {
+    "title": "Nettoyage Synthetique",
+    "preview": "Apercu",
+    "execute": "Supprimer Synthetique",
+    "before": "Synthetique avant",
+    "deleted": "Supprimes",
+    "after": "Synthetique apres",
+    "status": "Statut",
+    "idle": "Inactif",
+    "running": "En cours",
+    "done": "Termine",
+    "failed": "Echec"
+  },
   "methods": {
     "title": "Methodes",
     "body": "Ingestion metadata uniquement avec extraction des categories et des entites. Aucun texte integral n'est stocke."

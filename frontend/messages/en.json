@@ -53,6 +53,19 @@
     "currentMonth": "Current Month",
     "error": "Error"
   },
+  "cleanup": {
+    "title": "Synthetic Cleanup",
+    "preview": "Preview",
+    "execute": "Delete Synthetic",
+    "before": "Synthetic Before",
+    "deleted": "Deleted",
+    "after": "Synthetic After",
+    "status": "Status",
+    "idle": "Idle",
+    "running": "Running",
+    "done": "Done",
+    "failed": "Failed"
+  },
   "methods": {
     "title": "Methods",
     "body": "Metadata-only ingestion with category and entity extraction. No full article text is stored."

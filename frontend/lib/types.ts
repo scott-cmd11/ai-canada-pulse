@@ -79,3 +79,11 @@ export interface BackfillStatus {
   inserted?: number;
   error?: string;
 }
+
+export interface PurgeSyntheticResponse {
+  execute: boolean;
+  synthetic_before: number;
+  deleted: number;
+  synthetic_after: number;
+  checked_at: string;
+}

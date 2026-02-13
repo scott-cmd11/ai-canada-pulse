@@ -5,6 +5,7 @@ import type {
   EChartsResponse,
   FeedResponse,
   KPIsResponse,
+  PurgeSyntheticResponse,
   TimeWindow,
 } from "./types";
 
@@ -89,5 +90,17 @@ export async function runBackfill(payload: BackfillRunRequest): Promise<Backfill
 export async function fetchBackfillStatus(): Promise<BackfillStatus> {
   const res = await fetch(`${API_BASE}/backfill/status`, { cache: "no-store" });
   if (!res.ok) throw new Error("Failed to fetch backfill status");
+  return res.json();
+}
+
+export async function previewSyntheticPurge(): Promise<PurgeSyntheticResponse> {
+  const res = await fetch(`${API_BASE}/maintenance/purge-synthetic?execute=false`, { method: "POST" });
+  if (!res.ok) throw new Error("Failed to preview synthetic purge");
+  return res.json();
+}
+
+export async function executeSyntheticPurge(): Promise<PurgeSyntheticResponse> {
+  const res = await fetch(`${API_BASE}/maintenance/purge-synthetic?execute=true`, { method: "POST" });
+  if (!res.ok) throw new Error("Failed to execute synthetic purge");
   return res.json();
 }

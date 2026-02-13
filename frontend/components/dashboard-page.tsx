@@ -7,16 +7,18 @@ import { useEffect, useMemo, useState } from "react";
 import { BarChart3, Globe2, Landmark, Moon, Search, Sun } from "lucide-react";
 
 import {
+  executeSyntheticPurge,
   exportUrl,
   fetchBackfillStatus,
   fetchFeed,
   fetchHourly,
   fetchKpis,
   fetchWeekly,
+  previewSyntheticPurge,
   runBackfill,
   sseUrl,
 } from "../lib/api";
-import type { BackfillStatus, EChartsResponse, FeedItem, KPIsResponse, TimeWindow } from "../lib/types";
+import type { BackfillStatus, EChartsResponse, FeedItem, KPIsResponse, PurgeSyntheticResponse, TimeWindow } from "../lib/types";
 import { useMode } from "./mode-provider";
 import { useTheme } from "./theme-provider";
 
@@ -59,6 +61,8 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
   const [isBackfillRunning, setIsBackfillRunning] = useState(false);
   const [isBackfillSubmitting, setIsBackfillSubmitting] = useState(false);
   const [backfillError, setBackfillError] = useState("");
+  const [cleanupStatus, setCleanupStatus] = useState<"idle" | "running" | "done" | "failed">("idle");
+  const [cleanupResult, setCleanupResult] = useState<PurgeSyntheticResponse | null>(null);
 
   const otherLocale = locale === "en" ? "fr" : "en";
   const pagePath = scope === "canada" ? "canada" : "world";
@@ -207,6 +211,36 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
     if (key === "queued") return t("backfill.queued");
     return t("backfill.idle");
   }, [backfillStatus?.state, t]);
+
+  const cleanupStateLabel = useMemo(() => {
+    if (cleanupStatus === "running") return t("cleanup.running");
+    if (cleanupStatus === "done") return t("cleanup.done");
+    if (cleanupStatus === "failed") return t("cleanup.failed");
+    return t("cleanup.idle");
+  }, [cleanupStatus, t]);
+
+  async function previewCleanup() {
+    setCleanupStatus("running");
+    try {
+      const result = await previewSyntheticPurge();
+      setCleanupResult(result);
+      setCleanupStatus("done");
+    } catch {
+      setCleanupStatus("failed");
+    }
+  }
+
+  async function runCleanup() {
+    setCleanupStatus("running");
+    try {
+      const result = await executeSyntheticPurge();
+      setCleanupResult(result);
+      setCleanupStatus("done");
+      await refreshData();
+    } catch {
+      setCleanupStatus("failed");
+    }
+  }
 
   return (
     <div className="min-h-screen bg-bg text-text">
@@ -454,6 +488,35 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
                   <span>{t("backfill.inserted")}: {backfillStatus?.inserted ?? 0}</span>
                   <span>{t("backfill.currentMonth")}: {backfillStatus?.current_month ?? "-"}</span>
                   <span>{t("backfill.error")}: {(backfillStatus?.error ?? backfillError) || "-"}</span>
+                </div>
+              </section>
+            )}
+            {mode === "research" && (
+              <section className="rounded-lg border border-borderSoft bg-surface p-3">
+                <h3 className="mb-3 text-sm font-semibold text-textSecondary">{t("cleanup.title")}</h3>
+                <div className="mb-3 flex items-center gap-2">
+                  <button
+                    onClick={previewCleanup}
+                    disabled={cleanupStatus === "running"}
+                    className="rounded border border-borderSoft px-3 py-1.5 text-xs disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    {t("cleanup.preview")}
+                  </button>
+                  <button
+                    onClick={runCleanup}
+                    disabled={cleanupStatus === "running"}
+                    className="rounded border border-borderStrong px-3 py-1.5 text-xs disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    {t("cleanup.execute")}
+                  </button>
+                  <span className="rounded border border-borderSoft px-2 py-1 text-xs">
+                    {t("cleanup.status")}: {cleanupStateLabel}
+                  </span>
+                </div>
+                <div className="grid grid-cols-3 gap-2 text-xs text-textSecondary">
+                  <span>{t("cleanup.before")}: {cleanupResult?.synthetic_before ?? 0}</span>
+                  <span>{t("cleanup.deleted")}: {cleanupResult?.deleted ?? 0}</span>
+                  <span>{t("cleanup.after")}: {cleanupResult?.synthetic_after ?? 0}</span>
                 </div>
               </section>
             )}
