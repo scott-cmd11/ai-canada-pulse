@@ -35,12 +35,24 @@
     "topJurisdiction": "Top jurisdiction:",
     "noMajorShifts": "No major category shifts detected in the selected window."
   },
+  "narrative": {
+    "title": "Strategic Narrative",
+    "momentum": "Momentum:",
+    "accelerating": "accelerating",
+    "cooling": "cooling",
+    "risk": "Risk:",
+    "spike": "spike",
+    "drop": "drop",
+    "sourceConcentration": "Source concentration:",
+    "theme": "Theme concentration:"
+  },
   "panels": {
     "title": "Customize Panels",
     "backfill": "Backfill",
     "cleanup": "Cleanup",
     "sourceHealth": "Source Health",
     "sourceMix": "Source Mix",
+    "sourceQuality": "Source Quality",
     "alerts": "Alerts",
     "jurisdictions": "Jurisdictions",
     "entities": "Entities",
@@ -110,6 +122,7 @@
   "sources": {
     "title": "Source Health",
     "mixTitle": "Source Mix (7d)",
+    "qualityTitle": "Source Quality Index",
     "total": "Total",
     "updated": "Updated",
     "status": "Status",

@@ -128,6 +128,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
     cleanup: true,
     sourceHealth: true,
     sourceMix: true,
+    sourceQuality: true,
     alerts: true,
     jurisdictions: true,
     entities: true,
@@ -309,6 +310,52 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
     if (topJurisdiction) insights.push(`${t("pulse.topJurisdiction")} ${topJurisdiction.name} (${topJurisdiction.count}).`);
     return insights.slice(0, 3);
   }, [alerts, jurisdictionsBreakdown?.jurisdictions, t, topInsights]);
+
+  const strategicNarrative = useMemo(() => {
+    const lines: string[] = [];
+    const d7 = kpis?.d7;
+    if (d7) {
+      const direction = d7.delta_percent >= 0 ? t("narrative.accelerating") : t("narrative.cooling");
+      lines.push(`${t("narrative.momentum")} ${direction} (${d7.delta_percent.toFixed(1)}%).`);
+    }
+    const highAlert = alerts.find((item) => item.severity === "high");
+    if (highAlert) {
+      const move = highAlert.direction === "up" ? t("narrative.spike") : t("narrative.drop");
+      lines.push(`${t("narrative.risk")} ${highAlert.category} ${move} ${Math.abs(highAlert.delta_percent).toFixed(1)}%.`);
+    }
+    const topPublisher = sourcesBreakdown?.publishers?.[0];
+    if (topPublisher && (sourcesBreakdown?.total ?? 0) > 0) {
+      const share = ((topPublisher.count / Math.max(1, sourcesBreakdown.total)) * 100).toFixed(1);
+      lines.push(`${t("narrative.sourceConcentration")} ${topPublisher.name} (${share}%).`);
+    }
+    const topTag = tagsBreakdown?.tags?.[0];
+    if (topTag) {
+      lines.push(`${t("narrative.theme")} ${topTag.name} (${topTag.count}).`);
+    }
+    return lines.slice(0, 4);
+  }, [alerts, kpis?.d7, sourcesBreakdown, tagsBreakdown, t]);
+
+  const sourceQuality = useMemo(() => {
+    return (sourceHealth ?? [])
+      .map((src) => {
+        const fetched = Math.max(1, src.fetched || 0);
+        const accepted = Math.max(0, src.accepted || 0);
+        const inserted = Math.max(0, src.inserted || 0);
+        const duplicates = Math.max(0, src.duplicates || 0);
+        const writeErrors = Math.max(0, src.write_errors || 0);
+        const acceptance = accepted / fetched;
+        const insertEfficiency = inserted / Math.max(1, accepted);
+        const duplicatePenalty = Math.min(0.35, duplicates / fetched);
+        const errorPenalty = Math.min(0.45, (writeErrors / fetched) * 2);
+        const statusBoost = src.status === "ok" ? 0.1 : 0.0;
+        const raw = (acceptance * 0.45 + insertEfficiency * 0.45 + statusBoost - duplicatePenalty - errorPenalty) * 100;
+        const score = Math.max(0, Math.min(100, Math.round(raw)));
+        const grade = score >= 80 ? "A" : score >= 65 ? "B" : score >= 45 ? "C" : "D";
+        return { ...src, score, grade };
+      })
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 8);
+  }, [sourceHealth]);
 
   const hourlyOption = useMemo(
     () => ({
@@ -632,6 +679,14 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
           </ul>
         </section>
         <section className="rounded-lg border border-borderSoft bg-surface p-4">
+          <h3 className="text-sm font-semibold text-textSecondary">{t("narrative.title")}</h3>
+          <ul className="mt-2 list-disc space-y-1 pl-4 text-sm text-textSecondary">
+            {strategicNarrative.map((line) => (
+              <li key={line}>{line}</li>
+            ))}
+          </ul>
+        </section>
+        <section className="rounded-lg border border-borderSoft bg-surface p-4">
           <div className="mb-2 flex items-center justify-between">
             <h3 className="text-sm font-semibold text-textSecondary">{t("regional.title")}</h3>
             <span className="text-xs text-textMuted">{t("regional.helper")}</span>
@@ -914,6 +969,29 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
                       ))}
                     </div>
                   </div>
+                </div>
+              </section>
+            )}
+            {mode === "research" && panelVisibility.sourceQuality && (
+              <section className="rounded-lg border border-borderSoft bg-surface p-3">
+                <h3 className="mb-2 text-sm font-semibold text-textSecondary">{t("sources.qualityTitle")}</h3>
+                <div className="space-y-2 text-xs">
+                  {sourceQuality.map((src) => (
+                    <div key={src.source} className="rounded border border-borderSoft px-2 py-2">
+                      <div className="mb-1 flex items-center justify-between">
+                        <span className="font-medium">{src.source}</span>
+                        <span>
+                          {src.grade} - {src.score}
+                        </span>
+                      </div>
+                      <div className="h-1.5 rounded bg-bg">
+                        <div className="h-1.5 rounded" style={{ width: `${src.score}%`, background: "var(--primary)" }} />
+                      </div>
+                      <div className="mt-1 text-textSecondary">
+                        {t("sources.inserted")}: {src.inserted} | {t("sources.duplicates")}: {src.duplicates ?? 0} | {t("sources.writeErrors")}: {src.write_errors ?? 0}
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </section>
             )}
