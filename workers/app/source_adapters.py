@@ -12,6 +12,45 @@ from backend.app.models.ai_development import CategoryType, SourceType
 OPENALEX_URL = "https://api.openalex.org/works"
 GOV_CANADA_RSS_URL = "https://www.canada.ca/en/news/advanced-news-search/news-results.html?dprtmnt=departmentofindustry&typ=newsreleases&rss"
 AI_KEYWORDS = {"ai", "artificial intelligence", "machine learning", "deep learning", "llm", "generative"}
+CANADA_KEYWORDS = {
+    "canada",
+    "canadian",
+    "ottawa",
+    "quebec",
+    "ontario",
+    "alberta",
+    "british columbia",
+    "manitoba",
+    "saskatchewan",
+    "nova scotia",
+    "new brunswick",
+    "newfoundland",
+    "pei",
+}
+CANADA_ENTITIES = {
+    "government of canada",
+    "ised",
+    "cifar",
+    "mila",
+    "vector institute",
+    "amii",
+    "university of toronto",
+    "university of alberta",
+    "mcgill",
+    "ubc",
+}
+PROVINCE_TOKENS = {
+    "ontario": "Ontario",
+    "toronto": "Ontario",
+    "waterloo": "Ontario",
+    "quebec": "Quebec",
+    "montreal": "Quebec",
+    "alberta": "Alberta",
+    "edmonton": "Alberta",
+    "calgary": "Alberta",
+    "british columbia": "British Columbia",
+    "vancouver": "British Columbia",
+}
 
 
 def _detect_language(value: str | None) -> str:
@@ -23,6 +62,32 @@ def _detect_language(value: str | None) -> str:
 def _contains_ai(text: str) -> bool:
     low = text.lower()
     return any(keyword in low for keyword in AI_KEYWORDS)
+
+
+def _canada_relevance_score(*parts: str) -> float:
+    blob = " ".join(parts).lower()
+    score = 0.0
+
+    if any(keyword in blob for keyword in CANADA_KEYWORDS):
+        score += 0.35
+    entity_hits = sum(1 for ent in CANADA_ENTITIES if ent in blob)
+    score += min(entity_hits * 0.2, 0.4)
+    if "government of canada" in blob or "canada.ca" in blob:
+        score += 0.25
+    if "openalex.org" in blob:
+        score += 0.05
+
+    return min(score, 1.0)
+
+
+def _infer_jurisdiction(*parts: str) -> str:
+    blob = " ".join(parts).lower()
+    for token, province in PROVINCE_TOKENS.items():
+        if token in blob:
+            return province
+    if "canada" in blob or "canadian" in blob:
+        return "Canada"
+    return "Global"
 
 
 def _extract_tags(title: str) -> list[str]:
@@ -70,6 +135,11 @@ async def fetch_openalex_metadata(limit: int = 3) -> list[dict[str, object]]:
                 if name and name not in institutions:
                     institutions.append(name)
 
+        joined_entities = " ".join(institutions[:8])
+        relevance = _canada_relevance_score(title, url, joined_entities)
+        jurisdiction = _infer_jurisdiction(title, joined_entities)
+        confidence = round(0.65 + (0.3 * relevance), 2)
+
         records.append(
             {
                 "source_id": source_id,
@@ -80,11 +150,12 @@ async def fetch_openalex_metadata(limit: int = 3) -> list[dict[str, object]]:
                 "publisher": "OpenAlex",
                 "published_at": published_at,
                 "language": language,
-                "jurisdiction": "Global",
+                "jurisdiction": jurisdiction,
                 "entities": institutions[:5],
                 "tags": _extract_tags(title),
                 "hash": _fingerprint(source_id, url, published_at),
-                "confidence": 0.92,
+                "confidence": confidence,
+                "relevance_score": relevance,
             }
         )
     return records
@@ -112,6 +183,7 @@ async def fetch_canada_gov_metadata(limit: int = 3) -> list[dict[str, object]]:
         except Exception:
             published_at = datetime.now(UTC)
 
+        relevance = _canada_relevance_score(title, link, "Government of Canada ISED")
         records.append(
             {
                 "source_id": guid,
@@ -126,7 +198,8 @@ async def fetch_canada_gov_metadata(limit: int = 3) -> list[dict[str, object]]:
                 "entities": ["Government of Canada", "ISED"],
                 "tags": _extract_tags(title),
                 "hash": _fingerprint(guid, link, published_at),
-                "confidence": 0.9,
+                "confidence": round(max(0.9, relevance), 2),
+                "relevance_score": relevance,
             }
         )
     return records

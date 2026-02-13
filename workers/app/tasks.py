@@ -52,6 +52,18 @@ TAG_BANK = [
     "infrastructure",
     "funding",
 ]
+MIN_CONFIDENCE = 0.82
+MIN_CANADA_RELEVANCE = 0.45
+CANADA_FOCUS_ENTITIES = {
+    "Government of Canada",
+    "ISED",
+    "CIFAR",
+    "Mila",
+    "Vector Institute",
+    "Amii",
+    "University of Toronto",
+    "University of Alberta",
+}
 
 
 def _fingerprint(source_id: str, url: str, published_at: datetime) -> str:
@@ -60,7 +72,8 @@ def _fingerprint(source_id: str, url: str, published_at: datetime) -> str:
 
 
 def _generate_item() -> dict[str, object]:
-    publisher, source_type, default_category, jurisdiction = random.choice(PUBLISHERS)
+    canada_publishers = [entry for entry in PUBLISHERS if entry[3] in {"Canada", "Ontario", "Quebec", "Alberta"}]
+    publisher, source_type, default_category, jurisdiction = random.choice(canada_publishers)
     title = random.choice(TITLE_STEMS)
     if source_type == SourceType.funding:
         category = CategoryType.funding
@@ -71,9 +84,9 @@ def _generate_item() -> dict[str, object]:
     source_id = f"{publisher.lower().replace(' ', '-')}-{uuid.uuid4().hex[:12]}"
     language = random.choice(["en", "fr", "en"])
     url = f"https://example.com/{source_id}"
-    entities = random.choice(ENTITIES)
+    entities = random.choice(ENTITIES[:4])
     tags = random.sample(TAG_BANK, k=random.randint(2, 4))
-    confidence = round(random.uniform(0.68, 0.98), 2)
+    confidence = round(random.uniform(0.84, 0.98), 2)
 
     return {
         "source_id": source_id,
@@ -89,7 +102,25 @@ def _generate_item() -> dict[str, object]:
         "tags": tags,
         "hash": _fingerprint(source_id, url, published_at),
         "confidence": confidence,
+        "relevance_score": round(random.uniform(0.65, 0.98), 2),
     }
+
+
+def _is_canada_relevant(item: dict[str, object]) -> bool:
+    confidence = float(item.get("confidence", 0.0))
+    relevance = float(item.get("relevance_score", 0.0))
+    jurisdiction = str(item.get("jurisdiction", "Global"))
+    entities = {str(e) for e in item.get("entities", [])}
+
+    if confidence < MIN_CONFIDENCE:
+        return False
+    if relevance >= MIN_CANADA_RELEVANCE:
+        return True
+    if jurisdiction in {"Canada", "Ontario", "Quebec", "Alberta", "British Columbia"}:
+        return True
+    if entities.intersection(CANADA_FOCUS_ENTITIES):
+        return True
+    return False
 
 
 async def _load_candidate_items() -> list[dict[str, object]]:
@@ -107,7 +138,10 @@ async def _load_candidate_items() -> list[dict[str, object]]:
     if not items:
         items = [_generate_item() for _ in range(random.randint(1, 3))]
 
-    return items
+    filtered = [item for item in items if _is_canada_relevant(item)]
+    if not filtered:
+        filtered = [_generate_item() for _ in range(random.randint(1, 2))]
+    return filtered
 
 
 async def _insert_and_publish() -> int:
@@ -119,6 +153,7 @@ async def _insert_and_publish() -> int:
 
     async with SessionLocal() as session:
         for record_data in candidates:
+            record_data.pop("relevance_score", None)
             model = AIDevelopment(**record_data)
             session.add(model)
             try:
