@@ -7,6 +7,7 @@ class Settings(BaseSettings):
     database_url: str = "postgresql+asyncpg://ai_pulse:ai_pulse@db:5432/ai_pulse"
     redis_url: str = "redis://redis:6379/0"
     sse_channel: str = "ai_developments:new"
+    enable_synthetic_fallback: bool = False
 
     model_config = SettingsConfigDict(
         env_file=".env",

@@ -14,7 +14,7 @@ from sqlalchemy import text
 
 from backend.app.core.config import settings
 from backend.app.models.ai_development import AIDevelopment, CategoryType, SourceType
-from workers.app.source_adapters import fetch_canada_gov_metadata, fetch_openalex_metadata
+from workers.app.source_adapters import fetch_betakit_ai_metadata, fetch_canada_gov_metadata, fetch_openalex_metadata
 from workers.app.backfill import fetch_openalex_month, month_windows
 
 PUBLISHERS = [
@@ -145,20 +145,25 @@ async def _set_backfill_status(client: redis.Redis, payload: dict[str, object]) 
 async def _load_candidate_items() -> list[dict[str, object]]:
     items: list[dict[str, object]] = []
     try:
-        items.extend(await fetch_openalex_metadata(limit=3))
+        items.extend(await fetch_openalex_metadata(limit=4))
     except Exception:
         pass
 
     try:
-        items.extend(await fetch_canada_gov_metadata(limit=3))
+        items.extend(await fetch_canada_gov_metadata(limit=4))
     except Exception:
         pass
 
-    if not items:
+    try:
+        items.extend(await fetch_betakit_ai_metadata(limit=6))
+    except Exception:
+        pass
+
+    if not items and settings.enable_synthetic_fallback:
         items = [_generate_item() for _ in range(random.randint(1, 3))]
 
     filtered = [item for item in items if _is_canada_relevant(item)]
-    if not filtered:
+    if not filtered and settings.enable_synthetic_fallback:
         filtered = [_generate_item() for _ in range(random.randint(1, 2))]
     return filtered
 
@@ -213,9 +218,15 @@ async def _insert_and_publish() -> int:
     return inserted
 
 
+@shared_task(name="workers.app.tasks.ingest_live_developments")
+def ingest_live_developments() -> int:
+    return asyncio.run(_insert_and_publish())
+
+
+# Backward-compatible alias for existing beat/task references.
 @shared_task(name="workers.app.tasks.ingest_mock_developments")
 def ingest_mock_developments() -> int:
-    return asyncio.run(_insert_and_publish())
+    return ingest_live_developments()
 
 
 async def _run_backfill(

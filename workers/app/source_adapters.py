@@ -1,4 +1,5 @@
 import hashlib
+import html
 import re
 import uuid
 from datetime import UTC, datetime
@@ -11,6 +12,7 @@ from backend.app.models.ai_development import CategoryType, SourceType
 
 OPENALEX_URL = "https://api.openalex.org/works"
 GOV_CANADA_RSS_URL = "https://www.canada.ca/en/news/advanced-news-search/news-results.html?dprtmnt=departmentofindustry&typ=newsreleases&rss"
+BETAKIT_AI_RSS_URL = "https://betakit.com/tag/artificial-intelligence/feed/"
 AI_KEYWORDS = {"ai", "artificial intelligence", "machine learning", "deep learning", "llm", "generative"}
 CANADA_KEYWORDS = {
     "canada",
@@ -102,6 +104,10 @@ def _extract_tags(title: str) -> list[str]:
     return unique[:5] or ["ai"]
 
 
+def _clean_text(value: str | None) -> str:
+    return html.unescape((value or "").strip())
+
+
 def _fingerprint(source_id: str, url: str, published_at: datetime) -> str:
     material = f"{source_id}|{url}|{published_at.isoformat()}".encode("utf-8")
     return hashlib.sha256(material).hexdigest()
@@ -116,7 +122,7 @@ async def fetch_openalex_metadata(limit: int = 3) -> list[dict[str, object]]:
 
     records: list[dict[str, object]] = []
     for result in payload.get("results", []):
-        title = result.get("display_name") or ""
+        title = _clean_text(result.get("display_name"))
         if not title:
             continue
         if not _contains_ai(title):
@@ -171,7 +177,7 @@ async def fetch_canada_gov_metadata(limit: int = 3) -> list[dict[str, object]]:
     items = root.findall(".//item")
     records: list[dict[str, object]] = []
     for item in items[:limit]:
-        title = (item.findtext("title") or "").strip()
+        title = _clean_text(item.findtext("title"))
         if not title or not _contains_ai(title):
             continue
 
@@ -199,6 +205,50 @@ async def fetch_canada_gov_metadata(limit: int = 3) -> list[dict[str, object]]:
                 "tags": _extract_tags(title),
                 "hash": _fingerprint(guid, link, published_at),
                 "confidence": round(max(0.9, relevance), 2),
+                "relevance_score": relevance,
+            }
+        )
+    return records
+
+
+async def fetch_betakit_ai_metadata(limit: int = 5) -> list[dict[str, object]]:
+    async with httpx.AsyncClient(timeout=15.0, follow_redirects=True) as client:
+        response = await client.get(BETAKIT_AI_RSS_URL)
+        response.raise_for_status()
+        xml_text = response.text
+
+    root = ET.fromstring(xml_text)
+    items = root.findall(".//item")
+    records: list[dict[str, object]] = []
+    for item in items[:limit]:
+        title = _clean_text(item.findtext("title"))
+        if not title or not _contains_ai(title):
+            continue
+
+        link = _clean_text(item.findtext("link"))
+        guid = _clean_text(item.findtext("guid")) or f"betakit-{uuid.uuid4().hex[:12]}"
+        pubdate_raw = _clean_text(item.findtext("pubDate"))
+        try:
+            published_at = parsedate_to_datetime(pubdate_raw).astimezone(UTC)
+        except Exception:
+            published_at = datetime.now(UTC)
+
+        relevance = _canada_relevance_score(title, link, "BetaKit Canada")
+        records.append(
+            {
+                "source_id": guid,
+                "source_type": SourceType.media,
+                "category": CategoryType.news,
+                "title": title,
+                "url": link or "https://betakit.com/",
+                "publisher": "BetaKit",
+                "published_at": published_at,
+                "language": "en",
+                "jurisdiction": "Canada",
+                "entities": ["BetaKit"],
+                "tags": _extract_tags(title),
+                "hash": _fingerprint(guid, link, published_at),
+                "confidence": round(max(0.82, relevance), 2),
                 "relevance_score": relevance,
             }
         )

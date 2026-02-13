@@ -9,8 +9,8 @@ celery_app.conf.update(
     timezone="UTC",
     enable_utc=True,
     beat_schedule={
-        "ingest-mock-ai-developments-every-30s": {
-            "task": "workers.app.tasks.ingest_mock_developments",
+        "ingest-live-ai-developments-every-30s": {
+            "task": "workers.app.tasks.ingest_live_developments",
             "schedule": 30.0,
         }
     },
