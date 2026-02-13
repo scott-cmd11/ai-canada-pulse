@@ -79,6 +79,7 @@
     "entityMomentum": "Momentum entites",
     "pinnedSignals": "Epingles",
     "briefHistory": "Historique brief",
+    "alertCenter": "Centre alertes",
     "alerts": "Alertes",
     "jurisdictions": "Juridictions",
     "entities": "Entites",
@@ -278,6 +279,12 @@
     "drop": "Recul",
     "current": "Actuel",
     "previous": "Precedent"
+  },
+  "alertCenter": {
+    "title": "Centre alertes",
+    "none": "Aucun element actif.",
+    "dismiss": "Ignorer",
+    "reset": "Reinitialiser"
   },
   "methods": {
     "title": "Methodes",

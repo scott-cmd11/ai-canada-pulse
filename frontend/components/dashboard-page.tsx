@@ -179,6 +179,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
     pinnedSignals: true,
     briefHistory: true,
     alerts: true,
+    alertCenter: true,
     jurisdictions: true,
     entities: true,
     tags: true,
@@ -196,6 +197,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
   const [density, setDensity] = useState<"comfortable" | "compact">("comfortable");
   const [pinnedItems, setPinnedItems] = useState<FeedItem[]>([]);
   const [savedBriefs, setSavedBriefs] = useState<SavedBrief[]>([]);
+  const [dismissedAlertIds, setDismissedAlertIds] = useState<string[]>([]);
 
   const scenarioPresets: ScenarioPreset[] = useMemo(
     () => [
@@ -499,6 +501,21 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
   }, [savedBriefs, scope]);
 
   useEffect(() => {
+    try {
+      const raw = localStorage.getItem(`dismissed_alerts_${scope}`);
+      if (!raw) return;
+      const parsed = JSON.parse(raw) as string[];
+      if (Array.isArray(parsed)) setDismissedAlertIds(parsed.slice(0, 200));
+    } catch {
+      return;
+    }
+  }, [scope]);
+
+  useEffect(() => {
+    localStorage.setItem(`dismissed_alerts_${scope}`, JSON.stringify(dismissedAlertIds));
+  }, [dismissedAlertIds, scope]);
+
+  useEffect(() => {
     if (typeof window === "undefined") return;
     const params = new URLSearchParams(window.location.search);
     const tw = params.get("tw");
@@ -613,6 +630,32 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
       })
       .sort((a, b) => b.minutes - a.minutes);
   }, [sourceHealth, nowTs]);
+
+  const alertCenterItems = useMemo(() => {
+    const items: Array<{ id: string; severity: "high" | "medium"; message: string }> = [];
+    alerts
+      .filter((item) => item.severity === "high")
+      .forEach((item) => {
+        const id = `trend-${item.category}-${item.direction}`;
+        const msg = `${t("alerts.title")}: ${item.category} ${item.direction === "up" ? t("alerts.spike") : t("alerts.drop")} ${item.delta_percent.toFixed(1)}%`;
+        items.push({ id, severity: "high", message: msg });
+      });
+    sourceFreshness
+      .filter((item) => item.level === "stale")
+      .forEach((item) => {
+        const id = `stale-${item.source}`;
+        const msg = `${t("sources.freshnessTitle")}: ${item.source} ${item.minutes}m`;
+        items.push({ id, severity: "medium", message: msg });
+      });
+    (riskIndex?.reasons ?? [])
+      .filter((reason) => reason !== "stable_signal_profile")
+      .forEach((reason) => {
+        const id = `risk-${reason}`;
+        const msg = `${t("risk.title")}: ${t(`riskReason.${reason}`)}`;
+        items.push({ id, severity: "high", message: msg });
+      });
+    return items.filter((item) => !dismissedAlertIds.includes(item.id)).slice(0, 20);
+  }, [alerts, sourceFreshness, riskIndex?.reasons, dismissedAlertIds, t]);
 
   const confidenceTone: Record<string, string> = {
     very_high: "var(--research)",
@@ -905,6 +948,9 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
       });
     }
     lines.push("");
+    lines.push("## Alert Center");
+    lines.push(`- Active triage items: ${alertCenterItems.length}`);
+    lines.push("");
     lines.push("## Risk");
     lines.push(`- Risk index: ${(riskIndex?.score ?? 0).toFixed(1)} (${riskIndex?.level ?? "low"})`);
     lines.push(
@@ -920,7 +966,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
       lines.push("- Top alerts: none");
     }
     return lines.join("\n");
-  }, [scope, timeWindow, kpis, brief, compare, concentration, confidenceProfile, riskIndex, alerts, sourceFreshness, pinnedItems]);
+  }, [scope, timeWindow, kpis, brief, compare, concentration, confidenceProfile, riskIndex, alerts, sourceFreshness, alertCenterItems.length, pinnedItems]);
 
   async function copyMorningBrief() {
     try {
@@ -968,6 +1014,14 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
     setSavedBriefs((prev) => [entry, ...prev].slice(0, 20));
     setSaveBriefState("saved");
     setTimeout(() => setSaveBriefState("idle"), 1600);
+  }
+
+  function dismissAlertItem(id: string) {
+    setDismissedAlertIds((prev) => (prev.includes(id) ? prev : [id, ...prev].slice(0, 200)));
+  }
+
+  function resetDismissedAlerts() {
+    setDismissedAlertIds([]);
   }
 
   async function copyShareLink() {
@@ -1841,6 +1895,33 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
                           {t("briefHistory.delete")}
                         </button>
                       </div>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
+            {mode === "research" && panelVisibility.alertCenter && (
+              <section className="rounded-lg border border-borderSoft bg-surface p-3">
+                <div className="mb-2 flex items-center justify-between">
+                  <h3 className="text-sm font-semibold text-textSecondary">{t("alertCenter.title")}</h3>
+                  <button
+                    onClick={resetDismissedAlerts}
+                    className="rounded border border-borderSoft px-2 py-1 text-xs"
+                    disabled={dismissedAlertIds.length === 0}
+                  >
+                    {t("alertCenter.reset")}
+                  </button>
+                </div>
+                <div className="space-y-2 text-xs">
+                  {alertCenterItems.length === 0 && <p className="text-textMuted">{t("alertCenter.none")}</p>}
+                  {alertCenterItems.slice(0, 10).map((item) => (
+                    <div key={item.id} className="flex items-center justify-between rounded border border-borderSoft px-2 py-2">
+                      <span className="pr-2" style={{ color: item.severity === "high" ? "var(--incidents)" : "var(--text-secondary)" }}>
+                        {item.message}
+                      </span>
+                      <button onClick={() => dismissAlertItem(item.id)} className="rounded border border-borderSoft px-2 py-1">
+                        {t("alertCenter.dismiss")}
+                      </button>
                     </div>
                   ))}
                 </div>

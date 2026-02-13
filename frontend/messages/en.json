@@ -79,6 +79,7 @@
     "entityMomentum": "Entity Momentum",
     "pinnedSignals": "Pinned",
     "briefHistory": "Brief History",
+    "alertCenter": "Alert Center",
     "alerts": "Alerts",
     "jurisdictions": "Jurisdictions",
     "entities": "Entities",
@@ -279,6 +280,12 @@
     "drop": "Drop",
     "current": "Current",
     "previous": "Previous"
+  },
+  "alertCenter": {
+    "title": "Alert Center",
+    "none": "No active alert-center items.",
+    "dismiss": "Dismiss",
+    "reset": "Reset"
   },
   "methods": {
     "title": "Methods",
