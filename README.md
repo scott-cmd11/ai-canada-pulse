@@ -1,77 +1,105 @@
 # AI Canada Pulse
 
-Live and interactive dashboard for tracking AI activity in Canada across news, research, policy, funding, and open-source signals.
+AI Canada Pulse is a real-time, metadata-only intelligence dashboard for tracking AI developments across Canada and global signals relevant to Canada.
 
-The dashboard supports:
-- Live feed with search and filtering
-- Daily, weekly, monthly, and yearly trend views
-- Historical baseline anchored to the ChatGPT moment (`2022-11-30`)
-- Scheduled scans with persistent storage
+It is a monorepo with:
+- `frontend`: Next.js 14, TypeScript, Tailwind, `next-intl`, ECharts
+- `backend`: FastAPI (async), SQLAlchemy async, Pydantic
+- `workers`: Celery ingestion + backfill jobs
+- `db`: PostgreSQL
+- `redis`: pub/sub + task broker + health/status cache
 
-## Local Run
+## Current Capabilities
 
-1. Install dependencies:
-```bash
-npm install
-```
+- Live feed via SSE (`/api/v1/feed/stream`)
+- Bilingual UI routing (`/en/...`, `/fr/...`)
+- Policy/Research view modes
+- Filters and CSV/JSON export
+- KPI, hourly, weekly charts
+- Historical OpenAlex backfill endpoint + UI controls
+- Synthetic cleanup endpoint + UI controls
+- Source health panel (per-source fetched/accepted/inserted/duplicates/errors)
+- Source mix analytics endpoint (`/api/v1/stats/sources`)
 
-2. Create local env file:
-```bash
-cp .env.example .env.local
-```
-On Windows PowerShell:
+## Metadata-Only Policy
+
+The project stores metadata only:
+- title
+- canonical URL
+- publisher
+- timestamps
+- classification/category/tags/entities/confidence
+
+Full article text is not stored.
+
+## Quick Start (Docker)
+
+From repo root:
+
 ```powershell
-Copy-Item .env.example .env.local
+docker compose up --build -d
 ```
 
-3. Fill required env values in `.env.local`:
-- `KV_REST_API_URL`
-- `KV_REST_API_TOKEN`
+Services:
+- Frontend: `http://localhost:3000`
+- API: `http://localhost:8000`
 
-4. Start app:
-```bash
-npm run dev
+## Key API Endpoints
+
+Base: `http://localhost:8000/api/v1`
+
+- `GET /feed`
+- `GET /feed/stream`
+- `GET /feed/export?fmt=csv|json`
+- `GET /stats/kpis`
+- `GET /stats/hourly`
+- `GET /stats/weekly`
+- `GET /stats/sources`
+- `POST /backfill/run`
+- `GET /backfill/status`
+- `POST /maintenance/purge-synthetic?execute=false|true`
+- `GET /sources/health`
+
+## Useful Commands
+
+```powershell
+# Rebuild only worker after ingestion changes
+docker compose up --build -d worker
+
+# View worker logs
+docker compose logs worker --tail=120
+
+# Compile check
+python -m compileall backend workers
+
+# Frontend build check
+cd frontend
+npm run build
 ```
 
-5. Open:
-- `http://localhost:3000`
+## Backfill Example
 
-6. Trigger first aggregation:
-- Click `Scan Now` in the UI
-- Or call `POST /api/scan`
+```powershell
+$body = @{
+  start_date = '2022-11-01'
+  end_date = '2026-02-13'
+  per_page = 50
+  max_pages_per_month = 2
+} | ConvertTo-Json
 
-## Environment Variables
+Invoke-RestMethod -Method Post `
+  -Uri 'http://localhost:8000/api/v1/backfill/run' `
+  -ContentType 'application/json' `
+  -Body $body
+```
 
-See `.env.example`.
+Check progress:
 
-Required for persistence:
-- `KV_REST_API_URL`
-- `KV_REST_API_TOKEN`
-
-Optional:
-- `UPSTASH_REDIS_REST_URL`
-- `UPSTASH_REDIS_REST_TOKEN`
-- `CRON_SECRET` (recommended in production; protects cron GET endpoint)
-- `GITHUB_TOKEN` (higher GitHub API rate limits)
-
-## Scheduling
-
-`vercel.json` is configured to run:
-- `/api/scan` every 6 hours (`0 */6 * * *`, UTC)
-
-## Deploy (Vercel)
-
-1. Push this project to a Git repository.
-2. Import the repo into Vercel.
-3. Add environment variables in Vercel Project Settings.
-4. Deploy.
-5. Verify:
-- `GET /api/stats`
-- `POST /api/scan`
-- Dashboard at `/`
+```powershell
+curl.exe -s http://localhost:8000/api/v1/backfill/status
+```
 
 ## Notes
 
-- If Redis env vars are missing, the app falls back to in-memory storage (not persistent).
-- Scanning uses a mix of Google News RSS queries, curated Canadian feeds, arXiv, and GitHub search.
-- Feed/network availability can vary; scan errors are captured and returned in the scan response.
+- Source ingestion is dedupe-heavy once the dataset is warm; `inserted=0` on a run is normal when all items are already known.
+- Use `/sources/health` and the Source Health panel to inspect ingestion behavior by source.

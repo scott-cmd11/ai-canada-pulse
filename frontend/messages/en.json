@@ -75,6 +75,8 @@
     "fetched": "Fetched",
     "accepted": "Accepted",
     "inserted": "Inserted",
+    "duplicates": "Duplicates",
+    "writeErrors": "Write Errors",
     "duration": "Duration",
     "error": "Error",
     "publishers": "Top Publishers",

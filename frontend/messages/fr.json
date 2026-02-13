@@ -75,6 +75,8 @@
     "fetched": "Recupere",
     "accepted": "Accepte",
     "inserted": "Insere",
+    "duplicates": "Doublons",
+    "writeErrors": "Erreurs ecriture",
     "duration": "Duree",
     "error": "Erreur",
     "publishers": "Principaux editeurs",

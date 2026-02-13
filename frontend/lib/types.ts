@@ -94,6 +94,8 @@ export interface SourceHealthEntry {
   fetched: number;
   accepted: number;
   inserted: number;
+  duplicates: number;
+  write_errors: number;
   duration_ms: number;
   last_run: string;
   error: string;

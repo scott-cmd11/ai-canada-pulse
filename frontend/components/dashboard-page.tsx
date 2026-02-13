@@ -561,6 +561,8 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
                         <span>{t("sources.fetched")}: {src.fetched}</span>
                         <span>{t("sources.accepted")}: {src.accepted}</span>
                         <span>{t("sources.inserted")}: {src.inserted}</span>
+                        <span>{t("sources.duplicates")}: {src.duplicates ?? 0}</span>
+                        <span>{t("sources.writeErrors")}: {src.write_errors ?? 0}</span>
                         <span>{t("sources.duration")}: {src.duration_ms}ms</span>
                       </div>
                       {src.error ? <p className="mt-1 text-red-600">{t("sources.error")}: {src.error}</p> : null}

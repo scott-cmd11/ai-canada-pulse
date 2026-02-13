@@ -127,6 +127,14 @@ def _safe_parse_xml(xml_text: str) -> ET.Element | None:
         return None
 
 
+def _normalize_source_id(source_id: str, *, prefix: str) -> str:
+    trimmed = source_id.strip()
+    if len(trimmed) <= 240:
+        return trimmed
+    digest = hashlib.sha256(trimmed.encode("utf-8")).hexdigest()[:24]
+    return f"{prefix}-{digest}"
+
+
 def _fingerprint(source_id: str, url: str, published_at: datetime) -> str:
     material = f"{source_id}|{url}|{published_at.isoformat()}".encode("utf-8")
     return hashlib.sha256(material).hexdigest()
@@ -147,7 +155,7 @@ async def fetch_openalex_metadata(limit: int = 3) -> list[dict[str, object]]:
         if not _contains_ai(title):
             continue
 
-        source_id = str(result.get("id", f"openalex-{uuid.uuid4().hex[:10]}"))
+        source_id = _normalize_source_id(str(result.get("id", f"openalex-{uuid.uuid4().hex[:10]}")), prefix="openalex")
         published_raw = result.get("publication_date") or datetime.now(UTC).date().isoformat()
         published_at = datetime.fromisoformat(f"{published_raw}T00:00:00+00:00")
         primary_location = result.get("primary_location") or {}
@@ -203,7 +211,8 @@ async def fetch_canada_gov_metadata(limit: int = 3) -> list[dict[str, object]]:
             continue
 
         link = (item.findtext("link") or "").strip()
-        guid = (item.findtext("guid") or "").strip() or f"gc-{uuid.uuid4().hex[:12]}"
+        guid_raw = (item.findtext("guid") or "").strip() or f"gc-{uuid.uuid4().hex[:12]}"
+        guid = _normalize_source_id(guid_raw, prefix="gc")
         pubdate_raw = (item.findtext("pubDate") or "").strip()
         try:
             published_at = parsedate_to_datetime(pubdate_raw).astimezone(UTC)
@@ -249,7 +258,8 @@ async def fetch_betakit_ai_metadata(limit: int = 5) -> list[dict[str, object]]:
             continue
 
         link = _clean_text(item.findtext("link"))
-        guid = _clean_text(item.findtext("guid")) or f"betakit-{uuid.uuid4().hex[:12]}"
+        guid_raw = _clean_text(item.findtext("guid")) or f"betakit-{uuid.uuid4().hex[:12]}"
+        guid = _normalize_source_id(guid_raw, prefix="betakit")
         pubdate_raw = _clean_text(item.findtext("pubDate"))
         try:
             published_at = parsedate_to_datetime(pubdate_raw).astimezone(UTC)
@@ -297,7 +307,8 @@ async def fetch_google_news_canada_ai_metadata(limit: int = 8) -> list[dict[str,
             continue
 
         link = _clean_text(item.findtext("link"))
-        guid = _clean_text(item.findtext("guid")) or f"google-news-{uuid.uuid4().hex[:12]}"
+        guid_raw = _clean_text(item.findtext("guid")) or f"google-news-{uuid.uuid4().hex[:12]}"
+        guid = _normalize_source_id(guid_raw, prefix="google-news")
         pubdate_raw = _clean_text(item.findtext("pubDate"))
         try:
             published_at = parsedate_to_datetime(pubdate_raw).astimezone(UTC)
