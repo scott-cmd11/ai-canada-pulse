@@ -103,3 +103,15 @@ export interface SourcesHealthResponse {
   updated_at: string;
   sources: SourceHealthEntry[];
 }
+
+export interface SourcesBreakdownEntry {
+  name: string;
+  count: number;
+}
+
+export interface SourcesBreakdownResponse {
+  time_window: TimeWindow;
+  total: number;
+  publishers: SourcesBreakdownEntry[];
+  source_types: SourcesBreakdownEntry[];
+}

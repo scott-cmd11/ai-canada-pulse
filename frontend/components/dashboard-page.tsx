@@ -13,6 +13,7 @@ import {
   fetchFeed,
   fetchHourly,
   fetchKpis,
+  fetchSourcesBreakdown,
   fetchSourcesHealth,
   fetchWeekly,
   previewSyntheticPurge,
@@ -26,6 +27,7 @@ import type {
   KPIsResponse,
   PurgeSyntheticResponse,
   SourceHealthEntry,
+  SourcesBreakdownResponse,
   TimeWindow,
 } from "../lib/types";
 import { useMode } from "./mode-provider";
@@ -74,6 +76,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
   const [cleanupResult, setCleanupResult] = useState<PurgeSyntheticResponse | null>(null);
   const [sourceHealth, setSourceHealth] = useState<SourceHealthEntry[]>([]);
   const [sourceHealthUpdatedAt, setSourceHealthUpdatedAt] = useState("");
+  const [sourcesBreakdown, setSourcesBreakdown] = useState<SourcesBreakdownResponse | null>(null);
 
   const otherLocale = locale === "en" ? "fr" : "en";
   const pagePath = scope === "canada" ? "canada" : "world";
@@ -127,12 +130,17 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
 
     const poll = async () => {
       try {
-        const [status, sources] = await Promise.all([fetchBackfillStatus(), fetchSourcesHealth()]);
+        const [status, sources, breakdown] = await Promise.all([
+          fetchBackfillStatus(),
+          fetchSourcesHealth(),
+          fetchSourcesBreakdown("7d"),
+        ]);
         if (!mounted) return;
         setBackfillStatus(status);
         setIsBackfillRunning(status.state === "running");
         setSourceHealth(sources.sources ?? []);
         setSourceHealthUpdatedAt(sources.updated_at ?? "");
+        setSourcesBreakdown(breakdown);
       } catch {
         if (!mounted) return;
         setBackfillError("Unable to fetch backfill status.");
@@ -558,6 +566,38 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
                       {src.error ? <p className="mt-1 text-red-600">{t("sources.error")}: {src.error}</p> : null}
                     </div>
                   ))}
+                </div>
+              </section>
+            )}
+            {mode === "research" && (
+              <section className="rounded-lg border border-borderSoft bg-surface p-3">
+                <h3 className="mb-2 text-sm font-semibold text-textSecondary">{t("sources.mixTitle")}</h3>
+                <p className="mb-2 text-xs text-textMuted">
+                  {t("sources.total")}: {sourcesBreakdown?.total ?? 0}
+                </p>
+                <div className="grid grid-cols-2 gap-2 text-xs">
+                  <div className="rounded border border-borderSoft p-2">
+                    <p className="mb-1 font-medium text-textSecondary">{t("sources.publishers")}</p>
+                    <div className="space-y-1">
+                      {(sourcesBreakdown?.publishers ?? []).slice(0, 5).map((item) => (
+                        <div key={item.name} className="flex justify-between">
+                          <span className="truncate pr-2">{item.name}</span>
+                          <span>{item.count}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="rounded border border-borderSoft p-2">
+                    <p className="mb-1 font-medium text-textSecondary">{t("sources.types")}</p>
+                    <div className="space-y-1">
+                      {(sourcesBreakdown?.source_types ?? []).map((item) => (
+                        <div key={item.name} className="flex justify-between">
+                          <span>{item.name}</span>
+                          <span>{item.count}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 </div>
               </section>
             )}

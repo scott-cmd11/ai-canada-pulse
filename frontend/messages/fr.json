@@ -68,13 +68,17 @@
   },
   "sources": {
     "title": "Sante des sources",
+    "mixTitle": "Repartition des sources (7j)",
+    "total": "Total",
     "updated": "Mis a jour",
     "status": "Statut",
     "fetched": "Recupere",
     "accepted": "Accepte",
     "inserted": "Insere",
     "duration": "Duree",
-    "error": "Erreur"
+    "error": "Erreur",
+    "publishers": "Principaux editeurs",
+    "types": "Types de source"
   },
   "methods": {
     "title": "Methodes",

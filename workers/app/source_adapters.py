@@ -308,6 +308,7 @@ async def fetch_google_news_canada_ai_metadata(limit: int = 8) -> list[dict[str,
         title = raw_title.rsplit(" - ", 1)[0].strip() if " - " in raw_title else raw_title
         relevance = _canada_relevance_score(title, link, publisher)
         jurisdiction = _infer_jurisdiction(title, publisher, "Canada")
+        confidence = round(max(0.84, min(0.99, 0.55 + (0.5 * relevance))), 2)
 
         records.append(
             {
@@ -323,7 +324,7 @@ async def fetch_google_news_canada_ai_metadata(limit: int = 8) -> list[dict[str,
                 "entities": [publisher],
                 "tags": _extract_tags(title),
                 "hash": _fingerprint(guid, link, published_at),
-                "confidence": round(max(0.78, relevance), 2),
+                "confidence": confidence,
                 "relevance_score": relevance,
             }
         )

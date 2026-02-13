@@ -68,13 +68,17 @@
   },
   "sources": {
     "title": "Source Health",
+    "mixTitle": "Source Mix (7d)",
+    "total": "Total",
     "updated": "Updated",
     "status": "Status",
     "fetched": "Fetched",
     "accepted": "Accepted",
     "inserted": "Inserted",
     "duration": "Duration",
-    "error": "Error"
+    "error": "Error",
+    "publishers": "Top Publishers",
+    "types": "Source Types"
   },
   "methods": {
     "title": "Methods",

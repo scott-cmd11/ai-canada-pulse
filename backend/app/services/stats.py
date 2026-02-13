@@ -14,6 +14,12 @@ def _calc_delta(current: int, previous: int) -> float:
     return round(((current - previous) / previous) * 100.0, 2)
 
 
+def _enum_name(value: object) -> str:
+    if hasattr(value, "value"):
+        return str(getattr(value, "value"))
+    return str(value)
+
+
 async def _count_between(db: AsyncSession, start: datetime, end: datetime) -> int:
     stmt = select(func.count(AIDevelopment.id)).where(
         and_(AIDevelopment.published_at >= start, AIDevelopment.published_at < end)
@@ -143,3 +149,41 @@ async def fetch_weekly_timeseries(db: AsyncSession) -> EChartsTimeseriesResponse
     ]
 
     return EChartsTimeseriesResponse(legend=categories, xAxis=labels, series=series)
+
+
+async def fetch_sources_breakdown(db: AsyncSession, *, time_window: str = "7d", limit: int = 8) -> dict[str, object]:
+    now = datetime.now(UTC)
+    since = now - (
+        {
+            "1h": timedelta(hours=1),
+            "24h": timedelta(hours=24),
+            "7d": timedelta(days=7),
+            "30d": timedelta(days=30),
+        }.get(time_window, timedelta(days=7))
+    )
+
+    total_stmt = select(func.count(AIDevelopment.id)).where(AIDevelopment.published_at >= since)
+    total = int((await db.execute(total_stmt)).scalar_one())
+
+    by_publisher_stmt = (
+        select(AIDevelopment.publisher, func.count(AIDevelopment.id).label("count"))
+        .where(AIDevelopment.published_at >= since)
+        .group_by(AIDevelopment.publisher)
+        .order_by(text("count DESC"))
+        .limit(max(1, min(limit, 20)))
+    )
+    by_type_stmt = (
+        select(AIDevelopment.source_type, func.count(AIDevelopment.id).label("count"))
+        .where(AIDevelopment.published_at >= since)
+        .group_by(AIDevelopment.source_type)
+        .order_by(text("count DESC"))
+    )
+
+    publishers_rows = (await db.execute(by_publisher_stmt)).all()
+    types_rows = (await db.execute(by_type_stmt)).all()
+    return {
+        "time_window": time_window,
+        "total": total,
+        "publishers": [{"name": str(name), "count": int(count)} for name, count in publishers_rows],
+        "source_types": [{"name": _enum_name(name), "count": int(count)} for name, count in types_rows],
+    }
