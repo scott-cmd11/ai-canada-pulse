@@ -6,6 +6,7 @@ import type {
   FeedResponse,
   KPIsResponse,
   PurgeSyntheticResponse,
+  SourcesHealthResponse,
   TimeWindow,
 } from "./types";
 
@@ -102,5 +103,11 @@ export async function previewSyntheticPurge(): Promise<PurgeSyntheticResponse> {
 export async function executeSyntheticPurge(): Promise<PurgeSyntheticResponse> {
   const res = await fetch(`${API_BASE}/maintenance/purge-synthetic?execute=true`, { method: "POST" });
   if (!res.ok) throw new Error("Failed to execute synthetic purge");
+  return res.json();
+}
+
+export async function fetchSourcesHealth(): Promise<SourcesHealthResponse> {
+  const res = await fetch(`${API_BASE}/sources/health`, { cache: "no-store" });
+  if (!res.ok) throw new Error("Failed to fetch sources health");
   return res.json();
 }

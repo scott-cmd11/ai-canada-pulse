@@ -66,6 +66,16 @@
     "done": "Done",
     "failed": "Failed"
   },
+  "sources": {
+    "title": "Source Health",
+    "updated": "Updated",
+    "status": "Status",
+    "fetched": "Fetched",
+    "accepted": "Accepted",
+    "inserted": "Inserted",
+    "duration": "Duration",
+    "error": "Error"
+  },
   "methods": {
     "title": "Methods",
     "body": "Metadata-only ingestion with category and entity extraction. No full article text is stored."

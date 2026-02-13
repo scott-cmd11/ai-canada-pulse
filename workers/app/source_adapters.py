@@ -13,6 +13,9 @@ from backend.app.models.ai_development import CategoryType, SourceType
 OPENALEX_URL = "https://api.openalex.org/works"
 GOV_CANADA_RSS_URL = "https://www.canada.ca/en/news/advanced-news-search/news-results.html?dprtmnt=departmentofindustry&typ=newsreleases&rss"
 BETAKIT_AI_RSS_URL = "https://betakit.com/tag/artificial-intelligence/feed/"
+GOOGLE_NEWS_CANADA_AI_RSS_URL = (
+    "https://news.google.com/rss/search?q=artificial+intelligence+Canada&hl=en-CA&gl=CA&ceid=CA:en"
+)
 AI_KEYWORDS = {"ai", "artificial intelligence", "machine learning", "deep learning", "llm", "generative"}
 CANADA_KEYWORDS = {
     "canada",
@@ -108,6 +111,22 @@ def _clean_text(value: str | None) -> str:
     return html.unescape((value or "").strip())
 
 
+def _extract_publisher_from_title(title: str, fallback: str) -> str:
+    # Google News RSS titles often end with " - Publisher".
+    if " - " in title:
+        candidate = title.rsplit(" - ", 1)[-1].strip()
+        if candidate:
+            return candidate
+    return fallback
+
+
+def _safe_parse_xml(xml_text: str) -> ET.Element | None:
+    try:
+        return ET.fromstring(xml_text)
+    except ET.ParseError:
+        return None
+
+
 def _fingerprint(source_id: str, url: str, published_at: datetime) -> str:
     material = f"{source_id}|{url}|{published_at.isoformat()}".encode("utf-8")
     return hashlib.sha256(material).hexdigest()
@@ -173,7 +192,9 @@ async def fetch_canada_gov_metadata(limit: int = 3) -> list[dict[str, object]]:
         response.raise_for_status()
         xml_text = response.text
 
-    root = ET.fromstring(xml_text)
+    root = _safe_parse_xml(xml_text)
+    if root is None:
+        return []
     items = root.findall(".//item")
     records: list[dict[str, object]] = []
     for item in items[:limit]:
@@ -217,7 +238,9 @@ async def fetch_betakit_ai_metadata(limit: int = 5) -> list[dict[str, object]]:
         response.raise_for_status()
         xml_text = response.text
 
-    root = ET.fromstring(xml_text)
+    root = _safe_parse_xml(xml_text)
+    if root is None:
+        return []
     items = root.findall(".//item")
     records: list[dict[str, object]] = []
     for item in items[:limit]:
@@ -249,6 +272,58 @@ async def fetch_betakit_ai_metadata(limit: int = 5) -> list[dict[str, object]]:
                 "tags": _extract_tags(title),
                 "hash": _fingerprint(guid, link, published_at),
                 "confidence": round(max(0.82, relevance), 2),
+                "relevance_score": relevance,
+            }
+        )
+    return records
+
+
+async def fetch_google_news_canada_ai_metadata(limit: int = 8) -> list[dict[str, object]]:
+    async with httpx.AsyncClient(timeout=15.0, follow_redirects=True) as client:
+        response = await client.get(GOOGLE_NEWS_CANADA_AI_RSS_URL)
+        response.raise_for_status()
+        xml_text = response.text
+
+    root = _safe_parse_xml(xml_text)
+    if root is None:
+        return []
+    items = root.findall(".//item")
+    records: list[dict[str, object]] = []
+    for item in items[:limit]:
+        raw_title = _clean_text(item.findtext("title"))
+        if not raw_title:
+            continue
+        if not _contains_ai(raw_title):
+            continue
+
+        link = _clean_text(item.findtext("link"))
+        guid = _clean_text(item.findtext("guid")) or f"google-news-{uuid.uuid4().hex[:12]}"
+        pubdate_raw = _clean_text(item.findtext("pubDate"))
+        try:
+            published_at = parsedate_to_datetime(pubdate_raw).astimezone(UTC)
+        except Exception:
+            published_at = datetime.now(UTC)
+
+        publisher = _extract_publisher_from_title(raw_title, "Google News")
+        title = raw_title.rsplit(" - ", 1)[0].strip() if " - " in raw_title else raw_title
+        relevance = _canada_relevance_score(title, link, publisher)
+        jurisdiction = _infer_jurisdiction(title, publisher, "Canada")
+
+        records.append(
+            {
+                "source_id": guid,
+                "source_type": SourceType.media,
+                "category": CategoryType.news,
+                "title": title,
+                "url": link or "https://news.google.com/",
+                "publisher": publisher,
+                "published_at": published_at,
+                "language": "en",
+                "jurisdiction": jurisdiction if jurisdiction != "Global" else "Canada",
+                "entities": [publisher],
+                "tags": _extract_tags(title),
+                "hash": _fingerprint(guid, link, published_at),
+                "confidence": round(max(0.78, relevance), 2),
                 "relevance_score": relevance,
             }
         )

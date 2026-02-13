@@ -3,8 +3,11 @@ import hashlib
 import json
 import random
 import uuid
+from collections.abc import Awaitable, Callable
 from datetime import UTC, datetime, timedelta
 from datetime import date as date_type
+from time import perf_counter
+from typing import Any
 
 import redis.asyncio as redis
 from celery import shared_task
@@ -14,7 +17,12 @@ from sqlalchemy import text
 
 from backend.app.core.config import settings
 from backend.app.models.ai_development import AIDevelopment, CategoryType, SourceType
-from workers.app.source_adapters import fetch_betakit_ai_metadata, fetch_canada_gov_metadata, fetch_openalex_metadata
+from workers.app.source_adapters import (
+    fetch_betakit_ai_metadata,
+    fetch_canada_gov_metadata,
+    fetch_google_news_canada_ai_metadata,
+    fetch_openalex_metadata,
+)
 from workers.app.backfill import fetch_openalex_month, month_windows
 
 PUBLISHERS = [
@@ -68,12 +76,26 @@ CANADA_FOCUS_ENTITIES = {
     "University of Toronto",
     "University of Alberta",
 }
+SOURCE_HEALTH_KEY = "source_health:latest"
 
 
 def _enum_or_str(value: object) -> str:
     if hasattr(value, "value"):
         return str(getattr(value, "value"))
     return str(value)
+
+
+def _source_key_for_record(record_data: dict[str, object]) -> str:
+    publisher = str(record_data.get("publisher", "")).lower()
+    if publisher == "openalex":
+        return "openalex"
+    if publisher == "government of canada":
+        return "canada_gov_ised"
+    if publisher == "betakit":
+        return "betakit_ai"
+    if publisher:
+        return "google_news_canada_ai"
+    return "unknown"
 
 
 def _fingerprint(source_id: str, url: str, published_at: datetime) -> str:
@@ -142,30 +164,77 @@ async def _set_backfill_status(client: redis.Redis, payload: dict[str, object]) 
     await client.set("backfill:status", json.dumps(payload))
 
 
-async def _load_candidate_items() -> list[dict[str, object]]:
-    items: list[dict[str, object]] = []
-    try:
-        items.extend(await fetch_openalex_metadata(limit=4))
-    except Exception:
-        pass
+async def _set_source_health(client: redis.Redis, payload: dict[str, object]) -> None:
+    await client.set(SOURCE_HEALTH_KEY, json.dumps(payload))
 
-    try:
-        items.extend(await fetch_canada_gov_metadata(limit=4))
-    except Exception:
-        pass
 
-    try:
-        items.extend(await fetch_betakit_ai_metadata(limit=6))
-    except Exception:
-        pass
+async def _load_candidate_items() -> tuple[list[dict[str, object]], list[dict[str, object]]]:
+    source_fetchers: list[tuple[str, Callable[[], Awaitable[list[dict[str, object]]]]]] = [
+        ("openalex", lambda: fetch_openalex_metadata(limit=6)),
+        ("canada_gov_ised", lambda: fetch_canada_gov_metadata(limit=6)),
+        ("betakit_ai", lambda: fetch_betakit_ai_metadata(limit=8)),
+        ("google_news_canada_ai", lambda: fetch_google_news_canada_ai_metadata(limit=10)),
+    ]
 
+    merged_by_hash: dict[str, dict[str, object]] = {}
+    health: list[dict[str, object]] = []
+    for source_name, fetcher in source_fetchers:
+        started = perf_counter()
+        try:
+            source_items = await fetcher()
+            filtered = [item for item in source_items if _is_canada_relevant(item)]
+            for item in filtered:
+                item_hash = str(item.get("hash", ""))
+                if not item_hash:
+                    continue
+                if item_hash not in merged_by_hash:
+                    merged_by_hash[item_hash] = item
+
+            health.append(
+                {
+                    "source": source_name,
+                    "status": "ok",
+                    "fetched": len(source_items),
+                    "accepted": len(filtered),
+                    "inserted": 0,
+                    "duration_ms": int((perf_counter() - started) * 1000),
+                    "last_run": datetime.now(UTC).isoformat(),
+                    "error": "",
+                }
+            )
+        except Exception as exc:
+            health.append(
+                {
+                    "source": source_name,
+                    "status": "error",
+                    "fetched": 0,
+                    "accepted": 0,
+                    "inserted": 0,
+                    "duration_ms": int((perf_counter() - started) * 1000),
+                    "last_run": datetime.now(UTC).isoformat(),
+                    "error": str(exc),
+                }
+            )
+
+    items = list(merged_by_hash.values())
     if not items and settings.enable_synthetic_fallback:
         items = [_generate_item() for _ in range(random.randint(1, 3))]
+        health.append(
+            {
+                "source": "synthetic_fallback",
+                "status": "ok",
+                "fetched": len(items),
+                "accepted": len(items),
+                "inserted": 0,
+                "duration_ms": 0,
+                "last_run": datetime.now(UTC).isoformat(),
+                "error": "",
+            }
+        )
 
-    filtered = [item for item in items if _is_canada_relevant(item)]
-    if not filtered and settings.enable_synthetic_fallback:
-        filtered = [_generate_item() for _ in range(random.randint(1, 2))]
-    return filtered
+    if not items and settings.enable_synthetic_fallback:
+        items = [_generate_item() for _ in range(random.randint(1, 2))]
+    return items, health
 
 
 async def _insert_and_publish() -> int:
@@ -173,10 +242,15 @@ async def _insert_and_publish() -> int:
     client = redis.from_url(settings.redis_url, decode_responses=True)
     engine = create_async_engine(settings.database_url, future=True, pool_pre_ping=True)
     SessionLocal = async_sessionmaker(engine, expire_on_commit=False)
-    candidates = await _load_candidate_items()
+    candidates, source_health = await _load_candidate_items()
+    inserted_by_source: dict[str, int] = {}
+    for candidate in candidates:
+        source_name = _source_key_for_record(candidate)
+        inserted_by_source[source_name] = inserted_by_source.get(source_name, 0)
 
     async with SessionLocal() as session:
         for record_data in candidates:
+            source_name = _source_key_for_record(record_data)
             record_data.pop("relevance_score", None)
             model = AIDevelopment(**record_data)
             session.add(model)
@@ -187,6 +261,7 @@ async def _insert_and_publish() -> int:
                 continue
 
             inserted += 1
+            inserted_by_source[source_name] = inserted_by_source.get(source_name, 0) + 1
             payload = {
                 "id": str(model.id),
                 "source_id": model.source_id,
@@ -212,6 +287,12 @@ async def _insert_and_publish() -> int:
             await session.commit()
         except Exception:
             await session.rollback()
+
+    health_payload: dict[str, Any] = {"updated_at": datetime.now(UTC).isoformat(), "sources": source_health}
+    for entry in health_payload["sources"]:
+        src = str(entry.get("source", ""))
+        entry["inserted"] = inserted_by_source.get(src, 0)
+    await _set_source_health(client, health_payload)
 
     await engine.dispose()
     await client.close()

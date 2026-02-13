@@ -13,12 +13,21 @@ import {
   fetchFeed,
   fetchHourly,
   fetchKpis,
+  fetchSourcesHealth,
   fetchWeekly,
   previewSyntheticPurge,
   runBackfill,
   sseUrl,
 } from "../lib/api";
-import type { BackfillStatus, EChartsResponse, FeedItem, KPIsResponse, PurgeSyntheticResponse, TimeWindow } from "../lib/types";
+import type {
+  BackfillStatus,
+  EChartsResponse,
+  FeedItem,
+  KPIsResponse,
+  PurgeSyntheticResponse,
+  SourceHealthEntry,
+  TimeWindow,
+} from "../lib/types";
 import { useMode } from "./mode-provider";
 import { useTheme } from "./theme-provider";
 
@@ -63,6 +72,8 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
   const [backfillError, setBackfillError] = useState("");
   const [cleanupStatus, setCleanupStatus] = useState<"idle" | "running" | "done" | "failed">("idle");
   const [cleanupResult, setCleanupResult] = useState<PurgeSyntheticResponse | null>(null);
+  const [sourceHealth, setSourceHealth] = useState<SourceHealthEntry[]>([]);
+  const [sourceHealthUpdatedAt, setSourceHealthUpdatedAt] = useState("");
 
   const otherLocale = locale === "en" ? "fr" : "en";
   const pagePath = scope === "canada" ? "canada" : "world";
@@ -116,10 +127,12 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
 
     const poll = async () => {
       try {
-        const status = await fetchBackfillStatus();
+        const [status, sources] = await Promise.all([fetchBackfillStatus(), fetchSourcesHealth()]);
         if (!mounted) return;
         setBackfillStatus(status);
         setIsBackfillRunning(status.state === "running");
+        setSourceHealth(sources.sources ?? []);
+        setSourceHealthUpdatedAt(sources.updated_at ?? "");
       } catch {
         if (!mounted) return;
         setBackfillError("Unable to fetch backfill status.");
@@ -517,6 +530,34 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
                   <span>{t("cleanup.before")}: {cleanupResult?.synthetic_before ?? 0}</span>
                   <span>{t("cleanup.deleted")}: {cleanupResult?.deleted ?? 0}</span>
                   <span>{t("cleanup.after")}: {cleanupResult?.synthetic_after ?? 0}</span>
+                </div>
+              </section>
+            )}
+            {mode === "research" && (
+              <section className="rounded-lg border border-borderSoft bg-surface p-3">
+                <div className="mb-2 flex items-center justify-between">
+                  <h3 className="text-sm font-semibold text-textSecondary">{t("sources.title")}</h3>
+                  <span className="text-xs text-textMuted">
+                    {t("sources.updated")}: {sourceHealthUpdatedAt ? new Date(sourceHealthUpdatedAt).toLocaleTimeString() : "-"}
+                  </span>
+                </div>
+                <div className="space-y-2 text-xs">
+                  {sourceHealth.length === 0 && <p className="text-textMuted">No source health yet.</p>}
+                  {sourceHealth.map((src) => (
+                    <div key={src.source} className="rounded border border-borderSoft px-2 py-2">
+                      <div className="flex items-center justify-between">
+                        <span className="font-medium">{src.source}</span>
+                        <span className={src.status === "ok" ? "text-green-600" : "text-red-600"}>{src.status}</span>
+                      </div>
+                      <div className="mt-1 grid grid-cols-2 gap-1 text-textSecondary">
+                        <span>{t("sources.fetched")}: {src.fetched}</span>
+                        <span>{t("sources.accepted")}: {src.accepted}</span>
+                        <span>{t("sources.inserted")}: {src.inserted}</span>
+                        <span>{t("sources.duration")}: {src.duration_ms}ms</span>
+                      </div>
+                      {src.error ? <p className="mt-1 text-red-600">{t("sources.error")}: {src.error}</p> : null}
+                    </div>
+                  ))}
                 </div>
               </section>
             )}

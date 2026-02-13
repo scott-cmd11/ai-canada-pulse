@@ -66,6 +66,16 @@
     "done": "Termine",
     "failed": "Echec"
   },
+  "sources": {
+    "title": "Sante des sources",
+    "updated": "Mis a jour",
+    "status": "Statut",
+    "fetched": "Recupere",
+    "accepted": "Accepte",
+    "inserted": "Insere",
+    "duration": "Duree",
+    "error": "Erreur"
+  },
   "methods": {
     "title": "Methodes",
     "body": "Ingestion metadata uniquement avec extraction des categories et des entites. Aucun texte integral n'est stocke."

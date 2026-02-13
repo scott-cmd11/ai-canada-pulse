@@ -87,3 +87,19 @@ export interface PurgeSyntheticResponse {
   synthetic_after: number;
   checked_at: string;
 }
+
+export interface SourceHealthEntry {
+  source: string;
+  status: string;
+  fetched: number;
+  accepted: number;
+  inserted: number;
+  duration_ms: number;
+  last_run: string;
+  error: string;
+}
+
+export interface SourcesHealthResponse {
+  updated_at: string;
+  sources: SourceHealthEntry[];
+}
