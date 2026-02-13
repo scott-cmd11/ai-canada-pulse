@@ -73,6 +73,7 @@
     "confidenceProfile": "Confidence",
     "momentum": "Momentum",
     "pinnedSignals": "Pinned",
+    "briefHistory": "Brief History",
     "alerts": "Alerts",
     "jurisdictions": "Jurisdictions",
     "entities": "Entities",
@@ -124,10 +125,20 @@
   },
   "briefing": {
     "title": "Morning Brief (Share-Ready)",
+    "save": "Save",
+    "saved": "Saved",
     "download": "Download .md",
     "copy": "Copy Markdown",
     "copied": "Copied",
     "copyFailed": "Copy failed"
+  },
+  "briefHistory": {
+    "title": "Brief History",
+    "none": "No saved briefs yet.",
+    "clear": "Clear",
+    "copy": "Copy",
+    "download": "Download",
+    "delete": "Delete"
   },
   "compare": {
     "title": "Canada vs Global",

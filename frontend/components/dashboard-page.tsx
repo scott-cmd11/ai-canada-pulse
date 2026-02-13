@@ -86,6 +86,12 @@ type ScenarioPreset = {
   search: string;
 };
 
+type SavedBrief = {
+  id: string;
+  createdAt: string;
+  markdown: string;
+};
+
 function Delta({ value }: { value: number }) {
   const positive = value >= 0;
   return <span style={{ color: positive ? "var(--research)" : "var(--incidents)" }}>{positive ? "+" : ""}{value.toFixed(1)}%</span>;
@@ -163,6 +169,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
     confidenceProfile: true,
     momentum: true,
     pinnedSignals: true,
+    briefHistory: true,
     alerts: true,
     jurisdictions: true,
     entities: true,
@@ -172,12 +179,14 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
   });
   const [copyState, setCopyState] = useState<"idle" | "copied" | "failed">("idle");
   const [briefCopyState, setBriefCopyState] = useState<"idle" | "copied" | "failed">("idle");
+  const [saveBriefState, setSaveBriefState] = useState<"idle" | "saved">("idle");
   const [nowTs, setNowTs] = useState(Date.now());
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [lastRefreshAt, setLastRefreshAt] = useState("");
   const [autoRefreshSec, setAutoRefreshSec] = useState<0 | 15 | 30 | 60>(30);
   const [density, setDensity] = useState<"comfortable" | "compact">("comfortable");
   const [pinnedItems, setPinnedItems] = useState<FeedItem[]>([]);
+  const [savedBriefs, setSavedBriefs] = useState<SavedBrief[]>([]);
 
   const scenarioPresets: ScenarioPreset[] = useMemo(
     () => [
@@ -460,6 +469,21 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
   useEffect(() => {
     localStorage.setItem(`pinned_signals_${scope}`, JSON.stringify(pinnedItems));
   }, [pinnedItems, scope]);
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(`saved_briefs_${scope}`);
+      if (!raw) return;
+      const parsed = JSON.parse(raw) as SavedBrief[];
+      if (Array.isArray(parsed)) setSavedBriefs(parsed.slice(0, 20));
+    } catch {
+      return;
+    }
+  }, [scope]);
+
+  useEffect(() => {
+    localStorage.setItem(`saved_briefs_${scope}`, JSON.stringify(savedBriefs));
+  }, [savedBriefs, scope]);
 
   const topInsights = useMemo(() => {
     const counts = new Map<string, number>();
@@ -828,16 +852,40 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
   }
 
   function downloadMorningBrief() {
-    const blob = new Blob([morningBriefMarkdown], { type: "text/markdown;charset=utf-8" });
+    downloadBrief(morningBriefMarkdown);
+  }
+
+  function downloadBrief(markdown: string, stamp?: string) {
+    const blob = new Blob([markdown], { type: "text/markdown;charset=utf-8" });
     const url = URL.createObjectURL(blob);
     const anchor = document.createElement("a");
     const prefix = scope === "canada" ? "canada" : "world";
+    const datePart = stamp ? stamp.slice(0, 10) : new Date().toISOString().slice(0, 10);
     anchor.href = url;
-    anchor.download = `${prefix}-ai-pulse-brief-${new Date().toISOString().slice(0, 10)}.md`;
+    anchor.download = `${prefix}-ai-pulse-brief-${datePart}.md`;
     document.body.appendChild(anchor);
     anchor.click();
     anchor.remove();
     URL.revokeObjectURL(url);
+  }
+
+  async function copyBrief(markdown: string) {
+    try {
+      await navigator.clipboard.writeText(markdown);
+    } catch {
+      return;
+    }
+  }
+
+  function saveCurrentBrief() {
+    const entry: SavedBrief = {
+      id: `${Date.now()}`,
+      createdAt: new Date().toISOString(),
+      markdown: morningBriefMarkdown,
+    };
+    setSavedBriefs((prev) => [entry, ...prev].slice(0, 20));
+    setSaveBriefState("saved");
+    setTimeout(() => setSaveBriefState("idle"), 1600);
   }
 
   return (
@@ -1040,6 +1088,9 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
           <div className="mb-2 flex items-center justify-between">
             <h3 className="text-sm font-semibold text-textSecondary">{t("briefing.title")}</h3>
             <div className="flex items-center gap-2">
+              <button onClick={saveCurrentBrief} className="rounded border border-borderSoft px-2 py-1 text-xs">
+                {saveBriefState === "saved" ? t("briefing.saved") : t("briefing.save")}
+              </button>
               <button onClick={downloadMorningBrief} className="rounded border border-borderSoft px-2 py-1 text-xs">
                 {t("briefing.download")}
               </button>
@@ -1622,6 +1673,42 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
                         </button>
                         <button onClick={() => togglePin(item)} className="rounded border border-borderSoft px-2 py-1">
                           {t("pins.unpin")}
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
+            {mode === "research" && panelVisibility.briefHistory && (
+              <section className="rounded-lg border border-borderSoft bg-surface p-3">
+                <div className="mb-2 flex items-center justify-between">
+                  <h3 className="text-sm font-semibold text-textSecondary">{t("briefHistory.title")}</h3>
+                  <button
+                    onClick={() => setSavedBriefs([])}
+                    className="rounded border border-borderSoft px-2 py-1 text-xs"
+                    disabled={savedBriefs.length === 0}
+                  >
+                    {t("briefHistory.clear")}
+                  </button>
+                </div>
+                <div className="space-y-2 text-xs">
+                  {savedBriefs.length === 0 && <p className="text-textMuted">{t("briefHistory.none")}</p>}
+                  {savedBriefs.slice(0, 8).map((entry) => (
+                    <div key={entry.id} className="rounded border border-borderSoft px-2 py-2">
+                      <p className="font-medium">{new Date(entry.createdAt).toLocaleString()}</p>
+                      <div className="mt-2 flex flex-wrap gap-2">
+                        <button onClick={() => copyBrief(entry.markdown)} className="rounded border border-borderSoft px-2 py-1">
+                          {t("briefHistory.copy")}
+                        </button>
+                        <button onClick={() => downloadBrief(entry.markdown, entry.createdAt)} className="rounded border border-borderSoft px-2 py-1">
+                          {t("briefHistory.download")}
+                        </button>
+                        <button
+                          onClick={() => setSavedBriefs((prev) => prev.filter((item) => item.id !== entry.id))}
+                          className="rounded border border-borderSoft px-2 py-1"
+                        >
+                          {t("briefHistory.delete")}
                         </button>
                       </div>
                     </div>
