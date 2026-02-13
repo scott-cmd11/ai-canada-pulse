@@ -159,6 +159,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
     sourceQuality: true,
     confidenceProfile: true,
     momentum: true,
+    pinnedSignals: true,
     alerts: true,
     jurisdictions: true,
     entities: true,
@@ -172,6 +173,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [lastRefreshAt, setLastRefreshAt] = useState("");
   const [density, setDensity] = useState<"comfortable" | "compact">("comfortable");
+  const [pinnedItems, setPinnedItems] = useState<FeedItem[]>([]);
 
   const scenarioPresets: ScenarioPreset[] = useMemo(
     () => [
@@ -413,6 +415,21 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
   useEffect(() => {
     localStorage.setItem("dashboard_density", density);
   }, [density]);
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(`pinned_signals_${scope}`);
+      if (!raw) return;
+      const parsed = JSON.parse(raw) as FeedItem[];
+      if (Array.isArray(parsed)) setPinnedItems(parsed.slice(0, 30));
+    } catch {
+      return;
+    }
+  }, [scope]);
+
+  useEffect(() => {
+    localStorage.setItem(`pinned_signals_${scope}`, JSON.stringify(pinnedItems));
+  }, [pinnedItems, scope]);
 
   const topInsights = useMemo(() => {
     const counts = new Map<string, number>();
@@ -668,6 +685,18 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
     setSearch(scenario.search);
   }
 
+  function isPinned(id: string): boolean {
+    return pinnedItems.some((item) => item.id === id);
+  }
+
+  function togglePin(item: FeedItem) {
+    setPinnedItems((prev) => {
+      const exists = prev.some((entry) => entry.id === item.id);
+      if (exists) return prev.filter((entry) => entry.id !== item.id);
+      return [item, ...prev].slice(0, 30);
+    });
+  }
+
   function applyCategoryFilter(value: string | undefined) {
     if (!value) return;
     const normalized = value.toLowerCase();
@@ -721,6 +750,16 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
     lines.push(`- Global: ${compare?.global ?? 0}`);
     lines.push(`- Other: ${compare?.other ?? 0}`);
     lines.push("");
+    lines.push("## Pinned Signals");
+    if (pinnedItems.length > 0) {
+      pinnedItems.slice(0, 5).forEach((item) => {
+        lines.push(`- ${item.title} (${item.publisher})`);
+        lines.push(`  - ${item.url}`);
+      });
+    } else {
+      lines.push("- none");
+    }
+    lines.push("");
     const staleSources = sourceFreshness.filter((s) => s.level === "stale");
     lines.push("## Source Freshness");
     lines.push(`- Freshness stale count: ${staleSources.length}`);
@@ -744,7 +783,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
       lines.push("- Top alerts: none");
     }
     return lines.join("\n");
-  }, [scope, timeWindow, kpis, brief, compare, concentration, confidenceProfile, alerts, sourceFreshness]);
+  }, [scope, timeWindow, kpis, brief, compare, concentration, confidenceProfile, alerts, sourceFreshness, pinnedItems]);
 
   async function copyMorningBrief() {
     try {
@@ -1163,12 +1202,20 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
                       ))}
                     </div>
                   )}
-                  <button
-                    onClick={() => setSelected(item)}
-                    className={`rounded border border-borderSoft text-sm ${density === "compact" ? "mt-2 px-2 py-1" : "mt-3 px-3 py-1.5"}`}
-                  >
-                    Details
-                  </button>
+                  <div className={`flex items-center gap-2 ${density === "compact" ? "mt-2" : "mt-3"}`}>
+                    <button
+                      onClick={() => togglePin(item)}
+                      className={`rounded border border-borderSoft text-sm ${density === "compact" ? "px-2 py-1" : "px-3 py-1.5"}`}
+                    >
+                      {isPinned(item.id) ? t("pins.unpin") : t("pins.pin")}
+                    </button>
+                    <button
+                      onClick={() => setSelected(item)}
+                      className={`rounded border border-borderSoft text-sm ${density === "compact" ? "px-2 py-1" : "px-3 py-1.5"}`}
+                    >
+                      {t("pins.details")}
+                    </button>
+                  </div>
                 </article>
               ))}
             </div>
@@ -1469,6 +1516,40 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
                         {item.change} ({item.delta_percent.toFixed(1)}%)
                       </span>
                     </button>
+                  ))}
+                </div>
+              </section>
+            )}
+            {mode === "research" && panelVisibility.pinnedSignals && (
+              <section className="rounded-lg border border-borderSoft bg-surface p-3">
+                <div className="mb-2 flex items-center justify-between">
+                  <h3 className="text-sm font-semibold text-textSecondary">{t("pins.title")}</h3>
+                  <button
+                    onClick={() => setPinnedItems([])}
+                    className="rounded border border-borderSoft px-2 py-1 text-xs"
+                    disabled={pinnedItems.length === 0}
+                  >
+                    {t("pins.clear")}
+                  </button>
+                </div>
+                <div className="space-y-2 text-xs">
+                  {pinnedItems.length === 0 && <p className="text-textMuted">{t("pins.none")}</p>}
+                  {pinnedItems.slice(0, 8).map((item) => (
+                    <div key={`pin-${item.id}`} className="rounded border border-borderSoft px-2 py-2">
+                      <p className="font-medium">{item.title}</p>
+                      <p className="mt-1 text-textMuted">{item.publisher}</p>
+                      <div className="mt-2 flex items-center gap-2">
+                        <a href={item.url} target="_blank" rel="noreferrer" className="rounded border border-borderSoft px-2 py-1">
+                          {t("pins.open")}
+                        </a>
+                        <button onClick={() => setSelected(item)} className="rounded border border-borderSoft px-2 py-1">
+                          {t("pins.details")}
+                        </button>
+                        <button onClick={() => togglePin(item)} className="rounded border border-borderSoft px-2 py-1">
+                          {t("pins.unpin")}
+                        </button>
+                      </div>
+                    </div>
                   ))}
                 </div>
               </section>

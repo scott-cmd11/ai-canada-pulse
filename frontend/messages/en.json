@@ -72,6 +72,7 @@
     "sourceQuality": "Source Quality",
     "confidenceProfile": "Confidence",
     "momentum": "Momentum",
+    "pinnedSignals": "Pinned",
     "alerts": "Alerts",
     "jurisdictions": "Jurisdictions",
     "entities": "Entities",
@@ -217,6 +218,15 @@
     "title": "Momentum Movers",
     "categories": "Category Moves",
     "publishers": "Publisher Moves"
+  },
+  "pins": {
+    "title": "Pinned Signals",
+    "pin": "Pin",
+    "unpin": "Unpin",
+    "none": "No pinned signals yet.",
+    "clear": "Clear",
+    "open": "Open",
+    "details": "Details"
   },
   "alerts": {
     "title": "Signal Alerts",

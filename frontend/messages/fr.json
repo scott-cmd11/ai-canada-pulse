@@ -72,6 +72,7 @@
     "sourceQuality": "Qualite sources",
     "confidenceProfile": "Confiance",
     "momentum": "Momentum",
+    "pinnedSignals": "Epingles",
     "alerts": "Alertes",
     "jurisdictions": "Juridictions",
     "entities": "Entites",
@@ -216,6 +217,15 @@
     "title": "Moteurs de momentum",
     "categories": "Mouvements categorie",
     "publishers": "Mouvements editeur"
+  },
+  "pins": {
+    "title": "Signaux epingles",
+    "pin": "Epingler",
+    "unpin": "Retirer",
+    "none": "Aucun signal epingle.",
+    "clear": "Vider",
+    "open": "Ouvrir",
+    "details": "Details"
   },
   "alerts": {
     "title": "Alertes de signal",
