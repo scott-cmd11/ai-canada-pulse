@@ -1184,30 +1184,30 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
   }
 
   return (
-    <div className="min-h-screen bg-bg text-text">
-      <header className="border-b border-borderSoft bg-surface">
-        <div className="mx-auto flex max-w-[1400px] items-center justify-between px-4 py-3">
-          <nav className="flex items-center gap-4 text-sm">
-            <Link href={`/${locale}/canada`} className="inline-flex items-center gap-1"><Landmark size={16} />{t("nav.canada")}</Link>
-            <Link href={`/${locale}/world`} className="inline-flex items-center gap-1"><Globe2 size={16} />{t("nav.world")}</Link>
-            <Link href={`/${locale}/methods`} className="inline-flex items-center gap-1"><BarChart3 size={16} />{t("nav.methods")}</Link>
+    <div className="pulse-shell min-h-screen bg-bg text-text">
+      <header className="sticky top-0 z-30 border-b border-borderSoft bg-surface backdrop-blur">
+        <div className="mx-auto flex max-w-[1460px] items-center justify-between px-4 py-3">
+          <nav className="flex items-center gap-2 text-sm">
+            <Link href={`/${locale}/canada`} className="inline-flex items-center gap-1 rounded-full px-3 py-2 hover:bg-bg"><Landmark size={16} />{t("nav.canada")}</Link>
+            <Link href={`/${locale}/world`} className="inline-flex items-center gap-1 rounded-full px-3 py-2 hover:bg-bg"><Globe2 size={16} />{t("nav.world")}</Link>
+            <Link href={`/${locale}/methods`} className="inline-flex items-center gap-1 rounded-full px-3 py-2 hover:bg-bg"><BarChart3 size={16} />{t("nav.methods")}</Link>
           </nav>
           <div className="flex items-center gap-2">
-            <button onClick={toggleTheme} className="rounded border border-borderSoft px-3 py-2 text-sm" aria-label="Toggle theme">
+            <button onClick={toggleTheme} className="rounded-full border border-borderSoft px-3 py-2 text-sm hover:bg-bg" aria-label="Toggle theme">
               {theme === "light" ? <Moon size={16} /> : <Sun size={16} />}
             </button>
-            <Link href={`/${otherLocale}/${pagePath}`} className="rounded border border-borderSoft px-3 py-2 text-sm">
+            <Link href={`/${otherLocale}/${pagePath}`} className="rounded-full border border-borderSoft px-3 py-2 text-sm hover:bg-bg">
               {otherLocale.toUpperCase()}
             </Link>
             <button
               onClick={() => setMode(mode === "policy" ? "research" : "policy")}
-              className="rounded border border-borderStrong px-3 py-2 text-sm"
+              className="rounded-full border border-borderStrong bg-surface px-3 py-2 text-sm hover:bg-bg"
             >
               {mode === "policy" ? t("mode.policy") : t("mode.research")}
             </button>
             <button
               onClick={() => setDensity((prev) => (prev === "comfortable" ? "compact" : "comfortable"))}
-              className="rounded border border-borderSoft px-3 py-2 text-sm"
+              className="rounded-full border border-borderSoft px-3 py-2 text-sm hover:bg-bg"
             >
               {density === "comfortable" ? t("density.comfortable") : t("density.compact")}
             </button>
@@ -1215,8 +1215,8 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
         </div>
       </header>
 
-      <div className="sticky top-0 z-20 border-b border-borderSoft bg-bg/95 backdrop-blur">
-        <div className="mx-auto grid max-w-[1400px] grid-cols-1 gap-3 px-4 py-3 md:grid-cols-5">
+      <div className="sticky top-[61px] z-20 border-b border-borderSoft bg-bg backdrop-blur">
+        <div className="mx-auto grid max-w-[1460px] grid-cols-1 gap-3 px-4 py-3 md:grid-cols-5">
           <label className="text-sm">
             <div className="mb-1 text-textSecondary">{t("filters.timeWindow")}</div>
             <select className="w-full rounded border border-borderSoft bg-surface px-2 py-2" value={timeWindow} onChange={(e) => setTimeWindow(e.target.value as TimeWindow)}>
@@ -1286,7 +1286,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
             </select>
           </label>
         </div>
-        <div className="mx-auto flex max-w-[1400px] flex-wrap items-center gap-2 px-4 pb-3">
+        <div className="mx-auto flex max-w-[1460px] flex-wrap items-center gap-2 px-4 pb-3">
           <button onClick={savePreset} className="rounded border border-borderSoft px-2 py-1 text-xs">
             {t("filters.savePreset")}
           </button>
@@ -1311,14 +1311,14 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
             </div>
           ))}
         </div>
-        <div className="mx-auto flex max-w-[1400px] flex-wrap items-center gap-2 px-4 pb-3">
+        <div className="mx-auto flex max-w-[1460px] flex-wrap items-center gap-2 px-4 pb-3">
           {activeFilters.map((chip) => (
             <button key={chip.id} onClick={chip.clear} className="rounded border border-borderSoft bg-surface px-2 py-1 text-xs">
               {chip.label} x
             </button>
           ))}
         </div>
-        <div className="mx-auto grid max-w-[1400px] grid-cols-1 gap-2 px-4 pb-3 md:grid-cols-5">
+        <div className="mx-auto grid max-w-[1460px] grid-cols-1 gap-2 px-4 pb-3 md:grid-cols-5">
           {scenarioPresets.map((scenario) => (
             <button
               key={scenario.id}
@@ -1332,9 +1332,9 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
         </div>
       </div>
 
-      <main className="mx-auto max-w-[1400px] space-y-4 px-4 py-4">
+      <main className="mx-auto max-w-[1460px] space-y-5 px-4 py-6">
         <section className="grid grid-cols-1 gap-4 md:grid-cols-4">
-          <article className="rounded-lg border border-borderSoft bg-surface p-4">
+          <article className="elevated rounded-2xl border border-borderSoft bg-surface p-4">
             <h2 className="text-sm text-textSecondary">{t("kpi.new15m")}</h2>
             {isInitialLoading ? (
               <div className="mt-2 space-y-2">
@@ -1350,7 +1350,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
               </>
             )}
           </article>
-          <article className="rounded-lg border border-borderSoft bg-surface p-4">
+          <article className="elevated rounded-2xl border border-borderSoft bg-surface p-4">
             <h2 className="text-sm text-textSecondary">{t("kpi.new1h")}</h2>
             {isInitialLoading ? (
               <div className="mt-2 space-y-2">
@@ -1366,7 +1366,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
               </>
             )}
           </article>
-          <article className="rounded-lg border border-borderSoft bg-surface p-4">
+          <article className="elevated rounded-2xl border border-borderSoft bg-surface p-4">
             <h2 className="text-sm text-textSecondary">{t("kpi.new7d")}</h2>
             {isInitialLoading ? (
               <div className="mt-2 space-y-2">
@@ -1382,7 +1382,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
               </>
             )}
           </article>
-          <article className="rounded-lg border border-borderSoft bg-surface p-4">
+          <article className="elevated rounded-2xl border border-borderSoft bg-surface p-4">
             <h2 className="text-sm text-textSecondary">{t("kpi.topInsights")}</h2>
             <ul className="mt-2 list-disc pl-4 text-sm text-textSecondary">
               {topInsights.map((line) => (
@@ -1391,7 +1391,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
             </ul>
           </article>
         </section>
-        <section className="rounded-lg border border-borderSoft bg-surface p-4">
+        <section className="elevated rounded-2xl border border-borderSoft bg-surface p-4">
           <h3 className="text-sm font-semibold text-textSecondary">{t("pulse.title")}</h3>
           <ul className="mt-2 list-disc space-y-1 pl-4 text-sm text-textSecondary">
             {executivePulse.map((line) => (
@@ -1399,7 +1399,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
             ))}
           </ul>
         </section>
-        <section className="rounded-lg border border-borderSoft bg-surface p-4">
+        <section className="elevated rounded-2xl border border-borderSoft bg-surface p-4">
           <h3 className="text-sm font-semibold text-textSecondary">{t("narrative.title")}</h3>
           <ul className="mt-2 list-disc space-y-1 pl-4 text-sm text-textSecondary">
             {strategicNarrative.map((line) => (
@@ -1407,7 +1407,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
             ))}
           </ul>
         </section>
-        <section className="rounded-lg border border-borderSoft bg-surface p-4">
+        <section className="elevated rounded-2xl border border-borderSoft bg-surface p-4">
           <h3 className="text-sm font-semibold text-textSecondary">{t("summary.title")}</h3>
           <ul className="mt-2 list-disc space-y-1 pl-4 text-sm text-textSecondary">
             {(summary?.bullets ?? []).map((line) => (
@@ -1415,7 +1415,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
             ))}
           </ul>
         </section>
-        <section className="rounded-lg border border-borderSoft bg-surface p-4">
+        <section className="elevated rounded-2xl border border-borderSoft bg-surface p-4">
           <h3 className="mb-2 text-sm font-semibold text-textSecondary">{t("brief.title")}</h3>
           <div className="grid grid-cols-1 gap-2 text-xs text-textSecondary md:grid-cols-5">
             <div className="rounded border border-borderSoft bg-bg p-2">
@@ -1440,7 +1440,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
             </div>
           </div>
         </section>
-        <section className="rounded-lg border border-borderSoft bg-surface p-4">
+        <section className="elevated rounded-2xl border border-borderSoft bg-surface p-4">
           <div className="mb-2 flex items-center justify-between">
             <h3 className="text-sm font-semibold text-textSecondary">{t("briefing.title")}</h3>
             <div className="flex items-center gap-2">
@@ -1463,7 +1463,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
             {morningBriefMarkdown}
           </pre>
         </section>
-        <section className="rounded-lg border border-borderSoft bg-surface p-4">
+        <section className="elevated rounded-2xl border border-borderSoft bg-surface p-4">
           <h3 className="mb-2 text-sm font-semibold text-textSecondary">{t("compare.title")}</h3>
           <div className="grid grid-cols-1 gap-2 text-xs md:grid-cols-3">
             <button onClick={() => setJurisdiction("Canada")} className="rounded border border-borderSoft bg-bg p-2 text-left">
@@ -1489,7 +1489,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
             ))}
           </div>
         </section>
-        <section className="rounded-lg border border-borderSoft bg-surface p-4">
+        <section className="elevated rounded-2xl border border-borderSoft bg-surface p-4">
           <h3 className="mb-2 text-sm font-semibold text-textSecondary">{t("concentration.title")}</h3>
           <div className="grid grid-cols-1 gap-2 text-xs md:grid-cols-4">
             <div className="rounded border border-borderSoft bg-bg p-2">
@@ -1530,7 +1530,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
             </div>
           </div>
         </section>
-        <section className="rounded-lg border border-borderSoft bg-surface p-4">
+        <section className="elevated rounded-2xl border border-borderSoft bg-surface p-4">
           <h3 className="mb-2 text-sm font-semibold text-textSecondary">{t("risk.title")}</h3>
           <div className="grid grid-cols-1 gap-2 text-xs md:grid-cols-4">
             <div className="rounded border border-borderSoft bg-bg p-2">
@@ -1563,7 +1563,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
             ))}
           </div>
         </section>
-        <section className="rounded-lg border border-borderSoft bg-surface p-4">
+        <section className="elevated rounded-2xl border border-borderSoft bg-surface p-4">
           <div className="mb-2 flex items-center justify-between">
             <h3 className="text-sm font-semibold text-textSecondary">{t("regional.title")}</h3>
             <span className="text-xs text-textMuted">{t("regional.helper")}</span>
@@ -1671,7 +1671,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
               {isInitialLoading && (
                 <div className="space-y-3">
                   {Array.from({ length: 6 }).map((_, idx) => (
-                    <article key={`skeleton-${idx}`} className="rounded-lg border border-borderSoft bg-surface p-4">
+                    <article key={`skeleton-${idx}`} className="elevated rounded-2xl border border-borderSoft bg-surface p-4">
                       <div className="space-y-2">
                         <SkeletonLine width="70%" />
                         <SkeletonLine width="90%" />
@@ -1682,7 +1682,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
                 </div>
               )}
               {!isInitialLoading && sortedFeed.length === 0 && (
-                <div className="rounded-lg border border-borderSoft bg-surface p-4 text-sm text-textMuted">
+                <div className="elevated rounded-2xl border border-borderSoft bg-surface p-4 text-sm text-textMuted">
                   {t("feed.empty")}
                 </div>
               )}
@@ -1764,7 +1764,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
 
           <div className="space-y-4 xl:col-span-2">
             {mode === "research" && (
-              <section className="rounded-lg border border-borderSoft bg-surface p-3">
+              <section className="elevated rounded-2xl border border-borderSoft bg-surface p-3">
                 <h3 className="mb-2 text-sm font-semibold text-textSecondary">{t("panels.title")}</h3>
                 <div className="flex flex-wrap gap-2 text-xs">
                   {Object.entries(panelVisibility).map(([key, enabled]) => (
@@ -1784,7 +1784,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
               </section>
             )}
             {mode === "research" && panelVisibility.backfill && (
-              <section className="rounded-lg border border-borderSoft bg-surface p-3">
+              <section className="elevated rounded-2xl border border-borderSoft bg-surface p-3">
                 <h3 className="mb-3 text-sm font-semibold text-textSecondary">{t("backfill.title")}</h3>
                 <div className="grid grid-cols-2 gap-2 text-xs">
                   <label className="flex flex-col gap-1">
@@ -1847,7 +1847,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
               </section>
             )}
             {mode === "research" && panelVisibility.cleanup && (
-              <section className="rounded-lg border border-borderSoft bg-surface p-3">
+              <section className="elevated rounded-2xl border border-borderSoft bg-surface p-3">
                 <h3 className="mb-3 text-sm font-semibold text-textSecondary">{t("cleanup.title")}</h3>
                 <div className="mb-3 flex items-center gap-2">
                   <button
@@ -1876,7 +1876,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
               </section>
             )}
             {mode === "research" && panelVisibility.sourceHealth && (
-              <section className="rounded-lg border border-borderSoft bg-surface p-3">
+              <section className="elevated rounded-2xl border border-borderSoft bg-surface p-3">
                 <div className="mb-2 flex items-center justify-between">
                   <h3 className="text-sm font-semibold text-textSecondary">{t("sources.title")}</h3>
                   <span className="text-xs text-textMuted">
@@ -1912,7 +1912,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
               </section>
             )}
             {mode === "research" && panelVisibility.sourceFreshness && (
-              <section className="rounded-lg border border-borderSoft bg-surface p-3">
+              <section className="elevated rounded-2xl border border-borderSoft bg-surface p-3">
                 <h3 className="mb-2 text-sm font-semibold text-textSecondary">{t("sources.freshnessTitle")}</h3>
                 <div className="space-y-2 text-xs">
                   {sourceFreshness.length === 0 && <p className="text-textMuted">-</p>}
@@ -1942,7 +1942,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
               </section>
             )}
             {mode === "research" && panelVisibility.sourceMix && (
-              <section className="rounded-lg border border-borderSoft bg-surface p-3">
+              <section className="elevated rounded-2xl border border-borderSoft bg-surface p-3">
                 <h3 className="mb-2 text-sm font-semibold text-textSecondary">{t("sources.mixTitle")}</h3>
                 <p className="mb-2 text-xs text-textMuted">
                   {t("sources.total")}: {sourcesBreakdown?.total ?? 0}
@@ -1974,7 +1974,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
               </section>
             )}
             {mode === "research" && panelVisibility.coverageMatrix && (
-              <section className="rounded-lg border border-borderSoft bg-surface p-3">
+              <section className="elevated rounded-2xl border border-borderSoft bg-surface p-3">
                 <h3 className="mb-2 text-sm font-semibold text-textSecondary">{t("coverage.title")}</h3>
                 <p className="mb-2 text-xs text-textMuted">
                   {t("coverage.total")}: {coverage?.total ?? 0}
@@ -2005,7 +2005,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
               </section>
             )}
             {mode === "research" && panelVisibility.sourceQuality && (
-              <section className="rounded-lg border border-borderSoft bg-surface p-3">
+              <section className="elevated rounded-2xl border border-borderSoft bg-surface p-3">
                 <h3 className="mb-2 text-sm font-semibold text-textSecondary">{t("sources.qualityTitle")}</h3>
                 <div className="space-y-2 text-xs">
                   {sourceQuality.map((src) => (
@@ -2028,7 +2028,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
               </section>
             )}
             {mode === "research" && panelVisibility.confidenceProfile && (
-              <section className="rounded-lg border border-borderSoft bg-surface p-3">
+              <section className="elevated rounded-2xl border border-borderSoft bg-surface p-3">
                 <h3 className="mb-2 text-sm font-semibold text-textSecondary">{t("confidence.title")}</h3>
                 <p className="mb-2 text-xs text-textMuted">
                   {t("confidence.average")}: {(confidenceProfile?.average_confidence ?? 0).toFixed(2)}
@@ -2052,13 +2052,13 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
               </section>
             )}
             {mode === "research" && panelVisibility.riskTrend && (
-              <section className="rounded-lg border border-borderSoft bg-surface p-3">
+              <section className="elevated rounded-2xl border border-borderSoft bg-surface p-3">
                 <h3 className="mb-2 text-sm font-semibold text-textSecondary">{t("riskTrend.title")}</h3>
                 <EChartsReact option={riskTrendOption} style={{ height: 240 }} notMerge lazyUpdate />
               </section>
             )}
             {mode === "research" && panelVisibility.momentum && (
-              <section className="rounded-lg border border-borderSoft bg-surface p-3">
+              <section className="elevated rounded-2xl border border-borderSoft bg-surface p-3">
                 <h3 className="mb-2 text-sm font-semibold text-textSecondary">{t("momentum.title")}</h3>
                 <div className="space-y-2 text-xs">
                   <p className="font-medium text-textSecondary">{t("momentum.categories")}</p>
@@ -2099,7 +2099,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
               </section>
             )}
             {mode === "research" && panelVisibility.entityMomentum && (
-              <section className="rounded-lg border border-borderSoft bg-surface p-3">
+              <section className="elevated rounded-2xl border border-borderSoft bg-surface p-3">
                 <h3 className="mb-2 text-sm font-semibold text-textSecondary">{t("entityMomentum.title")}</h3>
                 <div className="space-y-2 text-xs">
                   {(entityMomentum?.entities ?? []).slice(0, 8).map((item) => (
@@ -2122,7 +2122,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
               </section>
             )}
             {mode === "research" && panelVisibility.pinnedSignals && (
-              <section className="rounded-lg border border-borderSoft bg-surface p-3">
+              <section className="elevated rounded-2xl border border-borderSoft bg-surface p-3">
                 <div className="mb-2 flex items-center justify-between">
                   <h3 className="text-sm font-semibold text-textSecondary">{t("pins.title")}</h3>
                   <button
@@ -2156,7 +2156,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
               </section>
             )}
             {mode === "research" && panelVisibility.briefHistory && (
-              <section className="rounded-lg border border-borderSoft bg-surface p-3">
+              <section className="elevated rounded-2xl border border-borderSoft bg-surface p-3">
                 <div className="mb-2 flex items-center justify-between">
                   <h3 className="text-sm font-semibold text-textSecondary">{t("briefHistory.title")}</h3>
                   <button
@@ -2192,7 +2192,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
               </section>
             )}
             {mode === "research" && panelVisibility.alertCenter && (
-              <section className="rounded-lg border border-borderSoft bg-surface p-3">
+              <section className="elevated rounded-2xl border border-borderSoft bg-surface p-3">
                 <div className="mb-2 flex items-center justify-between">
                   <h3 className="text-sm font-semibold text-textSecondary">{t("alertCenter.title")}</h3>
                   <button
@@ -2219,7 +2219,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
               </section>
             )}
             {mode === "research" && panelVisibility.alerts && (
-              <section className="rounded-lg border border-borderSoft bg-surface p-3">
+              <section className="elevated rounded-2xl border border-borderSoft bg-surface p-3">
                 <h3 className="mb-2 text-sm font-semibold text-textSecondary">{t("alerts.title")}</h3>
                 <div className="space-y-2 text-xs">
                   {alerts.length === 0 && <p className="text-textMuted">{t("alerts.none")}</p>}
@@ -2245,7 +2245,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
               </section>
             )}
             {mode === "research" && panelVisibility.jurisdictions && (
-              <section className="rounded-lg border border-borderSoft bg-surface p-3">
+              <section className="elevated rounded-2xl border border-borderSoft bg-surface p-3">
                 <h3 className="mb-2 text-sm font-semibold text-textSecondary">{t("sources.jurisdictions")}</h3>
                 <div className="space-y-1 text-xs">
                   {(jurisdictionsBreakdown?.jurisdictions ?? []).slice(0, 8).map((item) => (
@@ -2258,7 +2258,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
               </section>
             )}
             {mode === "research" && panelVisibility.entities && (
-              <section className="rounded-lg border border-borderSoft bg-surface p-3">
+              <section className="elevated rounded-2xl border border-borderSoft bg-surface p-3">
                 <h3 className="mb-2 text-sm font-semibold text-textSecondary">{t("sources.entities")}</h3>
                 <div className="space-y-1 text-xs">
                   {(entitiesBreakdown?.entities ?? []).slice(0, 8).map((item) => (
@@ -2271,7 +2271,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
               </section>
             )}
             {mode === "research" && panelVisibility.tags && (
-              <section className="rounded-lg border border-borderSoft bg-surface p-3">
+              <section className="elevated rounded-2xl border border-borderSoft bg-surface p-3">
                 <h3 className="mb-2 text-sm font-semibold text-textSecondary">{t("sources.tags")}</h3>
                 <div className="flex flex-wrap gap-2 text-xs">
                   {(tagsBreakdown?.tags ?? []).slice(0, 14).map((item) => (
@@ -2290,7 +2290,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
               </section>
             )}
             {panelVisibility.hourly && (
-            <section className="rounded-lg border border-borderSoft bg-surface p-3">
+            <section className="elevated rounded-2xl border border-borderSoft bg-surface p-3">
               <div className="mb-2 flex items-center justify-between">
                 <h3 className="text-sm font-semibold text-textSecondary">{t("charts.hourly")}</h3>
                 <span className="text-xs text-textMuted">{t("charts.drilldownHint")}</span>
@@ -2303,7 +2303,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
             </section>
             )}
             {panelVisibility.weekly && (
-            <section className="rounded-lg border border-borderSoft bg-surface p-3">
+            <section className="elevated rounded-2xl border border-borderSoft bg-surface p-3">
               <div className="mb-2 flex items-center justify-between">
                 <h3 className="text-sm font-semibold text-textSecondary">{t("charts.weekly")}</h3>
                 <span className="text-xs text-textMuted">{t("charts.drilldownHint")}</span>
@@ -2357,4 +2357,5 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
     </div>
   );
 }
+
 
