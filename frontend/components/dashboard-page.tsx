@@ -76,6 +76,10 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
   const [cleanupResult, setCleanupResult] = useState<PurgeSyntheticResponse | null>(null);
   const [sourceHealth, setSourceHealth] = useState<SourceHealthEntry[]>([]);
   const [sourceHealthUpdatedAt, setSourceHealthUpdatedAt] = useState("");
+  const [sourceHealthRunStatus, setSourceHealthRunStatus] = useState("");
+  const [sourceHealthInsertedTotal, setSourceHealthInsertedTotal] = useState(0);
+  const [sourceHealthCandidatesTotal, setSourceHealthCandidatesTotal] = useState(0);
+  const [sourceHealthSkippedLockCount, setSourceHealthSkippedLockCount] = useState(0);
   const [sourcesBreakdown, setSourcesBreakdown] = useState<SourcesBreakdownResponse | null>(null);
 
   const otherLocale = locale === "en" ? "fr" : "en";
@@ -140,6 +144,10 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
         setIsBackfillRunning(status.state === "running");
         setSourceHealth(sources.sources ?? []);
         setSourceHealthUpdatedAt(sources.updated_at ?? "");
+        setSourceHealthRunStatus(sources.run_status ?? "");
+        setSourceHealthInsertedTotal(sources.inserted_total ?? 0);
+        setSourceHealthCandidatesTotal(sources.candidates_total ?? 0);
+        setSourceHealthSkippedLockCount(sources.skipped_lock_count ?? 0);
         setSourcesBreakdown(breakdown);
       } catch {
         if (!mounted) return;
@@ -548,6 +556,12 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
                   <span className="text-xs text-textMuted">
                     {t("sources.updated")}: {sourceHealthUpdatedAt ? new Date(sourceHealthUpdatedAt).toLocaleTimeString() : "-"}
                   </span>
+                </div>
+                <div className="mb-2 grid grid-cols-2 gap-1 text-xs text-textSecondary">
+                  <span>{t("sources.runStatus")}: {sourceHealthRunStatus || "-"}</span>
+                  <span>{t("sources.insertedTotal")}: {sourceHealthInsertedTotal}</span>
+                  <span>{t("sources.candidatesTotal")}: {sourceHealthCandidatesTotal}</span>
+                  <span>{t("sources.skippedLockCount")}: {sourceHealthSkippedLockCount}</span>
                 </div>
                 <div className="space-y-2 text-xs">
                   {sourceHealth.length === 0 && <p className="text-textMuted">No source health yet.</p>}

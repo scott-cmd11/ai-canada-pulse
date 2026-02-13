@@ -81,6 +81,11 @@
     "error": "Error",
     "publishers": "Top Publishers",
     "types": "Source Types"
+    ,
+    "runStatus": "Run Status",
+    "insertedTotal": "Inserted Total",
+    "candidatesTotal": "Candidates",
+    "skippedLockCount": "Lock Skips"
   },
   "methods": {
     "title": "Methods",

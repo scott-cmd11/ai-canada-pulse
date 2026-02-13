@@ -77,6 +77,8 @@ CANADA_FOCUS_ENTITIES = {
     "University of Alberta",
 }
 SOURCE_HEALTH_KEY = "source_health:latest"
+INGEST_LOCK_KEY = "ingest_live:lock"
+INGEST_LOCK_TTL_SECONDS = 120
 
 
 def _enum_or_str(value: object) -> str:
@@ -168,6 +170,26 @@ async def _set_source_health(client: redis.Redis, payload: dict[str, object]) ->
     await client.set(SOURCE_HEALTH_KEY, json.dumps(payload))
 
 
+async def _mark_ingest_locked(client: redis.Redis) -> None:
+    existing: dict[str, Any] = {}
+    raw = await client.get(SOURCE_HEALTH_KEY)
+    if raw:
+        try:
+            existing = json.loads(raw)
+        except Exception:
+            existing = {}
+
+    payload: dict[str, Any] = {
+        "updated_at": datetime.now(UTC).isoformat(),
+        "run_status": "skipped_lock",
+        "sources": existing.get("sources", []),
+        "inserted_total": 0,
+        "candidates_total": 0,
+        "skipped_lock_count": int(existing.get("skipped_lock_count", 0)) + 1,
+    }
+    await _set_source_health(client, payload)
+
+
 async def _load_candidate_items() -> tuple[list[dict[str, object]], list[dict[str, object]]]:
     source_fetchers: list[tuple[str, Callable[[], Awaitable[list[dict[str, object]]]]]] = [
         ("openalex", lambda: fetch_openalex_metadata(limit=6)),
@@ -246,6 +268,13 @@ async def _load_candidate_items() -> tuple[list[dict[str, object]], list[dict[st
 async def _insert_and_publish() -> int:
     inserted = 0
     client = redis.from_url(settings.redis_url, decode_responses=True)
+    lock_token = uuid.uuid4().hex
+    lock_acquired = bool(await client.set(INGEST_LOCK_KEY, lock_token, nx=True, ex=INGEST_LOCK_TTL_SECONDS))
+    if not lock_acquired:
+        await _mark_ingest_locked(client)
+        await client.close()
+        return 0
+
     engine = create_async_engine(settings.database_url, future=True, pool_pre_ping=True)
     SessionLocal = async_sessionmaker(engine, expire_on_commit=False)
     candidates, source_health = await _load_candidate_items()
@@ -258,61 +287,81 @@ async def _insert_and_publish() -> int:
         duplicates_by_source[source_name] = duplicates_by_source.get(source_name, 0)
         write_errors_by_source[source_name] = write_errors_by_source.get(source_name, 0)
 
-    async with SessionLocal() as session:
-        for record_data in candidates:
-            source_name = _source_key_for_record(record_data)
-            record_data.pop("relevance_score", None)
-            model = AIDevelopment(**record_data)
-            session.add(model)
+    try:
+        async with SessionLocal() as session:
+            for record_data in candidates:
+                source_name = _source_key_for_record(record_data)
+                record_data.pop("relevance_score", None)
+                model = AIDevelopment(**record_data)
+                session.add(model)
+                try:
+                    await session.commit()
+                except IntegrityError:
+                    await session.rollback()
+                    duplicates_by_source[source_name] = duplicates_by_source.get(source_name, 0) + 1
+                    continue
+                except Exception:
+                    await session.rollback()
+                    write_errors_by_source[source_name] = write_errors_by_source.get(source_name, 0) + 1
+                    continue
+
+                inserted += 1
+                inserted_by_source[source_name] = inserted_by_source.get(source_name, 0) + 1
+                payload = {
+                    "id": str(model.id),
+                    "source_id": model.source_id,
+                    "source_type": _enum_or_str(model.source_type),
+                    "category": _enum_or_str(model.category),
+                    "title": model.title,
+                    "url": model.url,
+                    "publisher": model.publisher,
+                    "published_at": model.published_at.isoformat(),
+                    "ingested_at": model.ingested_at.isoformat() if model.ingested_at else datetime.now(UTC).isoformat(),
+                    "language": model.language,
+                    "jurisdiction": model.jurisdiction,
+                    "entities": model.entities,
+                    "tags": model.tags,
+                    "hash": model.hash,
+                    "confidence": model.confidence,
+                }
+                await client.publish(settings.sse_channel, json.dumps(payload))
+
             try:
+                await session.execute(text("REFRESH MATERIALIZED VIEW hourly_stats;"))
+                await session.execute(text("REFRESH MATERIALIZED VIEW weekly_stats;"))
                 await session.commit()
-            except IntegrityError:
-                await session.rollback()
-                duplicates_by_source[source_name] = duplicates_by_source.get(source_name, 0) + 1
-                continue
             except Exception:
                 await session.rollback()
-                write_errors_by_source[source_name] = write_errors_by_source.get(source_name, 0) + 1
-                continue
 
-            inserted += 1
-            inserted_by_source[source_name] = inserted_by_source.get(source_name, 0) + 1
-            payload = {
-                "id": str(model.id),
-                "source_id": model.source_id,
-                "source_type": _enum_or_str(model.source_type),
-                "category": _enum_or_str(model.category),
-                "title": model.title,
-                "url": model.url,
-                "publisher": model.publisher,
-                "published_at": model.published_at.isoformat(),
-                "ingested_at": model.ingested_at.isoformat() if model.ingested_at else datetime.now(UTC).isoformat(),
-                "language": model.language,
-                "jurisdiction": model.jurisdiction,
-                "entities": model.entities,
-                "tags": model.tags,
-                "hash": model.hash,
-                "confidence": model.confidence,
-            }
-            await client.publish(settings.sse_channel, json.dumps(payload))
+        previous_payload: dict[str, Any] = {}
+        previous_raw = await client.get(SOURCE_HEALTH_KEY)
+        if previous_raw:
+            try:
+                previous_payload = json.loads(previous_raw)
+            except Exception:
+                previous_payload = {}
 
+        health_payload: dict[str, Any] = {
+            "updated_at": datetime.now(UTC).isoformat(),
+            "run_status": "ok",
+            "sources": source_health,
+            "inserted_total": inserted,
+            "candidates_total": len(candidates),
+            "skipped_lock_count": int(previous_payload.get("skipped_lock_count", 0)),
+        }
+        for entry in health_payload["sources"]:
+            src = str(entry.get("source", ""))
+            entry["inserted"] = inserted_by_source.get(src, 0)
+            entry["duplicates"] = duplicates_by_source.get(src, 0)
+            entry["write_errors"] = write_errors_by_source.get(src, 0)
+        await _set_source_health(client, health_payload)
+    finally:
+        await engine.dispose()
         try:
-            await session.execute(text("REFRESH MATERIALIZED VIEW hourly_stats;"))
-            await session.execute(text("REFRESH MATERIALIZED VIEW weekly_stats;"))
-            await session.commit()
-        except Exception:
-            await session.rollback()
-
-    health_payload: dict[str, Any] = {"updated_at": datetime.now(UTC).isoformat(), "sources": source_health}
-    for entry in health_payload["sources"]:
-        src = str(entry.get("source", ""))
-        entry["inserted"] = inserted_by_source.get(src, 0)
-        entry["duplicates"] = duplicates_by_source.get(src, 0)
-        entry["write_errors"] = write_errors_by_source.get(src, 0)
-    await _set_source_health(client, health_payload)
-
-    await engine.dispose()
-    await client.close()
+            if await client.get(INGEST_LOCK_KEY) == lock_token:
+                await client.delete(INGEST_LOCK_KEY)
+        finally:
+            await client.close()
     return inserted
 
 

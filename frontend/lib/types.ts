@@ -103,6 +103,10 @@ export interface SourceHealthEntry {
 
 export interface SourcesHealthResponse {
   updated_at: string;
+  run_status?: string;
+  inserted_total?: number;
+  candidates_total?: number;
+  skipped_lock_count?: number;
   sources: SourceHealthEntry[];
 }
 

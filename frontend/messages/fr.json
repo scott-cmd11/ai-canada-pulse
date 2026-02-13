@@ -80,7 +80,11 @@
     "duration": "Duree",
     "error": "Erreur",
     "publishers": "Principaux editeurs",
-    "types": "Types de source"
+    "types": "Types de source",
+    "runStatus": "Statut execution",
+    "insertedTotal": "Total insere",
+    "candidatesTotal": "Candidats",
+    "skippedLockCount": "Sauts verrou"
   },
   "methods": {
     "title": "Methodes",
