@@ -55,6 +55,23 @@ function Delta({ value }: { value: number }) {
   return <span style={{ color: positive ? "var(--research)" : "var(--incidents)" }}>{positive ? "+" : ""}{value.toFixed(1)}%</span>;
 }
 
+function RelativeTime({ value }: { value: string }) {
+  const [label, setLabel] = useState("");
+  useEffect(() => {
+    const render = () => {
+      const seconds = Math.max(0, Math.floor((Date.now() - new Date(value).getTime()) / 1000));
+      if (seconds < 60) return setLabel(`${seconds}s ago`);
+      if (seconds < 3600) return setLabel(`${Math.floor(seconds / 60)}m ago`);
+      if (seconds < 86400) return setLabel(`${Math.floor(seconds / 3600)}h ago`);
+      return setLabel(`${Math.floor(seconds / 86400)}d ago`);
+    };
+    render();
+    const timer = setInterval(render, 30000);
+    return () => clearInterval(timer);
+  }, [value]);
+  return <span>{label}</span>;
+}
+
 export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
   const t = useTranslations();
   const locale = useLocale();
@@ -456,16 +473,19 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
             <h2 className="text-sm text-textSecondary">{t("kpi.new15m")}</h2>
             <p className="mt-2 text-3xl font-semibold">{kpis?.m15.current ?? 0}</p>
             <p className="mt-1 text-sm"><Delta value={kpis?.m15.delta_percent ?? 0} /></p>
+            <p className="mt-1 text-xs text-textMuted">{t("kpi.previous")}: {kpis?.m15.previous ?? 0}</p>
           </article>
           <article className="rounded-lg border border-borderSoft bg-surface p-4">
             <h2 className="text-sm text-textSecondary">{t("kpi.new1h")}</h2>
             <p className="mt-2 text-3xl font-semibold">{kpis?.h1.current ?? 0}</p>
             <p className="mt-1 text-sm"><Delta value={kpis?.h1.delta_percent ?? 0} /></p>
+            <p className="mt-1 text-xs text-textMuted">{t("kpi.previous")}: {kpis?.h1.previous ?? 0}</p>
           </article>
           <article className="rounded-lg border border-borderSoft bg-surface p-4">
             <h2 className="text-sm text-textSecondary">{t("kpi.new7d")}</h2>
             <p className="mt-2 text-3xl font-semibold">{kpis?.d7.current ?? 0}</p>
             <p className="mt-1 text-sm"><Delta value={kpis?.d7.delta_percent ?? 0} /></p>
+            <p className="mt-1 text-xs text-textMuted">{t("kpi.previous")}: {kpis?.d7.previous ?? 0}</p>
           </article>
           <article className="rounded-lg border border-borderSoft bg-surface p-4">
             <h2 className="text-sm text-textSecondary">{t("kpi.topInsights")}</h2>
@@ -533,6 +553,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
                 <article key={item.id} className="rounded-lg border border-borderSoft bg-surface p-4 transition-all hover:-translate-y-0.5 hover:shadow-sm">
                   <div className="flex flex-wrap items-center gap-2 text-xs text-textMuted">
                     <span>{new Date(item.published_at).toLocaleString()}</span>
+                    <RelativeTime value={item.published_at} />
                     <span className="rounded-full border px-2 py-0.5" style={{ borderColor: categoryColor[item.category], color: categoryColor[item.category] }}>
                       {item.category}
                     </span>

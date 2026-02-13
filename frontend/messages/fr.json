@@ -19,7 +19,8 @@
     "new15m": "Nouveaux elements (15 min)",
     "new1h": "Nouveaux elements (1 h)",
     "new7d": "Nouveaux elements (7 j)",
-    "topInsights": "Principaux constats"
+    "topInsights": "Principaux constats",
+    "previous": "Fenetre precedente"
   },
   "pulse": {
     "title": "Pulse executif",

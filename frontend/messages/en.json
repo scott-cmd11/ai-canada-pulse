@@ -19,7 +19,8 @@
     "new15m": "New Items (15m)",
     "new1h": "New Items (1h)",
     "new7d": "New Items (7d)",
-    "topInsights": "Top Insights"
+    "topInsights": "Top Insights",
+    "previous": "Previous window"
   },
   "pulse": {
     "title": "Executive Pulse",
