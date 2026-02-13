@@ -117,12 +117,14 @@
     "autoOff": "Arret",
     "sort": "Tri",
     "sortNewest": "Plus recent",
-    "sortConfidence": "Confiance la plus haute"
+    "sortConfidence": "Confiance la plus haute",
+    "empty": "Aucun element ne correspond aux filtres actuels."
   },
   "charts": {
     "hourly": "Tendance horaire (24 h)",
     "weekly": "Tendance hebdomadaire (12 semaines)",
-    "drilldownHint": "Cliquer le graphique pour filtrer la categorie"
+    "drilldownHint": "Cliquer le graphique pour filtrer la categorie",
+    "loading": "Chargement du graphique..."
   },
   "regional": {
     "title": "Focus regional",

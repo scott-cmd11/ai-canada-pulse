@@ -117,12 +117,14 @@
     "autoOff": "Off",
     "sort": "Sort",
     "sortNewest": "Newest",
-    "sortConfidence": "Highest confidence"
+    "sortConfidence": "Highest confidence",
+    "empty": "No items match the current filters."
   },
   "charts": {
     "hourly": "Hourly Trend (24h)",
     "weekly": "Weekly Trend (12 weeks)",
-    "drilldownHint": "Click chart to filter category"
+    "drilldownHint": "Click chart to filter category",
+    "loading": "Loading chart..."
   },
   "regional": {
     "title": "Regional Focus",

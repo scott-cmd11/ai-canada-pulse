@@ -105,6 +105,10 @@ function Delta({ value }: { value: number }) {
   return <span style={{ color: positive ? "var(--research)" : "var(--incidents)" }}>{positive ? "+" : ""}{value.toFixed(1)}%</span>;
 }
 
+function SkeletonLine({ width = "100%" }: { width?: string }) {
+  return <div className="h-3 animate-pulse rounded bg-bg" style={{ width }} />;
+}
+
 function RelativeTime({ value }: { value: string }) {
   const [label, setLabel] = useState("");
   useEffect(() => {
@@ -206,6 +210,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
   const [pinnedItems, setPinnedItems] = useState<FeedItem[]>([]);
   const [savedBriefs, setSavedBriefs] = useState<SavedBrief[]>([]);
   const [dismissedAlertIds, setDismissedAlertIds] = useState<string[]>([]);
+  const isInitialLoading = isRefreshing && !kpis && feed.length === 0;
 
   const scenarioPresets: ScenarioPreset[] = useMemo(
     () => [
@@ -1258,21 +1263,51 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
         <section className="grid grid-cols-1 gap-4 md:grid-cols-4">
           <article className="rounded-lg border border-borderSoft bg-surface p-4">
             <h2 className="text-sm text-textSecondary">{t("kpi.new15m")}</h2>
-            <p className="mt-2 text-3xl font-semibold">{kpis?.m15.current ?? 0}</p>
-            <p className="mt-1 text-sm"><Delta value={kpis?.m15.delta_percent ?? 0} /></p>
-            <p className="mt-1 text-xs text-textMuted">{t("kpi.previous")}: {kpis?.m15.previous ?? 0}</p>
+            {isInitialLoading ? (
+              <div className="mt-2 space-y-2">
+                <SkeletonLine width="55%" />
+                <SkeletonLine width="35%" />
+                <SkeletonLine width="45%" />
+              </div>
+            ) : (
+              <>
+                <p className="mt-2 text-3xl font-semibold">{kpis?.m15.current ?? 0}</p>
+                <p className="mt-1 text-sm"><Delta value={kpis?.m15.delta_percent ?? 0} /></p>
+                <p className="mt-1 text-xs text-textMuted">{t("kpi.previous")}: {kpis?.m15.previous ?? 0}</p>
+              </>
+            )}
           </article>
           <article className="rounded-lg border border-borderSoft bg-surface p-4">
             <h2 className="text-sm text-textSecondary">{t("kpi.new1h")}</h2>
-            <p className="mt-2 text-3xl font-semibold">{kpis?.h1.current ?? 0}</p>
-            <p className="mt-1 text-sm"><Delta value={kpis?.h1.delta_percent ?? 0} /></p>
-            <p className="mt-1 text-xs text-textMuted">{t("kpi.previous")}: {kpis?.h1.previous ?? 0}</p>
+            {isInitialLoading ? (
+              <div className="mt-2 space-y-2">
+                <SkeletonLine width="55%" />
+                <SkeletonLine width="35%" />
+                <SkeletonLine width="45%" />
+              </div>
+            ) : (
+              <>
+                <p className="mt-2 text-3xl font-semibold">{kpis?.h1.current ?? 0}</p>
+                <p className="mt-1 text-sm"><Delta value={kpis?.h1.delta_percent ?? 0} /></p>
+                <p className="mt-1 text-xs text-textMuted">{t("kpi.previous")}: {kpis?.h1.previous ?? 0}</p>
+              </>
+            )}
           </article>
           <article className="rounded-lg border border-borderSoft bg-surface p-4">
             <h2 className="text-sm text-textSecondary">{t("kpi.new7d")}</h2>
-            <p className="mt-2 text-3xl font-semibold">{kpis?.d7.current ?? 0}</p>
-            <p className="mt-1 text-sm"><Delta value={kpis?.d7.delta_percent ?? 0} /></p>
-            <p className="mt-1 text-xs text-textMuted">{t("kpi.previous")}: {kpis?.d7.previous ?? 0}</p>
+            {isInitialLoading ? (
+              <div className="mt-2 space-y-2">
+                <SkeletonLine width="55%" />
+                <SkeletonLine width="35%" />
+                <SkeletonLine width="45%" />
+              </div>
+            ) : (
+              <>
+                <p className="mt-2 text-3xl font-semibold">{kpis?.d7.current ?? 0}</p>
+                <p className="mt-1 text-sm"><Delta value={kpis?.d7.delta_percent ?? 0} /></p>
+                <p className="mt-1 text-xs text-textMuted">{t("kpi.previous")}: {kpis?.d7.previous ?? 0}</p>
+              </>
+            )}
           </article>
           <article className="rounded-lg border border-borderSoft bg-surface p-4">
             <h2 className="text-sm text-textSecondary">{t("kpi.topInsights")}</h2>
@@ -1489,9 +1524,9 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
 
         <section className="grid grid-cols-1 gap-4 xl:grid-cols-5">
           <div className="xl:col-span-3">
-            <div className="mb-2 flex items-center justify-between">
+            <div className="mb-2 flex flex-col gap-2 xl:flex-row xl:items-center xl:justify-between">
               <h3 className="text-lg font-semibold">{t("feed.live")}</h3>
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
                 <span className="rounded border border-borderSoft px-2 py-1 text-xs">
                   {t("feed.liveStatus")}: {t(`feed.status_${sseStatus}`)}
                   {lastLiveAt ? ` - ${new Date(lastLiveAt).toLocaleTimeString()}` : ""}
@@ -1515,7 +1550,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
                 </span>
               </div>
               {mode === "research" && (
-                <div className="flex gap-2">
+                <div className="flex flex-wrap gap-2">
                   <a
                     href={exportUrl(
                       {
@@ -1550,7 +1585,25 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
               )}
             </div>
             <div className={`max-h-[900px] overflow-y-auto pr-1 ${density === "compact" ? "space-y-2" : "space-y-3"}`}>
-              {sortedFeed.map((item) => (
+              {isInitialLoading && (
+                <div className="space-y-3">
+                  {Array.from({ length: 6 }).map((_, idx) => (
+                    <article key={`skeleton-${idx}`} className="rounded-lg border border-borderSoft bg-surface p-4">
+                      <div className="space-y-2">
+                        <SkeletonLine width="70%" />
+                        <SkeletonLine width="90%" />
+                        <SkeletonLine width="60%" />
+                      </div>
+                    </article>
+                  ))}
+                </div>
+              )}
+              {!isInitialLoading && sortedFeed.length === 0 && (
+                <div className="rounded-lg border border-borderSoft bg-surface p-4 text-sm text-textMuted">
+                  {t("feed.empty")}
+                </div>
+              )}
+              {!isInitialLoading && sortedFeed.map((item) => (
                 <article
                   key={item.id}
                   className={`rounded-lg border border-borderSoft bg-surface transition-all hover:-translate-y-0.5 hover:shadow-sm ${density === "compact" ? "p-3" : "p-4"}`}
@@ -2128,7 +2181,11 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
                 <h3 className="text-sm font-semibold text-textSecondary">{t("charts.hourly")}</h3>
                 <span className="text-xs text-textMuted">{t("charts.drilldownHint")}</span>
               </div>
-              <EChartsReact option={hourlyOption} onEvents={chartEvents} style={{ height: 280 }} notMerge lazyUpdate />
+              {hourly ? (
+                <EChartsReact option={hourlyOption} onEvents={chartEvents} style={{ height: 280 }} notMerge lazyUpdate />
+              ) : (
+                <div className="flex h-[280px] items-center justify-center text-xs text-textMuted">{t("charts.loading")}</div>
+              )}
             </section>
             )}
             {panelVisibility.weekly && (
@@ -2137,7 +2194,11 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
                 <h3 className="text-sm font-semibold text-textSecondary">{t("charts.weekly")}</h3>
                 <span className="text-xs text-textMuted">{t("charts.drilldownHint")}</span>
               </div>
-              <EChartsReact option={weeklyOption} onEvents={chartEvents} style={{ height: 320 }} notMerge lazyUpdate />
+              {weekly ? (
+                <EChartsReact option={weeklyOption} onEvents={chartEvents} style={{ height: 320 }} notMerge lazyUpdate />
+              ) : (
+                <div className="flex h-[320px] items-center justify-center text-xs text-textMuted">{t("charts.loading")}</div>
+              )}
             </section>
             )}
           </div>
