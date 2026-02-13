@@ -53,6 +53,7 @@
     "sourceHealth": "Sante sources",
     "sourceMix": "Mix sources",
     "sourceQuality": "Qualite sources",
+    "confidenceProfile": "Confiance",
     "alerts": "Alertes",
     "jurisdictions": "Juridictions",
     "entities": "Entites",
@@ -158,6 +159,14 @@
     "jurisdictions": "Principales juridictions",
     "entities": "Principales entites",
     "tags": "Principales etiquettes"
+  },
+  "confidence": {
+    "title": "Profil de confiance",
+    "average": "Confiance moyenne",
+    "very_high": "Tres elevee",
+    "high": "Elevee",
+    "medium": "Moyenne",
+    "low": "Faible"
   },
   "alerts": {
     "title": "Alertes de signal",

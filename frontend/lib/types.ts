@@ -188,3 +188,17 @@ export interface ScopeCompareResponse {
   other: number;
   categories: ScopeCompareCategory[];
 }
+
+export interface ConfidenceBucket {
+  name: "very_high" | "high" | "medium" | "low";
+  count: number;
+  percent: number;
+}
+
+export interface ConfidenceProfileResponse {
+  generated_at: string;
+  time_window: TimeWindow;
+  total: number;
+  average_confidence: number;
+  buckets: ConfidenceBucket[];
+}

@@ -11,6 +11,7 @@ import type {
   StatsAlertsResponse,
   StatsBriefResponse,
   ScopeCompareResponse,
+  ConfidenceProfileResponse,
   TagsBreakdownResponse,
   SourcesBreakdownResponse,
   SourcesHealthResponse,
@@ -161,5 +162,11 @@ export async function fetchBrief(time_window: TimeWindow = "24h"): Promise<Stats
 export async function fetchCompare(time_window: TimeWindow = "7d"): Promise<ScopeCompareResponse> {
   const res = await fetch(`${API_BASE}/stats/compare?time_window=${time_window}`, { cache: "no-store" });
   if (!res.ok) throw new Error("Failed to fetch scope compare");
+  return res.json();
+}
+
+export async function fetchConfidence(time_window: TimeWindow = "7d"): Promise<ConfidenceProfileResponse> {
+  const res = await fetch(`${API_BASE}/stats/confidence?time_window=${time_window}`, { cache: "no-store" });
+  if (!res.ok) throw new Error("Failed to fetch confidence profile");
   return res.json();
 }

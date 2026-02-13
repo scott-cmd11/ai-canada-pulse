@@ -53,6 +53,7 @@
     "sourceHealth": "Source Health",
     "sourceMix": "Source Mix",
     "sourceQuality": "Source Quality",
+    "confidenceProfile": "Confidence",
     "alerts": "Alerts",
     "jurisdictions": "Jurisdictions",
     "entities": "Entities",
@@ -159,6 +160,14 @@
     "jurisdictions": "Top Jurisdictions",
     "entities": "Top Entities",
     "tags": "Top Tags"
+  },
+  "confidence": {
+    "title": "Confidence Profile",
+    "average": "Average confidence",
+    "very_high": "Very High",
+    "high": "High",
+    "medium": "Medium",
+    "low": "Low"
   },
   "alerts": {
     "title": "Signal Alerts",

@@ -15,6 +15,7 @@ import {
   fetchBackfillStatus,
   fetchBrief,
   fetchCompare,
+  fetchConfidence,
   fetchFeed,
   fetchHourly,
   fetchJurisdictionsBreakdown,
@@ -34,6 +35,7 @@ import type {
   StatsAlertItem,
   StatsBriefResponse,
   ScopeCompareResponse,
+  ConfidenceProfileResponse,
   KPIsResponse,
   PurgeSyntheticResponse,
   SourceHealthEntry,
@@ -126,6 +128,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
   const [alerts, setAlerts] = useState<StatsAlertItem[]>([]);
   const [brief, setBrief] = useState<StatsBriefResponse | null>(null);
   const [compare, setCompare] = useState<ScopeCompareResponse | null>(null);
+  const [confidenceProfile, setConfidenceProfile] = useState<ConfidenceProfileResponse | null>(null);
   const [sseStatus, setSseStatus] = useState<"connecting" | "live" | "error">("connecting");
   const [lastLiveAt, setLastLiveAt] = useState("");
   const [presets, setPresets] = useState<FilterPreset[]>([]);
@@ -135,6 +138,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
     sourceHealth: true,
     sourceMix: true,
     sourceQuality: true,
+    confidenceProfile: true,
     alerts: true,
     jurisdictions: true,
     entities: true,
@@ -148,7 +152,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
   const pagePath = scope === "canada" ? "canada" : "world";
 
   async function refreshData() {
-    const [feedResponse, kpiResponse, hourlyResponse, weeklyResponse, jurisdictionsResponse, briefResponse, compareResponse] = await Promise.all([
+    const [feedResponse, kpiResponse, hourlyResponse, weeklyResponse, jurisdictionsResponse, briefResponse, compareResponse, confidenceResponse] = await Promise.all([
       fetchFeed({
         time_window: timeWindow,
         category: category || undefined,
@@ -164,6 +168,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
       fetchJurisdictionsBreakdown(timeWindow),
       fetchBrief(timeWindow),
       fetchCompare(timeWindow),
+      fetchConfidence(timeWindow),
     ]);
     setFeed(feedResponse.items);
     setKpis(kpiResponse);
@@ -172,6 +177,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
     setJurisdictionsBreakdown(jurisdictionsResponse);
     setBrief(briefResponse);
     setCompare(compareResponse);
+    setConfidenceProfile(confidenceResponse);
   }
 
   useEffect(() => {
@@ -366,6 +372,13 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
       .sort((a, b) => b.score - a.score)
       .slice(0, 8);
   }, [sourceHealth]);
+
+  const confidenceTone: Record<string, string> = {
+    very_high: "var(--research)",
+    high: "var(--policy)",
+    medium: "var(--warning)",
+    low: "var(--incidents)",
+  };
 
   const hourlyOption = useMemo(
     () => ({
@@ -1050,6 +1063,30 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
                       </div>
                       <div className="mt-1 text-textSecondary">
                         {t("sources.inserted")}: {src.inserted} | {t("sources.duplicates")}: {src.duplicates ?? 0} | {t("sources.writeErrors")}: {src.write_errors ?? 0}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
+            {mode === "research" && panelVisibility.confidenceProfile && (
+              <section className="rounded-lg border border-borderSoft bg-surface p-3">
+                <h3 className="mb-2 text-sm font-semibold text-textSecondary">{t("confidence.title")}</h3>
+                <p className="mb-2 text-xs text-textMuted">
+                  {t("confidence.average")}: {(confidenceProfile?.average_confidence ?? 0).toFixed(2)}
+                </p>
+                <div className="space-y-2 text-xs">
+                  {(confidenceProfile?.buckets ?? []).map((bucket) => (
+                    <div key={bucket.name} className="rounded border border-borderSoft px-2 py-2">
+                      <div className="mb-1 flex items-center justify-between">
+                        <span>{t(`confidence.${bucket.name}`)}</span>
+                        <span>{bucket.count} ({bucket.percent.toFixed(1)}%)</span>
+                      </div>
+                      <div className="h-1.5 rounded bg-bg">
+                        <div
+                          className="h-1.5 rounded"
+                          style={{ width: `${Math.max(2, Math.round(bucket.percent))}%`, background: confidenceTone[bucket.name] ?? "var(--primary)" }}
+                        />
                       </div>
                     </div>
                   ))}

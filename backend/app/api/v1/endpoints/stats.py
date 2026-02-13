@@ -7,6 +7,7 @@ from backend.app.services.stats import (
     fetch_entities_breakdown,
     fetch_alerts,
     fetch_brief_snapshot,
+    fetch_confidence_profile,
     fetch_scope_compare,
     fetch_hourly_timeseries,
     fetch_jurisdictions_breakdown,
@@ -84,6 +85,14 @@ async def get_scope_compare(
     db: AsyncSession = Depends(get_db),
 ) -> dict[str, object]:
     return await fetch_scope_compare(db, time_window=time_window)
+
+
+@router.get("/confidence")
+async def get_confidence_profile(
+    time_window: str = Query("7d", pattern="^(1h|24h|7d|30d)$"),
+    db: AsyncSession = Depends(get_db),
+) -> dict[str, object]:
+    return await fetch_confidence_profile(db, time_window=time_window)
 
 
 @router.get("/alerts", response_model=StatsAlertsResponse)

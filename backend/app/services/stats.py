@@ -440,6 +440,63 @@ async def fetch_scope_compare(db: AsyncSession, *, time_window: str = "7d") -> d
     }
 
 
+async def fetch_confidence_profile(db: AsyncSession, *, time_window: str = "7d") -> dict[str, object]:
+    now = datetime.now(UTC)
+    since = now - (
+        {
+            "1h": timedelta(hours=1),
+            "24h": timedelta(hours=24),
+            "7d": timedelta(days=7),
+            "30d": timedelta(days=30),
+        }.get(time_window, timedelta(days=7))
+    )
+    total_stmt = select(func.count(AIDevelopment.id)).where(AIDevelopment.published_at >= since)
+    avg_stmt = select(func.avg(AIDevelopment.confidence)).where(AIDevelopment.published_at >= since)
+    total = int((await db.execute(total_stmt)).scalar_one())
+    avg_conf = float((await db.execute(avg_stmt)).scalar_one() or 0.0)
+
+    rows = (
+        await db.execute(
+            text(
+                """
+                SELECT
+                  CASE
+                    WHEN confidence >= 0.85 THEN 'very_high'
+                    WHEN confidence >= 0.70 THEN 'high'
+                    WHEN confidence >= 0.50 THEN 'medium'
+                    ELSE 'low'
+                  END AS bucket,
+                  COUNT(*)::int AS count
+                FROM ai_developments
+                WHERE published_at >= :since
+                GROUP BY bucket
+                """
+            ),
+            {"since": since},
+        )
+    ).all()
+
+    counts = {"very_high": 0, "high": 0, "medium": 0, "low": 0}
+    for bucket, count in rows:
+        counts[str(bucket)] = int(count)
+
+    def pct(value: int) -> float:
+        return round((value / max(1, total)) * 100.0, 2)
+
+    return {
+        "generated_at": now.isoformat(),
+        "time_window": time_window,
+        "total": total,
+        "average_confidence": round(avg_conf, 4),
+        "buckets": [
+            {"name": "very_high", "count": counts["very_high"], "percent": pct(counts["very_high"])},
+            {"name": "high", "count": counts["high"], "percent": pct(counts["high"])},
+            {"name": "medium", "count": counts["medium"], "percent": pct(counts["medium"])},
+            {"name": "low", "count": counts["low"], "percent": pct(counts["low"])},
+        ],
+    }
+
+
 async def fetch_alerts(
     db: AsyncSession,
     *,
