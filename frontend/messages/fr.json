@@ -21,6 +21,27 @@
     "new7d": "Nouveaux elements (7 j)",
     "topInsights": "Principaux constats"
   },
+  "pulse": {
+    "title": "Pulse executif",
+    "leadCategory": "Categorie dominante :",
+    "strongestSignal": "Signal principal :",
+    "rising": "en hausse",
+    "falling": "en baisse",
+    "topJurisdiction": "Juridiction principale :",
+    "noMajorShifts": "Aucun changement majeur de categorie detecte sur la periode choisie."
+  },
+  "panels": {
+    "title": "Personnaliser les panneaux",
+    "backfill": "Backfill",
+    "cleanup": "Nettoyage",
+    "sourceHealth": "Sante sources",
+    "sourceMix": "Mix sources",
+    "alerts": "Alertes",
+    "jurisdictions": "Juridictions",
+    "entities": "Entites",
+    "hourly": "Horaire",
+    "weekly": "Hebdomadaire"
+  },
   "feed": {
     "live": "Flux en direct",
     "liveStatus": "Flux",

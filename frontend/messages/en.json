@@ -21,6 +21,27 @@
     "new7d": "New Items (7d)",
     "topInsights": "Top Insights"
   },
+  "pulse": {
+    "title": "Executive Pulse",
+    "leadCategory": "Lead category:",
+    "strongestSignal": "Strongest signal:",
+    "rising": "rising",
+    "falling": "falling",
+    "topJurisdiction": "Top jurisdiction:",
+    "noMajorShifts": "No major category shifts detected in the selected window."
+  },
+  "panels": {
+    "title": "Customize Panels",
+    "backfill": "Backfill",
+    "cleanup": "Cleanup",
+    "sourceHealth": "Source Health",
+    "sourceMix": "Source Mix",
+    "alerts": "Alerts",
+    "jurisdictions": "Jurisdictions",
+    "entities": "Entities",
+    "hourly": "Hourly",
+    "weekly": "Weekly"
+  },
   "feed": {
     "live": "Live Feed",
     "liveStatus": "Stream",

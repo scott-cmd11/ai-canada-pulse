@@ -92,6 +92,17 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
   const [alerts, setAlerts] = useState<StatsAlertItem[]>([]);
   const [sseStatus, setSseStatus] = useState<"connecting" | "live" | "error">("connecting");
   const [lastLiveAt, setLastLiveAt] = useState("");
+  const [panelVisibility, setPanelVisibility] = useState<Record<string, boolean>>({
+    backfill: true,
+    cleanup: true,
+    sourceHealth: true,
+    sourceMix: true,
+    alerts: true,
+    jurisdictions: true,
+    entities: true,
+    hourly: true,
+    weekly: true,
+  });
 
   const otherLocale = locale === "en" ? "fr" : "en";
   const pagePath = scope === "canada" ? "canada" : "world";
@@ -192,6 +203,23 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
     };
   }, [mode, timeWindow]);
 
+  useEffect(() => {
+    if (mode !== "research") return;
+    try {
+      const raw = localStorage.getItem("research_panel_visibility");
+      if (!raw) return;
+      const parsed = JSON.parse(raw) as Record<string, boolean>;
+      setPanelVisibility((prev) => ({ ...prev, ...parsed }));
+    } catch {
+      return;
+    }
+  }, [mode]);
+
+  useEffect(() => {
+    if (mode !== "research") return;
+    localStorage.setItem("research_panel_visibility", JSON.stringify(panelVisibility));
+  }, [mode, panelVisibility]);
+
   const topInsights = useMemo(() => {
     const counts = new Map<string, number>();
     feed.forEach((item) => {
@@ -203,9 +231,33 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
       .map(([cat, count]) => `${cat}: ${count}`);
   }, [feed]);
 
+  const executivePulse = useMemo(() => {
+    const insights: string[] = [];
+    const topCategory = topInsights[0];
+    if (topCategory) insights.push(`${t("pulse.leadCategory")} ${topCategory}.`);
+    if (alerts.length > 0) {
+      const strongest = alerts[0];
+      const direction = strongest.direction === "up" ? t("pulse.rising") : t("pulse.falling");
+      insights.push(
+        `${t("pulse.strongestSignal")} ${strongest.category} ${direction} ${Math.abs(strongest.delta_percent).toFixed(1)}%.`
+      );
+    } else {
+      insights.push(t("pulse.noMajorShifts"));
+    }
+    const topJurisdiction = jurisdictionsBreakdown?.jurisdictions?.[0];
+    if (topJurisdiction) insights.push(`${t("pulse.topJurisdiction")} ${topJurisdiction.name} (${topJurisdiction.count}).`);
+    return insights.slice(0, 3);
+  }, [alerts, jurisdictionsBreakdown?.jurisdictions, t, topInsights]);
+
   const hourlyOption = useMemo(
     () => ({
-      tooltip: { trigger: "axis" },
+      tooltip: {
+        trigger: "axis",
+        backgroundColor: "var(--surface)",
+        borderColor: "var(--border-soft)",
+        borderWidth: 1,
+        textStyle: { color: "var(--text)" },
+      },
       legend: { data: hourly?.legend ?? [], textStyle: { color: "var(--text-secondary)" } },
       xAxis: { type: "category", data: hourly?.xAxis ?? [], axisLabel: { color: "var(--text-muted)" } },
       yAxis: { type: "value", axisLabel: { color: "var(--text-muted)" } },
@@ -221,7 +273,14 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
 
   const weeklyOption = useMemo(
     () => ({
-      tooltip: { trigger: "axis", axisPointer: { type: "shadow" } },
+      tooltip: {
+        trigger: "axis",
+        axisPointer: { type: "shadow" },
+        backgroundColor: "var(--surface)",
+        borderColor: "var(--border-soft)",
+        borderWidth: 1,
+        textStyle: { color: "var(--text)" },
+      },
       legend: { data: weekly?.legend ?? [], textStyle: { color: "var(--text-secondary)" } },
       xAxis: { type: "category", data: weekly?.xAxis ?? [], axisLabel: { color: "var(--text-muted)" } },
       yAxis: { type: "value", axisLabel: { color: "var(--text-muted)" } },
@@ -295,6 +354,10 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
     } catch {
       setCleanupStatus("failed");
     }
+  }
+
+  function togglePanel(panel: string) {
+    setPanelVisibility((prev) => ({ ...prev, [panel]: !prev[panel] }));
   }
 
   return (
@@ -413,6 +476,14 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
             </ul>
           </article>
         </section>
+        <section className="rounded-lg border border-borderSoft bg-surface p-4">
+          <h3 className="text-sm font-semibold text-textSecondary">{t("pulse.title")}</h3>
+          <ul className="mt-2 list-disc space-y-1 pl-4 text-sm text-textSecondary">
+            {executivePulse.map((line) => (
+              <li key={line}>{line}</li>
+            ))}
+          </ul>
+        </section>
 
         <section className="grid grid-cols-1 gap-4 xl:grid-cols-5">
           <div className="xl:col-span-3">
@@ -459,7 +530,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
             </div>
             <div className="max-h-[900px] space-y-3 overflow-y-auto pr-1">
               {feed.map((item) => (
-                <article key={item.id} className="rounded-lg border border-borderSoft bg-surface p-4">
+                <article key={item.id} className="rounded-lg border border-borderSoft bg-surface p-4 transition-all hover:-translate-y-0.5 hover:shadow-sm">
                   <div className="flex flex-wrap items-center gap-2 text-xs text-textMuted">
                     <span>{new Date(item.published_at).toLocaleString()}</span>
                     <span className="rounded-full border px-2 py-0.5" style={{ borderColor: categoryColor[item.category], color: categoryColor[item.category] }}>
@@ -488,6 +559,26 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
 
           <div className="space-y-4 xl:col-span-2">
             {mode === "research" && (
+              <section className="rounded-lg border border-borderSoft bg-surface p-3">
+                <h3 className="mb-2 text-sm font-semibold text-textSecondary">{t("panels.title")}</h3>
+                <div className="flex flex-wrap gap-2 text-xs">
+                  {Object.entries(panelVisibility).map(([key, enabled]) => (
+                    <button
+                      key={key}
+                      onClick={() => togglePanel(key)}
+                      className="rounded border border-borderSoft px-2 py-1"
+                      style={{
+                        color: enabled ? "var(--text)" : "var(--text-muted)",
+                        background: enabled ? "var(--bg)" : "transparent",
+                      }}
+                    >
+                      {t(`panels.${key}`)}
+                    </button>
+                  ))}
+                </div>
+              </section>
+            )}
+            {mode === "research" && panelVisibility.backfill && (
               <section className="rounded-lg border border-borderSoft bg-surface p-3">
                 <h3 className="mb-3 text-sm font-semibold text-textSecondary">{t("backfill.title")}</h3>
                 <div className="grid grid-cols-2 gap-2 text-xs">
@@ -550,7 +641,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
                 </div>
               </section>
             )}
-            {mode === "research" && (
+            {mode === "research" && panelVisibility.cleanup && (
               <section className="rounded-lg border border-borderSoft bg-surface p-3">
                 <h3 className="mb-3 text-sm font-semibold text-textSecondary">{t("cleanup.title")}</h3>
                 <div className="mb-3 flex items-center gap-2">
@@ -579,7 +670,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
                 </div>
               </section>
             )}
-            {mode === "research" && (
+            {mode === "research" && panelVisibility.sourceHealth && (
               <section className="rounded-lg border border-borderSoft bg-surface p-3">
                 <div className="mb-2 flex items-center justify-between">
                   <h3 className="text-sm font-semibold text-textSecondary">{t("sources.title")}</h3>
@@ -615,7 +706,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
                 </div>
               </section>
             )}
-            {mode === "research" && (
+            {mode === "research" && panelVisibility.sourceMix && (
               <section className="rounded-lg border border-borderSoft bg-surface p-3">
                 <h3 className="mb-2 text-sm font-semibold text-textSecondary">{t("sources.mixTitle")}</h3>
                 <p className="mb-2 text-xs text-textMuted">
@@ -647,7 +738,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
                 </div>
               </section>
             )}
-            {mode === "research" && (
+            {mode === "research" && panelVisibility.alerts && (
               <section className="rounded-lg border border-borderSoft bg-surface p-3">
                 <h3 className="mb-2 text-sm font-semibold text-textSecondary">{t("alerts.title")}</h3>
                 <div className="space-y-2 text-xs">
@@ -673,7 +764,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
                 </div>
               </section>
             )}
-            {mode === "research" && (
+            {mode === "research" && panelVisibility.jurisdictions && (
               <section className="rounded-lg border border-borderSoft bg-surface p-3">
                 <h3 className="mb-2 text-sm font-semibold text-textSecondary">{t("sources.jurisdictions")}</h3>
                 <div className="space-y-1 text-xs">
@@ -686,7 +777,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
                 </div>
               </section>
             )}
-            {mode === "research" && (
+            {mode === "research" && panelVisibility.entities && (
               <section className="rounded-lg border border-borderSoft bg-surface p-3">
                 <h3 className="mb-2 text-sm font-semibold text-textSecondary">{t("sources.entities")}</h3>
                 <div className="space-y-1 text-xs">
@@ -699,14 +790,18 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
                 </div>
               </section>
             )}
+            {panelVisibility.hourly && (
             <section className="rounded-lg border border-borderSoft bg-surface p-3">
               <h3 className="mb-2 text-sm font-semibold text-textSecondary">{t("charts.hourly")}</h3>
               <EChartsReact option={hourlyOption} style={{ height: 280 }} notMerge lazyUpdate />
             </section>
+            )}
+            {panelVisibility.weekly && (
             <section className="rounded-lg border border-borderSoft bg-surface p-3">
               <h3 className="mb-2 text-sm font-semibold text-textSecondary">{t("charts.weekly")}</h3>
               <EChartsReact option={weeklyOption} style={{ height: 320 }} notMerge lazyUpdate />
             </section>
+            )}
           </div>
         </section>
       </main>
