@@ -129,6 +129,25 @@
   },
   "methods": {
     "title": "Methodes",
-    "body": "Ingestion metadata uniquement avec extraction des categories et des entites. Aucun texte integral n'est stocke."
+    "body": "Methodologie de production pour un tableau de bord IA bilingue, temps reel, base sur des metadonnees.",
+    "architecture": {
+      "title": "Architecture",
+      "a": "API FastAPI + SQLAlchemy asynchrone sur PostgreSQL avec diffusion via Redis.",
+      "b": "Workers Celery ingerent les sources en direct, classent les metadonnees et publient via SSE.",
+      "c": "Frontend Next.js App Router pour les KPI, flux et graphiques en routes EN/FR."
+    },
+    "governance": {
+      "title": "Gouvernance des donnees",
+      "a": "Aucun stockage du texte integral. Seulement titre, URL canonique, editeur, horodatage, entites et etiquettes.",
+      "b": "Dedoublonnage via hash d'empreinte source et normalisation des identifiants.",
+      "c": "Score de confiance, telemetrie de sante source et purge des donnees synthetiques en mode recherche."
+    },
+    "ops": {
+      "title": "Operations",
+      "a": "Surveillance en direct : verrou d'ingestion, insertions, doublons et erreurs d'ecriture par source.",
+      "b": "Backfill historique : controles mensuels OpenAlex avec statut et points de reprise.",
+      "c": "Couches analyste : alertes, mix sources, juridictions et concentration des entites."
+    },
+    "back": "Retour au tableau de bord"
   }
 }

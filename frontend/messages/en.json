@@ -130,6 +130,25 @@
   },
   "methods": {
     "title": "Methods",
-    "body": "Metadata-only ingestion with category and entity extraction. No full article text is stored."
+    "body": "Production methodology for a metadata-only, bilingual, real-time AI intelligence dashboard.",
+    "architecture": {
+      "title": "Architecture",
+      "a": "FastAPI API + async SQLAlchemy over PostgreSQL with Redis-backed streaming.",
+      "b": "Celery workers ingest live sources, classify metadata, and publish SSE events.",
+      "c": "Next.js App Router frontend renders KPI, feed, and chart surfaces in EN/FR routes."
+    },
+    "governance": {
+      "title": "Data Governance",
+      "a": "No full-text article storage. Only title, canonical URL, publisher, timestamps, entities, and tags.",
+      "b": "Deduplication via source fingerprint hash and adapter-level source ID normalization.",
+      "c": "Confidence scoring, source health telemetry, and synthetic-data purge controls in research mode."
+    },
+    "ops": {
+      "title": "Operations",
+      "a": "Live monitoring: ingest lock, inserted totals, duplicates, and write errors per source.",
+      "b": "Historical backfill: OpenAlex monthly sweep controls with run status and checkpoints.",
+      "c": "Analyst overlays: alerts, source mix, jurisdictions, and top-entity concentration."
+    },
+    "back": "Back to dashboard"
   }
 }
