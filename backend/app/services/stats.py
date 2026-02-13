@@ -577,6 +577,102 @@ async def fetch_concentration(db: AsyncSession, *, time_window: str = "7d") -> d
     }
 
 
+async def fetch_momentum(db: AsyncSession, *, time_window: str = "24h", limit: int = 8) -> dict[str, object]:
+    now = datetime.now(UTC)
+    window = {
+        "1h": timedelta(hours=1),
+        "24h": timedelta(hours=24),
+        "7d": timedelta(days=7),
+        "30d": timedelta(days=30),
+    }.get(time_window, timedelta(hours=24))
+    current_start = now - window
+    previous_start = now - (window * 2)
+
+    def _delta(current: int, previous: int) -> float:
+        if previous == 0:
+            return 100.0 if current > 0 else 0.0
+        return round(((current - previous) / previous) * 100.0, 2)
+
+    category_current_rows = (
+        await db.execute(
+            select(AIDevelopment.category, func.count(AIDevelopment.id).label("count"))
+            .where(and_(AIDevelopment.published_at >= current_start, AIDevelopment.published_at < now))
+            .group_by(AIDevelopment.category)
+        )
+    ).all()
+    category_previous_rows = (
+        await db.execute(
+            select(AIDevelopment.category, func.count(AIDevelopment.id).label("count"))
+            .where(and_(AIDevelopment.published_at >= previous_start, AIDevelopment.published_at < current_start))
+            .group_by(AIDevelopment.category)
+        )
+    ).all()
+    publisher_current_rows = (
+        await db.execute(
+            select(AIDevelopment.publisher, func.count(AIDevelopment.id).label("count"))
+            .where(and_(AIDevelopment.published_at >= current_start, AIDevelopment.published_at < now))
+            .group_by(AIDevelopment.publisher)
+            .order_by(text("count DESC"))
+            .limit(40)
+        )
+    ).all()
+    publisher_previous_rows = (
+        await db.execute(
+            select(AIDevelopment.publisher, func.count(AIDevelopment.id).label("count"))
+            .where(and_(AIDevelopment.published_at >= previous_start, AIDevelopment.published_at < current_start))
+            .group_by(AIDevelopment.publisher)
+            .order_by(text("count DESC"))
+            .limit(40)
+        )
+    ).all()
+
+    category_current = {_enum_name(name): int(count) for name, count in category_current_rows}
+    category_previous = {_enum_name(name): int(count) for name, count in category_previous_rows}
+    publisher_current = {str(name): int(count) for name, count in publisher_current_rows}
+    publisher_previous = {str(name): int(count) for name, count in publisher_previous_rows}
+
+    category_items: list[dict[str, object]] = []
+    for name in sorted(set(category_current.keys()) | set(category_previous.keys())):
+        current = category_current.get(name, 0)
+        previous = category_previous.get(name, 0)
+        change = current - previous
+        category_items.append(
+            {
+                "name": name,
+                "current": current,
+                "previous": previous,
+                "change": change,
+                "delta_percent": _delta(current, previous),
+            }
+        )
+    category_items.sort(key=lambda item: abs(int(item["change"])), reverse=True)
+
+    publisher_items: list[dict[str, object]] = []
+    for name in sorted(set(publisher_current.keys()) | set(publisher_previous.keys())):
+        current = publisher_current.get(name, 0)
+        previous = publisher_previous.get(name, 0)
+        change = current - previous
+        if current == 0 and previous == 0:
+            continue
+        publisher_items.append(
+            {
+                "name": name,
+                "current": current,
+                "previous": previous,
+                "change": change,
+                "delta_percent": _delta(current, previous),
+            }
+        )
+    publisher_items.sort(key=lambda item: abs(int(item["change"])), reverse=True)
+
+    return {
+        "generated_at": now.isoformat(),
+        "time_window": time_window,
+        "categories": category_items[: max(1, min(limit, 20))],
+        "publishers": publisher_items[: max(1, min(limit, 20))],
+    }
+
+
 async def fetch_alerts(
     db: AsyncSession,
     *,

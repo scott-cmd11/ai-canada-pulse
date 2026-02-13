@@ -9,6 +9,7 @@ from backend.app.services.stats import (
     fetch_brief_snapshot,
     fetch_concentration,
     fetch_confidence_profile,
+    fetch_momentum,
     fetch_scope_compare,
     fetch_hourly_timeseries,
     fetch_jurisdictions_breakdown,
@@ -102,6 +103,15 @@ async def get_concentration(
     db: AsyncSession = Depends(get_db),
 ) -> dict[str, object]:
     return await fetch_concentration(db, time_window=time_window)
+
+
+@router.get("/momentum")
+async def get_momentum(
+    time_window: str = Query("24h", pattern="^(1h|24h|7d|30d)$"),
+    limit: int = Query(8, ge=1, le=20),
+    db: AsyncSession = Depends(get_db),
+) -> dict[str, object]:
+    return await fetch_momentum(db, time_window=time_window, limit=limit)
 
 
 @router.get("/alerts", response_model=StatsAlertsResponse)

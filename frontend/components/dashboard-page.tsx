@@ -17,6 +17,7 @@ import {
   fetchCompare,
   fetchConcentration,
   fetchConfidence,
+  fetchMomentum,
   fetchFeed,
   fetchHourly,
   fetchJurisdictionsBreakdown,
@@ -38,6 +39,7 @@ import type {
   ScopeCompareResponse,
   ConfidenceProfileResponse,
   ConcentrationResponse,
+  MomentumResponse,
   KPIsResponse,
   PurgeSyntheticResponse,
   SourceHealthEntry,
@@ -132,6 +134,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
   const [compare, setCompare] = useState<ScopeCompareResponse | null>(null);
   const [confidenceProfile, setConfidenceProfile] = useState<ConfidenceProfileResponse | null>(null);
   const [concentration, setConcentration] = useState<ConcentrationResponse | null>(null);
+  const [momentum, setMomentum] = useState<MomentumResponse | null>(null);
   const [sseStatus, setSseStatus] = useState<"connecting" | "live" | "error">("connecting");
   const [lastLiveAt, setLastLiveAt] = useState("");
   const [presets, setPresets] = useState<FilterPreset[]>([]);
@@ -142,6 +145,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
     sourceMix: true,
     sourceQuality: true,
     confidenceProfile: true,
+    momentum: true,
     alerts: true,
     jurisdictions: true,
     entities: true,
@@ -156,7 +160,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
   const pagePath = scope === "canada" ? "canada" : "world";
 
   async function refreshData() {
-    const [feedResponse, kpiResponse, hourlyResponse, weeklyResponse, jurisdictionsResponse, briefResponse, compareResponse, confidenceResponse, concentrationResponse] = await Promise.all([
+    const [feedResponse, kpiResponse, hourlyResponse, weeklyResponse, jurisdictionsResponse, briefResponse, compareResponse, confidenceResponse, concentrationResponse, momentumResponse] = await Promise.all([
       fetchFeed({
         time_window: timeWindow,
         category: category || undefined,
@@ -174,6 +178,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
       fetchCompare(timeWindow),
       fetchConfidence(timeWindow),
       fetchConcentration(timeWindow),
+      fetchMomentum(timeWindow, 8),
     ]);
     setFeed(feedResponse.items);
     setKpis(kpiResponse);
@@ -184,6 +189,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
     setCompare(compareResponse);
     setConfidenceProfile(confidenceResponse);
     setConcentration(concentrationResponse);
+    setMomentum(momentumResponse);
   }
 
   useEffect(() => {
@@ -1207,6 +1213,47 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
                         />
                       </div>
                     </div>
+                  ))}
+                </div>
+              </section>
+            )}
+            {mode === "research" && panelVisibility.momentum && (
+              <section className="rounded-lg border border-borderSoft bg-surface p-3">
+                <h3 className="mb-2 text-sm font-semibold text-textSecondary">{t("momentum.title")}</h3>
+                <div className="space-y-2 text-xs">
+                  <p className="font-medium text-textSecondary">{t("momentum.categories")}</p>
+                  {(momentum?.categories ?? []).slice(0, 5).map((item) => (
+                    <button
+                      key={`cat-${item.name}`}
+                      onClick={() => {
+                        setCategory(item.name);
+                        setMode("research");
+                      }}
+                      className="flex w-full items-center justify-between rounded border border-borderSoft px-2 py-1 text-left"
+                    >
+                      <span className="capitalize">{item.name}</span>
+                      <span style={{ color: item.change >= 0 ? "var(--research)" : "var(--incidents)" }}>
+                        {item.change >= 0 ? "+" : ""}
+                        {item.change} ({item.delta_percent.toFixed(1)}%)
+                      </span>
+                    </button>
+                  ))}
+                  <p className="pt-1 font-medium text-textSecondary">{t("momentum.publishers")}</p>
+                  {(momentum?.publishers ?? []).slice(0, 5).map((item) => (
+                    <button
+                      key={`pub-${item.name}`}
+                      onClick={() => {
+                        setSearch(item.name);
+                        setMode("research");
+                      }}
+                      className="flex w-full items-center justify-between rounded border border-borderSoft px-2 py-1 text-left"
+                    >
+                      <span className="truncate pr-2">{item.name}</span>
+                      <span style={{ color: item.change >= 0 ? "var(--research)" : "var(--incidents)" }}>
+                        {item.change >= 0 ? "+" : ""}
+                        {item.change} ({item.delta_percent.toFixed(1)}%)
+                      </span>
+                    </button>
                   ))}
                 </div>
               </section>

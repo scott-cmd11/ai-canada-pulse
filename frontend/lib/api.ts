@@ -13,6 +13,7 @@ import type {
   ScopeCompareResponse,
   ConfidenceProfileResponse,
   ConcentrationResponse,
+  MomentumResponse,
   TagsBreakdownResponse,
   SourcesBreakdownResponse,
   SourcesHealthResponse,
@@ -175,5 +176,11 @@ export async function fetchConfidence(time_window: TimeWindow = "7d"): Promise<C
 export async function fetchConcentration(time_window: TimeWindow = "7d"): Promise<ConcentrationResponse> {
   const res = await fetch(`${API_BASE}/stats/concentration?time_window=${time_window}`, { cache: "no-store" });
   if (!res.ok) throw new Error("Failed to fetch concentration");
+  return res.json();
+}
+
+export async function fetchMomentum(time_window: TimeWindow = "24h", limit = 8): Promise<MomentumResponse> {
+  const res = await fetch(`${API_BASE}/stats/momentum?time_window=${time_window}&limit=${limit}`, { cache: "no-store" });
+  if (!res.ok) throw new Error("Failed to fetch momentum");
   return res.json();
 }

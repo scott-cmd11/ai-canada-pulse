@@ -223,3 +223,18 @@ export interface ConcentrationResponse {
   top_sources: ConcentrationPoint[];
   top_jurisdictions: ConcentrationPoint[];
 }
+
+export interface MomentumItem {
+  name: string;
+  current: number;
+  previous: number;
+  change: number;
+  delta_percent: number;
+}
+
+export interface MomentumResponse {
+  generated_at: string;
+  time_window: TimeWindow;
+  categories: MomentumItem[];
+  publishers: MomentumItem[];
+}

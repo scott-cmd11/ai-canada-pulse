@@ -54,6 +54,7 @@
     "sourceMix": "Source Mix",
     "sourceQuality": "Source Quality",
     "confidenceProfile": "Confidence",
+    "momentum": "Momentum",
     "alerts": "Alerts",
     "jurisdictions": "Jurisdictions",
     "entities": "Entities",
@@ -184,6 +185,11 @@
     "high": "High",
     "medium": "Medium",
     "low": "Low"
+  },
+  "momentum": {
+    "title": "Momentum Movers",
+    "categories": "Category Moves",
+    "publishers": "Publisher Moves"
   },
   "alerts": {
     "title": "Signal Alerts",

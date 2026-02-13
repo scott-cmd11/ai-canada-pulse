@@ -54,6 +54,7 @@
     "sourceMix": "Mix sources",
     "sourceQuality": "Qualite sources",
     "confidenceProfile": "Confiance",
+    "momentum": "Momentum",
     "alerts": "Alertes",
     "jurisdictions": "Juridictions",
     "entities": "Entites",
@@ -183,6 +184,11 @@
     "high": "Elevee",
     "medium": "Moyenne",
     "low": "Faible"
+  },
+  "momentum": {
+    "title": "Moteurs de momentum",
+    "categories": "Mouvements categorie",
+    "publishers": "Mouvements editeur"
   },
   "alerts": {
     "title": "Alertes de signal",
