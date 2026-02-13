@@ -19,6 +19,18 @@
     "deletePreset": "Delete preset",
     "clear": "Clear"
   },
+  "scenarios": {
+    "policyPulse": "Policy Pulse",
+    "policyPulseDesc": "Regulatory and government signal focus.",
+    "researchSurge": "Research Surge",
+    "researchSurgeDesc": "Fast-moving papers and benchmarks.",
+    "riskWatch": "Risk Watch",
+    "riskWatchDesc": "Safety, incident, and legal concern scan.",
+    "canadaFocus": "Canada Focus",
+    "canadaFocusDesc": "All-category Canada-only view.",
+    "globalSweep": "Global Sweep",
+    "globalSweepDesc": "Global developments across categories."
+  },
   "kpi": {
     "new15m": "New Items (15m)",
     "new1h": "New Items (1h)",

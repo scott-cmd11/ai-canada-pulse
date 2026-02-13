@@ -72,6 +72,18 @@ type FilterPreset = {
   search: string;
 };
 
+type ScenarioPreset = {
+  id: string;
+  labelKey: string;
+  descriptionKey: string;
+  mode: "policy" | "research";
+  timeWindow: TimeWindow;
+  category: string;
+  jurisdiction: string;
+  language: string;
+  search: string;
+};
+
 function Delta({ value }: { value: number }) {
   const positive = value >= 0;
   return <span style={{ color: positive ? "var(--research)" : "var(--incidents)" }}>{positive ? "+" : ""}{value.toFixed(1)}%</span>;
@@ -157,6 +169,67 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
   const [copyState, setCopyState] = useState<"idle" | "copied" | "failed">("idle");
   const [briefCopyState, setBriefCopyState] = useState<"idle" | "copied" | "failed">("idle");
   const [nowTs, setNowTs] = useState(Date.now());
+
+  const scenarioPresets: ScenarioPreset[] = useMemo(
+    () => [
+      {
+        id: "policy-pulse",
+        labelKey: "policyPulse",
+        descriptionKey: "policyPulseDesc",
+        mode: "policy",
+        timeWindow: "7d",
+        category: "policy",
+        jurisdiction: scope === "canada" ? "Canada" : "",
+        language: "",
+        search: "bill regulation consultation ministry parliament",
+      },
+      {
+        id: "research-surge",
+        labelKey: "researchSurge",
+        descriptionKey: "researchSurgeDesc",
+        mode: "research",
+        timeWindow: "24h",
+        category: "research",
+        jurisdiction: "",
+        language: "",
+        search: "openalex paper model benchmark",
+      },
+      {
+        id: "risk-watch",
+        labelKey: "riskWatch",
+        descriptionKey: "riskWatchDesc",
+        mode: "research",
+        timeWindow: "24h",
+        category: "incidents",
+        jurisdiction: "",
+        language: "",
+        search: "safety incident lawsuit concern harmful",
+      },
+      {
+        id: "canada-focus",
+        labelKey: "canadaFocus",
+        descriptionKey: "canadaFocusDesc",
+        mode: "research",
+        timeWindow: "7d",
+        category: "",
+        jurisdiction: "Canada",
+        language: "",
+        search: "",
+      },
+      {
+        id: "global-sweep",
+        labelKey: "globalSweep",
+        descriptionKey: "globalSweepDesc",
+        mode: "research",
+        timeWindow: "7d",
+        category: "",
+        jurisdiction: "Global",
+        language: "",
+        search: "",
+      },
+    ],
+    [scope]
+  );
 
   const otherLocale = locale === "en" ? "fr" : "en";
   const pagePath = scope === "canada" ? "canada" : "world";
@@ -562,6 +635,15 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
     setPresets((prev) => prev.filter((item) => item.id !== id));
   }
 
+  function applyScenario(scenario: ScenarioPreset) {
+    setMode(scenario.mode);
+    setTimeWindow(scenario.timeWindow);
+    setCategory(scenario.category);
+    setJurisdiction(scenario.jurisdiction);
+    setLanguage(scenario.language);
+    setSearch(scenario.search);
+  }
+
   function applyCategoryFilter(value: string | undefined) {
     if (!value) return;
     const normalized = value.toLowerCase();
@@ -755,6 +837,18 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
                 x
               </button>
             </div>
+          ))}
+        </div>
+        <div className="mx-auto grid max-w-[1400px] grid-cols-1 gap-2 px-4 pb-3 md:grid-cols-5">
+          {scenarioPresets.map((scenario) => (
+            <button
+              key={scenario.id}
+              onClick={() => applyScenario(scenario)}
+              className="rounded border border-borderSoft bg-surface px-3 py-2 text-left text-xs"
+            >
+              <p className="font-medium">{t(`scenarios.${scenario.labelKey}`)}</p>
+              <p className="mt-1 text-textMuted">{t(`scenarios.${scenario.descriptionKey}`)}</p>
+            </button>
           ))}
         </div>
       </div>
