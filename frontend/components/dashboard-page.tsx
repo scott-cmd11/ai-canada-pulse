@@ -1215,7 +1215,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
         </div>
       </header>
 
-      <div className="sticky top-[61px] z-20 border-b border-borderSoft bg-bg backdrop-blur">
+      <div className="command-bar sticky top-[61px] z-20 border-b border-borderSoft bg-bg backdrop-blur">
         <div className="mx-auto grid max-w-[1460px] grid-cols-1 gap-3 px-4 py-3 md:grid-cols-5">
           <label className="text-sm">
             <div className="mb-1 text-textSecondary">{t("filters.timeWindow")}</div>
@@ -1333,8 +1333,8 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
       </div>
 
       <main className="mx-auto max-w-[1460px] space-y-5 px-4 py-6">
-        <section className="grid grid-cols-1 gap-4 md:grid-cols-4">
-          <article className="elevated rounded-2xl border border-borderSoft bg-surface p-4">
+        <section className="kpi-grid grid grid-cols-1 gap-4 md:grid-cols-4">
+          <article className="kpi-card elevated rounded-2xl border border-borderSoft bg-surface p-4">
             <h2 className="text-sm text-textSecondary">{t("kpi.new15m")}</h2>
             {isInitialLoading ? (
               <div className="mt-2 space-y-2">
@@ -1344,13 +1344,13 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
               </div>
             ) : (
               <>
-                <p className="mt-2 text-3xl font-semibold">{kpis?.m15.current ?? 0}</p>
+                <p className="kpi-value mt-2 text-3xl font-semibold">{kpis?.m15.current ?? 0}</p>
                 <p className="mt-1 text-sm"><Delta value={kpis?.m15.delta_percent ?? 0} /></p>
                 <p className="mt-1 text-xs text-textMuted">{t("kpi.previous")}: {kpis?.m15.previous ?? 0}</p>
               </>
             )}
           </article>
-          <article className="elevated rounded-2xl border border-borderSoft bg-surface p-4">
+          <article className="kpi-card elevated rounded-2xl border border-borderSoft bg-surface p-4">
             <h2 className="text-sm text-textSecondary">{t("kpi.new1h")}</h2>
             {isInitialLoading ? (
               <div className="mt-2 space-y-2">
@@ -1360,13 +1360,13 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
               </div>
             ) : (
               <>
-                <p className="mt-2 text-3xl font-semibold">{kpis?.h1.current ?? 0}</p>
+                <p className="kpi-value mt-2 text-3xl font-semibold">{kpis?.h1.current ?? 0}</p>
                 <p className="mt-1 text-sm"><Delta value={kpis?.h1.delta_percent ?? 0} /></p>
                 <p className="mt-1 text-xs text-textMuted">{t("kpi.previous")}: {kpis?.h1.previous ?? 0}</p>
               </>
             )}
           </article>
-          <article className="elevated rounded-2xl border border-borderSoft bg-surface p-4">
+          <article className="kpi-card elevated rounded-2xl border border-borderSoft bg-surface p-4">
             <h2 className="text-sm text-textSecondary">{t("kpi.new7d")}</h2>
             {isInitialLoading ? (
               <div className="mt-2 space-y-2">
@@ -1376,13 +1376,13 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
               </div>
             ) : (
               <>
-                <p className="mt-2 text-3xl font-semibold">{kpis?.d7.current ?? 0}</p>
+                <p className="kpi-value mt-2 text-3xl font-semibold">{kpis?.d7.current ?? 0}</p>
                 <p className="mt-1 text-sm"><Delta value={kpis?.d7.delta_percent ?? 0} /></p>
                 <p className="mt-1 text-xs text-textMuted">{t("kpi.previous")}: {kpis?.d7.previous ?? 0}</p>
               </>
             )}
           </article>
-          <article className="elevated rounded-2xl border border-borderSoft bg-surface p-4">
+          <article className="insight-card elevated rounded-2xl border border-borderSoft bg-surface p-4">
             <h2 className="text-sm text-textSecondary">{t("kpi.topInsights")}</h2>
             <ul className="mt-2 list-disc pl-4 text-sm text-textSecondary">
               {topInsights.map((line) => (
@@ -1689,7 +1689,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
               {!isInitialLoading && sortedFeed.map((item) => (
                 <article
                   key={item.id}
-                  className={`rounded-lg border border-borderSoft bg-surface transition-all hover:-translate-y-0.5 hover:shadow-sm ${density === "compact" ? "p-3" : "p-4"}`}
+                  className={`feed-card rounded-lg border border-borderSoft bg-surface transition-all hover:-translate-y-0.5 hover:shadow-sm ${density === "compact" ? "p-3" : "p-4"}`}
                 >
                   <div className={`flex flex-wrap items-center text-textMuted ${density === "compact" ? "gap-1 text-[11px]" : "gap-2 text-xs"}`}>
                     <span>{new Date(item.published_at).toLocaleString()}</span>
