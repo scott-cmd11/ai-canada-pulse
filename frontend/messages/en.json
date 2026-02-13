@@ -56,7 +56,12 @@
     "entities": "Entities",
     "tags": "Tags",
     "exportCsv": "Export CSV",
-    "exportJson": "Export JSON"
+    "exportJson": "Export JSON",
+    "details": "Feed item details",
+    "copyUrl": "Copy URL",
+    "copied": "Copied",
+    "copyFailed": "Copy failed",
+    "close": "Close"
   },
   "charts": {
     "hourly": "Hourly Trend (24h)",

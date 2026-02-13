@@ -120,6 +120,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
     hourly: true,
     weekly: true,
   });
+  const [copyState, setCopyState] = useState<"idle" | "copied" | "failed">("idle");
 
   const otherLocale = locale === "en" ? "fr" : "en";
   const pagePath = scope === "canada" ? "canada" : "world";
@@ -236,6 +237,15 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
     if (mode !== "research") return;
     localStorage.setItem("research_panel_visibility", JSON.stringify(panelVisibility));
   }, [mode, panelVisibility]);
+
+  useEffect(() => {
+    if (!selected) return;
+    const handler = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setSelected(null);
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [selected]);
 
   const topInsights = useMemo(() => {
     const counts = new Map<string, number>();
@@ -375,6 +385,18 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
 
   function togglePanel(panel: string) {
     setPanelVisibility((prev) => ({ ...prev, [panel]: !prev[panel] }));
+  }
+
+  async function copySelectedUrl() {
+    if (!selected) return;
+    try {
+      await navigator.clipboard.writeText(selected.url);
+      setCopyState("copied");
+      setTimeout(() => setCopyState("idle"), 1500);
+    } catch {
+      setCopyState("failed");
+      setTimeout(() => setCopyState("idle"), 1500);
+    }
   }
 
   return (
@@ -828,11 +850,22 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
       </main>
 
       {selected && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 p-4">
-          <div className="max-h-[90vh] w-full max-w-2xl overflow-auto rounded-lg border border-borderStrong bg-surface p-5">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 p-4" onClick={() => setSelected(null)}>
+          <div
+            className="max-h-[90vh] w-full max-w-2xl overflow-auto rounded-lg border border-borderStrong bg-surface p-5"
+            role="dialog"
+            aria-modal="true"
+            aria-label={t("feed.details")}
+            onClick={(event) => event.stopPropagation()}
+          >
             <div className="mb-3 flex items-start justify-between">
               <h3 className="text-lg font-semibold">{selected.title}</h3>
-              <button className="rounded border border-borderSoft px-2 py-1 text-sm" onClick={() => setSelected(null)}>Close</button>
+              <div className="flex items-center gap-2">
+                <button className="rounded border border-borderSoft px-2 py-1 text-sm" onClick={copySelectedUrl}>
+                  {copyState === "copied" ? t("feed.copied") : copyState === "failed" ? t("feed.copyFailed") : t("feed.copyUrl")}
+                </button>
+                <button className="rounded border border-borderSoft px-2 py-1 text-sm" onClick={() => setSelected(null)}>{t("feed.close")}</button>
+              </div>
             </div>
             <div className="space-y-2 text-sm">
               <p><strong>URL:</strong> <a href={selected.url} target="_blank" rel="noreferrer">{selected.url}</a></p>

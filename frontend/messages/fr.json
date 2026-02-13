@@ -56,7 +56,12 @@
     "entities": "Entites",
     "tags": "Etiquettes",
     "exportCsv": "Exporter CSV",
-    "exportJson": "Exporter JSON"
+    "exportJson": "Exporter JSON",
+    "details": "Details de l'element",
+    "copyUrl": "Copier URL",
+    "copied": "Copie",
+    "copyFailed": "Echec copie",
+    "close": "Fermer"
   },
   "charts": {
     "hourly": "Tendance horaire (24 h)",
