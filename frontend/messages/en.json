@@ -94,7 +94,7 @@
     "entities": "Top Entities"
   },
   "alerts": {
-    "title": "Signal Alerts (24h)",
+    "title": "Signal Alerts",
     "none": "No major spikes or drops detected.",
     "spike": "Spike",
     "drop": "Drop",

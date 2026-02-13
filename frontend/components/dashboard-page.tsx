@@ -157,10 +157,10 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
         const [status, sources, breakdown, jurisdictions, entities, alertsResponse] = await Promise.all([
           fetchBackfillStatus(),
           fetchSourcesHealth(),
-          fetchSourcesBreakdown("7d"),
-          fetchJurisdictionsBreakdown("7d"),
-          fetchEntitiesBreakdown("7d"),
-          fetchAlerts("24h"),
+          fetchSourcesBreakdown(timeWindow),
+          fetchJurisdictionsBreakdown(timeWindow),
+          fetchEntitiesBreakdown(timeWindow),
+          fetchAlerts(timeWindow),
         ]);
         if (!mounted) return;
         setBackfillStatus(status);
@@ -190,7 +190,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
       mounted = false;
       if (timer) clearInterval(timer);
     };
-  }, [mode]);
+  }, [mode, timeWindow]);
 
   const topInsights = useMemo(() => {
     const counts = new Map<string, number>();
