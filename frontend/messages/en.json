@@ -36,6 +36,23 @@
     "hourly": "Hourly Trend (24h)",
     "weekly": "Weekly Trend (12 weeks)"
   },
+  "backfill": {
+    "title": "Historical Backfill",
+    "startDate": "Start Date",
+    "endDate": "End Date",
+    "perPage": "Items/Page",
+    "pagesPerMonth": "Pages/Month",
+    "run": "Run Backfill",
+    "queued": "Queued",
+    "idle": "Idle",
+    "running": "Running",
+    "completed": "Completed",
+    "failed": "Failed",
+    "scanned": "Scanned",
+    "inserted": "Inserted",
+    "currentMonth": "Current Month",
+    "error": "Error"
+  },
   "methods": {
     "title": "Methods",
     "body": "Metadata-only ingestion with category and entity extraction. No full article text is stored."

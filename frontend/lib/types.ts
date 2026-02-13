@@ -53,3 +53,29 @@ export interface EChartsResponse {
   xAxis: string[];
   series: EChartsSeries[];
 }
+
+export interface BackfillRunRequest {
+  start_date: string;
+  end_date?: string;
+  per_page: number;
+  max_pages_per_month: number;
+}
+
+export interface BackfillRunResponse {
+  status: string;
+  task_id: string;
+}
+
+export interface BackfillStatus {
+  state: "idle" | "running" | "completed" | "failed" | string;
+  started_at?: string;
+  finished_at?: string;
+  failed_at?: string;
+  checked_at?: string;
+  start_date?: string;
+  end_date?: string;
+  current_month?: string;
+  scanned?: number;
+  inserted?: number;
+  error?: string;
+}

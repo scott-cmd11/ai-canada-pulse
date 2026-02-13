@@ -1,4 +1,12 @@
-import type { EChartsResponse, FeedResponse, KPIsResponse, TimeWindow } from "./types";
+import type {
+  BackfillRunRequest,
+  BackfillRunResponse,
+  BackfillStatus,
+  EChartsResponse,
+  FeedResponse,
+  KPIsResponse,
+  TimeWindow,
+} from "./types";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8000/api/v1";
 
@@ -66,4 +74,20 @@ export function sseUrl(): string {
 export function exportUrl(params: FeedParams, fmt: "csv" | "json"): string {
   const query = qsGeneric({ ...params, fmt });
   return `${API_BASE}/feed/export?${query}`;
+}
+
+export async function runBackfill(payload: BackfillRunRequest): Promise<BackfillRunResponse> {
+  const res = await fetch(`${API_BASE}/backfill/run`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) throw new Error("Failed to run backfill");
+  return res.json();
+}
+
+export async function fetchBackfillStatus(): Promise<BackfillStatus> {
+  const res = await fetch(`${API_BASE}/backfill/status`, { cache: "no-store" });
+  if (!res.ok) throw new Error("Failed to fetch backfill status");
+  return res.json();
 }

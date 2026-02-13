@@ -6,8 +6,17 @@ import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useMemo, useState } from "react";
 import { BarChart3, Globe2, Landmark, Moon, Search, Sun } from "lucide-react";
 
-import { exportUrl, fetchFeed, fetchHourly, fetchKpis, fetchWeekly, sseUrl } from "../lib/api";
-import type { EChartsResponse, FeedItem, KPIsResponse, TimeWindow } from "../lib/types";
+import {
+  exportUrl,
+  fetchBackfillStatus,
+  fetchFeed,
+  fetchHourly,
+  fetchKpis,
+  fetchWeekly,
+  runBackfill,
+  sseUrl,
+} from "../lib/api";
+import type { BackfillStatus, EChartsResponse, FeedItem, KPIsResponse, TimeWindow } from "../lib/types";
 import { useMode } from "./mode-provider";
 import { useTheme } from "./theme-provider";
 
@@ -42,6 +51,14 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
   const [hourly, setHourly] = useState<EChartsResponse | null>(null);
   const [weekly, setWeekly] = useState<EChartsResponse | null>(null);
   const [selected, setSelected] = useState<FeedItem | null>(null);
+  const [backfillStatus, setBackfillStatus] = useState<BackfillStatus | null>(null);
+  const [backfillStartDate, setBackfillStartDate] = useState("2022-11-01");
+  const [backfillEndDate, setBackfillEndDate] = useState("");
+  const [backfillPerPage, setBackfillPerPage] = useState(50);
+  const [backfillPagesPerMonth, setBackfillPagesPerMonth] = useState(1);
+  const [isBackfillRunning, setIsBackfillRunning] = useState(false);
+  const [isBackfillSubmitting, setIsBackfillSubmitting] = useState(false);
+  const [backfillError, setBackfillError] = useState("");
 
   const otherLocale = locale === "en" ? "fr" : "en";
   const pagePath = scope === "canada" ? "canada" : "world";
@@ -87,6 +104,35 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
     return () => source.close();
   }, [scope]);
 
+  useEffect(() => {
+    if (mode !== "research") return;
+
+    let mounted = true;
+    let timer: ReturnType<typeof setInterval> | undefined;
+
+    const poll = async () => {
+      try {
+        const status = await fetchBackfillStatus();
+        if (!mounted) return;
+        setBackfillStatus(status);
+        setIsBackfillRunning(status.state === "running");
+      } catch {
+        if (!mounted) return;
+        setBackfillError("Unable to fetch backfill status.");
+      }
+    };
+
+    poll().catch(() => undefined);
+    timer = setInterval(() => {
+      poll().catch(() => undefined);
+    }, 5000);
+
+    return () => {
+      mounted = false;
+      if (timer) clearInterval(timer);
+    };
+  }, [mode]);
+
   const topInsights = useMemo(() => {
     const counts = new Map<string, number>();
     feed.forEach((item) => {
@@ -127,6 +173,40 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
     }),
     [weekly]
   );
+
+  async function startBackfill() {
+    setIsBackfillSubmitting(true);
+    setBackfillError("");
+    try {
+      const response = await runBackfill({
+        start_date: backfillStartDate,
+        end_date: backfillEndDate || undefined,
+        per_page: backfillPerPage,
+        max_pages_per_month: backfillPagesPerMonth,
+      });
+      setIsBackfillRunning(true);
+      setBackfillStatus((prev) => ({
+        ...(prev ?? {}),
+        state: "running",
+      }));
+      if (response.status !== "queued") {
+        setBackfillError("Backfill request not queued.");
+      }
+    } catch {
+      setBackfillError("Backfill request failed.");
+    } finally {
+      setIsBackfillSubmitting(false);
+    }
+  }
+
+  const backfillStateLabel = useMemo(() => {
+    const key = backfillStatus?.state ?? "idle";
+    if (key === "running") return t("backfill.running");
+    if (key === "completed") return t("backfill.completed");
+    if (key === "failed") return t("backfill.failed");
+    if (key === "queued") return t("backfill.queued");
+    return t("backfill.idle");
+  }, [backfillStatus?.state, t]);
 
   return (
     <div className="min-h-screen bg-bg text-text">
@@ -314,6 +394,69 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
           </div>
 
           <div className="space-y-4 xl:col-span-2">
+            {mode === "research" && (
+              <section className="rounded-lg border border-borderSoft bg-surface p-3">
+                <h3 className="mb-3 text-sm font-semibold text-textSecondary">{t("backfill.title")}</h3>
+                <div className="grid grid-cols-2 gap-2 text-xs">
+                  <label className="flex flex-col gap-1">
+                    <span className="text-textSecondary">{t("backfill.startDate")}</span>
+                    <input
+                      type="date"
+                      value={backfillStartDate}
+                      onChange={(e) => setBackfillStartDate(e.target.value)}
+                      className="rounded border border-borderSoft bg-bg px-2 py-1.5"
+                    />
+                  </label>
+                  <label className="flex flex-col gap-1">
+                    <span className="text-textSecondary">{t("backfill.endDate")}</span>
+                    <input
+                      type="date"
+                      value={backfillEndDate}
+                      onChange={(e) => setBackfillEndDate(e.target.value)}
+                      className="rounded border border-borderSoft bg-bg px-2 py-1.5"
+                    />
+                  </label>
+                  <label className="flex flex-col gap-1">
+                    <span className="text-textSecondary">{t("backfill.perPage")}</span>
+                    <input
+                      type="number"
+                      min={10}
+                      max={200}
+                      value={backfillPerPage}
+                      onChange={(e) => setBackfillPerPage(Number(e.target.value || 50))}
+                      className="rounded border border-borderSoft bg-bg px-2 py-1.5"
+                    />
+                  </label>
+                  <label className="flex flex-col gap-1">
+                    <span className="text-textSecondary">{t("backfill.pagesPerMonth")}</span>
+                    <input
+                      type="number"
+                      min={1}
+                      max={10}
+                      value={backfillPagesPerMonth}
+                      onChange={(e) => setBackfillPagesPerMonth(Number(e.target.value || 1))}
+                      className="rounded border border-borderSoft bg-bg px-2 py-1.5"
+                    />
+                  </label>
+                </div>
+                <div className="mt-3 flex items-center justify-between text-xs">
+                  <span className="rounded border border-borderSoft px-2 py-1">{backfillStateLabel}</span>
+                  <button
+                    onClick={startBackfill}
+                    disabled={isBackfillRunning || isBackfillSubmitting}
+                    className="rounded border border-borderStrong px-3 py-1.5 disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    {t("backfill.run")}
+                  </button>
+                </div>
+                <div className="mt-2 grid grid-cols-2 gap-2 text-xs text-textSecondary">
+                  <span>{t("backfill.scanned")}: {backfillStatus?.scanned ?? 0}</span>
+                  <span>{t("backfill.inserted")}: {backfillStatus?.inserted ?? 0}</span>
+                  <span>{t("backfill.currentMonth")}: {backfillStatus?.current_month ?? "-"}</span>
+                  <span>{t("backfill.error")}: {(backfillStatus?.error ?? backfillError) || "-"}</span>
+                </div>
+              </section>
+            )}
             <section className="rounded-lg border border-borderSoft bg-surface p-3">
               <h3 className="mb-2 text-sm font-semibold text-textSecondary">{t("charts.hourly")}</h3>
               <EChartsReact option={hourlyOption} style={{ height: 280 }} notMerge lazyUpdate />

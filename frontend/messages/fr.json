@@ -2,33 +2,33 @@
   "nav": {
     "canada": "Canada",
     "world": "Monde",
-    "methods": "Méthodes"
+    "methods": "Methodes"
   },
   "mode": {
     "policy": "Mode Politique",
     "research": "Mode Recherche"
   },
   "filters": {
-    "timeWindow": "Fenêtre temporelle",
-    "category": "Catégorie",
-    "region": "Région",
-    "keyword": "Recherche par mot-clé",
-    "keywordPlaceholder": "Rechercher titre, éditeur, juridiction"
+    "timeWindow": "Fenetre temporelle",
+    "category": "Categorie",
+    "region": "Region",
+    "keyword": "Recherche par mot-cle",
+    "keywordPlaceholder": "Rechercher titre, editeur, juridiction"
   },
   "kpi": {
-    "new15m": "Nouveaux éléments (15 min)",
-    "new1h": "Nouveaux éléments (1 h)",
-    "new7d": "Nouveaux éléments (7 j)",
+    "new15m": "Nouveaux elements (15 min)",
+    "new1h": "Nouveaux elements (1 h)",
+    "new7d": "Nouveaux elements (7 j)",
     "topInsights": "Principaux constats"
   },
   "feed": {
     "live": "Flux en direct",
-    "publisher": "Éditeur",
+    "publisher": "Editeur",
     "language": "Langue",
     "jurisdiction": "Juridiction",
     "confidence": "Confiance",
-    "entities": "Entités",
-    "tags": "Étiquettes",
+    "entities": "Entites",
+    "tags": "Etiquettes",
     "exportCsv": "Exporter CSV",
     "exportJson": "Exporter JSON"
   },
@@ -36,8 +36,25 @@
     "hourly": "Tendance horaire (24 h)",
     "weekly": "Tendance hebdomadaire (12 semaines)"
   },
+  "backfill": {
+    "title": "Backfill Historique",
+    "startDate": "Date de debut",
+    "endDate": "Date de fin",
+    "perPage": "Elements/page",
+    "pagesPerMonth": "Pages/mois",
+    "run": "Lancer le backfill",
+    "queued": "En file",
+    "idle": "Inactif",
+    "running": "En cours",
+    "completed": "Termine",
+    "failed": "Echec",
+    "scanned": "Scannes",
+    "inserted": "Inseres",
+    "currentMonth": "Mois courant",
+    "error": "Erreur"
+  },
   "methods": {
-    "title": "Méthodes",
-    "body": "Ingestion uniquement des métadonnées avec extraction de catégories et d'entités. Aucun texte intégral n'est stocké."
+    "title": "Methodes",
+    "body": "Ingestion metadata uniquement avec extraction des categories et des entites. Aucun texte integral n'est stocke."
   }
 }
