@@ -13,7 +13,11 @@
     "category": "Categorie",
     "region": "Region",
     "keyword": "Recherche par mot-cle",
-    "keywordPlaceholder": "Rechercher titre, editeur, juridiction"
+    "keywordPlaceholder": "Rechercher titre, editeur, juridiction",
+    "savePreset": "Sauver preset",
+    "presetNamePrompt": "Nom du preset",
+    "deletePreset": "Supprimer preset",
+    "clear": "Reinitialiser"
   },
   "kpi": {
     "new15m": "Nouveaux elements (15 min)",
@@ -65,7 +69,12 @@
   },
   "charts": {
     "hourly": "Tendance horaire (24 h)",
-    "weekly": "Tendance hebdomadaire (12 semaines)"
+    "weekly": "Tendance hebdomadaire (12 semaines)",
+    "drilldownHint": "Cliquer le graphique pour filtrer la categorie"
+  },
+  "regional": {
+    "title": "Focus regional",
+    "helper": "Cliquer une region pour filtrer le flux"
   },
   "backfill": {
     "title": "Backfill Historique",

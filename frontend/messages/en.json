@@ -13,7 +13,11 @@
     "category": "Category",
     "region": "Region",
     "keyword": "Keyword Search",
-    "keywordPlaceholder": "Search title, publisher, jurisdiction"
+    "keywordPlaceholder": "Search title, publisher, jurisdiction",
+    "savePreset": "Save Preset",
+    "presetNamePrompt": "Preset name",
+    "deletePreset": "Delete preset",
+    "clear": "Clear"
   },
   "kpi": {
     "new15m": "New Items (15m)",
@@ -65,7 +69,12 @@
   },
   "charts": {
     "hourly": "Hourly Trend (24h)",
-    "weekly": "Weekly Trend (12 weeks)"
+    "weekly": "Weekly Trend (12 weeks)",
+    "drilldownHint": "Click chart to filter category"
+  },
+  "regional": {
+    "title": "Regional Focus",
+    "helper": "Click a region to filter feed"
   },
   "backfill": {
     "title": "Historical Backfill",

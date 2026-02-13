@@ -50,6 +50,16 @@ const categoryColor: Record<string, string> = {
   incidents: "var(--incidents)",
 };
 
+type FilterPreset = {
+  id: string;
+  name: string;
+  timeWindow: TimeWindow;
+  category: string;
+  jurisdiction: string;
+  language: string;
+  search: string;
+};
+
 function Delta({ value }: { value: number }) {
   const positive = value >= 0;
   return <span style={{ color: positive ? "var(--research)" : "var(--incidents)" }}>{positive ? "+" : ""}{value.toFixed(1)}%</span>;
@@ -109,6 +119,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
   const [alerts, setAlerts] = useState<StatsAlertItem[]>([]);
   const [sseStatus, setSseStatus] = useState<"connecting" | "live" | "error">("connecting");
   const [lastLiveAt, setLastLiveAt] = useState("");
+  const [presets, setPresets] = useState<FilterPreset[]>([]);
   const [panelVisibility, setPanelVisibility] = useState<Record<string, boolean>>({
     backfill: true,
     cleanup: true,
@@ -126,7 +137,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
   const pagePath = scope === "canada" ? "canada" : "world";
 
   async function refreshData() {
-    const [feedResponse, kpiResponse, hourlyResponse, weeklyResponse] = await Promise.all([
+    const [feedResponse, kpiResponse, hourlyResponse, weeklyResponse, jurisdictionsResponse] = await Promise.all([
       fetchFeed({
         time_window: timeWindow,
         category: category || undefined,
@@ -139,11 +150,13 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
       fetchKpis(),
       fetchHourly(),
       fetchWeekly(),
+      fetchJurisdictionsBreakdown(timeWindow),
     ]);
     setFeed(feedResponse.items);
     setKpis(kpiResponse);
     setHourly(hourlyResponse);
     setWeekly(weeklyResponse);
+    setJurisdictionsBreakdown(jurisdictionsResponse);
   }
 
   useEffect(() => {
@@ -237,6 +250,21 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
     if (mode !== "research") return;
     localStorage.setItem("research_panel_visibility", JSON.stringify(panelVisibility));
   }, [mode, panelVisibility]);
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(`dashboard_presets_${scope}`);
+      if (!raw) return;
+      const parsed = JSON.parse(raw) as FilterPreset[];
+      if (Array.isArray(parsed)) setPresets(parsed.slice(0, 8));
+    } catch {
+      return;
+    }
+  }, [scope]);
+
+  useEffect(() => {
+    localStorage.setItem(`dashboard_presets_${scope}`, JSON.stringify(presets));
+  }, [presets, scope]);
 
   useEffect(() => {
     if (!selected) return;
@@ -387,6 +415,59 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
     setPanelVisibility((prev) => ({ ...prev, [panel]: !prev[panel] }));
   }
 
+  function savePreset() {
+    const name = window.prompt(t("filters.presetNamePrompt"), "");
+    if (!name) return;
+    const next: FilterPreset = {
+      id: `${Date.now()}`,
+      name: name.trim(),
+      timeWindow,
+      category,
+      jurisdiction,
+      language,
+      search,
+    };
+    setPresets((prev) => [next, ...prev].slice(0, 8));
+  }
+
+  function applyPreset(preset: FilterPreset) {
+    setTimeWindow(preset.timeWindow);
+    setCategory(preset.category);
+    setJurisdiction(preset.jurisdiction);
+    setLanguage(preset.language);
+    setSearch(preset.search);
+  }
+
+  function clearFilters() {
+    setTimeWindow("24h");
+    setCategory("");
+    setJurisdiction(scope === "canada" ? "Canada" : "Global");
+    setLanguage("");
+    setSearch("");
+  }
+
+  function deletePreset(id: string) {
+    setPresets((prev) => prev.filter((item) => item.id !== id));
+  }
+
+  function applyCategoryFilter(value: string | undefined) {
+    if (!value) return;
+    const normalized = value.toLowerCase();
+    if (["policy", "research", "industry", "funding", "news", "incidents"].includes(normalized)) {
+      setCategory(normalized);
+      setMode("research");
+    }
+  }
+
+  const chartEvents = useMemo(
+    () => ({
+      click: (params: { seriesName?: string }) => {
+        applyCategoryFilter(params.seriesName);
+      },
+    }),
+    []
+  );
+
   async function copySelectedUrl() {
     if (!selected) return;
     try {
@@ -487,6 +568,24 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
             </div>
           </label>
         </div>
+        <div className="mx-auto flex max-w-[1400px] flex-wrap items-center gap-2 px-4 pb-3">
+          <button onClick={savePreset} className="rounded border border-borderSoft px-2 py-1 text-xs">
+            {t("filters.savePreset")}
+          </button>
+          <button onClick={clearFilters} className="rounded border border-borderSoft px-2 py-1 text-xs">
+            {t("filters.clear")}
+          </button>
+          {presets.map((preset) => (
+            <div key={preset.id} className="flex items-center gap-1 rounded border border-borderSoft px-2 py-1 text-xs">
+              <button onClick={() => applyPreset(preset)} className="text-left">
+                {preset.name}
+              </button>
+              <button onClick={() => deletePreset(preset.id)} aria-label={`${t("filters.deletePreset")} ${preset.name}`}>
+                x
+              </button>
+            </div>
+          ))}
+        </div>
       </div>
 
       <main className="mx-auto max-w-[1400px] space-y-4 px-4 py-4">
@@ -525,6 +624,37 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
               <li key={line}>{line}</li>
             ))}
           </ul>
+        </section>
+        <section className="rounded-lg border border-borderSoft bg-surface p-4">
+          <div className="mb-2 flex items-center justify-between">
+            <h3 className="text-sm font-semibold text-textSecondary">{t("regional.title")}</h3>
+            <span className="text-xs text-textMuted">{t("regional.helper")}</span>
+          </div>
+          <div className="space-y-2">
+            {(jurisdictionsBreakdown?.jurisdictions ?? []).slice(0, 6).map((item) => {
+              const total = Math.max(1, jurisdictionsBreakdown?.total ?? 1);
+              const width = Math.max(6, Math.round((item.count / total) * 100));
+              const active = jurisdiction === item.name;
+              return (
+                <button
+                  key={item.name}
+                  onClick={() => {
+                    setJurisdiction(item.name);
+                    setMode("research");
+                  }}
+                  className="block w-full rounded border border-borderSoft px-3 py-2 text-left text-xs"
+                >
+                  <div className="mb-1 flex items-center justify-between">
+                    <span className={active ? "font-semibold" : ""}>{item.name}</span>
+                    <span>{item.count}</span>
+                  </div>
+                  <div className="h-1.5 rounded bg-bg">
+                    <div className="h-1.5 rounded" style={{ width: `${width}%`, background: "var(--primary)" }} />
+                  </div>
+                </button>
+              );
+            })}
+          </div>
         </section>
 
         <section className="grid grid-cols-1 gap-4 xl:grid-cols-5">
@@ -835,14 +965,20 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
             )}
             {panelVisibility.hourly && (
             <section className="rounded-lg border border-borderSoft bg-surface p-3">
-              <h3 className="mb-2 text-sm font-semibold text-textSecondary">{t("charts.hourly")}</h3>
-              <EChartsReact option={hourlyOption} style={{ height: 280 }} notMerge lazyUpdate />
+              <div className="mb-2 flex items-center justify-between">
+                <h3 className="text-sm font-semibold text-textSecondary">{t("charts.hourly")}</h3>
+                <span className="text-xs text-textMuted">{t("charts.drilldownHint")}</span>
+              </div>
+              <EChartsReact option={hourlyOption} onEvents={chartEvents} style={{ height: 280 }} notMerge lazyUpdate />
             </section>
             )}
             {panelVisibility.weekly && (
             <section className="rounded-lg border border-borderSoft bg-surface p-3">
-              <h3 className="mb-2 text-sm font-semibold text-textSecondary">{t("charts.weekly")}</h3>
-              <EChartsReact option={weeklyOption} style={{ height: 320 }} notMerge lazyUpdate />
+              <div className="mb-2 flex items-center justify-between">
+                <h3 className="text-sm font-semibold text-textSecondary">{t("charts.weekly")}</h3>
+                <span className="text-xs text-textMuted">{t("charts.drilldownHint")}</span>
+              </div>
+              <EChartsReact option={weeklyOption} onEvents={chartEvents} style={{ height: 320 }} notMerge lazyUpdate />
             </section>
             )}
           </div>
