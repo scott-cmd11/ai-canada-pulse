@@ -1,0 +1,43 @@
+{
+  "nav": {
+    "canada": "Canada",
+    "world": "World",
+    "methods": "Methods"
+  },
+  "mode": {
+    "policy": "Policy Mode",
+    "research": "Research Mode"
+  },
+  "filters": {
+    "timeWindow": "Time Window",
+    "category": "Category",
+    "region": "Region",
+    "keyword": "Keyword Search",
+    "keywordPlaceholder": "Search title, publisher, jurisdiction"
+  },
+  "kpi": {
+    "new15m": "New Items (15m)",
+    "new1h": "New Items (1h)",
+    "new7d": "New Items (7d)",
+    "topInsights": "Top Insights"
+  },
+  "feed": {
+    "live": "Live Feed",
+    "publisher": "Publisher",
+    "language": "Language",
+    "jurisdiction": "Jurisdiction",
+    "confidence": "Confidence",
+    "entities": "Entities",
+    "tags": "Tags",
+    "exportCsv": "Export CSV",
+    "exportJson": "Export JSON"
+  },
+  "charts": {
+    "hourly": "Hourly Trend (24h)",
+    "weekly": "Weekly Trend (12 weeks)"
+  },
+  "methods": {
+    "title": "Methods",
+    "body": "Metadata-only ingestion with category and entity extraction. No full article text is stored."
+  }
+}

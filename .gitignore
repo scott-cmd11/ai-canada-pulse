@@ -16,6 +16,11 @@
 # next.js
 /.next/
 /out/
+/frontend/.next/
+/frontend/node_modules/
+/backend/**/__pycache__/
+/workers/**/__pycache__/
+*.pyc
 
 # production
 /build
