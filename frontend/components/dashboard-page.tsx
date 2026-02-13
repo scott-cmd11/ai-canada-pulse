@@ -136,6 +136,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
   const [jurisdiction, setJurisdiction] = useState(scope === "canada" ? "Canada" : "Global");
   const [language, setLanguage] = useState("");
   const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [feed, setFeed] = useState<FeedItem[]>([]);
   const [kpis, setKpis] = useState<KPIsResponse | null>(null);
   const [hourly, setHourly] = useState<EChartsResponse | null>(null);
@@ -276,6 +277,36 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
   const otherLocale = locale === "en" ? "fr" : "en";
   const pagePath = scope === "canada" ? "canada" : "world";
 
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(search.trim()), 300);
+    return () => clearTimeout(timer);
+  }, [search]);
+
+  function isWithinTimeWindow(publishedAt: string, windowSize: TimeWindow): boolean {
+    const ts = new Date(publishedAt).getTime();
+    if (!Number.isFinite(ts)) return false;
+    const ageMs = Date.now() - ts;
+    const maxAgeMs =
+      windowSize === "1h" ? 60 * 60 * 1000 :
+      windowSize === "24h" ? 24 * 60 * 60 * 1000 :
+      windowSize === "7d" ? 7 * 24 * 60 * 60 * 1000 :
+      30 * 24 * 60 * 60 * 1000;
+    return ageMs <= maxAgeMs;
+  }
+
+  function matchesLiveFilters(item: FeedItem): boolean {
+    if (scope === "canada" && item.jurisdiction !== "Canada") return false;
+    if (scope === "world" && item.jurisdiction === "Canada") return false;
+    if (category && item.category !== category) return false;
+    if (jurisdiction && item.jurisdiction !== jurisdiction) return false;
+    if (language && item.language !== language) return false;
+    if (!isWithinTimeWindow(item.published_at, timeWindow)) return false;
+    if (!debouncedSearch) return true;
+    const needle = debouncedSearch.toLowerCase();
+    const haystack = `${item.title} ${item.publisher} ${item.jurisdiction} ${(item.tags ?? []).join(" ")} ${(item.entities ?? []).join(" ")}`.toLowerCase();
+    return haystack.includes(needle);
+  }
+
   async function refreshData() {
     setIsRefreshing(true);
     try {
@@ -285,7 +316,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
           category: category || undefined,
           jurisdiction: jurisdiction || undefined,
           language: language || undefined,
-          search: search || undefined,
+          search: debouncedSearch || undefined,
           page: 1,
           page_size: 50,
         }),
@@ -327,7 +358,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
 
   useEffect(() => {
     refreshData().catch(() => undefined);
-  }, [timeWindow, category, jurisdiction, language, search]);
+  }, [timeWindow, category, jurisdiction, language, debouncedSearch]);
 
   useEffect(() => {
     if (autoRefreshSec === 0) return;
@@ -335,7 +366,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
       refreshData().catch(() => undefined);
     }, autoRefreshSec * 1000);
     return () => clearInterval(timer);
-  }, [autoRefreshSec, timeWindow, category, jurisdiction, language, search]);
+  }, [autoRefreshSec, timeWindow, category, jurisdiction, language, debouncedSearch]);
 
   useEffect(() => {
     setSseStatus("connecting");
@@ -349,8 +380,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
     const handler = (event: MessageEvent) => {
       try {
         const payload = JSON.parse(event.data) as FeedItem;
-        if (scope === "canada" && payload.jurisdiction !== "Canada") return;
-        if (scope === "world" && payload.jurisdiction === "Canada") return;
+        if (!matchesLiveFilters(payload)) return;
         setSseStatus("live");
         setLastLiveAt(new Date().toISOString());
         setFeed((prev) => [payload, ...prev].slice(0, 100));
@@ -360,7 +390,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
     };
     source.addEventListener("new_item", handler);
     return () => source.close();
-  }, [scope]);
+  }, [scope, category, jurisdiction, language, debouncedSearch, timeWindow]);
 
   useEffect(() => {
     if (mode !== "research") return;
