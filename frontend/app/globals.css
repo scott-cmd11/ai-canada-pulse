@@ -1,3 +1,7 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 :root {
   --font-sans: "Noto Sans", "Inter", system-ui, sans-serif;
 
