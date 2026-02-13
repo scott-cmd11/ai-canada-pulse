@@ -738,6 +738,12 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
       .sort((a, b) => b.minutes - a.minutes);
   }, [sourceHealth, nowTs]);
 
+  const liveMinutesSinceUpdate = useMemo(() => {
+    if (!lastLiveAt) return null;
+    const minutes = Math.max(0, Math.floor((Date.now() - new Date(lastLiveAt).getTime()) / 60000));
+    return Number.isFinite(minutes) ? minutes : null;
+  }, [lastLiveAt, nowTs]);
+
   const coverageGroups = useMemo(
     () => [
       { key: "categories", label: t("coverage.categories"), rows: coverage?.categories ?? [] },
@@ -1598,6 +1604,11 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
                   {t("feed.liveStatus")}: {t(`feed.status_${sseStatus}`)}
                   {lastLiveAt ? ` - ${new Date(lastLiveAt).toLocaleTimeString()}` : ""}
                 </span>
+                {liveMinutesSinceUpdate !== null && liveMinutesSinceUpdate >= 10 && (
+                  <span className="rounded border border-borderSoft px-2 py-1 text-xs text-[var(--incidents)]">
+                    {t("feed.staleWarning")} ({liveMinutesSinceUpdate}m)
+                  </span>
+                )}
                 <button onClick={() => refreshData().catch(() => undefined)} className="rounded border border-borderSoft px-2 py-1 text-xs">
                   {isRefreshing ? t("feed.refreshing") : t("feed.refresh")}
                 </button>

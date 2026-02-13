@@ -98,6 +98,7 @@
     "status_connecting": "Connexion",
     "status_live": "Actif",
     "status_error": "Degrade",
+    "staleWarning": "Aucune mise a jour recente",
     "publisher": "Editeur",
     "language": "Langue",
     "jurisdiction": "Juridiction",
