@@ -8,6 +8,7 @@ import { BarChart3, Globe2, Landmark, Moon, Search, Sun } from "lucide-react";
 
 import {
   fetchAlerts,
+  fetchEntitiesBreakdown,
   executeSyntheticPurge,
   exportUrl,
   fetchBackfillStatus,
@@ -25,6 +26,7 @@ import {
 import type {
   BackfillStatus,
   EChartsResponse,
+  EntitiesBreakdownResponse,
   FeedItem,
   StatsAlertItem,
   KPIsResponse,
@@ -86,6 +88,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
   const [sourceHealthSkippedLockCount, setSourceHealthSkippedLockCount] = useState(0);
   const [sourcesBreakdown, setSourcesBreakdown] = useState<SourcesBreakdownResponse | null>(null);
   const [jurisdictionsBreakdown, setJurisdictionsBreakdown] = useState<JurisdictionsBreakdownResponse | null>(null);
+  const [entitiesBreakdown, setEntitiesBreakdown] = useState<EntitiesBreakdownResponse | null>(null);
   const [alerts, setAlerts] = useState<StatsAlertItem[]>([]);
 
   const otherLocale = locale === "en" ? "fr" : "en";
@@ -140,11 +143,12 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
 
     const poll = async () => {
       try {
-        const [status, sources, breakdown, jurisdictions, alertsResponse] = await Promise.all([
+        const [status, sources, breakdown, jurisdictions, entities, alertsResponse] = await Promise.all([
           fetchBackfillStatus(),
           fetchSourcesHealth(),
           fetchSourcesBreakdown("7d"),
           fetchJurisdictionsBreakdown("7d"),
+          fetchEntitiesBreakdown("7d"),
           fetchAlerts("24h"),
         ]);
         if (!mounted) return;
@@ -158,6 +162,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
         setSourceHealthSkippedLockCount(sources.skipped_lock_count ?? 0);
         setSourcesBreakdown(breakdown);
         setJurisdictionsBreakdown(jurisdictions);
+        setEntitiesBreakdown(entities);
         setAlerts(alertsResponse.alerts ?? []);
       } catch {
         if (!mounted) return;
@@ -658,6 +663,19 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
                 <h3 className="mb-2 text-sm font-semibold text-textSecondary">{t("sources.jurisdictions")}</h3>
                 <div className="space-y-1 text-xs">
                   {(jurisdictionsBreakdown?.jurisdictions ?? []).slice(0, 8).map((item) => (
+                    <div key={item.name} className="flex justify-between">
+                      <span className="truncate pr-2">{item.name}</span>
+                      <span>{item.count}</span>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
+            {mode === "research" && (
+              <section className="rounded-lg border border-borderSoft bg-surface p-3">
+                <h3 className="mb-2 text-sm font-semibold text-textSecondary">{t("sources.entities")}</h3>
+                <div className="space-y-1 text-xs">
+                  {(entitiesBreakdown?.entities ?? []).slice(0, 8).map((item) => (
                     <div key={item.name} className="flex justify-between">
                       <span className="truncate pr-2">{item.name}</span>
                       <span>{item.count}</span>

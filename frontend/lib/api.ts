@@ -1,6 +1,7 @@
 import type {
   BackfillRunRequest,
   BackfillRunResponse,
+  EntitiesBreakdownResponse,
   BackfillStatus,
   EChartsResponse,
   FeedResponse,
@@ -124,6 +125,12 @@ export async function fetchSourcesBreakdown(time_window: TimeWindow = "7d"): Pro
 export async function fetchJurisdictionsBreakdown(time_window: TimeWindow = "7d"): Promise<JurisdictionsBreakdownResponse> {
   const res = await fetch(`${API_BASE}/stats/jurisdictions?time_window=${time_window}&limit=12`, { cache: "no-store" });
   if (!res.ok) throw new Error("Failed to fetch jurisdictions breakdown");
+  return res.json();
+}
+
+export async function fetchEntitiesBreakdown(time_window: TimeWindow = "7d"): Promise<EntitiesBreakdownResponse> {
+  const res = await fetch(`${API_BASE}/stats/entities?time_window=${time_window}&limit=12`, { cache: "no-store" });
+  if (!res.ok) throw new Error("Failed to fetch entities breakdown");
   return res.json();
 }
 

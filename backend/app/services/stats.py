@@ -225,6 +225,45 @@ async def fetch_jurisdictions_breakdown(db: AsyncSession, *, time_window: str = 
     }
 
 
+async def fetch_entities_breakdown(db: AsyncSession, *, time_window: str = "7d", limit: int = 12) -> dict[str, object]:
+    now = datetime.now(UTC)
+    since = now - (
+        {
+            "1h": timedelta(hours=1),
+            "24h": timedelta(hours=24),
+            "7d": timedelta(days=7),
+            "30d": timedelta(days=30),
+        }.get(time_window, timedelta(days=7))
+    )
+    bounded_limit = max(1, min(limit, 30))
+    total_stmt = select(func.count(AIDevelopment.id)).where(AIDevelopment.published_at >= since)
+    total = int((await db.execute(total_stmt)).scalar_one())
+
+    rows = (
+        await db.execute(
+            text(
+                """
+                SELECT entity_name AS name, COUNT(*)::int AS count
+                FROM ai_developments,
+                LATERAL jsonb_array_elements_text(COALESCE(entities, '[]'::jsonb)) AS entity_name
+                WHERE published_at >= :since
+                  AND entity_name <> ''
+                GROUP BY entity_name
+                ORDER BY count DESC
+                LIMIT :limit
+                """
+            ),
+            {"since": since, "limit": bounded_limit},
+        )
+    ).all()
+
+    return {
+        "time_window": time_window,
+        "total": total,
+        "entities": [{"name": str(name), "count": int(count)} for name, count in rows],
+    }
+
+
 async def fetch_alerts(
     db: AsyncSession,
     *,

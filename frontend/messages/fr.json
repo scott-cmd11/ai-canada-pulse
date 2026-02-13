@@ -85,7 +85,8 @@
     "insertedTotal": "Total insere",
     "candidatesTotal": "Candidats",
     "skippedLockCount": "Sauts verrou",
-    "jurisdictions": "Principales juridictions"
+    "jurisdictions": "Principales juridictions",
+    "entities": "Principales entites"
   },
   "alerts": {
     "title": "Alertes de signal (24 h)",

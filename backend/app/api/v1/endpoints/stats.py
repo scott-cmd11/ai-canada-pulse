@@ -4,6 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from backend.app.db.session import get_db
 from backend.app.schemas.ai_development import EChartsTimeseriesResponse, KPIsResponse, StatsAlertsResponse
 from backend.app.services.stats import (
+    fetch_entities_breakdown,
     fetch_alerts,
     fetch_hourly_timeseries,
     fetch_jurisdictions_breakdown,
@@ -46,6 +47,15 @@ async def get_jurisdictions_breakdown(
     db: AsyncSession = Depends(get_db),
 ) -> dict[str, object]:
     return await fetch_jurisdictions_breakdown(db, time_window=time_window, limit=limit)
+
+
+@router.get("/entities")
+async def get_entities_breakdown(
+    time_window: str = Query("7d", pattern="^(1h|24h|7d|30d)$"),
+    limit: int = Query(12, ge=1, le=30),
+    db: AsyncSession = Depends(get_db),
+) -> dict[str, object]:
+    return await fetch_entities_breakdown(db, time_window=time_window, limit=limit)
 
 
 @router.get("/alerts", response_model=StatsAlertsResponse)

@@ -86,7 +86,8 @@
     "insertedTotal": "Inserted Total",
     "candidatesTotal": "Candidates",
     "skippedLockCount": "Lock Skips",
-    "jurisdictions": "Top Jurisdictions"
+    "jurisdictions": "Top Jurisdictions",
+    "entities": "Top Entities"
   },
   "alerts": {
     "title": "Signal Alerts (24h)",

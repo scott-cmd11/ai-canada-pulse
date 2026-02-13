@@ -128,6 +128,12 @@ export interface JurisdictionsBreakdownResponse {
   jurisdictions: SourcesBreakdownEntry[];
 }
 
+export interface EntitiesBreakdownResponse {
+  time_window: TimeWindow;
+  total: number;
+  entities: SourcesBreakdownEntry[];
+}
+
 export interface StatsAlertItem {
   category: Category;
   direction: "up" | "down";
