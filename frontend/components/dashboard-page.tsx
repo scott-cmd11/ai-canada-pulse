@@ -19,6 +19,7 @@ import {
   fetchConfidence,
   fetchEntityMomentum,
   fetchMomentum,
+  fetchRiskTrend,
   fetchRiskIndex,
   fetchFeed,
   fetchHourly,
@@ -44,6 +45,7 @@ import type {
   MomentumResponse,
   RiskIndexResponse,
   EntityMomentumResponse,
+  RiskTrendResponse,
   KPIsResponse,
   PurgeSyntheticResponse,
   SourceHealthEntry,
@@ -159,6 +161,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
   const [momentum, setMomentum] = useState<MomentumResponse | null>(null);
   const [riskIndex, setRiskIndex] = useState<RiskIndexResponse | null>(null);
   const [entityMomentum, setEntityMomentum] = useState<EntityMomentumResponse | null>(null);
+  const [riskTrend, setRiskTrend] = useState<RiskTrendResponse | null>(null);
   const [sseStatus, setSseStatus] = useState<"connecting" | "live" | "error">("connecting");
   const [lastLiveAt, setLastLiveAt] = useState("");
   const [presets, setPresets] = useState<FilterPreset[]>([]);
@@ -170,6 +173,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
     sourceMix: true,
     sourceQuality: true,
     confidenceProfile: true,
+    riskTrend: true,
     momentum: true,
     entityMomentum: true,
     pinnedSignals: true,
@@ -260,7 +264,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
   async function refreshData() {
     setIsRefreshing(true);
     try {
-      const [feedResponse, kpiResponse, hourlyResponse, weeklyResponse, jurisdictionsResponse, briefResponse, compareResponse, confidenceResponse, concentrationResponse, momentumResponse, riskResponse, entityMomentumResponse] = await Promise.all([
+      const [feedResponse, kpiResponse, hourlyResponse, weeklyResponse, jurisdictionsResponse, briefResponse, compareResponse, confidenceResponse, concentrationResponse, momentumResponse, riskResponse, entityMomentumResponse, riskTrendResponse] = await Promise.all([
         fetchFeed({
           time_window: timeWindow,
           category: category || undefined,
@@ -281,6 +285,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
       fetchMomentum(timeWindow, 8),
       fetchRiskIndex(timeWindow),
       fetchEntityMomentum(timeWindow, 10),
+      fetchRiskTrend(timeWindow),
     ]);
       setFeed(feedResponse.items);
       setKpis(kpiResponse);
@@ -294,6 +299,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
       setMomentum(momentumResponse);
       setRiskIndex(riskResponse);
       setEntityMomentum(entityMomentumResponse);
+      setRiskTrend(riskTrendResponse);
       setLastRefreshAt(new Date().toISOString());
     } finally {
       setIsRefreshing(false);
@@ -662,6 +668,45 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
       })),
     }),
     [weekly]
+  );
+
+  const riskTrendOption = useMemo(
+    () => ({
+      tooltip: {
+        trigger: "axis",
+        backgroundColor: "var(--surface)",
+        borderColor: "var(--border-soft)",
+        borderWidth: 1,
+        textStyle: { color: "var(--text)" },
+      },
+      legend: { data: [t("riskTrend.score"), t("riskTrend.incidents"), t("riskTrend.lowConfidence")], textStyle: { color: "var(--text-secondary)" } },
+      xAxis: { type: "category", data: riskTrend?.xAxis ?? [], axisLabel: { color: "var(--text-muted)" } },
+      yAxis: { type: "value", axisLabel: { color: "var(--text-muted)" } },
+      series: [
+        {
+          name: t("riskTrend.score"),
+          type: "line",
+          smooth: true,
+          data: riskTrend?.risk_score ?? [],
+          lineStyle: { color: "var(--incidents)" },
+        },
+        {
+          name: t("riskTrend.incidents"),
+          type: "line",
+          smooth: true,
+          data: riskTrend?.incidents_ratio_pct ?? [],
+          lineStyle: { color: "var(--warning)" },
+        },
+        {
+          name: t("riskTrend.lowConfidence"),
+          type: "line",
+          smooth: true,
+          data: riskTrend?.low_confidence_ratio_pct ?? [],
+          lineStyle: { color: "var(--policy)" },
+        },
+      ],
+    }),
+    [riskTrend, t]
   );
 
   async function startBackfill() {
@@ -1661,6 +1706,12 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
                 </div>
               </section>
             )}
+            {mode === "research" && panelVisibility.riskTrend && (
+              <section className="rounded-lg border border-borderSoft bg-surface p-3">
+                <h3 className="mb-2 text-sm font-semibold text-textSecondary">{t("riskTrend.title")}</h3>
+                <EChartsReact option={riskTrendOption} style={{ height: 240 }} notMerge lazyUpdate />
+              </section>
+            )}
             {mode === "research" && panelVisibility.momentum && (
               <section className="rounded-lg border border-borderSoft bg-surface p-3">
                 <h3 className="mb-2 text-sm font-semibold text-textSecondary">{t("momentum.title")}</h3>
@@ -1926,3 +1977,4 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
     </div>
   );
 }
+

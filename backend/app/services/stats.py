@@ -825,6 +825,113 @@ async def fetch_entity_momentum(db: AsyncSession, *, time_window: str = "24h", l
     }
 
 
+async def fetch_risk_trend(db: AsyncSession, *, time_window: str = "24h") -> dict[str, object]:
+    now = datetime.now(UTC)
+    if time_window == "1h":
+        since = now - timedelta(hours=1)
+        unit = "minute"
+        steps = 12
+        step_delta = timedelta(minutes=5)
+    elif time_window == "24h":
+        since = now - timedelta(hours=24)
+        unit = "hour"
+        steps = 24
+        step_delta = timedelta(hours=1)
+    elif time_window == "7d":
+        since = now - timedelta(days=7)
+        unit = "day"
+        steps = 7
+        step_delta = timedelta(days=1)
+    else:
+        since = now - timedelta(days=30)
+        unit = "day"
+        steps = 30
+        step_delta = timedelta(days=1)
+
+    total_rows = (
+        await db.execute(
+            text(
+                f"""
+                SELECT date_trunc('{unit}', published_at) AS bucket, COUNT(*)::int AS total
+                FROM ai_developments
+                WHERE published_at >= :since
+                GROUP BY bucket
+                ORDER BY bucket
+                """
+            ),
+            {"since": since},
+        )
+    ).all()
+    incidents_rows = (
+        await db.execute(
+            text(
+                f"""
+                SELECT date_trunc('{unit}', published_at) AS bucket, COUNT(*)::int AS total
+                FROM ai_developments
+                WHERE published_at >= :since
+                  AND category = 'incidents'
+                GROUP BY bucket
+                ORDER BY bucket
+                """
+            ),
+            {"since": since},
+        )
+    ).all()
+    low_conf_rows = (
+        await db.execute(
+            text(
+                f"""
+                SELECT date_trunc('{unit}', published_at) AS bucket, COUNT(*)::int AS total
+                FROM ai_developments
+                WHERE published_at >= :since
+                  AND confidence < 0.5
+                GROUP BY bucket
+                ORDER BY bucket
+                """
+            ),
+            {"since": since},
+        )
+    ).all()
+
+    total_map = {row[0]: int(row[1]) for row in total_rows}
+    incidents_map = {row[0]: int(row[1]) for row in incidents_rows}
+    low_conf_map = {row[0]: int(row[1]) for row in low_conf_rows}
+
+    start = since.replace(second=0, microsecond=0)
+    if unit == "hour":
+        start = start.replace(minute=0)
+    elif unit == "day":
+        start = start.replace(hour=0, minute=0)
+    buckets = [start + (step_delta * i) for i in range(steps)]
+
+    labels: list[str] = []
+    risk_scores: list[float] = []
+    incidents_ratio: list[float] = []
+    low_conf_ratio: list[float] = []
+
+    for bucket in buckets:
+        total = total_map.get(bucket, 0)
+        incidents = incidents_map.get(bucket, 0)
+        low_conf = low_conf_map.get(bucket, 0)
+        ir = incidents / max(1, total)
+        lr = low_conf / max(1, total)
+        score = min(100.0, round((ir * 60.0 + lr * 40.0) * 100.0, 2))
+
+        labels.append(bucket.strftime("%H:%M") if unit in {"minute", "hour"} else bucket.strftime("%Y-%m-%d"))
+        risk_scores.append(score)
+        incidents_ratio.append(round(ir * 100.0, 2))
+        low_conf_ratio.append(round(lr * 100.0, 2))
+
+    return {
+        "generated_at": now.isoformat(),
+        "time_window": time_window,
+        "xAxis": labels,
+        "risk_score": risk_scores,
+        "incidents_ratio_pct": incidents_ratio,
+        "low_confidence_ratio_pct": low_conf_ratio,
+    }
+
+
 async def fetch_alerts(
     db: AsyncSession,
     *,

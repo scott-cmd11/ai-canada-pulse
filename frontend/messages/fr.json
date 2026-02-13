@@ -74,6 +74,7 @@
     "sourceMix": "Mix sources",
     "sourceQuality": "Qualite sources",
     "confidenceProfile": "Confiance",
+    "riskTrend": "Tendance risque",
     "momentum": "Momentum",
     "entityMomentum": "Momentum entites",
     "pinnedSignals": "Epingles",
@@ -171,6 +172,12 @@
     "low": "Faible",
     "medium": "Moyenne",
     "high": "Elevee"
+  },
+  "riskTrend": {
+    "title": "Tendance risque",
+    "score": "Score risque",
+    "incidents": "Incidents %",
+    "lowConfidence": "Faible confiance %"
   },
   "riskReason": {
     "incident_ratio_elevated": "Ratio incidents eleve",

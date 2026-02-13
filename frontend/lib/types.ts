@@ -267,3 +267,12 @@ export interface EntityMomentumResponse {
   time_window: TimeWindow;
   entities: EntityMomentumItem[];
 }
+
+export interface RiskTrendResponse {
+  generated_at: string;
+  time_window: TimeWindow;
+  xAxis: string[];
+  risk_score: number[];
+  incidents_ratio_pct: number[];
+  low_confidence_ratio_pct: number[];
+}

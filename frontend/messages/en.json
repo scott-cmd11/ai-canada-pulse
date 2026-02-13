@@ -74,6 +74,7 @@
     "sourceMix": "Source Mix",
     "sourceQuality": "Source Quality",
     "confidenceProfile": "Confidence",
+    "riskTrend": "Risk Trend",
     "momentum": "Momentum",
     "entityMomentum": "Entity Momentum",
     "pinnedSignals": "Pinned",
@@ -171,6 +172,12 @@
     "low": "Low",
     "medium": "Medium",
     "high": "High"
+  },
+  "riskTrend": {
+    "title": "Risk Trend",
+    "score": "Risk Score",
+    "incidents": "Incidents %",
+    "lowConfidence": "Low Confidence %"
   },
   "riskReason": {
     "incident_ratio_elevated": "Incident ratio elevated",
