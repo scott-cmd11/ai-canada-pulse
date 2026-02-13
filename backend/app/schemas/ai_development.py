@@ -55,3 +55,20 @@ class EChartsTimeseriesResponse(BaseModel):
     legend: list[str]
     xAxis: list[str]
     series: list[EChartsSeries]
+
+
+class StatsAlertItem(BaseModel):
+    category: str
+    direction: str
+    severity: str
+    current: int
+    previous: int
+    delta_percent: float
+
+
+class StatsAlertsResponse(BaseModel):
+    generated_at: datetime
+    time_window: str
+    min_baseline: int
+    min_delta_percent: float
+    alerts: list[StatsAlertItem]

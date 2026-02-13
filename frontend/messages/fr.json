@@ -87,6 +87,14 @@
     "skippedLockCount": "Sauts verrou",
     "jurisdictions": "Principales juridictions"
   },
+  "alerts": {
+    "title": "Alertes de signal (24 h)",
+    "none": "Aucun pic ou recul majeur detecte.",
+    "spike": "Pic",
+    "drop": "Recul",
+    "current": "Actuel",
+    "previous": "Precedent"
+  },
   "methods": {
     "title": "Methodes",
     "body": "Ingestion metadata uniquement avec extraction des categories et des entites. Aucun texte integral n'est stocke."

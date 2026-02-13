@@ -5,7 +5,14 @@ from sqlalchemy import and_, func, select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.app.models.ai_development import AIDevelopment, CategoryType
-from backend.app.schemas.ai_development import EChartsSeries, EChartsTimeseriesResponse, KPIsResponse, KPIWindow
+from backend.app.schemas.ai_development import (
+    EChartsSeries,
+    EChartsTimeseriesResponse,
+    KPIsResponse,
+    KPIWindow,
+    StatsAlertItem,
+    StatsAlertsResponse,
+)
 
 
 def _calc_delta(current: int, previous: int) -> float:
@@ -216,3 +223,71 @@ async def fetch_jurisdictions_breakdown(db: AsyncSession, *, time_window: str = 
         "total": total,
         "jurisdictions": [{"name": str(name), "count": int(count)} for name, count in rows],
     }
+
+
+async def fetch_alerts(
+    db: AsyncSession,
+    *,
+    time_window: str = "24h",
+    min_baseline: int = 3,
+    min_delta_percent: float = 35.0,
+) -> StatsAlertsResponse:
+    now = datetime.now(UTC)
+    window = {
+        "1h": timedelta(hours=1),
+        "24h": timedelta(hours=24),
+        "7d": timedelta(days=7),
+        "30d": timedelta(days=30),
+    }.get(time_window, timedelta(hours=24))
+    current_start = now - window
+    previous_start = now - (window * 2)
+
+    current_stmt = (
+        select(AIDevelopment.category, func.count(AIDevelopment.id))
+        .where(and_(AIDevelopment.published_at >= current_start, AIDevelopment.published_at < now))
+        .group_by(AIDevelopment.category)
+    )
+    previous_stmt = (
+        select(AIDevelopment.category, func.count(AIDevelopment.id))
+        .where(and_(AIDevelopment.published_at >= previous_start, AIDevelopment.published_at < current_start))
+        .group_by(AIDevelopment.category)
+    )
+
+    current_rows = (await db.execute(current_stmt)).all()
+    previous_rows = (await db.execute(previous_stmt)).all()
+    current_map = {_enum_name(category): int(count) for category, count in current_rows}
+    previous_map = {_enum_name(category): int(count) for category, count in previous_rows}
+
+    categories = [c.value for c in CategoryType]
+    alerts: list[StatsAlertItem] = []
+    for category in categories:
+        current = current_map.get(category, 0)
+        previous = previous_map.get(category, 0)
+        baseline = max(previous, min_baseline)
+        delta = _calc_delta(current, previous)
+        if baseline < min_baseline and current < min_baseline:
+            continue
+        if abs(delta) < min_delta_percent:
+            continue
+
+        direction = "up" if delta >= 0 else "down"
+        severity = "high" if abs(delta) >= 100 else "medium"
+        alerts.append(
+            StatsAlertItem(
+                category=category,
+                direction=direction,
+                severity=severity,
+                current=current,
+                previous=previous,
+                delta_percent=delta,
+            )
+        )
+
+    alerts.sort(key=lambda item: abs(item.delta_percent), reverse=True)
+    return StatsAlertsResponse(
+        generated_at=now,
+        time_window=time_window,
+        min_baseline=min_baseline,
+        min_delta_percent=min_delta_percent,
+        alerts=alerts[:8],
+    )

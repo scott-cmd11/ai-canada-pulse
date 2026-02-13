@@ -88,6 +88,14 @@
     "skippedLockCount": "Lock Skips",
     "jurisdictions": "Top Jurisdictions"
   },
+  "alerts": {
+    "title": "Signal Alerts (24h)",
+    "none": "No major spikes or drops detected.",
+    "spike": "Spike",
+    "drop": "Drop",
+    "current": "Current",
+    "previous": "Previous"
+  },
   "methods": {
     "title": "Methods",
     "body": "Metadata-only ingestion with category and entity extraction. No full article text is stored."

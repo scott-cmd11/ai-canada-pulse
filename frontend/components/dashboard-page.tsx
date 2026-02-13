@@ -7,6 +7,7 @@ import { useEffect, useMemo, useState } from "react";
 import { BarChart3, Globe2, Landmark, Moon, Search, Sun } from "lucide-react";
 
 import {
+  fetchAlerts,
   executeSyntheticPurge,
   exportUrl,
   fetchBackfillStatus,
@@ -25,6 +26,7 @@ import type {
   BackfillStatus,
   EChartsResponse,
   FeedItem,
+  StatsAlertItem,
   KPIsResponse,
   PurgeSyntheticResponse,
   SourceHealthEntry,
@@ -84,6 +86,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
   const [sourceHealthSkippedLockCount, setSourceHealthSkippedLockCount] = useState(0);
   const [sourcesBreakdown, setSourcesBreakdown] = useState<SourcesBreakdownResponse | null>(null);
   const [jurisdictionsBreakdown, setJurisdictionsBreakdown] = useState<JurisdictionsBreakdownResponse | null>(null);
+  const [alerts, setAlerts] = useState<StatsAlertItem[]>([]);
 
   const otherLocale = locale === "en" ? "fr" : "en";
   const pagePath = scope === "canada" ? "canada" : "world";
@@ -137,11 +140,12 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
 
     const poll = async () => {
       try {
-        const [status, sources, breakdown, jurisdictions] = await Promise.all([
+        const [status, sources, breakdown, jurisdictions, alertsResponse] = await Promise.all([
           fetchBackfillStatus(),
           fetchSourcesHealth(),
           fetchSourcesBreakdown("7d"),
           fetchJurisdictionsBreakdown("7d"),
+          fetchAlerts("24h"),
         ]);
         if (!mounted) return;
         setBackfillStatus(status);
@@ -154,6 +158,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
         setSourceHealthSkippedLockCount(sources.skipped_lock_count ?? 0);
         setSourcesBreakdown(breakdown);
         setJurisdictionsBreakdown(jurisdictions);
+        setAlerts(alertsResponse.alerts ?? []);
       } catch {
         if (!mounted) return;
         setBackfillError("Unable to fetch backfill status.");
@@ -619,6 +624,32 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
                       ))}
                     </div>
                   </div>
+                </div>
+              </section>
+            )}
+            {mode === "research" && (
+              <section className="rounded-lg border border-borderSoft bg-surface p-3">
+                <h3 className="mb-2 text-sm font-semibold text-textSecondary">{t("alerts.title")}</h3>
+                <div className="space-y-2 text-xs">
+                  {alerts.length === 0 && <p className="text-textMuted">{t("alerts.none")}</p>}
+                  {alerts.map((item) => {
+                    const isUp = item.direction === "up";
+                    const tone = item.severity === "high" ? "var(--incidents)" : "var(--warning)";
+                    return (
+                      <div key={`${item.category}-${item.direction}`} className="rounded border border-borderSoft px-2 py-2">
+                        <div className="flex items-center justify-between">
+                          <span className="font-medium capitalize">{item.category}</span>
+                          <span style={{ color: tone }}>
+                            {isUp ? t("alerts.spike") : t("alerts.drop")} {item.delta_percent > 0 ? "+" : ""}
+                            {item.delta_percent.toFixed(1)}%
+                          </span>
+                        </div>
+                        <div className="mt-1 text-textSecondary">
+                          {t("alerts.current")}: {item.current} | {t("alerts.previous")}: {item.previous}
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               </section>
             )}

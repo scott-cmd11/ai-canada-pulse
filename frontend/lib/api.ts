@@ -7,6 +7,7 @@ import type {
   JurisdictionsBreakdownResponse,
   KPIsResponse,
   PurgeSyntheticResponse,
+  StatsAlertsResponse,
   SourcesBreakdownResponse,
   SourcesHealthResponse,
   TimeWindow,
@@ -123,5 +124,14 @@ export async function fetchSourcesBreakdown(time_window: TimeWindow = "7d"): Pro
 export async function fetchJurisdictionsBreakdown(time_window: TimeWindow = "7d"): Promise<JurisdictionsBreakdownResponse> {
   const res = await fetch(`${API_BASE}/stats/jurisdictions?time_window=${time_window}&limit=12`, { cache: "no-store" });
   if (!res.ok) throw new Error("Failed to fetch jurisdictions breakdown");
+  return res.json();
+}
+
+export async function fetchAlerts(time_window: TimeWindow = "24h"): Promise<StatsAlertsResponse> {
+  const res = await fetch(
+    `${API_BASE}/stats/alerts?time_window=${time_window}&min_baseline=3&min_delta_percent=35`,
+    { cache: "no-store" }
+  );
+  if (!res.ok) throw new Error("Failed to fetch alerts");
   return res.json();
 }

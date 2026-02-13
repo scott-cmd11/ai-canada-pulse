@@ -127,3 +127,20 @@ export interface JurisdictionsBreakdownResponse {
   total: number;
   jurisdictions: SourcesBreakdownEntry[];
 }
+
+export interface StatsAlertItem {
+  category: Category;
+  direction: "up" | "down";
+  severity: "medium" | "high";
+  current: number;
+  previous: number;
+  delta_percent: number;
+}
+
+export interface StatsAlertsResponse {
+  generated_at: string;
+  time_window: TimeWindow;
+  min_baseline: number;
+  min_delta_percent: number;
+  alerts: StatsAlertItem[];
+}

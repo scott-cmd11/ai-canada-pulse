@@ -2,8 +2,9 @@ from fastapi import APIRouter, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.app.db.session import get_db
-from backend.app.schemas.ai_development import EChartsTimeseriesResponse, KPIsResponse
+from backend.app.schemas.ai_development import EChartsTimeseriesResponse, KPIsResponse, StatsAlertsResponse
 from backend.app.services.stats import (
+    fetch_alerts,
     fetch_hourly_timeseries,
     fetch_jurisdictions_breakdown,
     fetch_kpis,
@@ -45,3 +46,18 @@ async def get_jurisdictions_breakdown(
     db: AsyncSession = Depends(get_db),
 ) -> dict[str, object]:
     return await fetch_jurisdictions_breakdown(db, time_window=time_window, limit=limit)
+
+
+@router.get("/alerts", response_model=StatsAlertsResponse)
+async def get_alerts(
+    time_window: str = Query("24h", pattern="^(1h|24h|7d|30d)$"),
+    min_baseline: int = Query(3, ge=1, le=100),
+    min_delta_percent: float = Query(35.0, ge=1.0, le=500.0),
+    db: AsyncSession = Depends(get_db),
+) -> StatsAlertsResponse:
+    return await fetch_alerts(
+        db,
+        time_window=time_window,
+        min_baseline=min_baseline,
+        min_delta_percent=min_delta_percent,
+    )
