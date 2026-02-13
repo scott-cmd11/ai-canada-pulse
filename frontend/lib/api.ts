@@ -10,6 +10,7 @@ import type {
   PurgeSyntheticResponse,
   StatsAlertsResponse,
   StatsBriefResponse,
+  ScopeCompareResponse,
   TagsBreakdownResponse,
   SourcesBreakdownResponse,
   SourcesHealthResponse,
@@ -154,5 +155,11 @@ export async function fetchAlerts(time_window: TimeWindow = "24h"): Promise<Stat
 export async function fetchBrief(time_window: TimeWindow = "24h"): Promise<StatsBriefResponse> {
   const res = await fetch(`${API_BASE}/stats/brief?time_window=${time_window}`, { cache: "no-store" });
   if (!res.ok) throw new Error("Failed to fetch brief snapshot");
+  return res.json();
+}
+
+export async function fetchCompare(time_window: TimeWindow = "7d"): Promise<ScopeCompareResponse> {
+  const res = await fetch(`${API_BASE}/stats/compare?time_window=${time_window}`, { cache: "no-store" });
+  if (!res.ok) throw new Error("Failed to fetch scope compare");
   return res.json();
 }

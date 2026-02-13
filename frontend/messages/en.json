@@ -97,6 +97,14 @@
     "topPublisher": "Top Publisher",
     "highAlerts": "High Alerts"
   },
+  "compare": {
+    "title": "Canada vs Global",
+    "canada": "Canada Items",
+    "global": "Global Items",
+    "other": "Other Jurisdictions",
+    "canadaShort": "CA",
+    "globalShort": "GL"
+  },
   "backfill": {
     "title": "Historical Backfill",
     "startDate": "Start Date",

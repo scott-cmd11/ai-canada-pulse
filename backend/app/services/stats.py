@@ -381,6 +381,65 @@ async def fetch_brief_snapshot(db: AsyncSession, *, time_window: str = "24h") ->
     }
 
 
+async def fetch_scope_compare(db: AsyncSession, *, time_window: str = "7d") -> dict[str, object]:
+    now = datetime.now(UTC)
+    since = now - (
+        {
+            "1h": timedelta(hours=1),
+            "24h": timedelta(hours=24),
+            "7d": timedelta(days=7),
+            "30d": timedelta(days=30),
+        }.get(time_window, timedelta(days=7))
+    )
+    total_stmt = select(func.count(AIDevelopment.id)).where(AIDevelopment.published_at >= since)
+    total = int((await db.execute(total_stmt)).scalar_one())
+
+    scope_stmt = (
+        select(AIDevelopment.jurisdiction, func.count(AIDevelopment.id).label("count"))
+        .where(AIDevelopment.published_at >= since)
+        .group_by(AIDevelopment.jurisdiction)
+    )
+    rows = (await db.execute(scope_stmt)).all()
+    canada = sum(int(count) for jurisdiction, count in rows if str(jurisdiction).lower() == "canada")
+    global_count = sum(int(count) for jurisdiction, count in rows if str(jurisdiction).lower() == "global")
+    other = max(0, total - canada - global_count)
+
+    category_rows = (
+        await db.execute(
+            select(AIDevelopment.category, AIDevelopment.jurisdiction, func.count(AIDevelopment.id).label("count"))
+            .where(AIDevelopment.published_at >= since)
+            .group_by(AIDevelopment.category, AIDevelopment.jurisdiction)
+        )
+    ).all()
+
+    by_category: dict[str, dict[str, int]] = defaultdict(lambda: {"canada": 0, "global": 0})
+    for category, jurisdiction, count in category_rows:
+        key = _enum_name(category)
+        jurisdiction_key = str(jurisdiction).lower()
+        if jurisdiction_key == "canada":
+            by_category[key]["canada"] += int(count)
+        elif jurisdiction_key == "global":
+            by_category[key]["global"] += int(count)
+
+    categories = sorted(by_category.keys())
+    return {
+        "generated_at": now.isoformat(),
+        "time_window": time_window,
+        "total": total,
+        "canada": canada,
+        "global": global_count,
+        "other": other,
+        "categories": [
+            {
+                "name": name,
+                "canada": by_category[name]["canada"],
+                "global": by_category[name]["global"],
+            }
+            for name in categories
+        ],
+    }
+
+
 async def fetch_alerts(
     db: AsyncSession,
     *,

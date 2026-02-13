@@ -14,6 +14,7 @@ import {
   exportUrl,
   fetchBackfillStatus,
   fetchBrief,
+  fetchCompare,
   fetchFeed,
   fetchHourly,
   fetchJurisdictionsBreakdown,
@@ -32,6 +33,7 @@ import type {
   FeedItem,
   StatsAlertItem,
   StatsBriefResponse,
+  ScopeCompareResponse,
   KPIsResponse,
   PurgeSyntheticResponse,
   SourceHealthEntry,
@@ -123,6 +125,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
   const [tagsBreakdown, setTagsBreakdown] = useState<TagsBreakdownResponse | null>(null);
   const [alerts, setAlerts] = useState<StatsAlertItem[]>([]);
   const [brief, setBrief] = useState<StatsBriefResponse | null>(null);
+  const [compare, setCompare] = useState<ScopeCompareResponse | null>(null);
   const [sseStatus, setSseStatus] = useState<"connecting" | "live" | "error">("connecting");
   const [lastLiveAt, setLastLiveAt] = useState("");
   const [presets, setPresets] = useState<FilterPreset[]>([]);
@@ -145,7 +148,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
   const pagePath = scope === "canada" ? "canada" : "world";
 
   async function refreshData() {
-    const [feedResponse, kpiResponse, hourlyResponse, weeklyResponse, jurisdictionsResponse, briefResponse] = await Promise.all([
+    const [feedResponse, kpiResponse, hourlyResponse, weeklyResponse, jurisdictionsResponse, briefResponse, compareResponse] = await Promise.all([
       fetchFeed({
         time_window: timeWindow,
         category: category || undefined,
@@ -160,6 +163,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
       fetchWeekly(),
       fetchJurisdictionsBreakdown(timeWindow),
       fetchBrief(timeWindow),
+      fetchCompare(timeWindow),
     ]);
     setFeed(feedResponse.items);
     setKpis(kpiResponse);
@@ -167,6 +171,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
     setWeekly(weeklyResponse);
     setJurisdictionsBreakdown(jurisdictionsResponse);
     setBrief(briefResponse);
+    setCompare(compareResponse);
   }
 
   useEffect(() => {
@@ -714,6 +719,32 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
               <p className="text-textMuted">{t("brief.highAlerts")}</p>
               <p className="mt-1 font-semibold">{brief?.high_alert_count ?? 0}</p>
             </div>
+          </div>
+        </section>
+        <section className="rounded-lg border border-borderSoft bg-surface p-4">
+          <h3 className="mb-2 text-sm font-semibold text-textSecondary">{t("compare.title")}</h3>
+          <div className="grid grid-cols-1 gap-2 text-xs md:grid-cols-3">
+            <button onClick={() => setJurisdiction("Canada")} className="rounded border border-borderSoft bg-bg p-2 text-left">
+              <p className="text-textMuted">{t("compare.canada")}</p>
+              <p className="mt-1 font-semibold">{compare?.canada ?? 0}</p>
+            </button>
+            <button onClick={() => setJurisdiction("Global")} className="rounded border border-borderSoft bg-bg p-2 text-left">
+              <p className="text-textMuted">{t("compare.global")}</p>
+              <p className="mt-1 font-semibold">{compare?.global ?? 0}</p>
+            </button>
+            <div className="rounded border border-borderSoft bg-bg p-2">
+              <p className="text-textMuted">{t("compare.other")}</p>
+              <p className="mt-1 font-semibold">{compare?.other ?? 0}</p>
+            </div>
+          </div>
+          <div className="mt-3 space-y-1 text-xs">
+            {(compare?.categories ?? []).slice(0, 6).map((item) => (
+              <div key={item.name} className="grid grid-cols-3 gap-2 rounded border border-borderSoft px-2 py-1">
+                <span className="capitalize">{item.name}</span>
+                <span>{t("compare.canadaShort")}: {item.canada}</span>
+                <span>{t("compare.globalShort")}: {item.global}</span>
+              </div>
+            ))}
           </div>
         </section>
         <section className="rounded-lg border border-borderSoft bg-surface p-4">

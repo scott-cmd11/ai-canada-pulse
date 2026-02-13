@@ -172,3 +172,19 @@ export interface StatsBriefResponse {
   top_publisher: StatsBriefPoint;
   top_tag: StatsBriefPoint;
 }
+
+export interface ScopeCompareCategory {
+  name: string;
+  canada: number;
+  global: number;
+}
+
+export interface ScopeCompareResponse {
+  generated_at: string;
+  time_window: TimeWindow;
+  total: number;
+  canada: number;
+  global: number;
+  other: number;
+  categories: ScopeCompareCategory[];
+}

@@ -97,6 +97,14 @@
     "topPublisher": "Editeur dominant",
     "highAlerts": "Alertes elevees"
   },
+  "compare": {
+    "title": "Canada vs Monde",
+    "canada": "Elements Canada",
+    "global": "Elements Monde",
+    "other": "Autres juridictions",
+    "canadaShort": "CA",
+    "globalShort": "MO"
+  },
   "backfill": {
     "title": "Backfill Historique",
     "startDate": "Date de debut",
