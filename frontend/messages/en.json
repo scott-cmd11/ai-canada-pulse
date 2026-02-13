@@ -18,6 +18,7 @@
     "region": "Region",
     "keyword": "Keyword Search",
     "keywordPlaceholder": "Search title, publisher, jurisdiction",
+    "shortcuts": "Shortcut: / or Ctrl/Cmd+K",
     "savePreset": "Save Preset",
     "presetNamePrompt": "Preset name",
     "deletePreset": "Delete preset",

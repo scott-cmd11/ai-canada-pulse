@@ -18,6 +18,7 @@
     "region": "Region",
     "keyword": "Recherche par mot-cle",
     "keywordPlaceholder": "Rechercher titre, editeur, juridiction",
+    "shortcuts": "Raccourci : / ou Ctrl/Cmd+K",
     "savePreset": "Sauver preset",
     "presetNamePrompt": "Nom du preset",
     "deletePreset": "Supprimer preset",

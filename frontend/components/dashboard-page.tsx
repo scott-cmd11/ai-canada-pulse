@@ -213,6 +213,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
   const [savedBriefs, setSavedBriefs] = useState<SavedBrief[]>([]);
   const [dismissedAlertIds, setDismissedAlertIds] = useState<string[]>([]);
   const refreshInFlight = useRef(false);
+  const searchInputRef = useRef<HTMLInputElement | null>(null);
   const isInitialLoading = isRefreshing && !kpis && feed.length === 0;
 
   const scenarioPresets: ScenarioPreset[] = useMemo(
@@ -283,6 +284,32 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
     const timer = setTimeout(() => setDebouncedSearch(search.trim()), 300);
     return () => clearTimeout(timer);
   }, [search]);
+
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      const target = event.target as HTMLElement | null;
+      const inEditable =
+        target?.tagName === "INPUT" ||
+        target?.tagName === "TEXTAREA" ||
+        target?.isContentEditable;
+      const key = event.key.toLowerCase();
+      if ((event.ctrlKey || event.metaKey) && key === "k") {
+        event.preventDefault();
+        searchInputRef.current?.focus();
+        return;
+      }
+      if (!inEditable && key === "/") {
+        event.preventDefault();
+        searchInputRef.current?.focus();
+        return;
+      }
+      if (key === "escape" && selected) {
+        setSelected(null);
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [selected]);
 
   function isWithinTimeWindow(publishedAt: string, windowSize: TimeWindow): boolean {
     const ts = new Date(publishedAt).getTime();
@@ -1236,12 +1263,14 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
             <div className="flex items-center rounded border border-borderSoft bg-surface px-2">
               <Search size={16} color="var(--text-muted)" />
               <input
+                ref={searchInputRef}
                 className="w-full border-none bg-transparent px-2 py-2 text-text outline-none"
                 placeholder={t("filters.keywordPlaceholder")}
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
               />
             </div>
+            <div className="mt-1 text-xs text-textMuted">{t("filters.shortcuts")}</div>
           </label>
           <label className="text-sm">
             <div className="mb-1 text-textSecondary">{t("feed.sort")}</div>
