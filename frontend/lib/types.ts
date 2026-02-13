@@ -134,6 +134,12 @@ export interface EntitiesBreakdownResponse {
   entities: SourcesBreakdownEntry[];
 }
 
+export interface TagsBreakdownResponse {
+  time_window: TimeWindow;
+  total: number;
+  tags: SourcesBreakdownEntry[];
+}
+
 export interface StatsAlertItem {
   category: Category;
   direction: "up" | "down";

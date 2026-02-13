@@ -9,6 +9,7 @@ import type {
   KPIsResponse,
   PurgeSyntheticResponse,
   StatsAlertsResponse,
+  TagsBreakdownResponse,
   SourcesBreakdownResponse,
   SourcesHealthResponse,
   TimeWindow,
@@ -131,6 +132,12 @@ export async function fetchJurisdictionsBreakdown(time_window: TimeWindow = "7d"
 export async function fetchEntitiesBreakdown(time_window: TimeWindow = "7d"): Promise<EntitiesBreakdownResponse> {
   const res = await fetch(`${API_BASE}/stats/entities?time_window=${time_window}&limit=12`, { cache: "no-store" });
   if (!res.ok) throw new Error("Failed to fetch entities breakdown");
+  return res.json();
+}
+
+export async function fetchTagsBreakdown(time_window: TimeWindow = "7d"): Promise<TagsBreakdownResponse> {
+  const res = await fetch(`${API_BASE}/stats/tags?time_window=${time_window}&limit=14`, { cache: "no-store" });
+  if (!res.ok) throw new Error("Failed to fetch tags breakdown");
   return res.json();
 }
 

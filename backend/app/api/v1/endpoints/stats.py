@@ -10,6 +10,7 @@ from backend.app.services.stats import (
     fetch_jurisdictions_breakdown,
     fetch_kpis,
     fetch_sources_breakdown,
+    fetch_tags_breakdown,
     fetch_weekly_timeseries,
 )
 
@@ -56,6 +57,15 @@ async def get_entities_breakdown(
     db: AsyncSession = Depends(get_db),
 ) -> dict[str, object]:
     return await fetch_entities_breakdown(db, time_window=time_window, limit=limit)
+
+
+@router.get("/tags")
+async def get_tags_breakdown(
+    time_window: str = Query("7d", pattern="^(1h|24h|7d|30d)$"),
+    limit: int = Query(14, ge=1, le=30),
+    db: AsyncSession = Depends(get_db),
+) -> dict[str, object]:
+    return await fetch_tags_breakdown(db, time_window=time_window, limit=limit)
 
 
 @router.get("/alerts", response_model=StatsAlertsResponse)

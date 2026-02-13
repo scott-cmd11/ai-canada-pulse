@@ -44,6 +44,7 @@
     "alerts": "Alertes",
     "jurisdictions": "Juridictions",
     "entities": "Entites",
+    "tags": "Etiquettes",
     "hourly": "Horaire",
     "weekly": "Hebdomadaire"
   },
@@ -126,7 +127,8 @@
     "candidatesTotal": "Candidats",
     "skippedLockCount": "Sauts verrou",
     "jurisdictions": "Principales juridictions",
-    "entities": "Principales entites"
+    "entities": "Principales entites",
+    "tags": "Principales etiquettes"
   },
   "alerts": {
     "title": "Alertes de signal",

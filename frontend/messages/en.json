@@ -44,6 +44,7 @@
     "alerts": "Alerts",
     "jurisdictions": "Jurisdictions",
     "entities": "Entities",
+    "tags": "Tags",
     "hourly": "Hourly",
     "weekly": "Weekly"
   },
@@ -127,7 +128,8 @@
     "candidatesTotal": "Candidates",
     "skippedLockCount": "Lock Skips",
     "jurisdictions": "Top Jurisdictions",
-    "entities": "Top Entities"
+    "entities": "Top Entities",
+    "tags": "Top Tags"
   },
   "alerts": {
     "title": "Signal Alerts",

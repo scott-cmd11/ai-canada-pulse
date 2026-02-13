@@ -9,6 +9,7 @@ import { BarChart3, Globe2, Landmark, Moon, Search, Sun } from "lucide-react";
 import {
   fetchAlerts,
   fetchEntitiesBreakdown,
+  fetchTagsBreakdown,
   executeSyntheticPurge,
   exportUrl,
   fetchBackfillStatus,
@@ -34,6 +35,7 @@ import type {
   SourceHealthEntry,
   SourcesBreakdownResponse,
   TimeWindow,
+  TagsBreakdownResponse,
 } from "../lib/types";
 import type { JurisdictionsBreakdownResponse } from "../lib/types";
 import { useMode } from "./mode-provider";
@@ -116,6 +118,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
   const [sourcesBreakdown, setSourcesBreakdown] = useState<SourcesBreakdownResponse | null>(null);
   const [jurisdictionsBreakdown, setJurisdictionsBreakdown] = useState<JurisdictionsBreakdownResponse | null>(null);
   const [entitiesBreakdown, setEntitiesBreakdown] = useState<EntitiesBreakdownResponse | null>(null);
+  const [tagsBreakdown, setTagsBreakdown] = useState<TagsBreakdownResponse | null>(null);
   const [alerts, setAlerts] = useState<StatsAlertItem[]>([]);
   const [sseStatus, setSseStatus] = useState<"connecting" | "live" | "error">("connecting");
   const [lastLiveAt, setLastLiveAt] = useState("");
@@ -128,6 +131,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
     alerts: true,
     jurisdictions: true,
     entities: true,
+    tags: true,
     hourly: true,
     weekly: true,
   });
@@ -196,12 +200,13 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
 
     const poll = async () => {
       try {
-        const [status, sources, breakdown, jurisdictions, entities, alertsResponse] = await Promise.all([
+        const [status, sources, breakdown, jurisdictions, entities, tags, alertsResponse] = await Promise.all([
           fetchBackfillStatus(),
           fetchSourcesHealth(),
           fetchSourcesBreakdown(timeWindow),
           fetchJurisdictionsBreakdown(timeWindow),
           fetchEntitiesBreakdown(timeWindow),
+          fetchTagsBreakdown(timeWindow),
           fetchAlerts(timeWindow),
         ]);
         if (!mounted) return;
@@ -216,6 +221,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
         setSourcesBreakdown(breakdown);
         setJurisdictionsBreakdown(jurisdictions);
         setEntitiesBreakdown(entities);
+        setTagsBreakdown(tags);
         setAlerts(alertsResponse.alerts ?? []);
       } catch {
         if (!mounted) return;
@@ -959,6 +965,25 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
                       <span className="truncate pr-2">{item.name}</span>
                       <span>{item.count}</span>
                     </div>
+                  ))}
+                </div>
+              </section>
+            )}
+            {mode === "research" && panelVisibility.tags && (
+              <section className="rounded-lg border border-borderSoft bg-surface p-3">
+                <h3 className="mb-2 text-sm font-semibold text-textSecondary">{t("sources.tags")}</h3>
+                <div className="flex flex-wrap gap-2 text-xs">
+                  {(tagsBreakdown?.tags ?? []).slice(0, 14).map((item) => (
+                    <button
+                      key={item.name}
+                      onClick={() => {
+                        setSearch(item.name);
+                        setMode("research");
+                      }}
+                      className="rounded border border-borderSoft px-2 py-1"
+                    >
+                      {item.name} ({item.count})
+                    </button>
                   ))}
                 </div>
               </section>
