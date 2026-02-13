@@ -258,6 +258,7 @@
   "coverage": {
     "title": "Coverage Matrix",
     "total": "Total",
+    "clickHint": "Click a row to apply a filter.",
     "categories": "Categories",
     "sourceTypes": "Source Types",
     "languages": "Languages",

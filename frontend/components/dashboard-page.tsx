@@ -717,6 +717,19 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
     return "var(--research)";
   }
 
+  function applyCoverageFilter(groupKey: string, value: string) {
+    if (groupKey === "categories") {
+      setCategory(value);
+    } else if (groupKey === "jurisdictions") {
+      setJurisdiction(value);
+    } else if (groupKey === "languages") {
+      setLanguage(value);
+    } else if (groupKey === "source_types") {
+      setSearch(value);
+    }
+    setMode("research");
+  }
+
   const hourlyOption = useMemo(
     () => ({
       tooltip: {
@@ -1799,6 +1812,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
                 <p className="mb-2 text-xs text-textMuted">
                   {t("coverage.total")}: {coverage?.total ?? 0}
                 </p>
+                <p className="mb-2 text-xs text-textMuted">{t("coverage.clickHint")}</p>
                 <div className="grid grid-cols-2 gap-2 text-xs">
                   {coverageGroups.map((group) => (
                     <div key={group.key} className="rounded border border-borderSoft p-2">
@@ -1806,12 +1820,16 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
                       <div className="space-y-1">
                         {group.rows.length === 0 && <p className="text-textMuted">-</p>}
                         {group.rows.slice(0, 5).map((item) => (
-                          <div key={`${group.key}-${item.name}`} className="flex items-center justify-between gap-2">
+                          <button
+                            key={`${group.key}-${item.name}`}
+                            onClick={() => applyCoverageFilter(group.key, item.name)}
+                            className="flex w-full items-center justify-between gap-2 rounded border border-transparent px-1 py-0.5 text-left hover:border-borderSoft hover:bg-bg"
+                          >
                             <span className="truncate pr-2">{item.name}</span>
                             <span className="whitespace-nowrap">
                               {item.count} ({item.percent.toFixed(1)}%)
                             </span>
-                          </div>
+                          </button>
                         ))}
                       </div>
                     </div>

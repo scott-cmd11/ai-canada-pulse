@@ -257,6 +257,7 @@
   "coverage": {
     "title": "Matrice de couverture",
     "total": "Total",
+    "clickHint": "Cliquer une ligne pour appliquer un filtre.",
     "categories": "Categories",
     "sourceTypes": "Types de source",
     "languages": "Langues",
