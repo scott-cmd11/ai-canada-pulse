@@ -741,6 +741,19 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
     }
   }
 
+  function downloadMorningBrief() {
+    const blob = new Blob([morningBriefMarkdown], { type: "text/markdown;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement("a");
+    const prefix = scope === "canada" ? "canada" : "world";
+    anchor.href = url;
+    anchor.download = `${prefix}-ai-pulse-brief-${new Date().toISOString().slice(0, 10)}.md`;
+    document.body.appendChild(anchor);
+    anchor.click();
+    anchor.remove();
+    URL.revokeObjectURL(url);
+  }
+
   return (
     <div className="min-h-screen bg-bg text-text">
       <header className="border-b border-borderSoft bg-surface">
@@ -934,13 +947,18 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
         <section className="rounded-lg border border-borderSoft bg-surface p-4">
           <div className="mb-2 flex items-center justify-between">
             <h3 className="text-sm font-semibold text-textSecondary">{t("briefing.title")}</h3>
-            <button onClick={copyMorningBrief} className="rounded border border-borderSoft px-2 py-1 text-xs">
-              {briefCopyState === "copied"
-                ? t("briefing.copied")
-                : briefCopyState === "failed"
-                  ? t("briefing.copyFailed")
-                  : t("briefing.copy")}
-            </button>
+            <div className="flex items-center gap-2">
+              <button onClick={downloadMorningBrief} className="rounded border border-borderSoft px-2 py-1 text-xs">
+                {t("briefing.download")}
+              </button>
+              <button onClick={copyMorningBrief} className="rounded border border-borderSoft px-2 py-1 text-xs">
+                {briefCopyState === "copied"
+                  ? t("briefing.copied")
+                  : briefCopyState === "failed"
+                    ? t("briefing.copyFailed")
+                    : t("briefing.copy")}
+              </button>
+            </div>
           </div>
           <pre className="overflow-x-auto rounded border border-borderSoft bg-bg p-3 text-xs text-textSecondary">
             {morningBriefMarkdown}

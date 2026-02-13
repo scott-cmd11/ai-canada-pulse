@@ -117,6 +117,7 @@
   },
   "briefing": {
     "title": "Morning Brief (Share-Ready)",
+    "download": "Download .md",
     "copy": "Copy Markdown",
     "copied": "Copied",
     "copyFailed": "Copy failed"

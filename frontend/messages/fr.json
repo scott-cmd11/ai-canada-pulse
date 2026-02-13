@@ -117,6 +117,7 @@
   },
   "briefing": {
     "title": "Brief du matin (pret a partager)",
+    "download": "Telecharger .md",
     "copy": "Copier Markdown",
     "copied": "Copie",
     "copyFailed": "Echec copie"
