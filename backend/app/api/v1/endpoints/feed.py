@@ -1,10 +1,12 @@
 import asyncio
+import csv
 import json
+from io import StringIO
 from collections.abc import AsyncGenerator
 
 import redis.asyncio as redis
 from fastapi import APIRouter, Depends, Query
-from fastapi.responses import StreamingResponse
+from fastapi.responses import JSONResponse, StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.app.core.config import settings
@@ -78,4 +80,63 @@ async def stream_feed() -> StreamingResponse:
             "Connection": "keep-alive",
             "X-Accel-Buffering": "no",
         },
+    )
+
+
+@router.get("/export")
+async def export_feed(
+    fmt: str = Query("csv", pattern="^(csv|json)$"),
+    time_window: str = Query("24h", pattern="^(1h|24h|7d|30d)$"),
+    category: str | None = Query(default=None),
+    jurisdiction: str | None = Query(default=None),
+    language: str | None = Query(default=None),
+    search: str | None = Query(default=None),
+    db: AsyncSession = Depends(get_db),
+):
+    rows, _ = await fetch_feed(
+        db,
+        time_window=time_window,
+        category=category,
+        jurisdiction=jurisdiction,
+        language=language,
+        search=search,
+        page=1,
+        page_size=5000,
+    )
+    items = [FeedItem.model_validate(row, from_attributes=True).model_dump(mode="json") for row in rows]
+
+    if fmt == "json":
+        return JSONResponse(content={"items": items, "count": len(items)})
+
+    buffer = StringIO()
+    writer = csv.DictWriter(
+        buffer,
+        fieldnames=[
+            "id",
+            "source_id",
+            "source_type",
+            "category",
+            "title",
+            "url",
+            "publisher",
+            "published_at",
+            "ingested_at",
+            "language",
+            "jurisdiction",
+            "entities",
+            "tags",
+            "hash",
+            "confidence",
+        ],
+    )
+    writer.writeheader()
+    for item in items:
+        item["entities"] = "|".join(item.get("entities", []))
+        item["tags"] = "|".join(item.get("tags", []))
+        writer.writerow(item)
+
+    return StreamingResponse(
+        iter([buffer.getvalue()]),
+        media_type="text/csv",
+        headers={"Content-Disposition": 'attachment; filename="ai-developments-export.csv"'},
     )

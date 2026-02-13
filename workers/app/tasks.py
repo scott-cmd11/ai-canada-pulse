@@ -9,9 +9,11 @@ import redis.asyncio as redis
 from celery import shared_task
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
+from sqlalchemy import text
 
 from backend.app.core.config import settings
 from backend.app.models.ai_development import AIDevelopment, CategoryType, SourceType
+from workers.app.source_adapters import fetch_canada_gov_metadata, fetch_openalex_metadata
 
 PUBLISHERS = [
     ("OpenAlex", SourceType.academic, CategoryType.research, "Global"),
@@ -90,16 +92,33 @@ def _generate_item() -> dict[str, object]:
     }
 
 
+async def _load_candidate_items() -> list[dict[str, object]]:
+    items: list[dict[str, object]] = []
+    try:
+        items.extend(await fetch_openalex_metadata(limit=3))
+    except Exception:
+        pass
+
+    try:
+        items.extend(await fetch_canada_gov_metadata(limit=3))
+    except Exception:
+        pass
+
+    if not items:
+        items = [_generate_item() for _ in range(random.randint(1, 3))]
+
+    return items
+
+
 async def _insert_and_publish() -> int:
     inserted = 0
-    count = random.randint(1, 3)
     client = redis.from_url(settings.redis_url, decode_responses=True)
     engine = create_async_engine(settings.database_url, future=True, pool_pre_ping=True)
     SessionLocal = async_sessionmaker(engine, expire_on_commit=False)
+    candidates = await _load_candidate_items()
 
     async with SessionLocal() as session:
-        for _ in range(count):
-            record_data = _generate_item()
+        for record_data in candidates:
             model = AIDevelopment(**record_data)
             session.add(model)
             try:
@@ -127,6 +146,13 @@ async def _insert_and_publish() -> int:
                 "confidence": model.confidence,
             }
             await client.publish(settings.sse_channel, json.dumps(payload))
+
+        try:
+            await session.execute(text("REFRESH MATERIALIZED VIEW hourly_stats;"))
+            await session.execute(text("REFRESH MATERIALIZED VIEW weekly_stats;"))
+            await session.commit()
+        except Exception:
+            await session.rollback()
 
     await engine.dispose()
     await client.close()

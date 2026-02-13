@@ -6,7 +6,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useMemo, useState } from "react";
 import { BarChart3, Globe2, Landmark, Moon, Search, Sun } from "lucide-react";
 
-import { fetchFeed, fetchHourly, fetchKpis, fetchWeekly, sseUrl } from "../lib/api";
+import { exportUrl, fetchFeed, fetchHourly, fetchKpis, fetchWeekly, sseUrl } from "../lib/api";
 import type { EChartsResponse, FeedItem, KPIsResponse, TimeWindow } from "../lib/types";
 import { useMode } from "./mode-provider";
 import { useTheme } from "./theme-provider";
@@ -25,33 +25,6 @@ const categoryColor: Record<string, string> = {
 function Delta({ value }: { value: number }) {
   const positive = value >= 0;
   return <span style={{ color: positive ? "var(--research)" : "var(--incidents)" }}>{positive ? "+" : ""}{value.toFixed(1)}%</span>;
-}
-
-function exportCsv(items: FeedItem[]) {
-  const header = ["title", "url", "publisher", "published_at", "category", "jurisdiction", "language", "confidence"];
-  const rows = items.map((item) =>
-    [item.title, item.url, item.publisher, item.published_at, item.category, item.jurisdiction, item.language, String(item.confidence)]
-      .map((cell) => `"${String(cell).replaceAll('"', '""')}"`)
-      .join(",")
-  );
-  const content = [header.join(","), ...rows].join("\n");
-  const blob = new Blob([content], { type: "text/csv;charset=utf-8;" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = "ai-developments.csv";
-  a.click();
-  URL.revokeObjectURL(url);
-}
-
-function exportJson(items: FeedItem[]) {
-  const blob = new Blob([JSON.stringify(items, null, 2)], { type: "application/json" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = "ai-developments.json";
-  a.click();
-  URL.revokeObjectURL(url);
 }
 
 export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
@@ -278,8 +251,36 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
               <h3 className="text-lg font-semibold">{t("feed.live")}</h3>
               {mode === "research" && (
                 <div className="flex gap-2">
-                  <button onClick={() => exportCsv(feed)} className="rounded border border-borderSoft px-3 py-2 text-sm">{t("feed.exportCsv")}</button>
-                  <button onClick={() => exportJson(feed)} className="rounded border border-borderSoft px-3 py-2 text-sm">{t("feed.exportJson")}</button>
+                  <a
+                    href={exportUrl(
+                      {
+                        time_window: timeWindow,
+                        category: category || undefined,
+                        jurisdiction: jurisdiction || undefined,
+                        language: language || undefined,
+                        search: search || undefined,
+                      },
+                      "csv"
+                    )}
+                    className="rounded border border-borderSoft px-3 py-2 text-sm"
+                  >
+                    {t("feed.exportCsv")}
+                  </a>
+                  <a
+                    href={exportUrl(
+                      {
+                        time_window: timeWindow,
+                        category: category || undefined,
+                        jurisdiction: jurisdiction || undefined,
+                        language: language || undefined,
+                        search: search || undefined,
+                      },
+                      "json"
+                    )}
+                    className="rounded border border-borderSoft px-3 py-2 text-sm"
+                  >
+                    {t("feed.exportJson")}
+                  </a>
                 </div>
               )}
             </div>

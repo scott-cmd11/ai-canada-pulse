@@ -12,7 +12,7 @@ export interface FeedParams {
   page_size?: number;
 }
 
-function qs(params: FeedParams): string {
+function qsGeneric(params: Record<string, string | number | undefined>): string {
   const search = new URLSearchParams();
   Object.entries(params).forEach(([key, value]) => {
     if (value !== undefined && value !== "") {
@@ -22,8 +22,20 @@ function qs(params: FeedParams): string {
   return search.toString();
 }
 
+function qsFeed(params: FeedParams): string {
+  return qsGeneric({
+    time_window: params.time_window,
+    category: params.category,
+    jurisdiction: params.jurisdiction,
+    language: params.language,
+    search: params.search,
+    page: params.page,
+    page_size: params.page_size,
+  });
+}
+
 export async function fetchFeed(params: FeedParams): Promise<FeedResponse> {
-  const query = qs(params);
+  const query = qsFeed(params);
   const res = await fetch(`${API_BASE}/feed?${query}`, { cache: "no-store" });
   if (!res.ok) throw new Error("Failed to fetch feed");
   return res.json();
@@ -49,4 +61,9 @@ export async function fetchWeekly(): Promise<EChartsResponse> {
 
 export function sseUrl(): string {
   return `${API_BASE}/feed/stream`;
+}
+
+export function exportUrl(params: FeedParams, fmt: "csv" | "json"): string {
+  const query = qsGeneric({ ...params, fmt });
+  return `${API_BASE}/feed/export?${query}`;
 }

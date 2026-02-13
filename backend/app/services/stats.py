@@ -1,7 +1,7 @@
 from collections import defaultdict
 from datetime import UTC, datetime, timedelta
 
-from sqlalchemy import and_, func, select
+from sqlalchemy import and_, func, select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.app.models.ai_development import AIDevelopment, CategoryType
@@ -47,14 +47,29 @@ async def fetch_kpis(db: AsyncSession) -> KPIsResponse:
 async def fetch_hourly_timeseries(db: AsyncSession) -> EChartsTimeseriesResponse:
     now = datetime.now(UTC)
     since = now - timedelta(hours=24)
-    hour_bucket = func.date_trunc("hour", AIDevelopment.published_at)
-    stmt = (
-        select(hour_bucket.label("bucket"), AIDevelopment.category, func.count(AIDevelopment.id))
-        .where(AIDevelopment.published_at >= since)
-        .group_by("bucket", AIDevelopment.category)
-        .order_by("bucket")
-    )
-    rows = (await db.execute(stmt)).all()
+    try:
+        await db.execute(text("REFRESH MATERIALIZED VIEW hourly_stats;"))
+        rows = (
+            await db.execute(
+                text(
+                    """
+                    SELECT bucket, category, SUM(item_count) AS item_count
+                    FROM hourly_stats
+                    GROUP BY bucket, category
+                    ORDER BY bucket
+                    """
+                )
+            )
+        ).all()
+    except Exception:
+        hour_bucket = func.date_trunc("hour", AIDevelopment.published_at)
+        stmt = (
+            select(hour_bucket.label("bucket"), AIDevelopment.category, func.count(AIDevelopment.id))
+            .where(AIDevelopment.published_at >= since)
+            .group_by("bucket", AIDevelopment.category)
+            .order_by("bucket")
+        )
+        rows = (await db.execute(stmt)).all()
 
     buckets = [since.replace(minute=0, second=0, microsecond=0) + timedelta(hours=i) for i in range(24)]
     labels = [bucket.strftime("%H:%M") for bucket in buckets]
@@ -63,7 +78,7 @@ async def fetch_hourly_timeseries(db: AsyncSession) -> EChartsTimeseriesResponse
 
     for bucket, category, count in rows:
         label = bucket.astimezone(UTC).strftime("%H:%M")
-        matrix[category][label] = int(count)
+        matrix[str(category)][label] = int(count)
 
     series = [
         EChartsSeries(
@@ -83,14 +98,28 @@ async def fetch_hourly_timeseries(db: AsyncSession) -> EChartsTimeseriesResponse
 async def fetch_weekly_timeseries(db: AsyncSession) -> EChartsTimeseriesResponse:
     now = datetime.now(UTC)
     since = now - timedelta(weeks=12)
-    week_bucket = func.date_trunc("week", AIDevelopment.published_at)
-    stmt = (
-        select(week_bucket.label("bucket"), AIDevelopment.category, func.count(AIDevelopment.id))
-        .where(AIDevelopment.published_at >= since)
-        .group_by("bucket", AIDevelopment.category)
-        .order_by("bucket")
-    )
-    rows = (await db.execute(stmt)).all()
+    try:
+        await db.execute(text("REFRESH MATERIALIZED VIEW weekly_stats;"))
+        rows = (
+            await db.execute(
+                text(
+                    """
+                    SELECT bucket, category, item_count
+                    FROM weekly_stats
+                    ORDER BY bucket
+                    """
+                )
+            )
+        ).all()
+    except Exception:
+        week_bucket = func.date_trunc("week", AIDevelopment.published_at)
+        stmt = (
+            select(week_bucket.label("bucket"), AIDevelopment.category, func.count(AIDevelopment.id))
+            .where(AIDevelopment.published_at >= since)
+            .group_by("bucket", AIDevelopment.category)
+            .order_by("bucket")
+        )
+        rows = (await db.execute(stmt)).all()
 
     start_week = since - timedelta(days=since.weekday())
     buckets = [start_week.replace(hour=0, minute=0, second=0, microsecond=0) + timedelta(weeks=i) for i in range(12)]
@@ -100,7 +129,7 @@ async def fetch_weekly_timeseries(db: AsyncSession) -> EChartsTimeseriesResponse
 
     for bucket, category, count in rows:
         label = bucket.astimezone(UTC).strftime("%Y-%m-%d")
-        matrix[category][label] = int(count)
+        matrix[str(category)][label] = int(count)
 
     series = [
         EChartsSeries(
