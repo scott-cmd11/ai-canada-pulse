@@ -112,6 +112,7 @@
     "close": "Fermer",
     "refresh": "Actualiser",
     "refreshing": "Actualisation...",
+    "refreshFailed": "Echec actualisation. Nouvelle tentative possible.",
     "lastRefresh": "Derniere actualisation",
     "autoRefresh": "Auto",
     "autoOff": "Arret",

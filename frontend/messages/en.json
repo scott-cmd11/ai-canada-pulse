@@ -112,6 +112,7 @@
     "close": "Close",
     "refresh": "Refresh",
     "refreshing": "Refreshing...",
+    "refreshFailed": "Refresh failed. Retrying is available.",
     "lastRefresh": "Last refresh",
     "autoRefresh": "Auto",
     "autoOff": "Off",

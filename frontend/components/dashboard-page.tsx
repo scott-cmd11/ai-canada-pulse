@@ -3,7 +3,7 @@
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { BarChart3, Globe2, Landmark, Moon, Search, Sun } from "lucide-react";
 
 import {
@@ -205,12 +205,14 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
   const [nowTs, setNowTs] = useState(Date.now());
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [lastRefreshAt, setLastRefreshAt] = useState("");
+  const [refreshError, setRefreshError] = useState("");
   const [autoRefreshSec, setAutoRefreshSec] = useState<0 | 15 | 30 | 60>(30);
   const [density, setDensity] = useState<"comfortable" | "compact">("comfortable");
   const [feedSort, setFeedSort] = useState<"newest" | "confidence">("newest");
   const [pinnedItems, setPinnedItems] = useState<FeedItem[]>([]);
   const [savedBriefs, setSavedBriefs] = useState<SavedBrief[]>([]);
   const [dismissedAlertIds, setDismissedAlertIds] = useState<string[]>([]);
+  const refreshInFlight = useRef(false);
   const isInitialLoading = isRefreshing && !kpis && feed.length === 0;
 
   const scenarioPresets: ScenarioPreset[] = useMemo(
@@ -308,7 +310,10 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
   }
 
   async function refreshData() {
+    if (refreshInFlight.current) return;
+    refreshInFlight.current = true;
     setIsRefreshing(true);
+    setRefreshError("");
     try {
       const [feedResponse, kpiResponse, hourlyResponse, weeklyResponse, jurisdictionsResponse, briefResponse, compareResponse, confidenceResponse, concentrationResponse, momentumResponse, riskResponse, entityMomentumResponse, riskTrendResponse, summaryResponse, coverageResponse] = await Promise.all([
         fetchFeed({
@@ -351,8 +356,11 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
       setSummary(summaryResponse);
       setCoverage(coverageResponse);
       setLastRefreshAt(new Date().toISOString());
+    } catch {
+      setRefreshError(t("feed.refreshFailed"));
     } finally {
       setIsRefreshing(false);
+      refreshInFlight.current = false;
     }
   }
 
@@ -1614,6 +1622,11 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
                 </div>
               )}
             </div>
+            {refreshError && (
+              <div className="mb-2 rounded border border-borderSoft bg-surface px-3 py-2 text-xs text-[var(--incidents)]">
+                {refreshError}
+              </div>
+            )}
             <div className={`max-h-[900px] overflow-y-auto pr-1 ${density === "compact" ? "space-y-2" : "space-y-3"}`}>
               {isInitialLoading && (
                 <div className="space-y-3">
