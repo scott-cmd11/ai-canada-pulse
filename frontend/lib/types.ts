@@ -202,3 +202,24 @@ export interface ConfidenceProfileResponse {
   average_confidence: number;
   buckets: ConfidenceBucket[];
 }
+
+export interface ConcentrationPoint {
+  name: string;
+  count: number;
+}
+
+export interface ConcentrationResponse {
+  generated_at: string;
+  time_window: TimeWindow;
+  total: number;
+  source_hhi: number;
+  source_level: "low" | "medium" | "high";
+  jurisdiction_hhi: number;
+  jurisdiction_level: "low" | "medium" | "high";
+  category_hhi: number;
+  category_level: "low" | "medium" | "high";
+  combined_hhi: number;
+  combined_level: "low" | "medium" | "high";
+  top_sources: ConcentrationPoint[];
+  top_jurisdictions: ConcentrationPoint[];
+}

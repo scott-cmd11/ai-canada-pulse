@@ -497,6 +497,86 @@ async def fetch_confidence_profile(db: AsyncSession, *, time_window: str = "7d")
     }
 
 
+def _hhi(values: list[int]) -> float:
+    total = sum(values)
+    if total <= 0:
+        return 0.0
+    return round(sum(((v / total) ** 2) for v in values), 4)
+
+
+def _concentration_label(hhi: float) -> str:
+    if hhi >= 0.4:
+        return "high"
+    if hhi >= 0.2:
+        return "medium"
+    return "low"
+
+
+async def fetch_concentration(db: AsyncSession, *, time_window: str = "7d") -> dict[str, object]:
+    now = datetime.now(UTC)
+    since = now - (
+        {
+            "1h": timedelta(hours=1),
+            "24h": timedelta(hours=24),
+            "7d": timedelta(days=7),
+            "30d": timedelta(days=30),
+        }.get(time_window, timedelta(days=7))
+    )
+    total_stmt = select(func.count(AIDevelopment.id)).where(AIDevelopment.published_at >= since)
+    total = int((await db.execute(total_stmt)).scalar_one())
+
+    sources_rows = (
+        await db.execute(
+            select(AIDevelopment.publisher, func.count(AIDevelopment.id).label("count"))
+            .where(AIDevelopment.published_at >= since)
+            .group_by(AIDevelopment.publisher)
+            .order_by(text("count DESC"))
+            .limit(8)
+        )
+    ).all()
+    jurisdictions_rows = (
+        await db.execute(
+            select(AIDevelopment.jurisdiction, func.count(AIDevelopment.id).label("count"))
+            .where(AIDevelopment.published_at >= since)
+            .group_by(AIDevelopment.jurisdiction)
+            .order_by(text("count DESC"))
+            .limit(8)
+        )
+    ).all()
+    categories_rows = (
+        await db.execute(
+            select(AIDevelopment.category, func.count(AIDevelopment.id).label("count"))
+            .where(AIDevelopment.published_at >= since)
+            .group_by(AIDevelopment.category)
+            .order_by(text("count DESC"))
+        )
+    ).all()
+
+    source_values = [int(row[1]) for row in sources_rows]
+    jurisdiction_values = [int(row[1]) for row in jurisdictions_rows]
+    category_values = [int(row[1]) for row in categories_rows]
+    source_hhi = _hhi(source_values)
+    jurisdiction_hhi = _hhi(jurisdiction_values)
+    category_hhi = _hhi(category_values)
+    combined = round((source_hhi + jurisdiction_hhi + category_hhi) / 3.0, 4)
+
+    return {
+        "generated_at": now.isoformat(),
+        "time_window": time_window,
+        "total": total,
+        "source_hhi": source_hhi,
+        "source_level": _concentration_label(source_hhi),
+        "jurisdiction_hhi": jurisdiction_hhi,
+        "jurisdiction_level": _concentration_label(jurisdiction_hhi),
+        "category_hhi": category_hhi,
+        "category_level": _concentration_label(category_hhi),
+        "combined_hhi": combined,
+        "combined_level": _concentration_label(combined),
+        "top_sources": [{"name": str(name), "count": int(count)} for name, count in sources_rows[:3]],
+        "top_jurisdictions": [{"name": str(name), "count": int(count)} for name, count in jurisdictions_rows[:3]],
+    }
+
+
 async def fetch_alerts(
     db: AsyncSession,
     *,

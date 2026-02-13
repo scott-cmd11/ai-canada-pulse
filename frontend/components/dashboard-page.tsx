@@ -15,6 +15,7 @@ import {
   fetchBackfillStatus,
   fetchBrief,
   fetchCompare,
+  fetchConcentration,
   fetchConfidence,
   fetchFeed,
   fetchHourly,
@@ -36,6 +37,7 @@ import type {
   StatsBriefResponse,
   ScopeCompareResponse,
   ConfidenceProfileResponse,
+  ConcentrationResponse,
   KPIsResponse,
   PurgeSyntheticResponse,
   SourceHealthEntry,
@@ -129,6 +131,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
   const [brief, setBrief] = useState<StatsBriefResponse | null>(null);
   const [compare, setCompare] = useState<ScopeCompareResponse | null>(null);
   const [confidenceProfile, setConfidenceProfile] = useState<ConfidenceProfileResponse | null>(null);
+  const [concentration, setConcentration] = useState<ConcentrationResponse | null>(null);
   const [sseStatus, setSseStatus] = useState<"connecting" | "live" | "error">("connecting");
   const [lastLiveAt, setLastLiveAt] = useState("");
   const [presets, setPresets] = useState<FilterPreset[]>([]);
@@ -152,7 +155,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
   const pagePath = scope === "canada" ? "canada" : "world";
 
   async function refreshData() {
-    const [feedResponse, kpiResponse, hourlyResponse, weeklyResponse, jurisdictionsResponse, briefResponse, compareResponse, confidenceResponse] = await Promise.all([
+    const [feedResponse, kpiResponse, hourlyResponse, weeklyResponse, jurisdictionsResponse, briefResponse, compareResponse, confidenceResponse, concentrationResponse] = await Promise.all([
       fetchFeed({
         time_window: timeWindow,
         category: category || undefined,
@@ -169,6 +172,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
       fetchBrief(timeWindow),
       fetchCompare(timeWindow),
       fetchConfidence(timeWindow),
+      fetchConcentration(timeWindow),
     ]);
     setFeed(feedResponse.items);
     setKpis(kpiResponse);
@@ -178,6 +182,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
     setBrief(briefResponse);
     setCompare(compareResponse);
     setConfidenceProfile(confidenceResponse);
+    setConcentration(concentrationResponse);
   }
 
   useEffect(() => {
@@ -379,6 +384,12 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
     medium: "var(--warning)",
     low: "var(--incidents)",
   };
+
+  function concentrationTone(level: string): string {
+    if (level === "high") return "var(--incidents)";
+    if (level === "medium") return "var(--warning)";
+    return "var(--research)";
+  }
 
   const hourlyOption = useMemo(
     () => ({
@@ -758,6 +769,47 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
                 <span>{t("compare.globalShort")}: {item.global}</span>
               </div>
             ))}
+          </div>
+        </section>
+        <section className="rounded-lg border border-borderSoft bg-surface p-4">
+          <h3 className="mb-2 text-sm font-semibold text-textSecondary">{t("concentration.title")}</h3>
+          <div className="grid grid-cols-1 gap-2 text-xs md:grid-cols-4">
+            <div className="rounded border border-borderSoft bg-bg p-2">
+              <p className="text-textMuted">{t("concentration.combined")}</p>
+              <p className="mt-1 font-semibold">
+                {concentration?.combined_hhi?.toFixed(3) ?? "0.000"}{" "}
+                <span style={{ color: concentrationTone(concentration?.combined_level ?? "low") }}>
+                  {t(`concentration.${concentration?.combined_level ?? "low"}`)}
+                </span>
+              </p>
+            </div>
+            <div className="rounded border border-borderSoft bg-bg p-2">
+              <p className="text-textMuted">{t("concentration.source")}</p>
+              <p className="mt-1 font-semibold">
+                {concentration?.source_hhi?.toFixed(3) ?? "0.000"}{" "}
+                <span style={{ color: concentrationTone(concentration?.source_level ?? "low") }}>
+                  {t(`concentration.${concentration?.source_level ?? "low"}`)}
+                </span>
+              </p>
+            </div>
+            <div className="rounded border border-borderSoft bg-bg p-2">
+              <p className="text-textMuted">{t("concentration.jurisdiction")}</p>
+              <p className="mt-1 font-semibold">
+                {concentration?.jurisdiction_hhi?.toFixed(3) ?? "0.000"}{" "}
+                <span style={{ color: concentrationTone(concentration?.jurisdiction_level ?? "low") }}>
+                  {t(`concentration.${concentration?.jurisdiction_level ?? "low"}`)}
+                </span>
+              </p>
+            </div>
+            <div className="rounded border border-borderSoft bg-bg p-2">
+              <p className="text-textMuted">{t("concentration.category")}</p>
+              <p className="mt-1 font-semibold">
+                {concentration?.category_hhi?.toFixed(3) ?? "0.000"}{" "}
+                <span style={{ color: concentrationTone(concentration?.category_level ?? "low") }}>
+                  {t(`concentration.${concentration?.category_level ?? "low"}`)}
+                </span>
+              </p>
+            </div>
           </div>
         </section>
         <section className="rounded-lg border border-borderSoft bg-surface p-4">

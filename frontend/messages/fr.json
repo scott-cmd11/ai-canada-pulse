@@ -106,6 +106,16 @@
     "canadaShort": "CA",
     "globalShort": "MO"
   },
+  "concentration": {
+    "title": "Concentration ecosysteme",
+    "combined": "HHI combine",
+    "source": "HHI source",
+    "jurisdiction": "HHI juridiction",
+    "category": "HHI categorie",
+    "low": "Faible",
+    "medium": "Moyenne",
+    "high": "Elevee"
+  },
   "backfill": {
     "title": "Backfill Historique",
     "startDate": "Date de debut",

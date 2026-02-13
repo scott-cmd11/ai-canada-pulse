@@ -12,6 +12,7 @@ import type {
   StatsBriefResponse,
   ScopeCompareResponse,
   ConfidenceProfileResponse,
+  ConcentrationResponse,
   TagsBreakdownResponse,
   SourcesBreakdownResponse,
   SourcesHealthResponse,
@@ -168,5 +169,11 @@ export async function fetchCompare(time_window: TimeWindow = "7d"): Promise<Scop
 export async function fetchConfidence(time_window: TimeWindow = "7d"): Promise<ConfidenceProfileResponse> {
   const res = await fetch(`${API_BASE}/stats/confidence?time_window=${time_window}`, { cache: "no-store" });
   if (!res.ok) throw new Error("Failed to fetch confidence profile");
+  return res.json();
+}
+
+export async function fetchConcentration(time_window: TimeWindow = "7d"): Promise<ConcentrationResponse> {
+  const res = await fetch(`${API_BASE}/stats/concentration?time_window=${time_window}`, { cache: "no-store" });
+  if (!res.ok) throw new Error("Failed to fetch concentration");
   return res.json();
 }
