@@ -303,6 +303,84 @@ async def fetch_tags_breakdown(db: AsyncSession, *, time_window: str = "7d", lim
     }
 
 
+async def fetch_brief_snapshot(db: AsyncSession, *, time_window: str = "24h") -> dict[str, object]:
+    now = datetime.now(UTC)
+    since = now - (
+        {
+            "1h": timedelta(hours=1),
+            "24h": timedelta(hours=24),
+            "7d": timedelta(days=7),
+            "30d": timedelta(days=30),
+        }.get(time_window, timedelta(hours=24))
+    )
+
+    total_stmt = select(func.count(AIDevelopment.id)).where(AIDevelopment.published_at >= since)
+    total = int((await db.execute(total_stmt)).scalar_one())
+
+    top_category_stmt = (
+        select(AIDevelopment.category, func.count(AIDevelopment.id).label("count"))
+        .where(AIDevelopment.published_at >= since)
+        .group_by(AIDevelopment.category)
+        .order_by(text("count DESC"))
+        .limit(1)
+    )
+    top_jurisdiction_stmt = (
+        select(AIDevelopment.jurisdiction, func.count(AIDevelopment.id).label("count"))
+        .where(AIDevelopment.published_at >= since)
+        .group_by(AIDevelopment.jurisdiction)
+        .order_by(text("count DESC"))
+        .limit(1)
+    )
+    top_publisher_stmt = (
+        select(AIDevelopment.publisher, func.count(AIDevelopment.id).label("count"))
+        .where(AIDevelopment.published_at >= since)
+        .group_by(AIDevelopment.publisher)
+        .order_by(text("count DESC"))
+        .limit(1)
+    )
+    top_tag_stmt = text(
+        """
+        SELECT tag_name AS name, COUNT(*)::int AS count
+        FROM ai_developments,
+        LATERAL unnest(COALESCE(tags, ARRAY[]::text[])) AS tag_name
+        WHERE published_at >= :since
+          AND tag_name <> ''
+        GROUP BY tag_name
+        ORDER BY count DESC
+        LIMIT 1
+        """
+    )
+
+    category_row = (await db.execute(top_category_stmt)).first()
+    jurisdiction_row = (await db.execute(top_jurisdiction_stmt)).first()
+    publisher_row = (await db.execute(top_publisher_stmt)).first()
+    tag_row = (await db.execute(top_tag_stmt, {"since": since})).first()
+    alerts = await fetch_alerts(db, time_window=time_window, min_baseline=3, min_delta_percent=35.0)
+
+    return {
+        "generated_at": now.isoformat(),
+        "time_window": time_window,
+        "total_items": total,
+        "high_alert_count": len([a for a in alerts.alerts if a.severity == "high"]),
+        "top_category": {
+            "name": _enum_name(category_row[0]) if category_row else "",
+            "count": int(category_row[1]) if category_row else 0,
+        },
+        "top_jurisdiction": {
+            "name": str(jurisdiction_row[0]) if jurisdiction_row else "",
+            "count": int(jurisdiction_row[1]) if jurisdiction_row else 0,
+        },
+        "top_publisher": {
+            "name": str(publisher_row[0]) if publisher_row else "",
+            "count": int(publisher_row[1]) if publisher_row else 0,
+        },
+        "top_tag": {
+            "name": str(tag_row[0]) if tag_row else "",
+            "count": int(tag_row[1]) if tag_row else 0,
+        },
+    }
+
+
 async def fetch_alerts(
     db: AsyncSession,
     *,

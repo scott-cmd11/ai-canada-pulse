@@ -156,3 +156,19 @@ export interface StatsAlertsResponse {
   min_delta_percent: number;
   alerts: StatsAlertItem[];
 }
+
+export interface StatsBriefPoint {
+  name: string;
+  count: number;
+}
+
+export interface StatsBriefResponse {
+  generated_at: string;
+  time_window: TimeWindow;
+  total_items: number;
+  high_alert_count: number;
+  top_category: StatsBriefPoint;
+  top_jurisdiction: StatsBriefPoint;
+  top_publisher: StatsBriefPoint;
+  top_tag: StatsBriefPoint;
+}

@@ -13,6 +13,7 @@ import {
   executeSyntheticPurge,
   exportUrl,
   fetchBackfillStatus,
+  fetchBrief,
   fetchFeed,
   fetchHourly,
   fetchJurisdictionsBreakdown,
@@ -30,6 +31,7 @@ import type {
   EntitiesBreakdownResponse,
   FeedItem,
   StatsAlertItem,
+  StatsBriefResponse,
   KPIsResponse,
   PurgeSyntheticResponse,
   SourceHealthEntry,
@@ -120,6 +122,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
   const [entitiesBreakdown, setEntitiesBreakdown] = useState<EntitiesBreakdownResponse | null>(null);
   const [tagsBreakdown, setTagsBreakdown] = useState<TagsBreakdownResponse | null>(null);
   const [alerts, setAlerts] = useState<StatsAlertItem[]>([]);
+  const [brief, setBrief] = useState<StatsBriefResponse | null>(null);
   const [sseStatus, setSseStatus] = useState<"connecting" | "live" | "error">("connecting");
   const [lastLiveAt, setLastLiveAt] = useState("");
   const [presets, setPresets] = useState<FilterPreset[]>([]);
@@ -142,7 +145,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
   const pagePath = scope === "canada" ? "canada" : "world";
 
   async function refreshData() {
-    const [feedResponse, kpiResponse, hourlyResponse, weeklyResponse, jurisdictionsResponse] = await Promise.all([
+    const [feedResponse, kpiResponse, hourlyResponse, weeklyResponse, jurisdictionsResponse, briefResponse] = await Promise.all([
       fetchFeed({
         time_window: timeWindow,
         category: category || undefined,
@@ -156,12 +159,14 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
       fetchHourly(),
       fetchWeekly(),
       fetchJurisdictionsBreakdown(timeWindow),
+      fetchBrief(timeWindow),
     ]);
     setFeed(feedResponse.items);
     setKpis(kpiResponse);
     setHourly(hourlyResponse);
     setWeekly(weeklyResponse);
     setJurisdictionsBreakdown(jurisdictionsResponse);
+    setBrief(briefResponse);
   }
 
   useEffect(() => {
@@ -685,6 +690,31 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
               <li key={line}>{line}</li>
             ))}
           </ul>
+        </section>
+        <section className="rounded-lg border border-borderSoft bg-surface p-4">
+          <h3 className="mb-2 text-sm font-semibold text-textSecondary">{t("brief.title")}</h3>
+          <div className="grid grid-cols-1 gap-2 text-xs text-textSecondary md:grid-cols-5">
+            <div className="rounded border border-borderSoft bg-bg p-2">
+              <p className="text-textMuted">{t("brief.total")}</p>
+              <p className="mt-1 font-semibold">{brief?.total_items ?? 0}</p>
+            </div>
+            <div className="rounded border border-borderSoft bg-bg p-2">
+              <p className="text-textMuted">{t("brief.topCategory")}</p>
+              <p className="mt-1 font-semibold">{brief?.top_category?.name || "-"}</p>
+            </div>
+            <div className="rounded border border-borderSoft bg-bg p-2">
+              <p className="text-textMuted">{t("brief.topJurisdiction")}</p>
+              <p className="mt-1 font-semibold">{brief?.top_jurisdiction?.name || "-"}</p>
+            </div>
+            <div className="rounded border border-borderSoft bg-bg p-2">
+              <p className="text-textMuted">{t("brief.topPublisher")}</p>
+              <p className="mt-1 font-semibold">{brief?.top_publisher?.name || "-"}</p>
+            </div>
+            <div className="rounded border border-borderSoft bg-bg p-2">
+              <p className="text-textMuted">{t("brief.highAlerts")}</p>
+              <p className="mt-1 font-semibold">{brief?.high_alert_count ?? 0}</p>
+            </div>
+          </div>
         </section>
         <section className="rounded-lg border border-borderSoft bg-surface p-4">
           <div className="mb-2 flex items-center justify-between">

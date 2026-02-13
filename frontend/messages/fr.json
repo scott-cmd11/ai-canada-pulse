@@ -89,6 +89,14 @@
     "title": "Focus regional",
     "helper": "Cliquer une region pour filtrer le flux"
   },
+  "brief": {
+    "title": "Snapshot briefing",
+    "total": "Elements totaux",
+    "topCategory": "Categorie dominante",
+    "topJurisdiction": "Juridiction dominante",
+    "topPublisher": "Editeur dominant",
+    "highAlerts": "Alertes elevees"
+  },
   "backfill": {
     "title": "Backfill Historique",
     "startDate": "Date de debut",

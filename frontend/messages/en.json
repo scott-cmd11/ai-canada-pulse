@@ -89,6 +89,14 @@
     "title": "Regional Focus",
     "helper": "Click a region to filter feed"
   },
+  "brief": {
+    "title": "Briefing Snapshot",
+    "total": "Total Items",
+    "topCategory": "Top Category",
+    "topJurisdiction": "Top Jurisdiction",
+    "topPublisher": "Top Publisher",
+    "highAlerts": "High Alerts"
+  },
   "backfill": {
     "title": "Historical Backfill",
     "startDate": "Start Date",

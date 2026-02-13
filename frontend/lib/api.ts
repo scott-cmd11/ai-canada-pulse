@@ -9,6 +9,7 @@ import type {
   KPIsResponse,
   PurgeSyntheticResponse,
   StatsAlertsResponse,
+  StatsBriefResponse,
   TagsBreakdownResponse,
   SourcesBreakdownResponse,
   SourcesHealthResponse,
@@ -147,5 +148,11 @@ export async function fetchAlerts(time_window: TimeWindow = "24h"): Promise<Stat
     { cache: "no-store" }
   );
   if (!res.ok) throw new Error("Failed to fetch alerts");
+  return res.json();
+}
+
+export async function fetchBrief(time_window: TimeWindow = "24h"): Promise<StatsBriefResponse> {
+  const res = await fetch(`${API_BASE}/stats/brief?time_window=${time_window}`, { cache: "no-store" });
+  if (!res.ok) throw new Error("Failed to fetch brief snapshot");
   return res.json();
 }
