@@ -154,7 +154,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
   const locale = useLocale();
   const { theme, toggleTheme } = useTheme();
   const { mode, setMode } = useMode();
-  const [timeWindow, setTimeWindow] = useState<TimeWindow>("24h");
+  const [timeWindow, setTimeWindow] = useState<TimeWindow>("7d");
   const [category, setCategory] = useState("");
   const [jurisdiction, setJurisdiction] = useState("");
   const [language, setLanguage] = useState("");
@@ -313,6 +313,20 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
     const timer = setTimeout(() => setDebouncedSearch(search.trim()), 300);
     return () => clearTimeout(timer);
   }, [search]);
+
+  useEffect(() => {
+    if (mode !== "policy") return;
+    // Policy-first view should not inherit restrictive research filters.
+    setCategory("");
+    setLanguage("");
+    setSearch("");
+    if (scope === "canada" && jurisdiction && !isCanadaJurisdiction(jurisdiction)) {
+      setJurisdiction("");
+    }
+    if (scope === "world" && jurisdiction && isCanadaJurisdiction(jurisdiction)) {
+      setJurisdiction("");
+    }
+  }, [mode, scope]);
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
