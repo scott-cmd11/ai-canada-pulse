@@ -80,7 +80,7 @@ services:
     container_name: ai_pulse_web
     restart: unless-stopped
     environment:
-      NEXT_PUBLIC_API_BASE_URL: http://localhost:8000/api/v1
+      NEXT_PUBLIC_API_BASE_URL: http://api:8000/api/v1
       NODE_ENV: production
     depends_on:
       - api
