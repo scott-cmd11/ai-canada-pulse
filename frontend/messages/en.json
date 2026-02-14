@@ -46,6 +46,24 @@
     "topInsights": "Top Insights",
     "previous": "Previous window"
   },
+  "hero": {
+    "title": "AI Canada Pulse",
+    "subtitle": "Track the highest-signal Canadian and global AI developments with a policy-first briefing and drilldown-ready research layers.",
+    "openResearch": "Open Research View",
+    "backPolicy": "Back to Policy View",
+    "resetView": "Reset View"
+  },
+  "drawers": {
+    "title": "Research Layers",
+    "showOps": "Show Ops Panels",
+    "hideOps": "Hide Ops Panels",
+    "showSources": "Show Source Panels",
+    "hideSources": "Hide Source Panels",
+    "showEntities": "Show Entity Panels",
+    "hideEntities": "Hide Entity Panels",
+    "showHistory": "Show History Panels",
+    "hideHistory": "Hide History Panels"
+  },
   "pulse": {
     "title": "Executive Pulse",
     "leadCategory": "Lead category:",

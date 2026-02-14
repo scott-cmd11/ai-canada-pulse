@@ -135,6 +135,28 @@ a {
   margin-bottom: 0.25rem;
 }
 
+.pulse-shell .story-hero {
+  border-color: color-mix(in oklab, var(--border-soft) 70%, white 30%);
+  background:
+    radial-gradient(1000px 320px at 0% -45%, color-mix(in oklab, var(--policy) 18%, transparent), transparent 56%),
+    radial-gradient(760px 280px at 100% -52%, color-mix(in oklab, var(--industry) 14%, transparent), transparent 58%),
+    linear-gradient(180deg, color-mix(in oklab, var(--surface) 96%, white 4%), var(--surface));
+}
+
+.dark .pulse-shell .story-hero {
+  border-color: color-mix(in oklab, var(--border-soft) 72%, black 28%);
+  background:
+    radial-gradient(1000px 320px at 0% -45%, color-mix(in oklab, var(--policy) 22%, transparent), transparent 56%),
+    radial-gradient(760px 280px at 100% -52%, color-mix(in oklab, var(--industry) 18%, transparent), transparent 58%),
+    linear-gradient(180deg, color-mix(in oklab, var(--surface) 91%, black 9%), var(--surface));
+}
+
+.pulse-shell .command-bar label > div:first-child {
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
 .pulse-shell h2,
 .pulse-shell h3 {
   letter-spacing: -0.012em;

@@ -221,6 +221,12 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
     hourly: true,
     weekly: true,
   });
+  const [researchDrawers, setResearchDrawers] = useState({
+    ops: false,
+    sources: false,
+    entities: false,
+    history: false,
+  });
   const [copyState, setCopyState] = useState<"idle" | "copied" | "failed">("idle");
   const [briefCopyState, setBriefCopyState] = useState<"idle" | "copied" | "failed">("idle");
   const [saveBriefState, setSaveBriefState] = useState<"idle" | "saved">("idle");
@@ -1202,6 +1208,10 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
     setDismissedAlertIds([]);
   }
 
+  function toggleResearchDrawer(key: keyof typeof researchDrawers) {
+    setResearchDrawers((prev) => ({ ...prev, [key]: !prev[key] }));
+  }
+
   async function copyShareLink() {
     if (typeof window === "undefined") return;
     try {
@@ -1364,6 +1374,29 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
       </div>
 
       <main className="mx-auto max-w-[1460px] space-y-5 px-4 py-6">
+        <section className="story-hero elevated rounded-2xl border border-borderSoft bg-surface p-5">
+          <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+            <div>
+              <p className="text-xs uppercase tracking-[0.18em] text-textMuted">{scope === "canada" ? "Canada Intelligence" : "Global Intelligence"}</p>
+              <h1 className="mt-1 text-2xl font-semibold tracking-tight md:text-3xl">{t("hero.title")}</h1>
+              <p className="mt-2 max-w-3xl text-sm text-textSecondary">{t("hero.subtitle")}</p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {mode === "policy" ? (
+                <button onClick={() => setMode("research")} className="rounded-full border border-borderStrong px-3 py-2 text-sm hover:bg-bg">
+                  {t("hero.openResearch")}
+                </button>
+              ) : (
+                <button onClick={() => setMode("policy")} className="rounded-full border border-borderStrong px-3 py-2 text-sm hover:bg-bg">
+                  {t("hero.backPolicy")}
+                </button>
+              )}
+              <button onClick={clearFilters} className="rounded-full border border-borderSoft px-3 py-2 text-sm hover:bg-bg">
+                {t("hero.resetView")}
+              </button>
+            </div>
+          </div>
+        </section>
         <section className="kpi-grid grid grid-cols-1 gap-4 md:grid-cols-4">
           <article className="kpi-card elevated rounded-2xl border border-borderSoft bg-surface p-4">
             <h2 className="text-sm text-textSecondary">{t("kpi.new15m")}</h2>
@@ -1446,6 +1479,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
             ))}
           </ul>
         </section>
+        {mode === "research" && (
         <section className="elevated rounded-2xl border border-borderSoft bg-surface p-4">
           <h3 className="mb-2 text-sm font-semibold text-textSecondary">{t("brief.title")}</h3>
           <div className="grid grid-cols-1 gap-2 text-xs text-textSecondary md:grid-cols-5">
@@ -1471,6 +1505,8 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
             </div>
           </div>
         </section>
+        )}
+        {mode === "research" && (
         <section className="elevated rounded-2xl border border-borderSoft bg-surface p-4">
           <div className="mb-2 flex items-center justify-between">
             <h3 className="text-sm font-semibold text-textSecondary">{t("briefing.title")}</h3>
@@ -1494,6 +1530,8 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
             {morningBriefMarkdown}
           </pre>
         </section>
+        )}
+        {mode === "research" && (
         <section className="elevated rounded-2xl border border-borderSoft bg-surface p-4">
           <h3 className="mb-2 text-sm font-semibold text-textSecondary">{t("compare.title")}</h3>
           <div className="grid grid-cols-1 gap-2 text-xs md:grid-cols-3">
@@ -1520,6 +1558,8 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
             ))}
           </div>
         </section>
+        )}
+        {mode === "research" && (
         <section className="elevated rounded-2xl border border-borderSoft bg-surface p-4">
           <h3 className="mb-2 text-sm font-semibold text-textSecondary">{t("concentration.title")}</h3>
           <div className="grid grid-cols-1 gap-2 text-xs md:grid-cols-4">
@@ -1561,6 +1601,8 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
             </div>
           </div>
         </section>
+        )}
+        {mode === "research" && (
         <section className="elevated rounded-2xl border border-borderSoft bg-surface p-4">
           <h3 className="mb-2 text-sm font-semibold text-textSecondary">{t("risk.title")}</h3>
           <div className="grid grid-cols-1 gap-2 text-xs md:grid-cols-4">
@@ -1594,6 +1636,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
             ))}
           </div>
         </section>
+        )}
         <section className="elevated rounded-2xl border border-borderSoft bg-surface p-4">
           <div className="mb-2 flex items-center justify-between">
             <h3 className="text-sm font-semibold text-textSecondary">{t("regional.title")}</h3>
@@ -1808,6 +1851,25 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
           <div className="space-y-4 xl:col-span-2">
             {mode === "research" && (
               <section className="elevated rounded-2xl border border-borderSoft bg-surface p-3">
+                <h3 className="mb-2 text-sm font-semibold text-textSecondary">{t("drawers.title")}</h3>
+                <div className="flex flex-wrap gap-2 text-xs">
+                  <button onClick={() => toggleResearchDrawer("ops")} className="rounded border border-borderSoft px-2 py-1 hover:bg-bg">
+                    {researchDrawers.ops ? t("drawers.hideOps") : t("drawers.showOps")}
+                  </button>
+                  <button onClick={() => toggleResearchDrawer("sources")} className="rounded border border-borderSoft px-2 py-1 hover:bg-bg">
+                    {researchDrawers.sources ? t("drawers.hideSources") : t("drawers.showSources")}
+                  </button>
+                  <button onClick={() => toggleResearchDrawer("entities")} className="rounded border border-borderSoft px-2 py-1 hover:bg-bg">
+                    {researchDrawers.entities ? t("drawers.hideEntities") : t("drawers.showEntities")}
+                  </button>
+                  <button onClick={() => toggleResearchDrawer("history")} className="rounded border border-borderSoft px-2 py-1 hover:bg-bg">
+                    {researchDrawers.history ? t("drawers.hideHistory") : t("drawers.showHistory")}
+                  </button>
+                </div>
+              </section>
+            )}
+            {mode === "research" && (
+              <section className="elevated rounded-2xl border border-borderSoft bg-surface p-3">
                 <h3 className="mb-2 text-sm font-semibold text-textSecondary">{t("panels.title")}</h3>
                 <div className="flex flex-wrap gap-2 text-xs">
                   {Object.entries(panelVisibility).map(([key, enabled]) => (
@@ -1826,7 +1888,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
                 </div>
               </section>
             )}
-            {mode === "research" && panelVisibility.backfill && (
+            {mode === "research" && researchDrawers.ops && panelVisibility.backfill && (
               <section className="elevated rounded-2xl border border-borderSoft bg-surface p-3">
                 <h3 className="mb-3 text-sm font-semibold text-textSecondary">{t("backfill.title")}</h3>
                 <div className="grid grid-cols-2 gap-2 text-xs">
@@ -1889,7 +1951,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
                 </div>
               </section>
             )}
-            {mode === "research" && panelVisibility.cleanup && (
+            {mode === "research" && researchDrawers.ops && panelVisibility.cleanup && (
               <section className="elevated rounded-2xl border border-borderSoft bg-surface p-3">
                 <h3 className="mb-3 text-sm font-semibold text-textSecondary">{t("cleanup.title")}</h3>
                 <div className="mb-3 flex items-center gap-2">
@@ -1954,7 +2016,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
                 </div>
               </section>
             )}
-            {mode === "research" && panelVisibility.sourceFreshness && (
+            {mode === "research" && researchDrawers.sources && panelVisibility.sourceFreshness && (
               <section className="elevated rounded-2xl border border-borderSoft bg-surface p-3">
                 <h3 className="mb-2 text-sm font-semibold text-textSecondary">{t("sources.freshnessTitle")}</h3>
                 <div className="space-y-2 text-xs">
@@ -1984,7 +2046,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
                 </div>
               </section>
             )}
-            {mode === "research" && panelVisibility.sourceMix && (
+            {mode === "research" && researchDrawers.sources && panelVisibility.sourceMix && (
               <section className="elevated rounded-2xl border border-borderSoft bg-surface p-3">
                 <h3 className="mb-2 text-sm font-semibold text-textSecondary">{t("sources.mixTitle")}</h3>
                 <p className="mb-2 text-xs text-textMuted">
@@ -2016,7 +2078,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
                 </div>
               </section>
             )}
-            {mode === "research" && panelVisibility.coverageMatrix && (
+            {mode === "research" && researchDrawers.sources && panelVisibility.coverageMatrix && (
               <section className="elevated rounded-2xl border border-borderSoft bg-surface p-3">
                 <h3 className="mb-2 text-sm font-semibold text-textSecondary">{t("coverage.title")}</h3>
                 <p className="mb-2 text-xs text-textMuted">
@@ -2047,7 +2109,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
                 </div>
               </section>
             )}
-            {mode === "research" && panelVisibility.sourceQuality && (
+            {mode === "research" && researchDrawers.sources && panelVisibility.sourceQuality && (
               <section className="elevated rounded-2xl border border-borderSoft bg-surface p-3">
                 <h3 className="mb-2 text-sm font-semibold text-textSecondary">{t("sources.qualityTitle")}</h3>
                 <div className="space-y-2 text-xs">
@@ -2141,7 +2203,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
                 </div>
               </section>
             )}
-            {mode === "research" && panelVisibility.entityMomentum && (
+            {mode === "research" && researchDrawers.entities && panelVisibility.entityMomentum && (
               <section className="elevated rounded-2xl border border-borderSoft bg-surface p-3">
                 <h3 className="mb-2 text-sm font-semibold text-textSecondary">{t("entityMomentum.title")}</h3>
                 <div className="space-y-2 text-xs">
@@ -2164,7 +2226,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
                 </div>
               </section>
             )}
-            {mode === "research" && panelVisibility.pinnedSignals && (
+            {mode === "research" && researchDrawers.history && panelVisibility.pinnedSignals && (
               <section className="elevated rounded-2xl border border-borderSoft bg-surface p-3">
                 <div className="mb-2 flex items-center justify-between">
                   <h3 className="text-sm font-semibold text-textSecondary">{t("pins.title")}</h3>
@@ -2198,7 +2260,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
                 </div>
               </section>
             )}
-            {mode === "research" && panelVisibility.briefHistory && (
+            {mode === "research" && researchDrawers.history && panelVisibility.briefHistory && (
               <section className="elevated rounded-2xl border border-borderSoft bg-surface p-3">
                 <div className="mb-2 flex items-center justify-between">
                   <h3 className="text-sm font-semibold text-textSecondary">{t("briefHistory.title")}</h3>
@@ -2234,7 +2296,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
                 </div>
               </section>
             )}
-            {mode === "research" && panelVisibility.alertCenter && (
+            {mode === "research" && researchDrawers.history && panelVisibility.alertCenter && (
               <section className="elevated rounded-2xl border border-borderSoft bg-surface p-3">
                 <div className="mb-2 flex items-center justify-between">
                   <h3 className="text-sm font-semibold text-textSecondary">{t("alertCenter.title")}</h3>
@@ -2287,7 +2349,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
                 </div>
               </section>
             )}
-            {mode === "research" && panelVisibility.jurisdictions && (
+            {mode === "research" && researchDrawers.entities && panelVisibility.jurisdictions && (
               <section className="elevated rounded-2xl border border-borderSoft bg-surface p-3">
                 <h3 className="mb-2 text-sm font-semibold text-textSecondary">{t("sources.jurisdictions")}</h3>
                 <div className="space-y-1 text-xs">
@@ -2300,7 +2362,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
                 </div>
               </section>
             )}
-            {mode === "research" && panelVisibility.entities && (
+            {mode === "research" && researchDrawers.entities && panelVisibility.entities && (
               <section className="elevated rounded-2xl border border-borderSoft bg-surface p-3">
                 <h3 className="mb-2 text-sm font-semibold text-textSecondary">{t("sources.entities")}</h3>
                 <div className="space-y-1 text-xs">
@@ -2313,7 +2375,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
                 </div>
               </section>
             )}
-            {mode === "research" && panelVisibility.tags && (
+            {mode === "research" && researchDrawers.entities && panelVisibility.tags && (
               <section className="elevated rounded-2xl border border-borderSoft bg-surface p-3">
                 <h3 className="mb-2 text-sm font-semibold text-textSecondary">{t("sources.tags")}</h3>
                 <div className="flex flex-wrap gap-2 text-xs">
@@ -2400,5 +2462,6 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
     </div>
   );
 }
+
 
 

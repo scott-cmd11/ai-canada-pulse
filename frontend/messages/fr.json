@@ -46,6 +46,24 @@
     "topInsights": "Principaux constats",
     "previous": "Fenetre precedente"
   },
+  "hero": {
+    "title": "AI Canada Pulse",
+    "subtitle": "Suivez les signaux IA les plus pertinents au Canada et dans le monde avec une vue politique prioritaire et des couches de recherche detaillees.",
+    "openResearch": "Ouvrir vue recherche",
+    "backPolicy": "Retour vue politique",
+    "resetView": "Reinitialiser la vue"
+  },
+  "drawers": {
+    "title": "Couches Recherche",
+    "showOps": "Afficher ops",
+    "hideOps": "Masquer ops",
+    "showSources": "Afficher sources",
+    "hideSources": "Masquer sources",
+    "showEntities": "Afficher entites",
+    "hideEntities": "Masquer entites",
+    "showHistory": "Afficher historique",
+    "hideHistory": "Masquer historique"
+  },
   "pulse": {
     "title": "Pulse executif",
     "leadCategory": "Categorie dominante :",
