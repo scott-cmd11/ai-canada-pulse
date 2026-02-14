@@ -121,7 +121,11 @@
     "sort": "Tri",
     "sortNewest": "Plus recent",
     "sortConfidence": "Confiance la plus haute",
-    "empty": "Aucun element ne correspond aux filtres actuels."
+    "empty": "Aucun element pour cette vue actuellement.",
+    "filteredHint": "Essayez de reinitialiser les filtres ou d'elargir la periode.",
+    "resetFilters": "Reinitialiser filtres",
+    "expand7d": "Utiliser 7j",
+    "expand30d": "Utiliser 30j"
   },
   "charts": {
     "hourly": "Tendance horaire (24 h)",

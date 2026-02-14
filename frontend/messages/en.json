@@ -121,7 +121,11 @@
     "sort": "Sort",
     "sortNewest": "Newest",
     "sortConfidence": "Highest confidence",
-    "empty": "No items match the current filters."
+    "empty": "No items in this view right now.",
+    "filteredHint": "Try resetting filters or widening the time window.",
+    "resetFilters": "Reset filters",
+    "expand7d": "Use 7d window",
+    "expand30d": "Use 30d window"
   },
   "charts": {
     "hourly": "Hourly Trend (24h)",

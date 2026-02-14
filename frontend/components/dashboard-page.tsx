@@ -100,6 +100,29 @@ type SavedBrief = {
   markdown: string;
 };
 
+const CANADA_JURISDICTIONS = new Set([
+  "canada",
+  "ontario",
+  "quebec",
+  "alberta",
+  "british columbia",
+  "manitoba",
+  "saskatchewan",
+  "nova scotia",
+  "new brunswick",
+  "newfoundland and labrador",
+  "prince edward island",
+  "northwest territories",
+  "nunavut",
+  "yukon",
+]);
+
+function isCanadaJurisdiction(value: string): boolean {
+  const normalized = value.trim().toLowerCase();
+  if (!normalized) return false;
+  return CANADA_JURISDICTIONS.has(normalized);
+}
+
 function Delta({ value }: { value: number }) {
   const positive = value >= 0;
   return <span style={{ color: positive ? "var(--research)" : "var(--incidents)" }}>{positive ? "+" : ""}{value.toFixed(1)}%</span>;
@@ -133,7 +156,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
   const { mode, setMode } = useMode();
   const [timeWindow, setTimeWindow] = useState<TimeWindow>("24h");
   const [category, setCategory] = useState("");
-  const [jurisdiction, setJurisdiction] = useState(scope === "canada" ? "Canada" : "Global");
+  const [jurisdiction, setJurisdiction] = useState("");
   const [language, setLanguage] = useState("");
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
@@ -324,8 +347,9 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
   }
 
   function matchesLiveFilters(item: FeedItem): boolean {
-    if (scope === "canada" && item.jurisdiction !== "Canada") return false;
-    if (scope === "world" && item.jurisdiction === "Canada") return false;
+    const inCanada = isCanadaJurisdiction(item.jurisdiction);
+    if (scope === "canada" && !inCanada) return false;
+    if (scope === "world" && inCanada) return false;
     if (category && item.category !== category) return false;
     if (jurisdiction && item.jurisdiction !== jurisdiction) return false;
     if (language && item.language !== language) return false;
@@ -367,7 +391,14 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
       fetchSummary(timeWindow),
       fetchCoverage(timeWindow, 8),
     ]);
-      setFeed(feedResponse.items);
+      setFeed(
+        feedResponse.items.filter((item) => {
+          const inCanada = isCanadaJurisdiction(item.jurisdiction);
+          if (scope === "canada") return inCanada;
+          if (scope === "world") return !inCanada;
+          return true;
+        })
+      );
       setKpis(kpiResponse);
       setHourly(hourlyResponse);
       setWeekly(weeklyResponse);
@@ -982,7 +1013,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
   function clearFilters() {
     setTimeWindow("24h");
     setCategory("");
-    setJurisdiction(scope === "canada" ? "Canada" : "Global");
+    setJurisdiction("");
     setLanguage("");
     setSearch("");
   }
@@ -991,7 +1022,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
     const chips: Array<{ id: string; label: string; clear: () => void }> = [];
     chips.push({ id: "tw", label: `${t("filters.timeWindow")}: ${timeWindow}`, clear: () => setTimeWindow("24h") });
     if (category) chips.push({ id: "cat", label: `${t("filters.category")}: ${category}`, clear: () => setCategory("") });
-    if (jurisdiction) chips.push({ id: "jur", label: `${t("filters.region")}: ${jurisdiction}`, clear: () => setJurisdiction(scope === "canada" ? "Canada" : "Global") });
+    if (jurisdiction) chips.push({ id: "jur", label: `${t("filters.region")}: ${jurisdiction}`, clear: () => setJurisdiction("") });
     if (language) chips.push({ id: "lang", label: `${t("feed.language")}: ${language.toUpperCase()}`, clear: () => setLanguage("") });
     if (search) chips.push({ id: "q", label: `${t("filters.keyword")}: ${search}`, clear: () => setSearch("") });
     chips.push({ id: "sort", label: `${t("feed.sort")}: ${feedSort === "newest" ? t("feed.sortNewest") : t("feed.sortConfidence")}`, clear: () => setFeedSort("newest") });
@@ -1683,7 +1714,19 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
               )}
               {!isInitialLoading && sortedFeed.length === 0 && (
                 <div className="elevated rounded-2xl border border-borderSoft bg-surface p-4 text-sm text-textMuted">
-                  {t("feed.empty")}
+                  <p className="font-medium text-text">{t("feed.empty")}</p>
+                  <p className="mt-1">{t("feed.filteredHint")}</p>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    <button onClick={clearFilters} className="rounded border border-borderSoft px-2 py-1 text-xs hover:bg-bg">
+                      {t("feed.resetFilters")}
+                    </button>
+                    <button onClick={() => setTimeWindow("7d")} className="rounded border border-borderSoft px-2 py-1 text-xs hover:bg-bg">
+                      {t("feed.expand7d")}
+                    </button>
+                    <button onClick={() => setTimeWindow("30d")} className="rounded border border-borderSoft px-2 py-1 text-xs hover:bg-bg">
+                      {t("feed.expand30d")}
+                    </button>
+                  </div>
                 </div>
               )}
               {!isInitialLoading && sortedFeed.map((item) => (
