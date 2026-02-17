@@ -4,6 +4,20 @@
     "world": "Monde",
     "methods": "Methodes"
   },
+  "guide": {
+    "trigger": "Guide",
+    "title": "Guide rapide",
+    "close": "Fermer le guide",
+    "whatIsThis": "Qu'est-ce que c'est ?",
+    "whatIsThisDesc": "AI Canada Pulse analyse automatiquement 6 sources de donnees toutes les quelques minutes pour detecter les signaux lies a l'IA : articles de presse, documents politiques, articles de recherche, depots de code et annonces de financement. Pensez-y comme un radar d'information pour l'IA canadienne.",
+    "readingDashboard": "Lire le tableau de bord",
+    "readingDashboardDesc": "Les chiffres en haut montrent combien de nouveaux signaux sont arrives au cours des 15 dernieres minutes, 1 heure et 7 jours. Le flux ci-dessous affiche les elements individuels. Les couleurs indiquent les categories : bleu pour politique, sarcelle pour recherche, violet pour industrie, ambre pour financement.",
+    "usingFilters": "Utiliser les filtres",
+    "usingFiltersDesc": "Utilisez la barre de commandes sous l'en-tete pour filtrer par periode, categorie, province ou mot-cle. Essayez les boutons Scenario pour des vues predefinies. Cliquez sur un signal pour voir tous les details.",
+    "modesAndViews": "Modes et vues",
+    "modesAndViewsDesc": "Le Mode Politique affiche un briefing simplifie. Le Mode Recherche revele des panneaux d'analyse supplementaires, des graphiques et des outils d'export. Utilisez les liens Canada et Monde pour changer la portee geographique.",
+    "learnMore": "Details complets sur la page Methodes"
+  },
   "mode": {
     "policy": "Mode Politique",
     "research": "Mode Recherche"
@@ -15,7 +29,7 @@
   "filters": {
     "timeWindow": "Fenetre temporelle",
     "category": "Categorie",
-    "region": "Region",
+    "region": "Province / Territoire",
     "keyword": "Recherche par mot-cle",
     "keywordPlaceholder": "Rechercher titre, editeur, juridiction",
     "shortcuts": "Raccourci : / ou Ctrl/Cmd+K",
@@ -25,7 +39,10 @@
     "clear": "Reinitialiser",
     "share": "Partager vue",
     "shareCopied": "Lien copie",
-    "shareFailed": "Echec copie"
+    "shareFailed": "Echec copie",
+    "scenarios": "Scenarios",
+    "refine": "Filtres",
+    "hideControls": "Fermer les filtres"
   },
   "scenarios": {
     "policyPulse": "Pulse Politique",
@@ -48,10 +65,64 @@
   },
   "hero": {
     "title": "AI Canada Pulse",
-    "subtitle": "Suivez les signaux IA les plus pertinents au Canada et dans le monde avec une vue politique prioritaire et des couches de recherche detaillees.",
+    "canadaHeadline": "Tableau IA Canada",
+    "globalHeadline": "Tableau IA Monde",
+    "subtitle": "Suivez les signaux prioritaires en politique, recherche et industrie dans une vue claire.",
     "openResearch": "Ouvrir vue recherche",
     "backPolicy": "Retour vue politique",
-    "resetView": "Reinitialiser la vue"
+    "resetView": "Reinitialiser la vue",
+    "canadaScope": "Intelligence Canada",
+    "globalScope": "Intelligence mondiale",
+    "howItWorks": "Comment ca fonctionne ?",
+    "showAnalysis": "Afficher l'analyse",
+    "hideAnalysis": "Masquer l'analyse"
+  },
+  "welcome": {
+    "title": "Bienvenue sur AI Canada Pulse",
+    "description": "Ce tableau de bord suit les developpements en intelligence artificielle a travers le Canada en temps reel. Il surveille les annonces gouvernementales, la recherche academique, les nouvelles de l'industrie et plus encore.",
+    "dataSourcesTitle": "D'ou viennent les donnees ?",
+    "dataSourcesDesc": "OpenAlex (articles academiques), Gouvernement du Canada (politique), BetaKit (nouvelles tech), Google News (nouvelles IA generales), GitHub (depots) et ArXiv (prepublications).",
+    "howToUseTitle": "Comment l'utiliser ?",
+    "howToUseDesc": "Utilisez les filtres ci-dessus pour affiner par periode, categorie ou province. Cliquez sur un signal pour voir les details. Essayez les Scenarios pour des vues predefinies.",
+    "numbersTitle": "Que signifient les chiffres ?",
+    "numbersDesc": "Survolez les icones ? a cote des en-tetes de section pour des explications en langage clair de chaque metrique et graphique.",
+    "dismiss": "Fermer la banniere d'accueil",
+    "dontShowAgain": "Ne plus afficher"
+  },
+  "storyHero": {
+    "timeWindow1h": "la derniere heure",
+    "timeWindow24h": "les dernieres 24 heures",
+    "timeWindow7d": "les 7 derniers jours",
+    "timeWindow30d": "les 30 derniers jours",
+    "timeWindow90d": "les 90 derniers jours",
+    "timeWindow1y": "la derniere annee",
+    "timeWindow2y": "les 2 dernieres annees",
+    "timeWindow5y": "les 5 dernieres annees",
+    "regionCanada": "a travers le Canada",
+    "regionGlobal": "a l'echelle mondiale",
+    "detected": "Au cours de {window}, {count} signaux IA ont ete detectes {region}.",
+    "noSignals": "Aucun signal IA n'a ete detecte {region} au cours de {window}.",
+    "activityUp": "L'activite est en hausse de {percent} % par rapport a la periode precedente.",
+    "activityDown": "L'activite a diminue de {percent} % par rapport a la periode precedente.",
+    "activityStable": "Le volume de signaux reste stable par rapport a la periode precedente.",
+    "topJurisdiction": "{name} est en tete avec {count} signaux.",
+    "alertSpike": "Notable : {category} montre un pic de {percent} %.",
+    "alertDrop": "Notable : {category} montre une baisse de {percent} %."
+  },
+  "global": {
+    "scopeLabel": "Intelligence IA mondiale",
+    "signalSummary": "Resume des signaux",
+    "canadaVsGlobal": "Comparaison Canada vs Monde",
+    "canada": "Canada",
+    "globalLabel": "Monde",
+    "topRegions": "Principales regions par volume de signaux",
+    "signals": "signaux",
+    "categoryDistribution": "Repartition par categorie",
+    "sourceTypes": "Types de source",
+    "categoryMomentum": "Momentum des categories",
+    "latestSignals": "Derniers signaux mondiaux",
+    "noSignals": "Aucun signal trouve pour cette fenetre temporelle.",
+    "description": "Vue mondiale des developpements IA a travers toutes les sources suivies. Comparez les tendances mondiales, identifiez les pays leaders en activite IA et explorez la production de recherche par region."
   },
   "drawers": {
     "title": "Couches Recherche",
@@ -82,10 +153,12 @@
     "spike": "pic",
     "drop": "baisse",
     "sourceConcentration": "Concentration des sources :",
-    "theme": "Concentration des themes :"
+    "theme": "Concentration des themes :",
+    "noData": "Aucun element narratif pour cette periode."
   },
   "summary": {
-    "title": "Resume signaux"
+    "title": "Resume signaux",
+    "noData": "Aucun point de synthese pour cette periode."
   },
   "panels": {
     "title": "Personnaliser les panneaux",
@@ -274,8 +347,7 @@
     "skippedLockCount": "Sauts verrou",
     "jurisdictions": "Principales juridictions",
     "entities": "Principales entites",
-    "tags": "Principales etiquettes"
-    ,
+    "tags": "Principales etiquettes",
     "lastRun": "Derniere execution",
     "fresh": "Frais",
     "aging": "Vieillissant",
@@ -321,7 +393,14 @@
     "spike": "Pic",
     "drop": "Recul",
     "current": "Actuel",
-    "previous": "Precedent"
+    "previous": "Precedent",
+    "baseline": "Moyenne (moyenne ± ecart-type)",
+    "zScore": "Score Z",
+    "triggerReason": {
+      "delta": "Declencheur delta",
+      "z_score": "Anomalie de base",
+      "hybrid": "Delta + score Z"
+    }
   },
   "alertCenter": {
     "title": "Centre alertes",
@@ -330,25 +409,57 @@
     "reset": "Reinitialiser"
   },
   "methods": {
-    "title": "Methodes",
-    "body": "Methodologie de production pour un tableau de bord IA bilingue, temps reel, base sur des metadonnees.",
-    "architecture": {
-      "title": "Architecture",
-      "a": "API FastAPI + SQLAlchemy asynchrone sur PostgreSQL avec diffusion via Redis.",
-      "b": "Workers Celery ingerent les sources en direct, classent les metadonnees et publient via SSE.",
-      "c": "Frontend Next.js App Router pour les KPI, flux et graphiques en routes EN/FR."
+    "title": "Comment ca fonctionne",
+    "body": "AI Canada Pulse collecte, evalue et affiche les signaux lies a l'IA a travers le Canada et le monde. Voici comment le processus fonctionne, des donnees brutes aux graphiques que vous voyez.",
+    "dataSources": {
+      "title": "D'ou viennent les donnees",
+      "intro": "Nous tirons nos donnees de six sources differentes pour un portrait complet de l'activite IA :",
+      "openalex": "OpenAlex indexe des millions d'articles academiques. Nous recherchons les publications liees a l'IA, en particulier des institutions canadiennes comme Mila, l'Institut Vector et Amii.",
+      "govCanada": "Les communiques officiels du gouvernement du Canada (Innovation, Sciences et Developpement economique). Couvre les annonces politiques, consultations et mises a jour reglementaires.",
+      "betakit": "BetaKit est le principal media technologique du Canada. Nous suivons leurs articles etiquetes IA pour les financements, lancements et nouvelles de l'industrie.",
+      "googleNews": "Google News regroupe la couverture IA de milliers de medias canadiens et internationaux, offrant la perspective mediatique la plus large.",
+      "github": "La recherche de depots GitHub trouve des projets IA open-source avec des liens canadiens, y compris les travaux des grands laboratoires de recherche et universites.",
+      "arxiv": "ArXiv heberge des articles de recherche prepublication. Nous recherchons les articles IA avec des affiliations d'auteurs canadiens."
     },
-    "governance": {
-      "title": "Gouvernance des donnees",
-      "a": "Aucun stockage du texte integral. Seulement titre, URL canonique, editeur, horodatage, entites et etiquettes.",
-      "b": "Dedoublonnage via hash d'empreinte source et normalisation des identifiants.",
-      "c": "Score de confiance, telemetrie de sante source et purge des donnees synthetiques en mode recherche."
+    "pipeline": {
+      "title": "Comment nous traitons les donnees",
+      "intro": "Chaque signal passe par un pipeline en quatre etapes avant d'apparaitre sur votre tableau de bord :",
+      "collect": "Collecter",
+      "collectDesc": "Des workers automatises verifient chaque source toutes les quelques minutes. Ils extraient les metadonnees : titre, URL, editeur, date et informations sur les auteurs.",
+      "score": "Evaluer",
+      "scoreDesc": "Chaque signal recoit un score de confiance (0 a 1) base sur sa pertinence pour l'IA canadienne. Les facteurs incluent la mention d'entites, provinces et organisations canadiennes.",
+      "categorize": "Categoriser",
+      "categorizeDesc": "Les signaux sont classes par categorie (Politique, Recherche, Industrie, Financement, Nouvelles, Incidents) et etiquetes avec les juridictions pertinentes.",
+      "display": "Afficher",
+      "displayDesc": "Le tableau de bord affiche les signaux en temps reel. Les graphiques, KPI et elements de flux se mettent a jour en direct a mesure que de nouvelles donnees arrivent."
     },
-    "ops": {
-      "title": "Operations",
-      "a": "Surveillance en direct : verrou d'ingestion, insertions, doublons et erreurs d'ecriture par source.",
-      "b": "Backfill historique : controles mensuels OpenAlex avec statut et points de reprise.",
-      "c": "Couches analyste : alertes, mix sources, juridictions et concentration des entites."
+    "numbers": {
+      "title": "Que signifient les chiffres",
+      "intro": "Voici les metriques cles que vous verrez sur le tableau de bord et ce qu'elles representent :",
+      "signal": "Un signal est une information liee a l'IA que notre systeme a detectee et classee. Il peut s'agir d'un article de recherche, d'un article de presse, d'un document politique ou d'un depot de code.",
+      "confidence": "Le Score de confiance mesure la certitude de notre systeme qu'un signal est reellement pertinent pour l'IA canadienne (0 a 1). Les signaux sous un seuil minimum sont filtres.",
+      "hhi": "L'indice Herfindahl-Hirschman (HHI) mesure la concentration des signaux sur une dimension (sources, juridictions, categories). Faible signifie diversifie, eleve signifie concentre.",
+      "riskIndex": "L'Indice de risque compose combine le ratio d'incidents, la part de faible confiance et la severite des alertes pour un apercu global du risque.",
+      "momentum": "Le Momentum des entites suit la frequence d'apparition d'organisations ou de personnes specifiques dans les signaux au fil du temps. Un momentum en hausse signifie une activite croissante."
+    },
+    "limitations": {
+      "title": "Limitations",
+      "intro": "Ce tableau de bord est un apercu utile, mais il a certaines contraintes importantes :",
+      "a": "Nous ne stockons que les metadonnees (titres, URL, dates). Nous ne stockons ni n'affichons le texte complet des articles.",
+      "b": "La couverture des sources depend de la disponibilite des API. Si une API source est en panne, les signaux de cette source seront temporairement suspendus.",
+      "c": "L'evaluation de confiance est basee sur des regles, pas sur l'IA. Elle peut occasionnellement mal classer des signaux.",
+      "d": "Le tableau de bord suit ce qui est accessible publiquement. La recherche privee, les documents gouvernementaux classifies et le contenu payant ne sont pas inclus."
+    },
+    "faq": {
+      "title": "Questions frequentes",
+      "q1": "A quelle frequence les donnees sont-elles mises a jour ?",
+      "a1": "Toutes les quelques minutes. Le flux en direct se met a jour en temps reel et les graphiques se rafraichissent automatiquement.",
+      "q2": "Puis-je exporter les donnees ?",
+      "a2": "Oui. En mode Recherche, vous pouvez exporter les signaux en CSV ou JSON avec les boutons d'export dans l'en-tete du flux.",
+      "q3": "Pourquoi certains signaux sont-ils marques comme faible confiance ?",
+      "a3": "Les signaux avec des liens faibles vers l'IA canadienne (par ex. un article mentionnant l'IA mais sans auteurs ou sujets canadiens) recoivent des scores de confiance plus bas.",
+      "q4": "Quelles langues sont prises en charge ?",
+      "a4": "L'interface du tableau de bord est disponible en anglais et en francais. Le contenu des signaux peut apparaitre dans n'importe quelle langue, avec une etiquette de langue pour chacun."
     },
     "back": "Retour au tableau de bord"
   }

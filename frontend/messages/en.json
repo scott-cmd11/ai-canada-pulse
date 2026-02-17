@@ -4,6 +4,20 @@
     "world": "World",
     "methods": "Methods"
   },
+  "guide": {
+    "trigger": "Guide",
+    "title": "Quick Guide",
+    "close": "Close guide",
+    "whatIsThis": "What is this?",
+    "whatIsThisDesc": "AI Canada Pulse automatically scans 6 data sources every few minutes to find AI-related signals: news articles, policy documents, research papers, code repositories, and funding announcements. Think of it as a news radar for Canadian AI.",
+    "readingDashboard": "Reading the Dashboard",
+    "readingDashboardDesc": "The numbers at the top show how many new signals arrived in the last 15 minutes, 1 hour, and 7 days. The feed below shows individual items. Colors indicate categories: blue for policy, teal for research, purple for industry, amber for funding.",
+    "usingFilters": "Using Filters",
+    "usingFiltersDesc": "Use the command bar below the header to narrow results by time period, category, province, or keyword. Try the Scenario buttons for pre-built views like Policy Pulse or Risk Watch. Click any signal card to see its full details.",
+    "modesAndViews": "Modes and Views",
+    "modesAndViewsDesc": "Policy Mode shows a streamlined briefing. Research Mode reveals extra analytics panels, charts, and data export tools. Use the Canada and World links to switch geographic scope.",
+    "learnMore": "Full details on the Methods page"
+  },
   "mode": {
     "policy": "Policy Mode",
     "research": "Research Mode"
@@ -15,7 +29,7 @@
   "filters": {
     "timeWindow": "Time Window",
     "category": "Category",
-    "region": "Region",
+    "region": "Province / Territory",
     "keyword": "Keyword Search",
     "keywordPlaceholder": "Search title, publisher, jurisdiction",
     "shortcuts": "Shortcut: / or Ctrl/Cmd+K",
@@ -25,7 +39,10 @@
     "clear": "Clear",
     "share": "Share View",
     "shareCopied": "Link Copied",
-    "shareFailed": "Copy failed"
+    "shareFailed": "Copy failed",
+    "scenarios": "Scenarios",
+    "refine": "Filters",
+    "hideControls": "Close Filters"
   },
   "scenarios": {
     "policyPulse": "Policy Pulse",
@@ -48,10 +65,64 @@
   },
   "hero": {
     "title": "AI Canada Pulse",
-    "subtitle": "Track the highest-signal Canadian and global AI developments with a policy-first briefing and drilldown-ready research layers.",
+    "canadaHeadline": "AI Canada Dashboard",
+    "globalHeadline": "AI Global Dashboard",
+    "subtitle": "Track high-signal policy, research, and industry activity in one clear view.",
     "openResearch": "Open Research View",
     "backPolicy": "Back to Policy View",
-    "resetView": "Reset View"
+    "resetView": "Reset View",
+    "canadaScope": "Canada Intelligence",
+    "globalScope": "Global Intelligence",
+    "howItWorks": "How does this work?",
+    "showAnalysis": "Show Analysis",
+    "hideAnalysis": "Hide Analysis"
+  },
+  "welcome": {
+    "title": "Welcome to AI Canada Pulse",
+    "description": "This dashboard tracks artificial intelligence developments across Canada in real time. It monitors government announcements, academic research, industry news, and more from multiple data sources.",
+    "dataSourcesTitle": "Where does the data come from?",
+    "dataSourcesDesc": "OpenAlex (academic papers), Government of Canada (policy), BetaKit (tech news), Google News (general AI news), GitHub (repositories), and ArXiv (preprints).",
+    "howToUseTitle": "How do I use it?",
+    "howToUseDesc": "Use the filters above to narrow by time period, category, or province. Click any signal to see full details. Try the Scenarios for pre-set views.",
+    "numbersTitle": "What do the numbers mean?",
+    "numbersDesc": "Hover over the ? icons next to section headers for plain-English explanations of every metric and chart.",
+    "dismiss": "Dismiss welcome banner",
+    "dontShowAgain": "Don't show this again"
+  },
+  "storyHero": {
+    "timeWindow1h": "the last hour",
+    "timeWindow24h": "the last 24 hours",
+    "timeWindow7d": "the last 7 days",
+    "timeWindow30d": "the last 30 days",
+    "timeWindow90d": "the last 90 days",
+    "timeWindow1y": "the past year",
+    "timeWindow2y": "the past 2 years",
+    "timeWindow5y": "the past 5 years",
+    "regionCanada": "across Canada",
+    "regionGlobal": "globally",
+    "detected": "In {window}, {count} AI signals were detected {region}.",
+    "noSignals": "No AI signals were detected {region} in {window}.",
+    "activityUp": "Activity is up {percent}% compared to the previous period.",
+    "activityDown": "Activity has decreased {percent}% compared to the previous period.",
+    "activityStable": "Signal volume remains stable compared to the previous period.",
+    "topJurisdiction": "{name} leads with {count} signals.",
+    "alertSpike": "Notable: {category} showing a spike of {percent}%.",
+    "alertDrop": "Notable: {category} showing a drop of {percent}%."
+  },
+  "global": {
+    "scopeLabel": "Global AI Intelligence",
+    "signalSummary": "Signal Summary",
+    "canadaVsGlobal": "Canada vs Global Comparison",
+    "canada": "Canada",
+    "globalLabel": "Global",
+    "topRegions": "Top Regions by Signal Volume",
+    "signals": "signals",
+    "categoryDistribution": "Category Distribution",
+    "sourceTypes": "Source Types",
+    "categoryMomentum": "Category Momentum",
+    "latestSignals": "Latest Global Signals",
+    "noSignals": "No signals found for this time window.",
+    "description": "Worldwide view of AI developments across all tracked sources. Compare global trends, see which countries lead in AI activity, and explore research output by region."
   },
   "drawers": {
     "title": "Research Layers",
@@ -82,10 +153,12 @@
     "spike": "spike",
     "drop": "drop",
     "sourceConcentration": "Source concentration:",
-    "theme": "Theme concentration:"
+    "theme": "Theme concentration:",
+    "noData": "No narrative highlights for this window."
   },
   "summary": {
-    "title": "Signal Summary"
+    "title": "Signal Summary",
+    "noData": "No summary points available for this window."
   },
   "panels": {
     "title": "Customize Panels",
@@ -267,16 +340,14 @@
     "duration": "Duration",
     "error": "Error",
     "publishers": "Top Publishers",
-    "types": "Source Types"
-    ,
+    "types": "Source Types",
     "runStatus": "Run Status",
     "insertedTotal": "Inserted Total",
     "candidatesTotal": "Candidates",
     "skippedLockCount": "Lock Skips",
     "jurisdictions": "Top Jurisdictions",
     "entities": "Top Entities",
-    "tags": "Top Tags"
-    ,
+    "tags": "Top Tags",
     "lastRun": "Last run",
     "fresh": "Fresh",
     "aging": "Aging",
@@ -322,7 +393,14 @@
     "spike": "Spike",
     "drop": "Drop",
     "current": "Current",
-    "previous": "Previous"
+    "previous": "Previous",
+    "baseline": "Baseline (mean ± stddev)",
+    "zScore": "Z-score",
+    "triggerReason": {
+      "delta": "Delta trigger",
+      "z_score": "Baseline anomaly",
+      "hybrid": "Delta + z-score"
+    }
   },
   "alertCenter": {
     "title": "Alert Center",
@@ -331,25 +409,57 @@
     "reset": "Reset"
   },
   "methods": {
-    "title": "Methods",
-    "body": "Production methodology for a metadata-only, bilingual, real-time AI intelligence dashboard.",
-    "architecture": {
-      "title": "Architecture",
-      "a": "FastAPI API + async SQLAlchemy over PostgreSQL with Redis-backed streaming.",
-      "b": "Celery workers ingest live sources, classify metadata, and publish SSE events.",
-      "c": "Next.js App Router frontend renders KPI, feed, and chart surfaces in EN/FR routes."
+    "title": "How It Works",
+    "body": "AI Canada Pulse collects, scores, and displays AI-related signals from across Canada and the world. Here is how the process works, from raw data to the charts you see on the dashboard.",
+    "dataSources": {
+      "title": "Where We Get Data",
+      "intro": "We pull from six different data sources to provide a well-rounded picture of AI activity:",
+      "openalex": "OpenAlex indexes millions of academic papers worldwide. We search for AI-related research, especially from Canadian institutions like Mila, Vector Institute, and Amii.",
+      "govCanada": "Government of Canada official news releases from Innovation, Science and Economic Development (ISED). Covers policy announcements, consultations, and regulatory updates.",
+      "betakit": "BetaKit is Canada's leading tech media outlet. We track their AI-tagged articles for startup funding rounds, product launches, and industry moves.",
+      "googleNews": "Google News aggregates AI-related coverage from thousands of Canadian and international outlets, giving us the broadest media perspective.",
+      "github": "GitHub repository search finds open-source AI projects with Canadian connections, including work from major research labs and universities.",
+      "arxiv": "ArXiv hosts preprint research papers before formal publication. We search for AI papers with Canadian author affiliations."
     },
-    "governance": {
-      "title": "Data Governance",
-      "a": "No full-text article storage. Only title, canonical URL, publisher, timestamps, entities, and tags.",
-      "b": "Deduplication via source fingerprint hash and adapter-level source ID normalization.",
-      "c": "Confidence scoring, source health telemetry, and synthetic-data purge controls in research mode."
+    "pipeline": {
+      "title": "How We Process It",
+      "intro": "Every signal goes through a four-step pipeline before appearing on your dashboard:",
+      "collect": "Collect",
+      "collectDesc": "Automated workers check each source every few minutes. They pull metadata: title, URL, publisher, date, and any author or entity information.",
+      "score": "Score",
+      "scoreDesc": "Each signal receives a confidence score (0 to 1) based on how relevant it is to Canadian AI. Factors include mention of Canadian entities, provinces, and known organizations.",
+      "categorize": "Categorize",
+      "categorizeDesc": "Signals are sorted into categories (Policy, Research, Industry, Funding, News, Incidents) and tagged with relevant jurisdictions (provinces, countries).",
+      "display": "Display",
+      "displayDesc": "The dashboard renders signals in real time via server-sent events. Charts, KPIs, and feed items update live as new data arrives."
     },
-    "ops": {
-      "title": "Operations",
-      "a": "Live monitoring: ingest lock, inserted totals, duplicates, and write errors per source.",
-      "b": "Historical backfill: OpenAlex monthly sweep controls with run status and checkpoints.",
-      "c": "Analyst overlays: alerts, source mix, jurisdictions, and top-entity concentration."
+    "numbers": {
+      "title": "What the Numbers Mean",
+      "intro": "Here are the key metrics you will see on the dashboard and what they represent:",
+      "signal": "A signal is a single piece of AI-related information that our system has detected and classified. It could be a research paper, a news article, a policy document, or a code repository.",
+      "confidence": "Confidence Score measures how sure our system is that a signal is genuinely relevant to Canadian AI (0 to 1). Signals below a minimum threshold are filtered out.",
+      "hhi": "The Herfindahl-Hirschman Index (HHI) measures how concentrated signals are across a dimension (sources, jurisdictions, categories). Low means diverse; high means concentrated.",
+      "riskIndex": "The Composite Risk Index combines incident ratio, low-confidence share, and alert severity to give an overall risk snapshot. It helps flag emerging concerns.",
+      "momentum": "Entity Momentum tracks how frequently specific organizations or people appear in signals over time. Rising momentum means increasing activity or attention."
+    },
+    "limitations": {
+      "title": "Limitations",
+      "intro": "This dashboard is a helpful overview, but it has some important constraints to keep in mind:",
+      "a": "We only store metadata (titles, URLs, dates). We do not store or display full article text.",
+      "b": "Source coverage depends on API availability. If a source API is down, signals from that source will temporarily pause.",
+      "c": "Confidence scoring is rule-based, not AI-powered. It may occasionally misclassify signals.",
+      "d": "The dashboard tracks what is publicly available. Private research, classified government documents, and paywalled content are not included."
+    },
+    "faq": {
+      "title": "Frequently Asked Questions",
+      "q1": "How often is data updated?",
+      "a1": "Every few minutes. The live feed updates in real time via server-sent events, and charts refresh automatically.",
+      "q2": "Can I export the data?",
+      "a2": "Yes. In Research Mode, you can export signals as CSV or JSON using the export buttons in the feed header.",
+      "q3": "Why are some signals marked as low confidence?",
+      "a3": "Signals with weak connections to Canadian AI (e.g., a paper that mentions AI but has no Canadian authors or topics) receive lower confidence scores.",
+      "q4": "What languages are supported?",
+      "a4": "The dashboard interface is available in English and French. Signal content may appear in any language, with a language tag for each."
     },
     "back": "Back to dashboard"
   }
