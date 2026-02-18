@@ -1,0 +1,8 @@
+{
+    "crons": [
+        {
+            "path": "/api/v1/backfill/run",
+            "schedule": "*/30 * * * *"
+        }
+    ]
+}

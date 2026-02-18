@@ -11,6 +11,8 @@ export const categoryColor: Record<string, string> = {
 
 export const CANADA_JURISDICTIONS = new Set([
   "canada",
+  "national",
+  "federal",
   "ontario",
   "quebec",
   "alberta",

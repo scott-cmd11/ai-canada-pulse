@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { runFullScan } from '@/lib/scanners';
 import { addIntelItems, updateLastScan } from '@/lib/storage';
 
-export async function POST(request: Request) {
+async function handleScan(request: Request) {
     try {
         // Optional authorization via CRON_SECRET
         const authHeader = request.headers.get('authorization');
@@ -37,4 +37,14 @@ export async function POST(request: Request) {
             { status: 500 },
         );
     }
+}
+
+// POST for manual triggers
+export async function POST(request: Request) {
+    return handleScan(request);
+}
+
+// GET for Vercel cron
+export async function GET(request: Request) {
+    return handleScan(request);
 }
