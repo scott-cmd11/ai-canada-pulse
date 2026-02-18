@@ -197,9 +197,9 @@
   "feed": {
     "live": "Flux en direct",
     "liveStatus": "Flux",
-    "status_connecting": "Connexion",
+    "status_connecting": "Chargement des signaux\u2026",
     "status_live": "Actif",
-    "status_error": "Degrade",
+    "status_error": "Reconnexion\u2026",
     "staleWarning": "Aucune mise a jour recente",
     "publisher": "Editeur",
     "language": "Langue",
@@ -223,7 +223,7 @@
     "sort": "Tri",
     "sortNewest": "Plus recent",
     "sortConfidence": "Confiance la plus haute",
-    "empty": "Aucun element pour cette vue actuellement.",
+    "empty": "Aucun signal ne correspond aux filtres actuels.",
     "filteredHint": "Essayez de reinitialiser les filtres ou d'elargir la periode.",
     "resetFilters": "Reinitialiser filtres",
     "expand7d": "Utiliser 7j",
@@ -234,7 +234,7 @@
   "charts": {
     "hourly": "Tendance horaire (24 h)",
     "weekly": "Tendance hebdomadaire (12 semaines)",
-    "drilldownHint": "Cliquer le graphique pour filtrer la categorie",
+    "drilldownHint": "Cliquer une barre pour filtrer par categorie",
     "loading": "Chargement du graphique..."
   },
   "regional": {

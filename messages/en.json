@@ -197,9 +197,9 @@
   "feed": {
     "live": "Live Feed",
     "liveStatus": "Stream",
-    "status_connecting": "Connecting",
+    "status_connecting": "Fetching latest signals\u2026",
     "status_live": "Live",
-    "status_error": "Degraded",
+    "status_error": "Reconnecting\u2026",
     "staleWarning": "No live update recently",
     "publisher": "Publisher",
     "language": "Language",
@@ -223,7 +223,7 @@
     "sort": "Sort",
     "sortNewest": "Newest",
     "sortConfidence": "Highest confidence",
-    "empty": "No items in this view right now.",
+    "empty": "No signals match your current filters.",
     "filteredHint": "Try resetting filters or widening the time window.",
     "resetFilters": "Reset filters",
     "expand7d": "Use 7d window",
@@ -234,7 +234,7 @@
   "charts": {
     "hourly": "Hourly Trend (24h)",
     "weekly": "Weekly Trend (12 weeks)",
-    "drilldownHint": "Click chart to filter category",
+    "drilldownHint": "Click a bar to filter by category",
     "loading": "Loading chart..."
   },
   "regional": {

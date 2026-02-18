@@ -230,16 +230,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
 
   // --- Effects ---
 
-  // Auto-expand filters on first visit
-  useEffect(() => {
-    try {
-      const shown = localStorage.getItem("ai_pulse_filters_shown");
-      if (!shown) {
-        setControlsOpen(true);
-        localStorage.setItem("ai_pulse_filters_shown", "true");
-      }
-    } catch { /* ignore */ }
-  }, []);
+  // Filters start closed — users open via button or Scenario presets
 
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedSearch(search.trim()), 300);
@@ -350,14 +341,21 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
         fetchSummary(timeWindow),
         fetchCoverage(timeWindow, 8),
       ]);
-      setFeed(
-        feedResponse.items.filter((item) => {
-          const inCanada = isCanadaJurisdiction(item.jurisdiction);
-          if (scope === "canada") return inCanada;
-          if (scope === "world") return !inCanada;
-          return true;
-        })
-      );
+      const scopeFiltered = feedResponse.items.filter((item) => {
+        const inCanada = isCanadaJurisdiction(item.jurisdiction);
+        if (scope === "canada") return inCanada;
+        if (scope === "world") return !inCanada;
+        return true;
+      });
+      // Client-side deduplication: keep first occurrence per normalized title
+      const seen = new Set<string>();
+      const deduped = scopeFiltered.filter((item) => {
+        const key = item.title.toLowerCase().replace(/[^a-z0-9]/g, "");
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
+      setFeed(deduped);
       setKpis(kpiResponse);
       setHourly(hourlyResponse);
       setWeekly(weeklyResponse);
@@ -784,7 +782,17 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
         backgroundColor: "var(--surface)",
         borderColor: "var(--border-soft)",
         borderWidth: 1,
-        textStyle: { color: "var(--text)" },
+        textStyle: { color: "var(--text)", fontSize: 12 },
+        formatter: (params: Array<{ seriesName: string; value: number; color: string }>) => {
+          if (!Array.isArray(params) || params.length === 0) return "";
+          const total = params.reduce((sum: number, p: { value: number }) => sum + (p.value || 0), 0);
+          const header = `<strong>${total} signal${total !== 1 ? "s" : ""}</strong><br/>`;
+          const rows = params
+            .filter((p: { value: number }) => p.value > 0)
+            .map((p: { color: string; seriesName: string; value: number }) => `<span style="color:${p.color}">●</span> ${p.seriesName}: <strong>${p.value}</strong>`)
+            .join("<br/>");
+          return header + rows;
+        },
       },
       legend: { data: hourly?.legend ?? [], textStyle: { color: "var(--text-secondary)" } },
       xAxis: { type: "category", data: hourly?.xAxis ?? [], axisLabel: { color: "var(--text-muted)" } },
@@ -807,7 +815,17 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
         backgroundColor: "var(--surface)",
         borderColor: "var(--border-soft)",
         borderWidth: 1,
-        textStyle: { color: "var(--text)" },
+        textStyle: { color: "var(--text)", fontSize: 12 },
+        formatter: (params: Array<{ seriesName: string; value: number; color: string }>) => {
+          if (!Array.isArray(params) || params.length === 0) return "";
+          const total = params.reduce((sum: number, p: { value: number }) => sum + (p.value || 0), 0);
+          const header = `<strong>${total} signal${total !== 1 ? "s" : ""}</strong><br/>`;
+          const rows = params
+            .filter((p: { value: number }) => p.value > 0)
+            .map((p: { color: string; seriesName: string; value: number }) => `<span style="color:${p.color}">●</span> ${p.seriesName}: <strong>${p.value}</strong>`)
+            .join("<br/>");
+          return header + rows;
+        },
       },
       legend: { data: weekly?.legend ?? [], textStyle: { color: "var(--text-secondary)" } },
       xAxis: { type: "category", data: weekly?.xAxis ?? [], axisLabel: { color: "var(--text-muted)" } },
@@ -1187,7 +1205,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
           kpis={kpis}
           jurisdictionsBreakdown={jurisdictionsBreakdown}
           alerts={alerts}
-          totalSignals={brief?.total_items ?? feed.length}
+          totalSignals={feed.length}
         />
 
         {/* Welcome Banner (first visit only) */}

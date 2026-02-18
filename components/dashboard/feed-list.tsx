@@ -392,11 +392,17 @@ export function FeedList({
                 >
                   {item.language.toUpperCase()}
                 </button>
-                {mode === "research" && (
-                  <span className="text-micro">
-                    {t("feed.confidence")}: {item.confidence.toFixed(2)}
-                  </span>
-                )}
+                <span
+                  className="inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-micro font-medium"
+                  style={{
+                    background: item.confidence >= 0.8 ? "var(--research)" : item.confidence >= 0.5 ? "var(--policy)" : item.confidence >= 0.3 ? "var(--warning)" : "var(--incidents)",
+                    color: "white",
+                    opacity: 0.85,
+                  }}
+                  title={`${t("feed.confidence")}: ${(item.confidence * 100).toFixed(0)}%`}
+                >
+                  {(item.confidence * 100).toFixed(0)}%
+                </span>
               </div>
               <h4
                 className={`line-clamp-2 ${density === "compact" ? "mt-1.5 text-body font-semibold leading-tight" : "mt-2 text-subheading"}`}

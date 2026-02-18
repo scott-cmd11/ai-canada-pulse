@@ -1,6 +1,16 @@
+import { Activity } from "lucide-react";
+
 export default function Loading() {
   return (
     <div className="pulse-shell mx-auto max-w-[1460px] px-4 py-8">
+      {/* Loading message */}
+      <div className="mb-8 flex flex-col items-center justify-center gap-3 py-6">
+        <Activity size={28} className="animate-spin text-primary" />
+        <p className="text-body text-textSecondary">
+          Fetching latest signals &mdash; please wait
+        </p>
+      </div>
+
       {/* Header skeleton */}
       <div className="mb-6 flex items-center justify-between">
         <div className="h-8 w-48 animate-pulse rounded bg-borderSoft" />

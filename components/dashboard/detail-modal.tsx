@@ -204,6 +204,32 @@ export function DetailModal({ item, onClose }: DetailModalProps) {
             </div>
           </div>
 
+          {/* Relevance Signals — why this signal was selected */}
+          <div className="rounded-lg border border-borderSoft bg-surfaceInset p-3">
+            <p className="text-micro font-medium text-textSecondary mb-2">Why this signal was selected</p>
+            <ul className="space-y-1 text-caption text-textMuted">
+              <li className="flex items-center gap-2">
+                <span className="h-1.5 w-1.5 rounded-full shrink-0" style={{ background: confidenceColor }} />
+                Confidence: <strong className="text-textSecondary">{confidencePercent}%</strong>
+                {item.confidence >= 0.8 ? " — Strong match" : item.confidence >= 0.5 ? " — Moderate match" : " — Weak match"}
+              </li>
+              <li className="flex items-center gap-2">
+                <span className="h-1.5 w-1.5 rounded-full bg-textMuted shrink-0" />
+                Jurisdiction: <strong className="text-textSecondary">{item.jurisdiction}</strong>
+              </li>
+              <li className="flex items-center gap-2">
+                <span className="h-1.5 w-1.5 rounded-full bg-textMuted shrink-0" />
+                Source type: <strong className="text-textSecondary capitalize">{item.source_type}</strong>
+              </li>
+              {item.entities.length > 0 && (
+                <li className="flex items-start gap-2">
+                  <span className="h-1.5 w-1.5 rounded-full bg-textMuted shrink-0 mt-1.5" />
+                  <span>Canadian entity mentions: <strong className="text-textSecondary">{item.entities.slice(0, 5).join(", ")}</strong></span>
+                </li>
+              )}
+            </ul>
+          </div>
+
           {/* Debug toggle */}
           <button
             onClick={() => setShowDebug((prev) => !prev)}
