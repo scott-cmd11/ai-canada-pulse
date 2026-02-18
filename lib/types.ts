@@ -1,5 +1,5 @@
 export type Category = "policy" | "research" | "industry" | "funding" | "news" | "incidents";
-export type TimeWindow = "1h" | "24h" | "7d" | "30d" | "90d" | "1y" | "2y" | "5y";
+export type TimeWindow = "1h" | "24h" | "7d" | "15d" | "30d" | "90d" | "1y" | "2y" | "5y";
 export type Mode = "policy" | "research";
 
 export interface FeedItem {

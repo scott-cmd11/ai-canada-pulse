@@ -62,13 +62,14 @@ function windowToMs(tw: TimeWindow): number {
         '1h': 3600_000,
         '24h': 86400_000,
         '7d': 604800_000,
+        '15d': 1296000_000,
         '30d': 2592000_000,
         '90d': 7776000_000,
         '1y': 31536000_000,
         '2y': 63072000_000,
         '5y': 157680000_000,
     };
-    return map[tw] || 604800_000;
+    return map[tw] || 1296000_000;
 }
 
 function filterByWindow(items: IntelItem[], tw: TimeWindow): IntelItem[] {

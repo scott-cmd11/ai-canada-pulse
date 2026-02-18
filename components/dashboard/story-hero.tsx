@@ -17,6 +17,7 @@ const timeWindowKeys: Record<TimeWindow, string> = {
   "1h": "storyHero.timeWindow1h",
   "24h": "storyHero.timeWindow24h",
   "7d": "storyHero.timeWindow7d",
+  "15d": "storyHero.timeWindow15d",
   "30d": "storyHero.timeWindow30d",
   "90d": "storyHero.timeWindow90d",
   "1y": "storyHero.timeWindow1y",

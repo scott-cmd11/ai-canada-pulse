@@ -104,6 +104,7 @@
     "timeWindow1h": "the last hour",
     "timeWindow24h": "the last 24 hours",
     "timeWindow7d": "the last 7 days",
+    "timeWindow15d": "the last 15 days",
     "timeWindow30d": "the last 30 days",
     "timeWindow90d": "the last 90 days",
     "timeWindow1y": "the past year",
@@ -227,6 +228,7 @@
     "filteredHint": "Try resetting filters or widening the time window.",
     "resetFilters": "Reset filters",
     "expand7d": "Use 7d window",
+    "expand15d": "Use 15d window",
     "expand30d": "Use 30d window",
     "keyboardNav": "Use <j>j</j> / <k>k</k> to navigate, <enter>Enter</enter> to view details",
     "keyboardDismiss": "Got it"

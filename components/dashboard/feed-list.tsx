@@ -307,10 +307,10 @@ export function FeedList({
                 {t("feed.resetFilters")}
               </button>
               <button
-                onClick={() => onSetTimeWindow("7d")}
+                onClick={() => onSetTimeWindow("15d")}
                 className="btn-ghost"
               >
-                {t("feed.expand7d")}
+                {t("feed.expand15d")}
               </button>
               <button
                 onClick={() => onSetTimeWindow("30d")}

@@ -104,6 +104,7 @@
     "timeWindow1h": "la derniere heure",
     "timeWindow24h": "les dernieres 24 heures",
     "timeWindow7d": "les 7 derniers jours",
+    "timeWindow15d": "les 15 derniers jours",
     "timeWindow30d": "les 30 derniers jours",
     "timeWindow90d": "les 90 derniers jours",
     "timeWindow1y": "la derniere annee",
@@ -227,6 +228,7 @@
     "filteredHint": "Essayez de reinitialiser les filtres ou d'elargir la periode.",
     "resetFilters": "Reinitialiser filtres",
     "expand7d": "Utiliser 7j",
+    "expand15d": "Utiliser 15j",
     "expand30d": "Utiliser 30j",
     "keyboardNav": "Utilisez <j>j</j> / <k>k</k> pour naviguer, <enter>Enter</enter> pour les détails",
     "keyboardDismiss": "Compris"

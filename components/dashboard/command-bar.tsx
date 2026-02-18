@@ -92,6 +92,7 @@ export function CommandBar({
             <option value="1h">1 Hour</option>
             <option value="24h">24 Hours</option>
             <option value="7d">7 Days</option>
+            <option value="15d">15 Days</option>
             <option value="30d">30 Days</option>
             <option value="90d">90 Days</option>
             <option value="1y">1 Year</option>

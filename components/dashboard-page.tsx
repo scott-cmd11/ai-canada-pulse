@@ -77,7 +77,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
   const locale = useLocale();
   const { theme, toggleTheme } = useTheme();
   const { mode, setMode } = useMode();
-  const [timeWindow, setTimeWindow] = useState<TimeWindow>("7d");
+  const [timeWindow, setTimeWindow] = useState<TimeWindow>("15d");
   const [category, setCategory] = useState("");
   const [jurisdiction, setJurisdiction] = useState("");
   const [language, setLanguage] = useState("");
@@ -284,6 +284,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
       "1h": 60 * 60 * 1000,
       "24h": 24 * 60 * 60 * 1000,
       "7d": 7 * 24 * 60 * 60 * 1000,
+      "15d": 15 * 24 * 60 * 60 * 1000,
       "30d": 30 * 24 * 60 * 60 * 1000,
       "90d": 90 * 24 * 60 * 60 * 1000,
       "1y": 365 * 24 * 60 * 60 * 1000,
@@ -610,7 +611,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
     const lang = params.get("lang");
     const q = params.get("q");
     const m = params.get("m");
-    if (tw === "1h" || tw === "24h" || tw === "7d" || tw === "30d" || tw === "90d" || tw === "1y" || tw === "2y" || tw === "5y") setTimeWindow(tw);
+    if (tw === "1h" || tw === "24h" || tw === "7d" || tw === "15d" || tw === "30d" || tw === "90d" || tw === "1y" || tw === "2y" || tw === "5y") setTimeWindow(tw);
     if (cat) setCategory(cat);
     if (jur) setJurisdiction(jur);
     if (lang) setLanguage(lang);
