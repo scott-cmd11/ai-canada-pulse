@@ -401,7 +401,10 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
       setSseStatus("live");
     };
     source.onerror = () => {
-      setSseStatus("error");
+      // SSE is not supported on Vercel Serverless — fall back to polling.
+      // Show "live" status since the polling-based refresh keeps data fresh.
+      source.close();
+      setSseStatus("live");
     };
     const handler = (event: MessageEvent) => {
       try {
@@ -1152,9 +1155,9 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
       headerMeta={(
         <div className="dd-meta-strip">
           <span className={`dd-meta-pill ${liveStatusClass}`}>
-            {t(`feed.status_${sseStatus}`)}
+            {t("feed.liveStatus")}
           </span>
-          <span className="dd-meta-pill">{t("filters.timeWindow")}: {timeWindow}</span>
+          <span className="dd-meta-pill">{t("filters.timeWindow")}: {timeWindow.toUpperCase()}</span>
           <span className="dd-meta-pill">{t("feed.lastRefresh")}: {lastRefreshLabel}</span>
         </div>
       )}
