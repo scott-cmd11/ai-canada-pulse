@@ -2,10 +2,11 @@ import uuid
 from datetime import UTC, datetime, timedelta
 
 import pytest
+import pytest_asyncio
+from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
 
-from backend.app.db.base import Base
-from backend.app.models.ai_development import AIDevelopment, CategoryType, SourceType
+from backend.app.models.ai_development import CategoryType
 from backend.app.services.feed import parse_time_window
 from backend.app.services.stats import fetch_alerts
 
@@ -20,12 +21,31 @@ class FixedDatetime:
         return FIXED_NOW.replace(tzinfo=None)
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def async_session():
     engine = create_async_engine("sqlite+aiosqlite:///:memory:", future=True)
     async_session_factory = async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
     async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
+        await conn.execute(
+            text(
+                """
+                CREATE TABLE ai_developments (
+                    id TEXT PRIMARY KEY,
+                    source_id TEXT,
+                    source_type TEXT,
+                    category TEXT NOT NULL,
+                    title TEXT,
+                    url TEXT,
+                    publisher TEXT,
+                    published_at TIMESTAMP NOT NULL,
+                    ingested_at TIMESTAMP NOT NULL,
+                    language TEXT,
+                    jurisdiction TEXT,
+                    confidence FLOAT
+                )
+                """
+            )
+        )
     async with async_session_factory() as session:
         yield session
     await engine.dispose()
@@ -45,49 +65,57 @@ async def _persist_counts(
 ) -> None:
     current_start = FIXED_NOW - window
     lookback_windows = len(counts)
+    insert_sql = text(
+        """
+        INSERT INTO ai_developments
+        (id, source_id, source_type, category, title, url, publisher, published_at, ingested_at, language, jurisdiction, confidence)
+        VALUES (:id, :source_id, :source_type, :category, :title, :url, :publisher, :published_at, :ingested_at, :language, :jurisdiction, :confidence)
+        """
+    )
+
     for index, count in enumerate(counts, start=1):
         window_index = lookback_windows - index + 1
         history_start = current_start - (window * window_index)
         midpoint = history_start + window / 2
         for idx in range(count):
-            session.add(
-                AIDevelopment(
-                    source_id=f"{category}-{window_index}-{idx}",
-                    source_type=SourceType.media,
-                    category=category,
-                    title="test",
-                    url="https://example.com",
-                    publisher="pytest",
-                    published_at=midpoint,
-                    ingested_at=midpoint,
-                    language="en",
-                    jurisdiction="Canada",
-                    entities=[],
-                    tags=[],
-                    hash=str(uuid.uuid4()),
-                    confidence=0.5,
-                )
+            await session.execute(
+                insert_sql,
+                {
+                    "id": str(uuid.uuid4()),
+                    "source_id": f"{category}-{window_index}-{idx}",
+                    "source_type": "media",
+                    "category": category.value,
+                    "title": "test",
+                    "url": "https://example.com",
+                    "publisher": "pytest",
+                    "published_at": midpoint,
+                    "ingested_at": midpoint,
+                    "language": "en",
+                    "jurisdiction": "Canada",
+                    "confidence": 0.5,
+                },
             )
+
     midpoint = current_start + window / 2
     for idx in range(current_count):
-        session.add(
-            AIDevelopment(
-                source_id=f"{category}-current-{idx}",
-                source_type=SourceType.media,
-                category=category,
-                title="current",
-                url="https://example.com/current",
-                publisher="pytest",
-                published_at=midpoint,
-                ingested_at=midpoint,
-                language="en",
-                jurisdiction="Canada",
-                entities=[],
-                tags=[],
-                hash=str(uuid.uuid4()),
-                confidence=0.9,
-            )
+        await session.execute(
+            insert_sql,
+            {
+                "id": str(uuid.uuid4()),
+                "source_id": f"{category}-current-{idx}",
+                "source_type": "media",
+                "category": category.value,
+                "title": "current",
+                "url": "https://example.com/current",
+                "publisher": "pytest",
+                "published_at": midpoint,
+                "ingested_at": midpoint,
+                "language": "en",
+                "jurisdiction": "Canada",
+                "confidence": 0.9,
+            },
         )
+
     await session.commit()
 
 

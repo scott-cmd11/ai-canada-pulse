@@ -1,5 +1,5 @@
 export type Category = "policy" | "research" | "industry" | "funding" | "news" | "incidents";
-export type TimeWindow = "1h" | "24h" | "7d" | "30d";
+export type TimeWindow = "1h" | "24h" | "7d" | "30d" | "90d" | "1y" | "2y" | "5y";
 export type Mode = "policy" | "research";
 
 export interface FeedItem {
@@ -147,6 +147,10 @@ export interface StatsAlertItem {
   current: number;
   previous: number;
   delta_percent: number;
+  baseline_mean?: number | null;
+  baseline_stddev?: number | null;
+  z_score?: number | null;
+  trigger_reason?: "delta" | "z_score" | "hybrid";
 }
 
 export interface StatsAlertsResponse {
@@ -154,6 +158,8 @@ export interface StatsAlertsResponse {
   time_window: TimeWindow;
   min_baseline: number;
   min_delta_percent: number;
+  min_z_score: number;
+  lookback_windows: number;
   alerts: StatsAlertItem[];
 }
 

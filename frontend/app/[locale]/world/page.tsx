@@ -1,5 +1,5 @@
-import { DashboardPage } from "../../../components/dashboard-page";
+import { GlobalDashboardPage } from "../../../components/global-dashboard-page";
 
 export default function WorldPage() {
-  return <DashboardPage scope="world" />;
+  return <GlobalDashboardPage />;
 }

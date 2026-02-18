@@ -25,7 +25,10 @@ import type {
   TimeWindow,
 } from "./types";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8000/api/v1";
+const API_BASE =
+  typeof window !== "undefined"
+    ? "/api/v1"
+    : (process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8000/api/v1");
 
 export interface FeedParams {
   time_window: TimeWindow;
@@ -153,7 +156,7 @@ export async function fetchTagsBreakdown(time_window: TimeWindow = "7d"): Promis
 
 export async function fetchAlerts(time_window: TimeWindow = "24h"): Promise<StatsAlertsResponse> {
   const res = await fetch(
-    `${API_BASE}/stats/alerts?time_window=${time_window}&min_baseline=3&min_delta_percent=35`,
+    `${API_BASE}/stats/alerts?time_window=${time_window}&min_baseline=3&min_delta_percent=35&min_z_score=1.2`,
     { cache: "no-store" }
   );
   if (!res.ok) throw new Error("Failed to fetch alerts");

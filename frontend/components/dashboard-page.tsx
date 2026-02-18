@@ -1,18 +1,14 @@
 "use client";
 
-import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
-import { useEffect, useMemo, useRef, useState } from "react";
-import { BarChart3, Globe2, Landmark, Moon, Search, Sun } from "lucide-react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import {
   fetchAlerts,
   fetchCoverage,
   fetchEntitiesBreakdown,
   fetchTagsBreakdown,
-  executeSyntheticPurge,
-  exportUrl,
   fetchBackfillStatus,
   fetchBrief,
   fetchCompare,
@@ -30,8 +26,6 @@ import {
   fetchSourcesBreakdown,
   fetchSourcesHealth,
   fetchWeekly,
-  previewSyntheticPurge,
-  runBackfill,
   sseUrl,
 } from "../lib/api";
 import type {
@@ -51,103 +45,31 @@ import type {
   RiskTrendResponse,
   SummaryResponse,
   KPIsResponse,
-  PurgeSyntheticResponse,
   SourceHealthEntry,
   SourcesBreakdownResponse,
   TimeWindow,
   TagsBreakdownResponse,
+  JurisdictionsBreakdownResponse,
 } from "../lib/types";
-import type { JurisdictionsBreakdownResponse } from "../lib/types";
 import { useMode } from "./mode-provider";
 import { useTheme } from "./theme-provider";
 
-const EChartsReact = dynamic(() => import("echarts-for-react"), { ssr: false });
-
-const categoryColor: Record<string, string> = {
-  policy: "var(--policy)",
-  research: "var(--research)",
-  industry: "var(--industry)",
-  funding: "var(--funding)",
-  news: "var(--news)",
-  incidents: "var(--incidents)",
-};
-
-type FilterPreset = {
-  id: string;
-  name: string;
-  timeWindow: TimeWindow;
-  category: string;
-  jurisdiction: string;
-  language: string;
-  search: string;
-};
-
-type ScenarioPreset = {
-  id: string;
-  labelKey: string;
-  descriptionKey: string;
-  mode: "policy" | "research";
-  timeWindow: TimeWindow;
-  category: string;
-  jurisdiction: string;
-  language: string;
-  search: string;
-};
-
-type SavedBrief = {
-  id: string;
-  createdAt: string;
-  markdown: string;
-};
-
-const CANADA_JURISDICTIONS = new Set([
-  "canada",
-  "ontario",
-  "quebec",
-  "alberta",
-  "british columbia",
-  "manitoba",
-  "saskatchewan",
-  "nova scotia",
-  "new brunswick",
-  "newfoundland and labrador",
-  "prince edward island",
-  "northwest territories",
-  "nunavut",
-  "yukon",
-]);
-
-function isCanadaJurisdiction(value: string): boolean {
-  const normalized = value.trim().toLowerCase();
-  if (!normalized) return false;
-  return CANADA_JURISDICTIONS.has(normalized);
-}
-
-function Delta({ value }: { value: number }) {
-  const positive = value >= 0;
-  return <span style={{ color: positive ? "var(--research)" : "var(--incidents)" }}>{positive ? "+" : ""}{value.toFixed(1)}%</span>;
-}
-
-function SkeletonLine({ width = "100%" }: { width?: string }) {
-  return <div className="h-3 animate-pulse rounded bg-bg" style={{ width }} />;
-}
-
-function RelativeTime({ value }: { value: string }) {
-  const [label, setLabel] = useState("");
-  useEffect(() => {
-    const render = () => {
-      const seconds = Math.max(0, Math.floor((Date.now() - new Date(value).getTime()) / 1000));
-      if (seconds < 60) return setLabel(`${seconds}s ago`);
-      if (seconds < 3600) return setLabel(`${Math.floor(seconds / 60)}m ago`);
-      if (seconds < 86400) return setLabel(`${Math.floor(seconds / 3600)}h ago`);
-      return setLabel(`${Math.floor(seconds / 86400)}d ago`);
-    };
-    render();
-    const timer = setInterval(render, 30000);
-    return () => clearInterval(timer);
-  }, [value]);
-  return <span>{label}</span>;
-}
+import { categoryColor, isCanadaJurisdiction, concentrationTone, confidenceTone } from "./dashboard/constants";
+import type { FilterPreset, ScenarioPreset, SavedBrief } from "./dashboard/constants";
+import { Delta, SkeletonLine } from "./dashboard/helpers";
+import { CommandBar } from "./dashboard/command-bar";
+import { FeedList } from "./dashboard/feed-list";
+import { DetailModal } from "./dashboard/detail-modal";
+import { SidebarAnalytics } from "./dashboard/sidebar-analytics";
+import { SidebarSources } from "./dashboard/sidebar-sources";
+import { SidebarEntities } from "./dashboard/sidebar-entities";
+import { SidebarHistory } from "./dashboard/sidebar-history";
+import { WelcomeBanner } from "./dashboard/welcome-banner";
+import { StoryHero } from "./dashboard/story-hero";
+import { TooltipHelp } from "./dashboard/tooltip-help";
+import { QuickGuideButton, QuickGuidePanel } from "./dashboard/quick-guide";
+import { DashboardShell } from "./dashboard/shell";
+import { MetricTile, Tile } from "./dashboard/tile";
 
 export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
   const t = useTranslations();
@@ -166,15 +88,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
   const [weekly, setWeekly] = useState<EChartsResponse | null>(null);
   const [selected, setSelected] = useState<FeedItem | null>(null);
   const [backfillStatus, setBackfillStatus] = useState<BackfillStatus | null>(null);
-  const [backfillStartDate, setBackfillStartDate] = useState("2022-11-01");
-  const [backfillEndDate, setBackfillEndDate] = useState("");
-  const [backfillPerPage, setBackfillPerPage] = useState(50);
-  const [backfillPagesPerMonth, setBackfillPagesPerMonth] = useState(1);
   const [isBackfillRunning, setIsBackfillRunning] = useState(false);
-  const [isBackfillSubmitting, setIsBackfillSubmitting] = useState(false);
-  const [backfillError, setBackfillError] = useState("");
-  const [cleanupStatus, setCleanupStatus] = useState<"idle" | "running" | "done" | "failed">("idle");
-  const [cleanupResult, setCleanupResult] = useState<PurgeSyntheticResponse | null>(null);
   const [sourceHealth, setSourceHealth] = useState<SourceHealthEntry[]>([]);
   const [sourceHealthUpdatedAt, setSourceHealthUpdatedAt] = useState("");
   const [sourceHealthRunStatus, setSourceHealthRunStatus] = useState("");
@@ -227,23 +141,28 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
     entities: false,
     history: false,
   });
-  const [copyState, setCopyState] = useState<"idle" | "copied" | "failed">("idle");
   const [briefCopyState, setBriefCopyState] = useState<"idle" | "copied" | "failed">("idle");
   const [saveBriefState, setSaveBriefState] = useState<"idle" | "saved">("idle");
-  const [shareState, setShareState] = useState<"idle" | "copied" | "failed">("idle");
   const [nowTs, setNowTs] = useState(Date.now());
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [lastRefreshAt, setLastRefreshAt] = useState("");
   const [refreshError, setRefreshError] = useState("");
   const [autoRefreshSec, setAutoRefreshSec] = useState<0 | 15 | 30 | 60>(30);
   const [density, setDensity] = useState<"comfortable" | "compact">("comfortable");
+  const [guideOpen, setGuideOpen] = useState(false);
+  const [controlsOpen, setControlsOpen] = useState(false);
+  const [analysisExpanded, setAnalysisExpanded] = useState(false);
   const [feedSort, setFeedSort] = useState<"newest" | "confidence">("newest");
   const [pinnedItems, setPinnedItems] = useState<FeedItem[]>([]);
   const [savedBriefs, setSavedBriefs] = useState<SavedBrief[]>([]);
   const [dismissedAlertIds, setDismissedAlertIds] = useState<string[]>([]);
   const refreshInFlight = useRef(false);
-  const searchInputRef = useRef<HTMLInputElement | null>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
   const isInitialLoading = isRefreshing && !kpis && feed.length === 0;
+  const openControlsAndFocusSearch = useCallback(() => {
+    setControlsOpen(true);
+    requestAnimationFrame(() => searchInputRef.current?.focus());
+  }, []);
 
   const scenarioPresets: ScenarioPreset[] = useMemo(
     () => [
@@ -307,7 +226,8 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
   );
 
   const otherLocale = locale === "en" ? "fr" : "en";
-  const pagePath = scope === "canada" ? "canada" : "world";
+
+  // --- Effects ---
 
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedSearch(search.trim()), 300);
@@ -316,7 +236,6 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
 
   useEffect(() => {
     if (mode !== "policy") return;
-    // Policy-first view should not inherit restrictive research filters.
     setCategory("");
     setLanguage("");
     setSearch("");
@@ -338,12 +257,12 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
       const key = event.key.toLowerCase();
       if ((event.ctrlKey || event.metaKey) && key === "k") {
         event.preventDefault();
-        searchInputRef.current?.focus();
+        openControlsAndFocusSearch();
         return;
       }
       if (!inEditable && key === "/") {
         event.preventDefault();
-        searchInputRef.current?.focus();
+        openControlsAndFocusSearch();
         return;
       }
       if (key === "escape" && selected) {
@@ -352,18 +271,24 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
     };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [selected]);
+  }, [openControlsAndFocusSearch, selected]);
 
   function isWithinTimeWindow(publishedAt: string, windowSize: TimeWindow): boolean {
     const ts = new Date(publishedAt).getTime();
     if (!Number.isFinite(ts)) return false;
     const ageMs = Date.now() - ts;
-    const maxAgeMs =
-      windowSize === "1h" ? 60 * 60 * 1000 :
-      windowSize === "24h" ? 24 * 60 * 60 * 1000 :
-      windowSize === "7d" ? 7 * 24 * 60 * 60 * 1000 :
-      30 * 24 * 60 * 60 * 1000;
-    return ageMs <= maxAgeMs;
+    const maxAgeMs: Record<TimeWindow, number> = {
+      "1h": 60 * 60 * 1000,
+      "24h": 24 * 60 * 60 * 1000,
+      "7d": 7 * 24 * 60 * 60 * 1000,
+      "30d": 30 * 24 * 60 * 60 * 1000,
+      "90d": 90 * 24 * 60 * 60 * 1000,
+      "1y": 365 * 24 * 60 * 60 * 1000,
+      "2y": 730 * 24 * 60 * 60 * 1000,
+      "5y": 1825 * 24 * 60 * 60 * 1000,
+    };
+    const max = maxAgeMs[windowSize] ?? 30 * 24 * 60 * 60 * 1000;
+    return ageMs <= max;
   }
 
   function matchesLiveFilters(item: FeedItem): boolean {
@@ -386,7 +311,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
     setIsRefreshing(true);
     setRefreshError("");
     try {
-      const [feedResponse, kpiResponse, hourlyResponse, weeklyResponse, jurisdictionsResponse, briefResponse, compareResponse, confidenceResponse, concentrationResponse, momentumResponse, riskResponse, entityMomentumResponse, riskTrendResponse, summaryResponse, coverageResponse] = await Promise.all([
+      const [feedResponse, kpiResponse, hourlyResponse, weeklyResponse, jurisdictionsResponse, sourcesResponse, tagsResponse, briefResponse, compareResponse, confidenceResponse, concentrationResponse, momentumResponse, riskResponse, entityMomentumResponse, riskTrendResponse, summaryResponse, coverageResponse] = await Promise.all([
         fetchFeed({
           time_window: timeWindow,
           category: category || undefined,
@@ -400,17 +325,19 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
         fetchHourly(),
         fetchWeekly(),
         fetchJurisdictionsBreakdown(timeWindow),
+        fetchSourcesBreakdown(timeWindow),
+        fetchTagsBreakdown(timeWindow),
         fetchBrief(timeWindow),
         fetchCompare(timeWindow),
         fetchConfidence(timeWindow),
-      fetchConcentration(timeWindow),
-      fetchMomentum(timeWindow, 8),
-      fetchRiskIndex(timeWindow),
-      fetchEntityMomentum(timeWindow, 10),
-      fetchRiskTrend(timeWindow),
-      fetchSummary(timeWindow),
-      fetchCoverage(timeWindow, 8),
-    ]);
+        fetchConcentration(timeWindow),
+        fetchMomentum(timeWindow, 8),
+        fetchRiskIndex(timeWindow),
+        fetchEntityMomentum(timeWindow, 10),
+        fetchRiskTrend(timeWindow),
+        fetchSummary(timeWindow),
+        fetchCoverage(timeWindow, 8),
+      ]);
       setFeed(
         feedResponse.items.filter((item) => {
           const inCanada = isCanadaJurisdiction(item.jurisdiction);
@@ -423,6 +350,8 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
       setHourly(hourlyResponse);
       setWeekly(weeklyResponse);
       setJurisdictionsBreakdown(jurisdictionsResponse);
+      setSourcesBreakdown(sourcesResponse);
+      setTagsBreakdown(tagsResponse);
       setBrief(briefResponse);
       setCompare(compareResponse);
       setConfidenceProfile(confidenceResponse);
@@ -511,7 +440,6 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
         setAlerts(alertsResponse.alerts ?? []);
       } catch {
         if (!mounted) return;
-        setBackfillError("Unable to fetch backfill status.");
       }
     };
 
@@ -672,7 +600,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
     const lang = params.get("lang");
     const q = params.get("q");
     const m = params.get("m");
-    if (tw === "1h" || tw === "24h" || tw === "7d" || tw === "30d") setTimeWindow(tw);
+    if (tw === "1h" || tw === "24h" || tw === "7d" || tw === "30d" || tw === "90d" || tw === "1y" || tw === "2y" || tw === "5y") setTimeWindow(tw);
     if (cat) setCategory(cat);
     if (jur) setJurisdiction(jur);
     if (lang) setLanguage(lang);
@@ -693,6 +621,8 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
     window.history.replaceState(null, "", next);
   }, [timeWindow, category, jurisdiction, language, search, mode]);
 
+  // --- Computed values ---
+
   const topInsights = useMemo(() => {
     const counts = new Map<string, number>();
     feed.forEach((item) => {
@@ -703,6 +633,10 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
       .slice(0, 3)
       .map(([cat, count]) => `${cat}: ${count}`);
   }, [feed]);
+
+  const topCategoryCoverage = useMemo(() => {
+    return (coverage?.categories ?? []).slice(0, 5);
+  }, [coverage]);
 
   const sortedFeed = useMemo(() => {
     const next = [...feed];
@@ -831,32 +765,6 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
     return items.filter((item) => !dismissedAlertIds.includes(item.id)).slice(0, 20);
   }, [alerts, sourceFreshness, riskIndex?.reasons, dismissedAlertIds, t]);
 
-  const confidenceTone: Record<string, string> = {
-    very_high: "var(--research)",
-    high: "var(--policy)",
-    medium: "var(--warning)",
-    low: "var(--incidents)",
-  };
-
-  function concentrationTone(level: string): string {
-    if (level === "high") return "var(--incidents)";
-    if (level === "medium") return "var(--warning)";
-    return "var(--research)";
-  }
-
-  function applyCoverageFilter(groupKey: string, value: string) {
-    if (groupKey === "categories") {
-      setCategory(value);
-    } else if (groupKey === "jurisdictions") {
-      setJurisdiction(value);
-    } else if (groupKey === "languages") {
-      setLanguage(value);
-    } else if (groupKey === "source_types") {
-      setSearch(value);
-    }
-    setMode("research");
-  }
-
   const hourlyOption = useMemo(
     () => ({
       tooltip: {
@@ -939,73 +847,42 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
     [riskTrend, t]
   );
 
-  async function startBackfill() {
-    setIsBackfillSubmitting(true);
-    setBackfillError("");
-    try {
-      const response = await runBackfill({
-        start_date: backfillStartDate,
-        end_date: backfillEndDate || undefined,
-        per_page: backfillPerPage,
-        max_pages_per_month: backfillPagesPerMonth,
-      });
-      setIsBackfillRunning(true);
-      setBackfillStatus((prev) => ({
-        ...(prev ?? {}),
-        state: "running",
-      }));
-      if (response.status !== "queued") {
-        setBackfillError("Backfill request not queued.");
-      }
-    } catch {
-      setBackfillError("Backfill request failed.");
-    } finally {
-      setIsBackfillSubmitting(false);
+  // --- Event handlers ---
+
+  function applyCoverageFilter(groupKey: string, value: string) {
+    if (groupKey === "categories") {
+      setCategory(value);
+    } else if (groupKey === "jurisdictions") {
+      setJurisdiction(value);
+    } else if (groupKey === "languages") {
+      setLanguage(value);
+    } else if (groupKey === "source_types") {
+      setSearch(value);
+    }
+    setMode("research");
+  }
+
+  function applyCategoryFilter(value: string | undefined) {
+    if (!value) return;
+    const normalized = value.toLowerCase();
+    if (["policy", "research", "industry", "funding", "news", "incidents"].includes(normalized)) {
+      setCategory(normalized);
+      setMode("research");
     }
   }
 
-  const backfillStateLabel = useMemo(() => {
-    const key = backfillStatus?.state ?? "idle";
-    if (key === "running") return t("backfill.running");
-    if (key === "completed") return t("backfill.completed");
-    if (key === "failed") return t("backfill.failed");
-    if (key === "queued") return t("backfill.queued");
-    return t("backfill.idle");
-  }, [backfillStatus?.state, t]);
+  const chartEvents = useMemo(
+    () => ({
+      click: (params: { seriesName?: string }) => {
+        applyCategoryFilter(params.seriesName);
+      },
+    }),
+    []
+  );
 
-  const cleanupStateLabel = useMemo(() => {
-    if (cleanupStatus === "running") return t("cleanup.running");
-    if (cleanupStatus === "done") return t("cleanup.done");
-    if (cleanupStatus === "failed") return t("cleanup.failed");
-    return t("cleanup.idle");
-  }, [cleanupStatus, t]);
-
-  async function previewCleanup() {
-    setCleanupStatus("running");
-    try {
-      const result = await previewSyntheticPurge();
-      setCleanupResult(result);
-      setCleanupStatus("done");
-    } catch {
-      setCleanupStatus("failed");
-    }
-  }
-
-  async function runCleanup() {
-    setCleanupStatus("running");
-    try {
-      const result = await executeSyntheticPurge();
-      setCleanupResult(result);
-      setCleanupStatus("done");
-      await refreshData();
-    } catch {
-      setCleanupStatus("failed");
-    }
-  }
-
-  function togglePanel(panel: string) {
+  const togglePanel = useCallback((panel: string) => {
     setPanelVisibility((prev) => ({ ...prev, [panel]: !prev[panel] }));
-  }
+  }, []);
 
   function savePreset() {
     const name = window.prompt(t("filters.presetNamePrompt"), "");
@@ -1030,24 +907,28 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
     setSearch(preset.search);
   }
 
-  function clearFilters() {
+  const clearFilters = useCallback(() => {
     setTimeWindow("24h");
     setCategory("");
     setJurisdiction("");
     setLanguage("");
     setSearch("");
-  }
+  }, []);
 
   const activeFilters = useMemo(() => {
     const chips: Array<{ id: string; label: string; clear: () => void }> = [];
-    chips.push({ id: "tw", label: `${t("filters.timeWindow")}: ${timeWindow}`, clear: () => setTimeWindow("24h") });
+    if (timeWindow !== "24h") {
+      chips.push({ id: "tw", label: `${t("filters.timeWindow")}: ${timeWindow}`, clear: () => setTimeWindow("24h") });
+    }
     if (category) chips.push({ id: "cat", label: `${t("filters.category")}: ${category}`, clear: () => setCategory("") });
     if (jurisdiction) chips.push({ id: "jur", label: `${t("filters.region")}: ${jurisdiction}`, clear: () => setJurisdiction("") });
     if (language) chips.push({ id: "lang", label: `${t("feed.language")}: ${language.toUpperCase()}`, clear: () => setLanguage("") });
     if (search) chips.push({ id: "q", label: `${t("filters.keyword")}: ${search}`, clear: () => setSearch("") });
-    chips.push({ id: "sort", label: `${t("feed.sort")}: ${feedSort === "newest" ? t("feed.sortNewest") : t("feed.sortConfidence")}`, clear: () => setFeedSort("newest") });
+    if (feedSort !== "newest") {
+      chips.push({ id: "sort", label: `${t("feed.sort")}: ${t("feed.sortConfidence")}`, clear: () => setFeedSort("newest") });
+    }
     return chips;
-  }, [t, timeWindow, category, jurisdiction, scope, language, search, feedSort]);
+  }, [t, timeWindow, category, jurisdiction, language, search, feedSort]);
 
   function deletePreset(id: string) {
     setPresets((prev) => prev.filter((item) => item.id !== id));
@@ -1062,47 +943,32 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
     setSearch(scenario.search);
   }
 
-  function isPinned(id: string): boolean {
-    return pinnedItems.some((item) => item.id === id);
-  }
+  const isPinned = useCallback(
+    (id: string): boolean => pinnedItems.some((item) => item.id === id),
+    [pinnedItems]
+  );
 
-  function togglePin(item: FeedItem) {
+  const togglePin = useCallback((item: FeedItem) => {
     setPinnedItems((prev) => {
       const exists = prev.some((entry) => entry.id === item.id);
       if (exists) return prev.filter((entry) => entry.id !== item.id);
       return [item, ...prev].slice(0, 30);
     });
-  }
+  }, []);
 
-  function applyCategoryFilter(value: string | undefined) {
-    if (!value) return;
-    const normalized = value.toLowerCase();
-    if (["policy", "research", "industry", "funding", "news", "incidents"].includes(normalized)) {
-      setCategory(normalized);
-      setMode("research");
-    }
-  }
+  const toggleResearchDrawer = useCallback((key: string) => {
+    setResearchDrawers((prev) => ({ ...prev, [key]: !prev[key as keyof typeof prev] }));
+  }, []);
 
-  const chartEvents = useMemo(
-    () => ({
-      click: (params: { seriesName?: string }) => {
-        applyCategoryFilter(params.seriesName);
-      },
-    }),
-    []
-  );
+  const dismissAlertItem = useCallback((id: string) => {
+    setDismissedAlertIds((prev) => (prev.includes(id) ? prev : [id, ...prev].slice(0, 200)));
+  }, []);
 
-  async function copySelectedUrl() {
-    if (!selected) return;
-    try {
-      await navigator.clipboard.writeText(selected.url);
-      setCopyState("copied");
-      setTimeout(() => setCopyState("idle"), 1500);
-    } catch {
-      setCopyState("failed");
-      setTimeout(() => setCopyState("idle"), 1500);
-    }
-  }
+  const resetDismissedAlerts = useCallback(() => {
+    setDismissedAlertIds([]);
+  }, []);
+
+  // --- Morning brief ---
 
   const morningBriefMarkdown = useMemo(() => {
     const lines: string[] = [];
@@ -1177,11 +1043,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
     }
   }
 
-  function downloadMorningBrief() {
-    downloadBrief(morningBriefMarkdown);
-  }
-
-  function downloadBrief(markdown: string, stamp?: string) {
+  const downloadBrief = useCallback((markdown: string, stamp?: string) => {
     const blob = new Blob([markdown], { type: "text/markdown;charset=utf-8" });
     const url = URL.createObjectURL(blob);
     const anchor = document.createElement("a");
@@ -1193,15 +1055,19 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
     anchor.click();
     anchor.remove();
     URL.revokeObjectURL(url);
+  }, [scope]);
+
+  function downloadMorningBrief() {
+    downloadBrief(morningBriefMarkdown);
   }
 
-  async function copyBrief(markdown: string) {
+  const copyBrief = useCallback(async (markdown: string) => {
     try {
       await navigator.clipboard.writeText(markdown);
     } catch {
       return;
     }
-  }
+  }, []);
 
   function saveCurrentBrief() {
     const entry: SavedBrief = {
@@ -1214,447 +1080,414 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
     setTimeout(() => setSaveBriefState("idle"), 1600);
   }
 
-  function dismissAlertItem(id: string) {
-    setDismissedAlertIds((prev) => (prev.includes(id) ? prev : [id, ...prev].slice(0, 200)));
-  }
+  // --- Concentration dimensions for loop rendering ---
+  const concentrationDimensions = useMemo(
+    () => [
+      { key: "combined", hhi: concentration?.combined_hhi, level: concentration?.combined_level },
+      { key: "source", hhi: concentration?.source_hhi, level: concentration?.source_level },
+      { key: "jurisdiction", hhi: concentration?.jurisdiction_hhi, level: concentration?.jurisdiction_level },
+      { key: "category", hhi: concentration?.category_hhi, level: concentration?.category_level },
+    ],
+    [concentration]
+  );
 
-  function resetDismissedAlerts() {
-    setDismissedAlertIds([]);
-  }
+  const backfillStateLabel = useMemo(() => {
+    const key = backfillStatus?.state ?? "idle";
+    if (key === "running") return t("backfill.running");
+    if (key === "completed") return t("backfill.completed");
+    if (key === "failed") return t("backfill.failed");
+    if (key === "queued") return t("backfill.queued");
+    return t("backfill.idle");
+  }, [backfillStatus?.state, t]);
 
-  function toggleResearchDrawer(key: keyof typeof researchDrawers) {
-    setResearchDrawers((prev) => ({ ...prev, [key]: !prev[key] }));
-  }
+  const lastRefreshLabel = lastRefreshAt ? new Date(lastRefreshAt).toLocaleTimeString() : "--";
+  const liveStatusClass =
+    sseStatus === "live" ? "live" : sseStatus === "error" ? "error" : "pending";
 
-  async function copyShareLink() {
-    if (typeof window === "undefined") return;
-    try {
-      await navigator.clipboard.writeText(window.location.href);
-      setShareState("copied");
-      setTimeout(() => setShareState("idle"), 1600);
-    } catch {
-      setShareState("failed");
-      setTimeout(() => setShareState("idle"), 1600);
-    }
-  }
+  // --- Render ---
 
   return (
-    <div className="pulse-shell min-h-screen bg-bg text-text">
-      <header className="sticky top-0 z-30 border-b border-borderSoft bg-surface backdrop-blur">
-        <div className="mx-auto flex max-w-[1460px] items-center justify-between px-4 py-3">
-          <nav className="flex items-center gap-2 text-sm">
-            <Link href={`/${locale}/canada`} className="inline-flex items-center gap-1 rounded-full px-3 py-2 hover:bg-bg"><Landmark size={16} />{t("nav.canada")}</Link>
-            <Link href={`/${locale}/world`} className="inline-flex items-center gap-1 rounded-full px-3 py-2 hover:bg-bg"><Globe2 size={16} />{t("nav.world")}</Link>
-            <Link href={`/${locale}/methods`} className="inline-flex items-center gap-1 rounded-full px-3 py-2 hover:bg-bg"><BarChart3 size={16} />{t("nav.methods")}</Link>
-          </nav>
-          <div className="flex items-center gap-2">
-            <button onClick={toggleTheme} className="rounded-full border border-borderSoft px-3 py-2 text-sm hover:bg-bg" aria-label="Toggle theme">
-              {theme === "light" ? <Moon size={16} /> : <Sun size={16} />}
-            </button>
-            <Link href={`/${otherLocale}/${pagePath}`} className="rounded-full border border-borderSoft px-3 py-2 text-sm hover:bg-bg">
-              {otherLocale.toUpperCase()}
-            </Link>
-            <button
-              onClick={() => setMode(mode === "policy" ? "research" : "policy")}
-              className="rounded-full border border-borderStrong bg-surface px-3 py-2 text-sm hover:bg-bg"
-            >
-              {mode === "policy" ? t("mode.policy") : t("mode.research")}
-            </button>
-            <button
-              onClick={() => setDensity((prev) => (prev === "comfortable" ? "compact" : "comfortable"))}
-              className="rounded-full border border-borderSoft px-3 py-2 text-sm hover:bg-bg"
-            >
-              {density === "comfortable" ? t("density.comfortable") : t("density.compact")}
-            </button>
-          </div>
+    <DashboardShell
+      locale={locale}
+      activeScope={scope}
+      navLabels={{
+        canada: t("nav.canada"),
+        world: t("nav.world"),
+        methods: t("nav.methods"),
+      }}
+      otherLocale={otherLocale}
+      theme={theme}
+      onToggleTheme={toggleTheme}
+      headerMeta={(
+        <div className="dd-meta-strip">
+          <span className={`dd-meta-pill ${liveStatusClass}`}>
+            {t(`feed.status_${sseStatus}`)}
+          </span>
+          <span className="dd-meta-pill">{t("filters.timeWindow")}: {timeWindow}</span>
+          <span className="dd-meta-pill">{t("feed.lastRefresh")}: {lastRefreshLabel}</span>
         </div>
-      </header>
+      )}
+      headerActions={(
+        <>
+          <QuickGuideButton onClick={() => setGuideOpen((prev) => !prev)} />
+          <button
+            onClick={() => setControlsOpen((prev) => !prev)}
+            className={`nav-button ${controlsOpen ? "is-active" : ""}`}
+            aria-pressed={controlsOpen}
+          >
+            {controlsOpen ? t("filters.hideControls") : t("filters.refine")}
+          </button>
+        </>
+      )}
+      guidePanel={<QuickGuidePanel isOpen={guideOpen} onClose={() => setGuideOpen(false)} locale={locale} />}
+      utilityBar={controlsOpen ? (
+        <CommandBar
+          mode={mode}
+          timeWindow={timeWindow}
+          category={category}
+          jurisdiction={jurisdiction}
+          language={language}
+          search={search}
+          feedSort={feedSort}
+          presets={presets}
+          scenarioPresets={scenarioPresets}
+          activeFilters={activeFilters}
+          searchInputRef={searchInputRef}
+          onTimeWindowChange={setTimeWindow}
+          onCategoryChange={setCategory}
+          onJurisdictionChange={setJurisdiction}
+          onLanguageChange={setLanguage}
+          onSearchChange={setSearch}
+          onFeedSortChange={setFeedSort}
+          onSavePreset={savePreset}
+          onApplyPreset={applyPreset}
+          onDeletePreset={deletePreset}
+          onClearFilters={clearFilters}
+          onApplyScenario={applyScenario}
+        />
+      ) : null}
+    >
+      <main className="dd-dashboard-main mx-auto max-w-[1720px] space-y-4 px-4 py-4 md:px-5">
+        {/* Story Hero with auto-generated narrative */}
+        <StoryHero
+          scope={scope}
+          timeWindow={timeWindow}
+          kpis={kpis}
+          jurisdictionsBreakdown={jurisdictionsBreakdown}
+          alerts={alerts}
+          totalSignals={brief?.total_items ?? feed.length}
+        />
 
-      <div className="command-bar sticky top-[61px] z-20 border-b border-borderSoft bg-bg backdrop-blur">
-        <div className="mx-auto grid max-w-[1460px] grid-cols-1 gap-3 px-4 py-3 md:grid-cols-5">
-          <label className="text-sm">
-            <div className="mb-1 text-textSecondary">{t("filters.timeWindow")}</div>
-            <select className="w-full rounded border border-borderSoft bg-surface px-2 py-2" value={timeWindow} onChange={(e) => setTimeWindow(e.target.value as TimeWindow)}>
-              <option value="1h">1h</option>
-              <option value="24h">24h</option>
-              <option value="7d">7d</option>
-              <option value="30d">30d</option>
-            </select>
-          </label>
-          {mode === "research" && (
-            <label className="text-sm">
-              <div className="mb-1 text-textSecondary">{t("filters.category")}</div>
-              <select className="w-full rounded border border-borderSoft bg-surface px-2 py-2" value={category} onChange={(e) => setCategory(e.target.value)}>
-                <option value="">All</option>
-                <option value="policy">Policy</option>
-                <option value="research">Research</option>
-                <option value="industry">Industry</option>
-                <option value="funding">Funding</option>
-                <option value="news">News</option>
-                <option value="incidents">Incidents</option>
-              </select>
-            </label>
-          )}
-          {mode === "research" && (
-            <label className="text-sm">
-              <div className="mb-1 text-textSecondary">{t("filters.region")}</div>
-              <select className="w-full rounded border border-borderSoft bg-surface px-2 py-2" value={jurisdiction} onChange={(e) => setJurisdiction(e.target.value)}>
-                <option value="">All</option>
-                <option value="Canada">Canada</option>
-                <option value="Global">Global</option>
-                <option value="Ontario">Ontario</option>
-                <option value="Quebec">Quebec</option>
-                <option value="Alberta">Alberta</option>
-              </select>
-            </label>
-          )}
-          {mode === "research" && (
-            <label className="text-sm">
-              <div className="mb-1 text-textSecondary">{t("feed.language")}</div>
-              <select className="w-full rounded border border-borderSoft bg-surface px-2 py-2" value={language} onChange={(e) => setLanguage(e.target.value)}>
-                <option value="">All</option>
-                <option value="en">EN</option>
-                <option value="fr">FR</option>
-                <option value="other">Other</option>
-              </select>
-            </label>
-          )}
-          <label className="text-sm">
-            <div className="mb-1 text-textSecondary">{t("filters.keyword")}</div>
-            <div className="flex items-center rounded border border-borderSoft bg-surface px-2">
-              <Search size={16} color="var(--text-muted)" />
-              <input
-                ref={searchInputRef}
-                className="w-full border-none bg-transparent px-2 py-2 text-text outline-none"
-                placeholder={t("filters.keywordPlaceholder")}
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
-            </div>
-            <div className="mt-1 text-xs text-textMuted">{t("filters.shortcuts")}</div>
-          </label>
-          <label className="text-sm">
-            <div className="mb-1 text-textSecondary">{t("feed.sort")}</div>
-            <select className="w-full rounded border border-borderSoft bg-surface px-2 py-2" value={feedSort} onChange={(e) => setFeedSort(e.target.value as "newest" | "confidence")}>
-              <option value="newest">{t("feed.sortNewest")}</option>
-              <option value="confidence">{t("feed.sortConfidence")}</option>
-            </select>
-          </label>
-        </div>
-        <div className="mx-auto flex max-w-[1460px] flex-wrap items-center gap-2 px-4 pb-3">
-          <button onClick={savePreset} className="rounded border border-borderSoft px-2 py-1 text-xs">
-            {t("filters.savePreset")}
-          </button>
-          <button onClick={clearFilters} className="rounded border border-borderSoft px-2 py-1 text-xs">
-            {t("filters.clear")}
-          </button>
-          <button onClick={copyShareLink} className="rounded border border-borderSoft px-2 py-1 text-xs">
-            {shareState === "copied"
-              ? t("filters.shareCopied")
-              : shareState === "failed"
-                ? t("filters.shareFailed")
-                : t("filters.share")}
-          </button>
-          {presets.map((preset) => (
-            <div key={preset.id} className="flex items-center gap-1 rounded border border-borderSoft px-2 py-1 text-xs">
-              <button onClick={() => applyPreset(preset)} className="text-left">
-                {preset.name}
-              </button>
-              <button onClick={() => deletePreset(preset.id)} aria-label={`${t("filters.deletePreset")} ${preset.name}`}>
-                x
-              </button>
-            </div>
-          ))}
-        </div>
-        <div className="mx-auto flex max-w-[1460px] flex-wrap items-center gap-2 px-4 pb-3">
-          {activeFilters.map((chip) => (
-            <button key={chip.id} onClick={chip.clear} className="rounded border border-borderSoft bg-surface px-2 py-1 text-xs">
-              {chip.label} x
-            </button>
-          ))}
-        </div>
-        <div className="mx-auto grid max-w-[1460px] grid-cols-1 gap-2 px-4 pb-3 md:grid-cols-5">
-          {scenarioPresets.map((scenario) => (
-            <button
-              key={scenario.id}
-              onClick={() => applyScenario(scenario)}
-              className="rounded border border-borderSoft bg-surface px-3 py-2 text-left text-xs"
-            >
-              <p className="font-medium">{t(`scenarios.${scenario.labelKey}`)}</p>
-              <p className="mt-1 text-textMuted">{t(`scenarios.${scenario.descriptionKey}`)}</p>
-            </button>
-          ))}
-        </div>
-      </div>
+        {/* Welcome Banner (first visit only) */}
+        <WelcomeBanner />
 
-      <main className="mx-auto max-w-[1460px] space-y-5 px-4 py-6">
-        <section className="story-hero elevated rounded-2xl border border-borderSoft bg-surface p-5">
-          <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
-            <div>
-              <p className="text-xs uppercase tracking-[0.18em] text-textMuted">{scope === "canada" ? "Canada Intelligence" : "Global Intelligence"}</p>
-              <h1 className="mt-1 text-2xl font-semibold tracking-tight md:text-3xl">{t("hero.title")}</h1>
-              <p className="mt-2 max-w-3xl text-sm text-textSecondary">{t("hero.subtitle")}</p>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {mode === "policy" ? (
-                <button onClick={() => setMode("research")} className="rounded-full border border-borderStrong px-3 py-2 text-sm hover:bg-bg">
-                  {t("hero.openResearch")}
-                </button>
-              ) : (
-                <button onClick={() => setMode("policy")} className="rounded-full border border-borderStrong px-3 py-2 text-sm hover:bg-bg">
-                  {t("hero.backPolicy")}
-                </button>
+        {/* Mode + Actions row */}
+        <div className="dd-action-row flex flex-wrap items-center gap-2">
+          {mode === "policy" ? (
+            <button onClick={() => setMode("research")} className="btn-secondary">
+              {t("hero.openResearch")}
+            </button>
+          ) : (
+            <button onClick={() => setMode("policy")} className="btn-secondary">
+              {t("hero.backPolicy")}
+            </button>
+          )}
+          <button
+            onClick={() => setDensity((prev) => (prev === "comfortable" ? "compact" : "comfortable"))}
+            className="btn-ghost"
+          >
+            {density === "comfortable" ? t("density.comfortable") : t("density.compact")}
+          </button>
+          <button onClick={clearFilters} className="btn-ghost">
+            {t("hero.resetView")}
+          </button>
+          <button onClick={() => setAnalysisExpanded((prev) => !prev)} className="btn-ghost">
+            {analysisExpanded ? t("hero.hideAnalysis") : t("hero.showAnalysis")}
+          </button>
+          <Link href={`/${locale}/methods`} className="btn-ghost text-textSecondary">
+            {t("hero.howItWorks")}
+          </Link>
+        </div>
+
+        {/* KPIs */}
+        <section className="dd-kpi-band grid grid-cols-1 gap-3 xl:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-2">
+            <MetricTile
+              label={t("kpi.new15m")}
+              value={kpis?.m15.current ?? 0}
+              tone={(kpis?.m15.delta_percent ?? 0) >= 0 ? "ok" : "critical"}
+              loading={isInitialLoading}
+              footer={(
+                <div className="flex items-center justify-between gap-2">
+                  <Delta value={kpis?.m15.delta_percent ?? 0} />
+                  <span className="dd-metric-footnote">{t("kpi.previous")}: {kpis?.m15.previous ?? 0}</span>
+                </div>
               )}
-              <button onClick={clearFilters} className="rounded-full border border-borderSoft px-3 py-2 text-sm hover:bg-bg">
-                {t("hero.resetView")}
-              </button>
-            </div>
+            />
+            <MetricTile
+              label={t("kpi.new1h")}
+              value={kpis?.h1.current ?? 0}
+              tone={(kpis?.h1.delta_percent ?? 0) >= 0 ? "ok" : "critical"}
+              loading={isInitialLoading}
+              footer={(
+                <div className="flex items-center justify-between gap-2">
+                  <Delta value={kpis?.h1.delta_percent ?? 0} />
+                  <span className="dd-metric-footnote">{t("kpi.previous")}: {kpis?.h1.previous ?? 0}</span>
+                </div>
+              )}
+            />
+            <MetricTile
+              label={t("kpi.new7d")}
+              value={kpis?.d7.current ?? 0}
+              tone={(kpis?.d7.delta_percent ?? 0) >= 0 ? "ok" : "critical"}
+              loading={isInitialLoading}
+              footer={(
+                <div className="flex items-center justify-between gap-2">
+                  <Delta value={kpis?.d7.delta_percent ?? 0} />
+                  <span className="dd-metric-footnote">{t("kpi.previous")}: {kpis?.d7.previous ?? 0}</span>
+                </div>
+              )}
+            />
+            <MetricTile
+              label={t("risk.title")}
+              value={(riskIndex?.score ?? 0).toFixed(1)}
+              tone={riskIndex?.level === "high" ? "critical" : riskIndex?.level === "medium" ? "warn" : "info"}
+              loading={isInitialLoading}
+              footer={(
+                <div className="flex items-center justify-between gap-2">
+                  <span className="capitalize">{t(`risk.${riskIndex?.level ?? "low"}`)}</span>
+                  <span className="dd-metric-footnote">{t("risk.incidents")}: {riskIndex?.incidents ?? 0}</span>
+                </div>
+              )}
+            />
           </div>
-        </section>
-        <section className="kpi-grid grid grid-cols-1 gap-4 md:grid-cols-4">
-          <article className="kpi-card elevated rounded-2xl border border-borderSoft bg-surface p-4">
-            <h2 className="text-sm text-textSecondary">{t("kpi.new15m")}</h2>
+          <Tile title={t("kpi.topInsights")} className="insight-card p-4">
             {isInitialLoading ? (
-              <div className="mt-2 space-y-2">
-                <SkeletonLine width="55%" />
-                <SkeletonLine width="35%" />
-                <SkeletonLine width="45%" />
+              <div className="dd-visual-bars mt-2">
+                <SkeletonLine width="92%" />
+                <SkeletonLine width="78%" />
+                <SkeletonLine width="64%" />
               </div>
+            ) : topCategoryCoverage.length === 0 ? (
+              <ul className="mt-1 list-disc space-y-1 pl-4 text-sm text-textSecondary">
+                {topInsights.map((line) => (
+                  <li key={line}>{line}</li>
+                ))}
+              </ul>
             ) : (
-              <>
-                <p className="kpi-value mt-2 text-3xl font-semibold">{kpis?.m15.current ?? 0}</p>
-                <p className="mt-1 text-sm"><Delta value={kpis?.m15.delta_percent ?? 0} /></p>
-                <p className="mt-1 text-xs text-textMuted">{t("kpi.previous")}: {kpis?.m15.previous ?? 0}</p>
-              </>
-            )}
-          </article>
-          <article className="kpi-card elevated rounded-2xl border border-borderSoft bg-surface p-4">
-            <h2 className="text-sm text-textSecondary">{t("kpi.new1h")}</h2>
-            {isInitialLoading ? (
-              <div className="mt-2 space-y-2">
-                <SkeletonLine width="55%" />
-                <SkeletonLine width="35%" />
-                <SkeletonLine width="45%" />
+              <div className="dd-visual-bars">
+                {topCategoryCoverage.map((item) => {
+                  const width = Math.max(6, Math.round(item.percent));
+                  return (
+                    <div key={item.name} className="dd-visual-row">
+                      <div className="dd-visual-head">
+                        <span className="capitalize">{item.name}</span>
+                        <span>{item.count}</span>
+                      </div>
+                      <div className="dd-visual-track">
+                        <div
+                          className="dd-visual-fill"
+                          style={{
+                            width: `${width}%`,
+                            background: categoryColor[item.name] ?? "var(--primary-action)",
+                          }}
+                        />
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
-            ) : (
-              <>
-                <p className="kpi-value mt-2 text-3xl font-semibold">{kpis?.h1.current ?? 0}</p>
-                <p className="mt-1 text-sm"><Delta value={kpis?.h1.delta_percent ?? 0} /></p>
-                <p className="mt-1 text-xs text-textMuted">{t("kpi.previous")}: {kpis?.h1.previous ?? 0}</p>
-              </>
             )}
-          </article>
-          <article className="kpi-card elevated rounded-2xl border border-borderSoft bg-surface p-4">
-            <h2 className="text-sm text-textSecondary">{t("kpi.new7d")}</h2>
-            {isInitialLoading ? (
-              <div className="mt-2 space-y-2">
-                <SkeletonLine width="55%" />
-                <SkeletonLine width="35%" />
-                <SkeletonLine width="45%" />
-              </div>
-            ) : (
-              <>
-                <p className="kpi-value mt-2 text-3xl font-semibold">{kpis?.d7.current ?? 0}</p>
-                <p className="mt-1 text-sm"><Delta value={kpis?.d7.delta_percent ?? 0} /></p>
-                <p className="mt-1 text-xs text-textMuted">{t("kpi.previous")}: {kpis?.d7.previous ?? 0}</p>
-              </>
+          </Tile>
+        </section>
+
+        {analysisExpanded ? (
+          <>
+            <section className="dd-story-grid grid grid-cols-1 gap-3 xl:grid-cols-3">
+              <Tile title={t("pulse.title")} className="p-4">
+                {isInitialLoading ? (
+                  <div className="mt-3 space-y-2"><SkeletonLine width="80%" /><SkeletonLine width="65%" /><SkeletonLine width="50%" /></div>
+                ) : executivePulse.length === 0 ? (
+                  <p className="py-4 text-center text-caption text-textMuted italic">{t("pulse.noData")}</p>
+                ) : (
+                  <ul className="mt-2 list-disc space-y-1 pl-4 text-sm text-textSecondary">
+                    {executivePulse.map((line) => (<li key={line}>{line}</li>))}
+                  </ul>
+                )}
+              </Tile>
+              <Tile title={t("narrative.title")} className="p-4">
+                {isInitialLoading ? (
+                  <div className="mt-3 space-y-2"><SkeletonLine width="85%" /><SkeletonLine width="70%" /><SkeletonLine width="55%" /></div>
+                ) : strategicNarrative.length === 0 ? (
+                  <p className="py-4 text-center text-caption text-textMuted italic">{t("narrative.noData")}</p>
+                ) : (
+                  <ul className="mt-2 list-disc space-y-1 pl-4 text-sm text-textSecondary">
+                    {strategicNarrative.map((line) => (<li key={line}>{line}</li>))}
+                  </ul>
+                )}
+              </Tile>
+              <Tile title={t("summary.title")} className="p-4">
+                {isInitialLoading ? (
+                  <div className="mt-3 space-y-2"><SkeletonLine width="90%" /><SkeletonLine width="75%" /><SkeletonLine width="60%" /></div>
+                ) : (summary?.bullets ?? []).length === 0 ? (
+                  <p className="py-4 text-center text-caption text-textMuted italic">{t("summary.noData")}</p>
+                ) : (
+                  <ul className="mt-2 list-disc space-y-1 pl-4 text-sm text-textSecondary">
+                    {(summary?.bullets ?? []).map((line) => (<li key={line}>{line}</li>))}
+                  </ul>
+                )}
+              </Tile>
+            </section>
+
+            {/* Morning Brief Snapshot (research only) */}
+            {mode === "research" && (
+              <section className="elevated p-4">
+                <h3 className="mb-3 text-subheading text-textSecondary">{t("brief.title")}<TooltipHelp term="briefSnapshot" /></h3>
+                <div className="grid grid-cols-1 gap-3 text-caption text-textSecondary md:grid-cols-5">
+                  <div className="rounded-lg bg-surfaceInset p-3">
+                    <p className="text-micro text-textMuted">{t("brief.total")}</p>
+                    <p className="mt-1 font-semibold">{brief?.total_items ?? 0}</p>
+                  </div>
+                  <div className="rounded-lg bg-surfaceInset p-3">
+                    <p className="text-micro text-textMuted">{t("brief.topCategory")}</p>
+                    <p className="mt-1 font-semibold">{brief?.top_category?.name || "-"}</p>
+                  </div>
+                  <div className="rounded-lg bg-surfaceInset p-3">
+                    <p className="text-micro text-textMuted">{t("brief.topJurisdiction")}</p>
+                    <p className="mt-1 font-semibold">{brief?.top_jurisdiction?.name || "-"}</p>
+                  </div>
+                  <div className="rounded-lg bg-surfaceInset p-3">
+                    <p className="text-micro text-textMuted">{t("brief.topPublisher")}</p>
+                    <p className="mt-1 font-semibold">{brief?.top_publisher?.name || "-"}</p>
+                  </div>
+                  <div className="rounded-lg bg-surfaceInset p-3">
+                    <p className="text-micro text-textMuted">{t("brief.highAlerts")}</p>
+                    <p className="mt-1 font-semibold">{brief?.high_alert_count ?? 0}</p>
+                  </div>
+                </div>
+              </section>
             )}
-          </article>
-          <article className="insight-card elevated rounded-2xl border border-borderSoft bg-surface p-4">
-            <h2 className="text-sm text-textSecondary">{t("kpi.topInsights")}</h2>
-            <ul className="mt-2 list-disc pl-4 text-sm text-textSecondary">
-              {topInsights.map((line) => (
-                <li key={line}>{line}</li>
-              ))}
-            </ul>
-          </article>
-        </section>
-        <section className="elevated rounded-2xl border border-borderSoft bg-surface p-4">
-          <h3 className="text-sm font-semibold text-textSecondary">{t("pulse.title")}</h3>
-          <ul className="mt-2 list-disc space-y-1 pl-4 text-sm text-textSecondary">
-            {executivePulse.map((line) => (
-              <li key={line}>{line}</li>
-            ))}
-          </ul>
-        </section>
-        <section className="elevated rounded-2xl border border-borderSoft bg-surface p-4">
-          <h3 className="text-sm font-semibold text-textSecondary">{t("narrative.title")}</h3>
-          <ul className="mt-2 list-disc space-y-1 pl-4 text-sm text-textSecondary">
-            {strategicNarrative.map((line) => (
-              <li key={line}>{line}</li>
-            ))}
-          </ul>
-        </section>
-        <section className="elevated rounded-2xl border border-borderSoft bg-surface p-4">
-          <h3 className="text-sm font-semibold text-textSecondary">{t("summary.title")}</h3>
-          <ul className="mt-2 list-disc space-y-1 pl-4 text-sm text-textSecondary">
-            {(summary?.bullets ?? []).map((line) => (
-              <li key={line}>{line}</li>
-            ))}
-          </ul>
-        </section>
-        {mode === "research" && (
-        <section className="elevated rounded-2xl border border-borderSoft bg-surface p-4">
-          <h3 className="mb-2 text-sm font-semibold text-textSecondary">{t("brief.title")}</h3>
-          <div className="grid grid-cols-1 gap-2 text-xs text-textSecondary md:grid-cols-5">
-            <div className="rounded border border-borderSoft bg-bg p-2">
-              <p className="text-textMuted">{t("brief.total")}</p>
-              <p className="mt-1 font-semibold">{brief?.total_items ?? 0}</p>
-            </div>
-            <div className="rounded border border-borderSoft bg-bg p-2">
-              <p className="text-textMuted">{t("brief.topCategory")}</p>
-              <p className="mt-1 font-semibold">{brief?.top_category?.name || "-"}</p>
-            </div>
-            <div className="rounded border border-borderSoft bg-bg p-2">
-              <p className="text-textMuted">{t("brief.topJurisdiction")}</p>
-              <p className="mt-1 font-semibold">{brief?.top_jurisdiction?.name || "-"}</p>
-            </div>
-            <div className="rounded border border-borderSoft bg-bg p-2">
-              <p className="text-textMuted">{t("brief.topPublisher")}</p>
-              <p className="mt-1 font-semibold">{brief?.top_publisher?.name || "-"}</p>
-            </div>
-            <div className="rounded border border-borderSoft bg-bg p-2">
-              <p className="text-textMuted">{t("brief.highAlerts")}</p>
-              <p className="mt-1 font-semibold">{brief?.high_alert_count ?? 0}</p>
-            </div>
-          </div>
-        </section>
-        )}
-        {mode === "research" && (
-        <section className="elevated rounded-2xl border border-borderSoft bg-surface p-4">
-          <div className="mb-2 flex items-center justify-between">
-            <h3 className="text-sm font-semibold text-textSecondary">{t("briefing.title")}</h3>
-            <div className="flex items-center gap-2">
-              <button onClick={saveCurrentBrief} className="rounded border border-borderSoft px-2 py-1 text-xs">
-                {saveBriefState === "saved" ? t("briefing.saved") : t("briefing.save")}
-              </button>
-              <button onClick={downloadMorningBrief} className="rounded border border-borderSoft px-2 py-1 text-xs">
-                {t("briefing.download")}
-              </button>
-              <button onClick={copyMorningBrief} className="rounded border border-borderSoft px-2 py-1 text-xs">
-                {briefCopyState === "copied"
-                  ? t("briefing.copied")
-                  : briefCopyState === "failed"
-                    ? t("briefing.copyFailed")
-                    : t("briefing.copy")}
-              </button>
-            </div>
-          </div>
-          <pre className="overflow-x-auto rounded border border-borderSoft bg-bg p-3 text-xs text-textSecondary">
-            {morningBriefMarkdown}
-          </pre>
-        </section>
-        )}
-        {mode === "research" && (
-        <section className="elevated rounded-2xl border border-borderSoft bg-surface p-4">
-          <h3 className="mb-2 text-sm font-semibold text-textSecondary">{t("compare.title")}</h3>
-          <div className="grid grid-cols-1 gap-2 text-xs md:grid-cols-3">
-            <button onClick={() => setJurisdiction("Canada")} className="rounded border border-borderSoft bg-bg p-2 text-left">
-              <p className="text-textMuted">{t("compare.canada")}</p>
-              <p className="mt-1 font-semibold">{compare?.canada ?? 0}</p>
-            </button>
-            <button onClick={() => setJurisdiction("Global")} className="rounded border border-borderSoft bg-bg p-2 text-left">
-              <p className="text-textMuted">{t("compare.global")}</p>
-              <p className="mt-1 font-semibold">{compare?.global ?? 0}</p>
-            </button>
-            <div className="rounded border border-borderSoft bg-bg p-2">
-              <p className="text-textMuted">{t("compare.other")}</p>
-              <p className="mt-1 font-semibold">{compare?.other ?? 0}</p>
-            </div>
-          </div>
-          <div className="mt-3 space-y-1 text-xs">
-            {(compare?.categories ?? []).slice(0, 6).map((item) => (
-              <div key={item.name} className="grid grid-cols-3 gap-2 rounded border border-borderSoft px-2 py-1">
-                <span className="capitalize">{item.name}</span>
-                <span>{t("compare.canadaShort")}: {item.canada}</span>
-                <span>{t("compare.globalShort")}: {item.global}</span>
-              </div>
-            ))}
-          </div>
-        </section>
-        )}
-        {mode === "research" && (
-        <section className="elevated rounded-2xl border border-borderSoft bg-surface p-4">
-          <h3 className="mb-2 text-sm font-semibold text-textSecondary">{t("concentration.title")}</h3>
-          <div className="grid grid-cols-1 gap-2 text-xs md:grid-cols-4">
-            <div className="rounded border border-borderSoft bg-bg p-2">
-              <p className="text-textMuted">{t("concentration.combined")}</p>
-              <p className="mt-1 font-semibold">
-                {concentration?.combined_hhi?.toFixed(3) ?? "0.000"}{" "}
-                <span style={{ color: concentrationTone(concentration?.combined_level ?? "low") }}>
-                  {t(`concentration.${concentration?.combined_level ?? "low"}`)}
-                </span>
-              </p>
-            </div>
-            <div className="rounded border border-borderSoft bg-bg p-2">
-              <p className="text-textMuted">{t("concentration.source")}</p>
-              <p className="mt-1 font-semibold">
-                {concentration?.source_hhi?.toFixed(3) ?? "0.000"}{" "}
-                <span style={{ color: concentrationTone(concentration?.source_level ?? "low") }}>
-                  {t(`concentration.${concentration?.source_level ?? "low"}`)}
-                </span>
-              </p>
-            </div>
-            <div className="rounded border border-borderSoft bg-bg p-2">
-              <p className="text-textMuted">{t("concentration.jurisdiction")}</p>
-              <p className="mt-1 font-semibold">
-                {concentration?.jurisdiction_hhi?.toFixed(3) ?? "0.000"}{" "}
-                <span style={{ color: concentrationTone(concentration?.jurisdiction_level ?? "low") }}>
-                  {t(`concentration.${concentration?.jurisdiction_level ?? "low"}`)}
-                </span>
-              </p>
-            </div>
-            <div className="rounded border border-borderSoft bg-bg p-2">
-              <p className="text-textMuted">{t("concentration.category")}</p>
-              <p className="mt-1 font-semibold">
-                {concentration?.category_hhi?.toFixed(3) ?? "0.000"}{" "}
-                <span style={{ color: concentrationTone(concentration?.category_level ?? "low") }}>
-                  {t(`concentration.${concentration?.category_level ?? "low"}`)}
-                </span>
-              </p>
-            </div>
-          </div>
-        </section>
-        )}
-        {mode === "research" && (
-        <section className="elevated rounded-2xl border border-borderSoft bg-surface p-4">
-          <h3 className="mb-2 text-sm font-semibold text-textSecondary">{t("risk.title")}</h3>
-          <div className="grid grid-cols-1 gap-2 text-xs md:grid-cols-4">
-            <div className="rounded border border-borderSoft bg-bg p-2">
-              <p className="text-textMuted">{t("risk.score")}</p>
-              <p className="mt-1 font-semibold">
-                {(riskIndex?.score ?? 0).toFixed(1)}{" "}
-                <span style={{ color: concentrationTone(riskIndex?.level ?? "low") }}>
-                  {t(`risk.${riskIndex?.level ?? "low"}`)}
-                </span>
-              </p>
-            </div>
-            <div className="rounded border border-borderSoft bg-bg p-2">
-              <p className="text-textMuted">{t("risk.incidents")}</p>
-              <p className="mt-1 font-semibold">{riskIndex?.incidents ?? 0}</p>
-            </div>
-            <div className="rounded border border-borderSoft bg-bg p-2">
-              <p className="text-textMuted">{t("risk.lowConfidence")}</p>
-              <p className="mt-1 font-semibold">{riskIndex?.low_confidence ?? 0}</p>
-            </div>
-            <div className="rounded border border-borderSoft bg-bg p-2">
-              <p className="text-textMuted">{t("risk.highAlerts")}</p>
-              <p className="mt-1 font-semibold">{riskIndex?.high_alert_count ?? 0}</p>
-            </div>
-          </div>
-          <div className="mt-2 flex flex-wrap gap-2 text-xs">
-            {(riskIndex?.reasons ?? []).map((reason) => (
-              <span key={reason} className="rounded border border-borderSoft px-2 py-1 text-textSecondary">
-                {t(`riskReason.${reason}`)}
-              </span>
-            ))}
-          </div>
-        </section>
-        )}
-        <section className="elevated rounded-2xl border border-borderSoft bg-surface p-4">
-          <div className="mb-2 flex items-center justify-between">
-            <h3 className="text-sm font-semibold text-textSecondary">{t("regional.title")}</h3>
-            <span className="text-xs text-textMuted">{t("regional.helper")}</span>
+
+            {/* Morning Briefing (research only) */}
+            {mode === "research" && (
+              <section className="elevated p-4">
+                <div className="mb-3 flex items-center justify-between">
+                  <h3 className="text-subheading text-textSecondary">{t("briefing.title")}</h3>
+                  <div className="flex items-center gap-2">
+                    <button onClick={saveCurrentBrief} className="btn-ghost">
+                      {saveBriefState === "saved" ? t("briefing.saved") : t("briefing.save")}
+                    </button>
+                    <button onClick={downloadMorningBrief} className="btn-ghost">
+                      {t("briefing.download")}
+                    </button>
+                    <button onClick={copyMorningBrief} className="btn-ghost">
+                      {briefCopyState === "copied"
+                        ? t("briefing.copied")
+                        : briefCopyState === "failed"
+                          ? t("briefing.copyFailed")
+                          : t("briefing.copy")}
+                    </button>
+                  </div>
+                </div>
+                <pre className="overflow-x-auto rounded-lg bg-surfaceInset p-3 text-caption font-mono text-textSecondary">
+                  {morningBriefMarkdown}
+                </pre>
+              </section>
+            )}
+
+            {/* Scope Compare (research only) */}
+            {mode === "research" && (
+              <section className="elevated p-4">
+                <h3 className="mb-3 text-subheading text-textSecondary">{t("compare.title")}<TooltipHelp term="scopeCompare" /></h3>
+                <div className="grid grid-cols-1 gap-3 text-caption md:grid-cols-3">
+                  <button onClick={() => setJurisdiction("Canada")} className="rounded-lg bg-surfaceInset p-3 text-left transition-all hover:shadow-xs">
+                    <p className="text-micro text-textMuted">{t("compare.canada")}</p>
+                    <p className="mt-1 font-semibold">{compare?.canada ?? 0}</p>
+                  </button>
+                  <button onClick={() => setJurisdiction("Global")} className="rounded-lg bg-surfaceInset p-3 text-left transition-all hover:shadow-xs">
+                    <p className="text-micro text-textMuted">{t("compare.global")}</p>
+                    <p className="mt-1 font-semibold">{compare?.global ?? 0}</p>
+                  </button>
+                  <div className="rounded-lg bg-surfaceInset p-3">
+                    <p className="text-micro text-textMuted">{t("compare.other")}</p>
+                    <p className="mt-1 font-semibold">{compare?.other ?? 0}</p>
+                  </div>
+                </div>
+                <div className="mt-3 space-y-1 text-caption">
+                  {(compare?.categories ?? []).slice(0, 6).map((item) => (
+                    <div key={item.name} className="grid grid-cols-3 gap-2 rounded-lg bg-surfaceInset px-3 py-2">
+                      <span className="capitalize">{item.name}</span>
+                      <span>{t("compare.canadaShort")}: {item.canada}</span>
+                      <span>{t("compare.globalShort")}: {item.global}</span>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {/* Concentration (research only) */}
+            {mode === "research" && (
+              <section className="elevated p-4">
+                <h3 className="mb-3 text-subheading text-textSecondary">{t("concentration.title")}<TooltipHelp term="concentration" /></h3>
+                <div className="grid grid-cols-1 gap-3 text-caption md:grid-cols-4">
+                  {concentrationDimensions.map((dim) => (
+                    <div key={dim.key} className="rounded-lg bg-surfaceInset p-3">
+                      <p className="text-micro text-textMuted">{t(`concentration.${dim.key}`)}</p>
+                      <p className="mt-1 font-semibold">
+                        {dim.hhi?.toFixed(3) ?? "0.000"}{" "}
+                        <span style={{ color: concentrationTone(dim.level ?? "low") }}>
+                          {t(`concentration.${dim.level ?? "low"}`)}
+                        </span>
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {/* Risk Index (research only) */}
+            {mode === "research" && (
+              <section className="elevated p-4">
+                <h3 className="mb-3 text-subheading text-textSecondary">{t("risk.title")}<TooltipHelp term="riskIndex" /></h3>
+                <div className="grid grid-cols-1 gap-3 text-caption md:grid-cols-4">
+                  <div className="rounded-lg bg-surfaceInset p-3">
+                    <p className="text-micro text-textMuted">{t("risk.score")}</p>
+                    <p className="mt-1 font-semibold">
+                      {(riskIndex?.score ?? 0).toFixed(1)}{" "}
+                      <span style={{ color: concentrationTone(riskIndex?.level ?? "low") }}>
+                        {t(`risk.${riskIndex?.level ?? "low"}`)}
+                      </span>
+                    </p>
+                  </div>
+                  <div className="rounded-lg bg-surfaceInset p-3">
+                    <p className="text-micro text-textMuted">{t("risk.incidents")}</p>
+                    <p className="mt-1 font-semibold">{riskIndex?.incidents ?? 0}</p>
+                  </div>
+                  <div className="rounded-lg bg-surfaceInset p-3">
+                    <p className="text-micro text-textMuted">{t("risk.lowConfidence")}</p>
+                    <p className="mt-1 font-semibold">{riskIndex?.low_confidence ?? 0}</p>
+                  </div>
+                  <div className="rounded-lg bg-surfaceInset p-3">
+                    <p className="text-micro text-textMuted">{t("risk.highAlerts")}</p>
+                    <p className="mt-1 font-semibold">{riskIndex?.high_alert_count ?? 0}</p>
+                  </div>
+                </div>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {(riskIndex?.reasons ?? []).map((reason) => (
+                    <span key={reason} className="badge badge-neutral">
+                      {t(`riskReason.${reason}`)}
+                    </span>
+                  ))}
+                </div>
+              </section>
+            )}
+          </>
+        ) : null}
+        {/* Regional Focus */}
+        <section className="elevated p-4">
+          <div className="mb-3 flex items-center justify-between">
+            <h3 className="text-subheading text-textSecondary">{t("regional.title")}</h3>
+            <span className="text-micro text-textMuted">{t("regional.helper")}</span>
           </div>
           <div className="space-y-2">
             {(jurisdictionsBreakdown?.jurisdictions ?? []).slice(0, 6).map((item) => {
@@ -1668,14 +1501,14 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
                     setJurisdiction(item.name);
                     setMode("research");
                   }}
-                  className="block w-full rounded border border-borderSoft px-3 py-2 text-left text-xs"
+                  className="block w-full rounded-lg bg-surfaceInset px-3 py-2.5 text-left text-caption transition-all hover:shadow-xs"
                 >
-                  <div className="mb-1 flex items-center justify-between">
+                  <div className="mb-1.5 flex items-center justify-between">
                     <span className={active ? "font-semibold" : ""}>{item.name}</span>
                     <span>{item.count}</span>
                   </div>
-                  <div className="h-1.5 rounded bg-bg">
-                    <div className="h-1.5 rounded" style={{ width: `${width}%`, background: "var(--primary)" }} />
+                  <div className="h-1 rounded-full bg-bg">
+                    <div className="h-1 rounded-full transition-all duration-500" style={{ width: `${width}%`, background: "var(--primary-action)" }} />
                   </div>
                 </button>
               );
@@ -1683,799 +1516,124 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
           </div>
         </section>
 
-        <section className="grid grid-cols-1 gap-4 xl:grid-cols-5">
-          <div className="xl:col-span-3">
-            <div className="mb-2 flex flex-col gap-2 xl:flex-row xl:items-center xl:justify-between">
-              <h3 className="text-lg font-semibold">{t("feed.live")}</h3>
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="rounded border border-borderSoft px-2 py-1 text-xs">
-                  {t("feed.liveStatus")}: {t(`feed.status_${sseStatus}`)}
-                  {lastLiveAt ? ` - ${new Date(lastLiveAt).toLocaleTimeString()}` : ""}
-                </span>
-                {liveMinutesSinceUpdate !== null && liveMinutesSinceUpdate >= 10 && (
-                  <span className="rounded border border-borderSoft px-2 py-1 text-xs text-[var(--incidents)]">
-                    {t("feed.staleWarning")} ({liveMinutesSinceUpdate}m)
-                  </span>
-                )}
-                <button onClick={() => refreshData().catch(() => undefined)} className="rounded border border-borderSoft px-2 py-1 text-xs">
-                  {isRefreshing ? t("feed.refreshing") : t("feed.refresh")}
-                </button>
-                <select
-                  value={String(autoRefreshSec)}
-                  onChange={(e) => setAutoRefreshSec(Number(e.target.value) as 0 | 15 | 30 | 60)}
-                  className="rounded border border-borderSoft bg-surface px-2 py-1 text-xs"
-                  aria-label={t("feed.autoRefresh")}
-                >
-                  <option value="0">{t("feed.autoOff")}</option>
-                  <option value="15">15s</option>
-                  <option value="30">30s</option>
-                  <option value="60">60s</option>
-                </select>
-                <span className="text-xs text-textMuted">
-                  {t("feed.autoRefresh")}: {autoRefreshSec === 0 ? t("feed.autoOff") : `${autoRefreshSec}s`} | {t("feed.lastRefresh")}: {lastRefreshAt ? new Date(lastRefreshAt).toLocaleTimeString() : "-"}
-                </span>
-              </div>
-              {mode === "research" && (
-                <div className="flex flex-wrap gap-2">
-                  <a
-                    href={exportUrl(
-                      {
-                        time_window: timeWindow,
-                        category: category || undefined,
-                        jurisdiction: jurisdiction || undefined,
-                        language: language || undefined,
-                        search: search || undefined,
-                      },
-                      "csv"
-                    )}
-                    className="rounded border border-borderSoft px-3 py-2 text-sm"
-                  >
-                    {t("feed.exportCsv")}
-                  </a>
-                  <a
-                    href={exportUrl(
-                      {
-                        time_window: timeWindow,
-                        category: category || undefined,
-                        jurisdiction: jurisdiction || undefined,
-                        language: language || undefined,
-                        search: search || undefined,
-                      },
-                      "json"
-                    )}
-                    className="rounded border border-borderSoft px-3 py-2 text-sm"
-                  >
-                    {t("feed.exportJson")}
-                  </a>
-                </div>
-              )}
-            </div>
-            {refreshError && (
-              <div className="mb-2 rounded border border-borderSoft bg-surface px-3 py-2 text-xs text-[var(--incidents)]">
-                {refreshError}
-              </div>
-            )}
-            <div className={`max-h-[900px] overflow-y-auto pr-1 ${density === "compact" ? "space-y-2" : "space-y-3"}`}>
-              {isInitialLoading && (
-                <div className="space-y-3">
-                  {Array.from({ length: 6 }).map((_, idx) => (
-                    <article key={`skeleton-${idx}`} className="elevated rounded-2xl border border-borderSoft bg-surface p-4">
-                      <div className="space-y-2">
-                        <SkeletonLine width="70%" />
-                        <SkeletonLine width="90%" />
-                        <SkeletonLine width="60%" />
-                      </div>
-                    </article>
-                  ))}
-                </div>
-              )}
-              {!isInitialLoading && sortedFeed.length === 0 && (
-                <div className="elevated rounded-2xl border border-borderSoft bg-surface p-4 text-sm text-textMuted">
-                  <p className="font-medium text-text">{t("feed.empty")}</p>
-                  <p className="mt-1">{t("feed.filteredHint")}</p>
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    <button onClick={clearFilters} className="rounded border border-borderSoft px-2 py-1 text-xs hover:bg-bg">
-                      {t("feed.resetFilters")}
-                    </button>
-                    <button onClick={() => setTimeWindow("7d")} className="rounded border border-borderSoft px-2 py-1 text-xs hover:bg-bg">
-                      {t("feed.expand7d")}
-                    </button>
-                    <button onClick={() => setTimeWindow("30d")} className="rounded border border-borderSoft px-2 py-1 text-xs hover:bg-bg">
-                      {t("feed.expand30d")}
-                    </button>
-                  </div>
-                </div>
-              )}
-              {!isInitialLoading && sortedFeed.map((item) => (
-                <article
-                  key={item.id}
-                  className={`feed-card rounded-lg border border-borderSoft bg-surface transition-all hover:-translate-y-0.5 hover:shadow-sm ${density === "compact" ? "p-3" : "p-4"}`}
-                >
-                  <div className={`flex flex-wrap items-center text-textMuted ${density === "compact" ? "gap-1 text-[11px]" : "gap-2 text-xs"}`}>
-                    <span>{new Date(item.published_at).toLocaleString()}</span>
-                    <RelativeTime value={item.published_at} />
-                    <button
-                      onClick={() => {
-                        setCategory(item.category);
-                        setMode("research");
-                      }}
-                      className="rounded-full border px-2 py-0.5 hover:bg-bg"
-                      style={{ borderColor: categoryColor[item.category], color: categoryColor[item.category] }}
-                    >
-                      {item.category}
-                    </button>
-                    <button
-                      onClick={() => {
-                        setSearch(item.publisher);
-                        setMode("research");
-                      }}
-                      className="rounded border border-borderSoft px-2 py-0.5 hover:bg-bg"
-                    >
-                      {item.publisher}
-                    </button>
-                    <button
-                      onClick={() => {
-                        setJurisdiction(item.jurisdiction);
-                        setMode("research");
-                      }}
-                      className="rounded border border-borderSoft px-2 py-0.5 hover:bg-bg"
-                    >
-                      {item.jurisdiction}
-                    </button>
-                    <button
-                      onClick={() => {
-                        setLanguage(item.language);
-                        setMode("research");
-                      }}
-                      className="rounded border border-borderSoft px-2 py-0.5 hover:bg-bg"
-                    >
-                      {item.language.toUpperCase()}
-                    </button>
-                    {mode === "research" && <span>{t("feed.confidence")}: {item.confidence.toFixed(2)}</span>}
-                  </div>
-                  <h4 className={`${density === "compact" ? "mt-1 text-base font-semibold leading-tight" : "mt-2 text-lg font-semibold"}`}>
-                    <a href={item.url} target="_blank" rel="noreferrer">{item.title}</a>
-                  </h4>
-                  {mode === "research" && (
-                    <div className={`flex flex-wrap text-xs ${density === "compact" ? "mt-1 gap-1" : "mt-2 gap-2"}`}>
-                      {item.tags.map((tag) => (
-                        <span key={tag} className="rounded border border-borderSoft px-2 py-0.5">{tag}</span>
-                      ))}
-                    </div>
-                  )}
-                  <div className={`flex items-center gap-2 ${density === "compact" ? "mt-2" : "mt-3"}`}>
-                    <button
-                      onClick={() => togglePin(item)}
-                      className={`rounded border border-borderSoft text-sm ${density === "compact" ? "px-2 py-1" : "px-3 py-1.5"}`}
-                    >
-                      {isPinned(item.id) ? t("pins.unpin") : t("pins.pin")}
-                    </button>
-                    <button
-                      onClick={() => setSelected(item)}
-                      className={`rounded border border-borderSoft text-sm ${density === "compact" ? "px-2 py-1" : "px-3 py-1.5"}`}
-                    >
-                      {t("pins.details")}
-                    </button>
-                  </div>
-                </article>
-              ))}
-            </div>
-          </div>
+        {/* Feed + Sidebar Grid */}
+        <section className="dd-feed-layout grid grid-cols-1 gap-5 xl:grid-cols-5">
+          <FeedList
+            mode={mode}
+            timeWindow={timeWindow}
+            category={category}
+            jurisdiction={jurisdiction}
+            language={language}
+            search={search}
+            density={density}
+            sortedFeed={sortedFeed}
+            isInitialLoading={isInitialLoading}
+            isRefreshing={isRefreshing}
+            refreshError={refreshError}
+            sseStatus={sseStatus}
+            lastLiveAt={lastLiveAt}
+            liveMinutesSinceUpdate={liveMinutesSinceUpdate}
+            autoRefreshSec={autoRefreshSec}
+            lastRefreshAt={lastRefreshAt}
+            onRefresh={() => refreshData().catch(() => undefined)}
+            onAutoRefreshChange={setAutoRefreshSec}
+            onSetCategory={setCategory}
+            onSetJurisdiction={setJurisdiction}
+            onSetLanguage={setLanguage}
+            onSetSearch={setSearch}
+            onSetMode={setMode}
+            onSetTimeWindow={setTimeWindow}
+            onClearFilters={clearFilters}
+            onTogglePin={togglePin}
+            onSelectItem={setSelected}
+            isPinned={isPinned}
+          />
 
-          <div className="space-y-4 xl:col-span-2">
-            {mode === "research" && (
-              <section className="elevated rounded-2xl border border-borderSoft bg-surface p-3">
-                <h3 className="mb-2 text-sm font-semibold text-textSecondary">{t("drawers.title")}</h3>
-                <div className="flex flex-wrap gap-2 text-xs">
-                  <button onClick={() => toggleResearchDrawer("ops")} className="rounded border border-borderSoft px-2 py-1 hover:bg-bg">
-                    {researchDrawers.ops ? t("drawers.hideOps") : t("drawers.showOps")}
-                  </button>
-                  <button onClick={() => toggleResearchDrawer("sources")} className="rounded border border-borderSoft px-2 py-1 hover:bg-bg">
-                    {researchDrawers.sources ? t("drawers.hideSources") : t("drawers.showSources")}
-                  </button>
-                  <button onClick={() => toggleResearchDrawer("entities")} className="rounded border border-borderSoft px-2 py-1 hover:bg-bg">
-                    {researchDrawers.entities ? t("drawers.hideEntities") : t("drawers.showEntities")}
-                  </button>
-                  <button onClick={() => toggleResearchDrawer("history")} className="rounded border border-borderSoft px-2 py-1 hover:bg-bg">
-                    {researchDrawers.history ? t("drawers.hideHistory") : t("drawers.showHistory")}
-                  </button>
-                </div>
-              </section>
-            )}
-            {mode === "research" && (
-              <section className="elevated rounded-2xl border border-borderSoft bg-surface p-3">
-                <h3 className="mb-2 text-sm font-semibold text-textSecondary">{t("panels.title")}</h3>
-                <div className="flex flex-wrap gap-2 text-xs">
-                  {Object.entries(panelVisibility).map(([key, enabled]) => (
-                    <button
-                      key={key}
-                      onClick={() => togglePanel(key)}
-                      className="rounded border border-borderSoft px-2 py-1"
-                      style={{
-                        color: enabled ? "var(--text)" : "var(--text-muted)",
-                        background: enabled ? "var(--bg)" : "transparent",
-                      }}
-                    >
-                      {t(`panels.${key}`)}
-                    </button>
-                  ))}
-                </div>
-              </section>
-            )}
-            {mode === "research" && researchDrawers.ops && panelVisibility.backfill && (
-              <section className="elevated rounded-2xl border border-borderSoft bg-surface p-3">
-                <h3 className="mb-3 text-sm font-semibold text-textSecondary">{t("backfill.title")}</h3>
-                <div className="grid grid-cols-2 gap-2 text-xs">
-                  <label className="flex flex-col gap-1">
-                    <span className="text-textSecondary">{t("backfill.startDate")}</span>
-                    <input
-                      type="date"
-                      value={backfillStartDate}
-                      onChange={(e) => setBackfillStartDate(e.target.value)}
-                      className="rounded border border-borderSoft bg-bg px-2 py-1.5"
-                    />
-                  </label>
-                  <label className="flex flex-col gap-1">
-                    <span className="text-textSecondary">{t("backfill.endDate")}</span>
-                    <input
-                      type="date"
-                      value={backfillEndDate}
-                      onChange={(e) => setBackfillEndDate(e.target.value)}
-                      className="rounded border border-borderSoft bg-bg px-2 py-1.5"
-                    />
-                  </label>
-                  <label className="flex flex-col gap-1">
-                    <span className="text-textSecondary">{t("backfill.perPage")}</span>
-                    <input
-                      type="number"
-                      min={10}
-                      max={200}
-                      value={backfillPerPage}
-                      onChange={(e) => setBackfillPerPage(Number(e.target.value || 50))}
-                      className="rounded border border-borderSoft bg-bg px-2 py-1.5"
-                    />
-                  </label>
-                  <label className="flex flex-col gap-1">
-                    <span className="text-textSecondary">{t("backfill.pagesPerMonth")}</span>
-                    <input
-                      type="number"
-                      min={1}
-                      max={10}
-                      value={backfillPagesPerMonth}
-                      onChange={(e) => setBackfillPagesPerMonth(Number(e.target.value || 1))}
-                      className="rounded border border-borderSoft bg-bg px-2 py-1.5"
-                    />
-                  </label>
-                </div>
-                <div className="mt-3 flex items-center justify-between text-xs">
-                  <span className="rounded border border-borderSoft px-2 py-1">{backfillStateLabel}</span>
-                  <button
-                    onClick={startBackfill}
-                    disabled={isBackfillRunning || isBackfillSubmitting}
-                    className="rounded border border-borderStrong px-3 py-1.5 disabled:cursor-not-allowed disabled:opacity-60"
-                  >
-                    {t("backfill.run")}
-                  </button>
-                </div>
-                <div className="mt-2 grid grid-cols-2 gap-2 text-xs text-textSecondary">
-                  <span>{t("backfill.scanned")}: {backfillStatus?.scanned ?? 0}</span>
-                  <span>{t("backfill.inserted")}: {backfillStatus?.inserted ?? 0}</span>
-                  <span>{t("backfill.currentMonth")}: {backfillStatus?.current_month ?? "-"}</span>
-                  <span>{t("backfill.error")}: {(backfillStatus?.error ?? backfillError) || "-"}</span>
-                </div>
-              </section>
-            )}
-            {mode === "research" && researchDrawers.ops && panelVisibility.cleanup && (
-              <section className="elevated rounded-2xl border border-borderSoft bg-surface p-3">
-                <h3 className="mb-3 text-sm font-semibold text-textSecondary">{t("cleanup.title")}</h3>
-                <div className="mb-3 flex items-center gap-2">
-                  <button
-                    onClick={previewCleanup}
-                    disabled={cleanupStatus === "running"}
-                    className="rounded border border-borderSoft px-3 py-1.5 text-xs disabled:cursor-not-allowed disabled:opacity-60"
-                  >
-                    {t("cleanup.preview")}
-                  </button>
-                  <button
-                    onClick={runCleanup}
-                    disabled={cleanupStatus === "running"}
-                    className="rounded border border-borderStrong px-3 py-1.5 text-xs disabled:cursor-not-allowed disabled:opacity-60"
-                  >
-                    {t("cleanup.execute")}
-                  </button>
-                  <span className="rounded border border-borderSoft px-2 py-1 text-xs">
-                    {t("cleanup.status")}: {cleanupStateLabel}
-                  </span>
-                </div>
-                <div className="grid grid-cols-3 gap-2 text-xs text-textSecondary">
-                  <span>{t("cleanup.before")}: {cleanupResult?.synthetic_before ?? 0}</span>
-                  <span>{t("cleanup.deleted")}: {cleanupResult?.deleted ?? 0}</span>
-                  <span>{t("cleanup.after")}: {cleanupResult?.synthetic_after ?? 0}</span>
-                </div>
-              </section>
-            )}
-            {mode === "research" && panelVisibility.sourceHealth && (
-              <section className="elevated rounded-2xl border border-borderSoft bg-surface p-3">
-                <div className="mb-2 flex items-center justify-between">
-                  <h3 className="text-sm font-semibold text-textSecondary">{t("sources.title")}</h3>
-                  <span className="text-xs text-textMuted">
-                    {t("sources.updated")}: {sourceHealthUpdatedAt ? new Date(sourceHealthUpdatedAt).toLocaleTimeString() : "-"}
-                  </span>
-                </div>
-                <div className="mb-2 grid grid-cols-2 gap-1 text-xs text-textSecondary">
-                  <span>{t("sources.runStatus")}: {sourceHealthRunStatus || "-"}</span>
-                  <span>{t("sources.insertedTotal")}: {sourceHealthInsertedTotal}</span>
-                  <span>{t("sources.candidatesTotal")}: {sourceHealthCandidatesTotal}</span>
-                  <span>{t("sources.skippedLockCount")}: {sourceHealthSkippedLockCount}</span>
-                </div>
-                <div className="space-y-2 text-xs">
-                  {sourceHealth.length === 0 && <p className="text-textMuted">No source health yet.</p>}
-                  {sourceHealth.map((src) => (
-                    <div key={src.source} className="rounded border border-borderSoft px-2 py-2">
-                      <div className="flex items-center justify-between">
-                        <span className="font-medium">{src.source}</span>
-                        <span className={src.status === "ok" ? "text-green-600" : "text-red-600"}>{src.status}</span>
-                      </div>
-                      <div className="mt-1 grid grid-cols-2 gap-1 text-textSecondary">
-                        <span>{t("sources.fetched")}: {src.fetched}</span>
-                        <span>{t("sources.accepted")}: {src.accepted}</span>
-                        <span>{t("sources.inserted")}: {src.inserted}</span>
-                        <span>{t("sources.duplicates")}: {src.duplicates ?? 0}</span>
-                        <span>{t("sources.writeErrors")}: {src.write_errors ?? 0}</span>
-                        <span>{t("sources.duration")}: {src.duration_ms}ms</span>
-                      </div>
-                      {src.error ? <p className="mt-1 text-red-600">{t("sources.error")}: {src.error}</p> : null}
-                    </div>
-                  ))}
-                </div>
-              </section>
-            )}
-            {mode === "research" && researchDrawers.sources && panelVisibility.sourceFreshness && (
-              <section className="elevated rounded-2xl border border-borderSoft bg-surface p-3">
-                <h3 className="mb-2 text-sm font-semibold text-textSecondary">{t("sources.freshnessTitle")}</h3>
-                <div className="space-y-2 text-xs">
-                  {sourceFreshness.length === 0 && <p className="text-textMuted">-</p>}
-                  {sourceFreshness.slice(0, 8).map((src) => (
-                    <div key={`${src.source}-fresh`} className="rounded border border-borderSoft px-2 py-2">
-                      <div className="flex items-center justify-between">
-                        <span className="font-medium">{src.source}</span>
-                        <span
-                          style={{
-                            color:
-                              src.level === "stale"
-                                ? "var(--incidents)"
-                                : src.level === "aging"
-                                  ? "var(--warning)"
-                                  : "var(--research)",
-                          }}
-                        >
-                          {src.minutes}m
-                        </span>
-                      </div>
-                      <p className="mt-1 text-textSecondary">
-                        {t("sources.lastRun")}: {src.last_run ? new Date(src.last_run).toLocaleString() : "-"} | {t(`sources.${src.level}`)}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              </section>
-            )}
-            {mode === "research" && researchDrawers.sources && panelVisibility.sourceMix && (
-              <section className="elevated rounded-2xl border border-borderSoft bg-surface p-3">
-                <h3 className="mb-2 text-sm font-semibold text-textSecondary">{t("sources.mixTitle")}</h3>
-                <p className="mb-2 text-xs text-textMuted">
-                  {t("sources.total")}: {sourcesBreakdown?.total ?? 0}
-                </p>
-                <div className="grid grid-cols-2 gap-2 text-xs">
-                  <div className="rounded border border-borderSoft p-2">
-                    <p className="mb-1 font-medium text-textSecondary">{t("sources.publishers")}</p>
-                    <div className="space-y-1">
-                      {(sourcesBreakdown?.publishers ?? []).slice(0, 5).map((item) => (
-                        <div key={item.name} className="flex justify-between">
-                          <span className="truncate pr-2">{item.name}</span>
-                          <span>{item.count}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                  <div className="rounded border border-borderSoft p-2">
-                    <p className="mb-1 font-medium text-textSecondary">{t("sources.types")}</p>
-                    <div className="space-y-1">
-                      {(sourcesBreakdown?.source_types ?? []).map((item) => (
-                        <div key={item.name} className="flex justify-between">
-                          <span>{item.name}</span>
-                          <span>{item.count}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </section>
-            )}
-            {mode === "research" && researchDrawers.sources && panelVisibility.coverageMatrix && (
-              <section className="elevated rounded-2xl border border-borderSoft bg-surface p-3">
-                <h3 className="mb-2 text-sm font-semibold text-textSecondary">{t("coverage.title")}</h3>
-                <p className="mb-2 text-xs text-textMuted">
-                  {t("coverage.total")}: {coverage?.total ?? 0}
-                </p>
-                <p className="mb-2 text-xs text-textMuted">{t("coverage.clickHint")}</p>
-                <div className="grid grid-cols-2 gap-2 text-xs">
-                  {coverageGroups.map((group) => (
-                    <div key={group.key} className="rounded border border-borderSoft p-2">
-                      <p className="mb-1 font-medium text-textSecondary">{group.label}</p>
-                      <div className="space-y-1">
-                        {group.rows.length === 0 && <p className="text-textMuted">-</p>}
-                        {group.rows.slice(0, 5).map((item) => (
-                          <button
-                            key={`${group.key}-${item.name}`}
-                            onClick={() => applyCoverageFilter(group.key, item.name)}
-                            className="flex w-full items-center justify-between gap-2 rounded border border-transparent px-1 py-0.5 text-left hover:border-borderSoft hover:bg-bg"
-                          >
-                            <span className="truncate pr-2">{item.name}</span>
-                            <span className="whitespace-nowrap">
-                              {item.count} ({item.percent.toFixed(1)}%)
-                            </span>
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </section>
-            )}
-            {mode === "research" && researchDrawers.sources && panelVisibility.sourceQuality && (
-              <section className="elevated rounded-2xl border border-borderSoft bg-surface p-3">
-                <h3 className="mb-2 text-sm font-semibold text-textSecondary">{t("sources.qualityTitle")}</h3>
-                <div className="space-y-2 text-xs">
-                  {sourceQuality.map((src) => (
-                    <div key={src.source} className="rounded border border-borderSoft px-2 py-2">
-                      <div className="mb-1 flex items-center justify-between">
-                        <span className="font-medium">{src.source}</span>
-                        <span>
-                          {src.grade} - {src.score}
-                        </span>
-                      </div>
-                      <div className="h-1.5 rounded bg-bg">
-                        <div className="h-1.5 rounded" style={{ width: `${src.score}%`, background: "var(--primary)" }} />
-                      </div>
-                      <div className="mt-1 text-textSecondary">
-                        {t("sources.inserted")}: {src.inserted} | {t("sources.duplicates")}: {src.duplicates ?? 0} | {t("sources.writeErrors")}: {src.write_errors ?? 0}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </section>
-            )}
-            {mode === "research" && panelVisibility.confidenceProfile && (
-              <section className="elevated rounded-2xl border border-borderSoft bg-surface p-3">
-                <h3 className="mb-2 text-sm font-semibold text-textSecondary">{t("confidence.title")}</h3>
-                <p className="mb-2 text-xs text-textMuted">
-                  {t("confidence.average")}: {(confidenceProfile?.average_confidence ?? 0).toFixed(2)}
-                </p>
-                <div className="space-y-2 text-xs">
-                  {(confidenceProfile?.buckets ?? []).map((bucket) => (
-                    <div key={bucket.name} className="rounded border border-borderSoft px-2 py-2">
-                      <div className="mb-1 flex items-center justify-between">
-                        <span>{t(`confidence.${bucket.name}`)}</span>
-                        <span>{bucket.count} ({bucket.percent.toFixed(1)}%)</span>
-                      </div>
-                      <div className="h-1.5 rounded bg-bg">
-                        <div
-                          className="h-1.5 rounded"
-                          style={{ width: `${Math.max(2, Math.round(bucket.percent))}%`, background: confidenceTone[bucket.name] ?? "var(--primary)" }}
-                        />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </section>
-            )}
-            {mode === "research" && panelVisibility.riskTrend && (
-              <section className="elevated rounded-2xl border border-borderSoft bg-surface p-3">
-                <h3 className="mb-2 text-sm font-semibold text-textSecondary">{t("riskTrend.title")}</h3>
-                <EChartsReact option={riskTrendOption} style={{ height: 240 }} notMerge lazyUpdate />
-              </section>
-            )}
-            {mode === "research" && panelVisibility.momentum && (
-              <section className="elevated rounded-2xl border border-borderSoft bg-surface p-3">
-                <h3 className="mb-2 text-sm font-semibold text-textSecondary">{t("momentum.title")}</h3>
-                <div className="space-y-2 text-xs">
-                  <p className="font-medium text-textSecondary">{t("momentum.categories")}</p>
-                  {(momentum?.categories ?? []).slice(0, 5).map((item) => (
-                    <button
-                      key={`cat-${item.name}`}
-                      onClick={() => {
-                        setCategory(item.name);
-                        setMode("research");
-                      }}
-                      className="flex w-full items-center justify-between rounded border border-borderSoft px-2 py-1 text-left"
-                    >
-                      <span className="capitalize">{item.name}</span>
-                      <span style={{ color: item.change >= 0 ? "var(--research)" : "var(--incidents)" }}>
-                        {item.change >= 0 ? "+" : ""}
-                        {item.change} ({item.delta_percent.toFixed(1)}%)
-                      </span>
-                    </button>
-                  ))}
-                  <p className="pt-1 font-medium text-textSecondary">{t("momentum.publishers")}</p>
-                  {(momentum?.publishers ?? []).slice(0, 5).map((item) => (
-                    <button
-                      key={`pub-${item.name}`}
-                      onClick={() => {
-                        setSearch(item.name);
-                        setMode("research");
-                      }}
-                      className="flex w-full items-center justify-between rounded border border-borderSoft px-2 py-1 text-left"
-                    >
-                      <span className="truncate pr-2">{item.name}</span>
-                      <span style={{ color: item.change >= 0 ? "var(--research)" : "var(--incidents)" }}>
-                        {item.change >= 0 ? "+" : ""}
-                        {item.change} ({item.delta_percent.toFixed(1)}%)
-                      </span>
-                    </button>
-                  ))}
-                </div>
-              </section>
-            )}
-            {mode === "research" && researchDrawers.entities && panelVisibility.entityMomentum && (
-              <section className="elevated rounded-2xl border border-borderSoft bg-surface p-3">
-                <h3 className="mb-2 text-sm font-semibold text-textSecondary">{t("entityMomentum.title")}</h3>
-                <div className="space-y-2 text-xs">
-                  {(entityMomentum?.entities ?? []).slice(0, 8).map((item) => (
-                    <button
-                      key={`entity-${item.name}`}
-                      onClick={() => {
-                        setSearch(item.name);
-                        setMode("research");
-                      }}
-                      className="flex w-full items-center justify-between rounded border border-borderSoft px-2 py-1 text-left"
-                    >
-                      <span className="truncate pr-2">{item.name}</span>
-                      <span style={{ color: item.change >= 0 ? "var(--research)" : "var(--incidents)" }}>
-                        {item.change >= 0 ? "+" : ""}
-                        {item.change} ({item.delta_percent.toFixed(1)}%)
-                      </span>
-                    </button>
-                  ))}
-                </div>
-              </section>
-            )}
-            {mode === "research" && researchDrawers.history && panelVisibility.pinnedSignals && (
-              <section className="elevated rounded-2xl border border-borderSoft bg-surface p-3">
-                <div className="mb-2 flex items-center justify-between">
-                  <h3 className="text-sm font-semibold text-textSecondary">{t("pins.title")}</h3>
-                  <button
-                    onClick={() => setPinnedItems([])}
-                    className="rounded border border-borderSoft px-2 py-1 text-xs"
-                    disabled={pinnedItems.length === 0}
-                  >
-                    {t("pins.clear")}
-                  </button>
-                </div>
-                <div className="space-y-2 text-xs">
-                  {pinnedItems.length === 0 && <p className="text-textMuted">{t("pins.none")}</p>}
-                  {pinnedItems.slice(0, 8).map((item) => (
-                    <div key={`pin-${item.id}`} className="rounded border border-borderSoft px-2 py-2">
-                      <p className="font-medium">{item.title}</p>
-                      <p className="mt-1 text-textMuted">{item.publisher}</p>
-                      <div className="mt-2 flex items-center gap-2">
-                        <a href={item.url} target="_blank" rel="noreferrer" className="rounded border border-borderSoft px-2 py-1">
-                          {t("pins.open")}
-                        </a>
-                        <button onClick={() => setSelected(item)} className="rounded border border-borderSoft px-2 py-1">
-                          {t("pins.details")}
-                        </button>
-                        <button onClick={() => togglePin(item)} className="rounded border border-borderSoft px-2 py-1">
-                          {t("pins.unpin")}
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </section>
-            )}
-            {mode === "research" && researchDrawers.history && panelVisibility.briefHistory && (
-              <section className="elevated rounded-2xl border border-borderSoft bg-surface p-3">
-                <div className="mb-2 flex items-center justify-between">
-                  <h3 className="text-sm font-semibold text-textSecondary">{t("briefHistory.title")}</h3>
-                  <button
-                    onClick={() => setSavedBriefs([])}
-                    className="rounded border border-borderSoft px-2 py-1 text-xs"
-                    disabled={savedBriefs.length === 0}
-                  >
-                    {t("briefHistory.clear")}
-                  </button>
-                </div>
-                <div className="space-y-2 text-xs">
-                  {savedBriefs.length === 0 && <p className="text-textMuted">{t("briefHistory.none")}</p>}
-                  {savedBriefs.slice(0, 8).map((entry) => (
-                    <div key={entry.id} className="rounded border border-borderSoft px-2 py-2">
-                      <p className="font-medium">{new Date(entry.createdAt).toLocaleString()}</p>
-                      <div className="mt-2 flex flex-wrap gap-2">
-                        <button onClick={() => copyBrief(entry.markdown)} className="rounded border border-borderSoft px-2 py-1">
-                          {t("briefHistory.copy")}
-                        </button>
-                        <button onClick={() => downloadBrief(entry.markdown, entry.createdAt)} className="rounded border border-borderSoft px-2 py-1">
-                          {t("briefHistory.download")}
-                        </button>
-                        <button
-                          onClick={() => setSavedBriefs((prev) => prev.filter((item) => item.id !== entry.id))}
-                          className="rounded border border-borderSoft px-2 py-1"
-                        >
-                          {t("briefHistory.delete")}
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </section>
-            )}
-            {mode === "research" && researchDrawers.history && panelVisibility.alertCenter && (
-              <section className="elevated rounded-2xl border border-borderSoft bg-surface p-3">
-                <div className="mb-2 flex items-center justify-between">
-                  <h3 className="text-sm font-semibold text-textSecondary">{t("alertCenter.title")}</h3>
-                  <button
-                    onClick={resetDismissedAlerts}
-                    className="rounded border border-borderSoft px-2 py-1 text-xs"
-                    disabled={dismissedAlertIds.length === 0}
-                  >
-                    {t("alertCenter.reset")}
-                  </button>
-                </div>
-                <div className="space-y-2 text-xs">
-                  {alertCenterItems.length === 0 && <p className="text-textMuted">{t("alertCenter.none")}</p>}
-                  {alertCenterItems.slice(0, 10).map((item) => (
-                    <div key={item.id} className="flex items-center justify-between rounded border border-borderSoft px-2 py-2">
-                      <span className="pr-2" style={{ color: item.severity === "high" ? "var(--incidents)" : "var(--text-secondary)" }}>
-                        {item.message}
-                      </span>
-                      <button onClick={() => dismissAlertItem(item.id)} className="rounded border border-borderSoft px-2 py-1">
-                        {t("alertCenter.dismiss")}
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              </section>
-            )}
-            {mode === "research" && panelVisibility.alerts && (
-              <section className="elevated rounded-2xl border border-borderSoft bg-surface p-3">
-                <h3 className="mb-2 text-sm font-semibold text-textSecondary">{t("alerts.title")}</h3>
-                <div className="space-y-2 text-xs">
-                  {alerts.length === 0 && <p className="text-textMuted">{t("alerts.none")}</p>}
-                  {alerts.map((item) => {
-                    const isUp = item.direction === "up";
-                    const tone = item.severity === "high" ? "var(--incidents)" : "var(--warning)";
-                    return (
-                      <div key={`${item.category}-${item.direction}`} className="rounded border border-borderSoft px-2 py-2">
-                        <div className="flex items-center justify-between">
-                          <span className="font-medium capitalize">{item.category}</span>
-                          <span style={{ color: tone }}>
-                            {isUp ? t("alerts.spike") : t("alerts.drop")} {item.delta_percent > 0 ? "+" : ""}
-                            {item.delta_percent.toFixed(1)}%
-                          </span>
-                        </div>
-                        <div className="mt-1 text-textSecondary">
-                          {t("alerts.current")}: {item.current} | {t("alerts.previous")}: {item.previous}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </section>
-            )}
-            {mode === "research" && researchDrawers.entities && panelVisibility.jurisdictions && (
-              <section className="elevated rounded-2xl border border-borderSoft bg-surface p-3">
-                <h3 className="mb-2 text-sm font-semibold text-textSecondary">{t("sources.jurisdictions")}</h3>
-                <div className="space-y-1 text-xs">
-                  {(jurisdictionsBreakdown?.jurisdictions ?? []).slice(0, 8).map((item) => (
-                    <div key={item.name} className="flex justify-between">
-                      <span className="truncate pr-2">{item.name}</span>
-                      <span>{item.count}</span>
-                    </div>
-                  ))}
-                </div>
-              </section>
-            )}
-            {mode === "research" && researchDrawers.entities && panelVisibility.entities && (
-              <section className="elevated rounded-2xl border border-borderSoft bg-surface p-3">
-                <h3 className="mb-2 text-sm font-semibold text-textSecondary">{t("sources.entities")}</h3>
-                <div className="space-y-1 text-xs">
-                  {(entitiesBreakdown?.entities ?? []).slice(0, 8).map((item) => (
-                    <div key={item.name} className="flex justify-between">
-                      <span className="truncate pr-2">{item.name}</span>
-                      <span>{item.count}</span>
-                    </div>
-                  ))}
-                </div>
-              </section>
-            )}
-            {mode === "research" && researchDrawers.entities && panelVisibility.tags && (
-              <section className="elevated rounded-2xl border border-borderSoft bg-surface p-3">
-                <h3 className="mb-2 text-sm font-semibold text-textSecondary">{t("sources.tags")}</h3>
-                <div className="flex flex-wrap gap-2 text-xs">
-                  {(tagsBreakdown?.tags ?? []).slice(0, 14).map((item) => (
-                    <button
-                      key={item.name}
-                      onClick={() => {
-                        setSearch(item.name);
-                        setMode("research");
-                      }}
-                      className="rounded border border-borderSoft px-2 py-1"
-                    >
-                      {item.name} ({item.count})
-                    </button>
-                  ))}
-                </div>
-              </section>
-            )}
-            {panelVisibility.hourly && (
-            <section className="elevated rounded-2xl border border-borderSoft bg-surface p-3">
-              <div className="mb-2 flex items-center justify-between">
-                <h3 className="text-sm font-semibold text-textSecondary">{t("charts.hourly")}</h3>
-                <span className="text-xs text-textMuted">{t("charts.drilldownHint")}</span>
-              </div>
-              {hourly ? (
-                <EChartsReact option={hourlyOption} onEvents={chartEvents} style={{ height: 280 }} notMerge lazyUpdate />
-              ) : (
-                <div className="flex h-[280px] items-center justify-center text-xs text-textMuted">{t("charts.loading")}</div>
-              )}
-            </section>
-            )}
-            {panelVisibility.weekly && (
-            <section className="elevated rounded-2xl border border-borderSoft bg-surface p-3">
-              <div className="mb-2 flex items-center justify-between">
-                <h3 className="text-sm font-semibold text-textSecondary">{t("charts.weekly")}</h3>
-                <span className="text-xs text-textMuted">{t("charts.drilldownHint")}</span>
-              </div>
-              {weekly ? (
-                <EChartsReact option={weeklyOption} onEvents={chartEvents} style={{ height: 320 }} notMerge lazyUpdate />
-              ) : (
-                <div className="flex h-[320px] items-center justify-center text-xs text-textMuted">{t("charts.loading")}</div>
-              )}
-            </section>
-            )}
+          <div className="space-y-5 xl:col-span-2">
+            {/* Charts first for visibility */}
+            <SidebarAnalytics
+              mode={mode}
+              panelVisibility={panelVisibility}
+              sourceHealth={sourceHealth}
+              sourceHealthUpdatedAt={sourceHealthUpdatedAt}
+              sourceHealthRunStatus={sourceHealthRunStatus}
+              sourceHealthInsertedTotal={sourceHealthInsertedTotal}
+              sourceHealthCandidatesTotal={sourceHealthCandidatesTotal}
+              sourceHealthSkippedLockCount={sourceHealthSkippedLockCount}
+              confidenceProfile={confidenceProfile}
+              riskTrendOption={riskTrendOption}
+              momentum={momentum}
+              alerts={alerts}
+              hourly={hourly}
+              hourlyOption={hourlyOption}
+              weekly={weekly}
+              weeklyOption={weeklyOption}
+              chartEvents={chartEvents}
+              onSetCategory={setCategory}
+              onSetSearch={setSearch}
+              onSetMode={setMode}
+            />
+
+            <SidebarHistory
+              mode={mode}
+              panelVisibility={panelVisibility}
+              researchDrawers={researchDrawers}
+              backfillStatus={backfillStatus}
+              isBackfillRunning={isBackfillRunning}
+              pinnedItems={pinnedItems}
+              savedBriefs={savedBriefs}
+              alertCenterItems={alertCenterItems}
+              dismissedAlertIds={dismissedAlertIds}
+              onToggleResearchDrawer={toggleResearchDrawer}
+              onTogglePanel={togglePanel}
+              onBackfillStarted={() => setIsBackfillRunning(true)}
+              onSelectItem={setSelected}
+              onTogglePin={togglePin}
+              onClearPinnedItems={() => setPinnedItems([])}
+              onClearSavedBriefs={() => setSavedBriefs([])}
+              onDeleteSavedBrief={(id) => setSavedBriefs((prev) => prev.filter((item) => item.id !== id))}
+              onCopyBrief={copyBrief}
+              onDownloadBrief={downloadBrief}
+              onDismissAlertItem={dismissAlertItem}
+              onResetDismissedAlerts={resetDismissedAlerts}
+              onRefreshData={() => refreshData().catch(() => undefined)}
+            />
+
+            <SidebarSources
+              mode={mode}
+              panelVisibility={panelVisibility}
+              researchDrawerOpen={researchDrawers.sources}
+              sourceFreshness={sourceFreshness}
+              sourcesBreakdown={sourcesBreakdown}
+              coverageGroups={coverageGroups}
+              sourceQuality={sourceQuality}
+              coverageTotal={coverage?.total ?? 0}
+              onApplyCoverageFilter={applyCoverageFilter}
+            />
+
+            <SidebarEntities
+              mode={mode}
+              panelVisibility={panelVisibility}
+              researchDrawerOpen={researchDrawers.entities}
+              entityMomentum={entityMomentum}
+              jurisdictionsBreakdown={jurisdictionsBreakdown}
+              entitiesBreakdown={entitiesBreakdown}
+              tagsBreakdown={tagsBreakdown}
+              onSetSearch={setSearch}
+              onSetMode={setMode}
+            />
           </div>
         </section>
       </main>
 
+      {/* Detail Modal */}
       {selected && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 p-4" onClick={() => setSelected(null)}>
-          <div
-            className="max-h-[90vh] w-full max-w-2xl overflow-auto rounded-lg border border-borderStrong bg-surface p-5"
-            role="dialog"
-            aria-modal="true"
-            aria-label={t("feed.details")}
-            onClick={(event) => event.stopPropagation()}
-          >
-            <div className="mb-3 flex items-start justify-between">
-              <h3 className="text-lg font-semibold">{selected.title}</h3>
-              <div className="flex items-center gap-2">
-                <button className="rounded border border-borderSoft px-2 py-1 text-sm" onClick={copySelectedUrl}>
-                  {copyState === "copied" ? t("feed.copied") : copyState === "failed" ? t("feed.copyFailed") : t("feed.copyUrl")}
-                </button>
-                <button className="rounded border border-borderSoft px-2 py-1 text-sm" onClick={() => setSelected(null)}>{t("feed.close")}</button>
-              </div>
-            </div>
-            <div className="space-y-2 text-sm">
-              <p><strong>URL:</strong> <a href={selected.url} target="_blank" rel="noreferrer">{selected.url}</a></p>
-              <p><strong>{t("feed.publisher")}:</strong> {selected.publisher}</p>
-              <p><strong>{t("feed.jurisdiction")}:</strong> {selected.jurisdiction}</p>
-              <p><strong>{t("feed.language")}:</strong> {selected.language}</p>
-              <p><strong>{t("feed.confidence")}:</strong> {selected.confidence.toFixed(2)}</p>
-              <p><strong>{t("feed.entities")}:</strong> {selected.entities.join(", ") || "-"}</p>
-              <p><strong>{t("feed.tags")}:</strong> {selected.tags.join(", ") || "-"}</p>
-              <p><strong>source_id:</strong> {selected.source_id}</p>
-              <p><strong>source_type:</strong> {selected.source_type}</p>
-              <p><strong>hash:</strong> {selected.hash}</p>
-              <p><strong>published_at:</strong> {selected.published_at}</p>
-              <p><strong>ingested_at:</strong> {selected.ingested_at}</p>
-            </div>
-          </div>
-        </div>
+        <DetailModal item={selected} onClose={() => setSelected(null)} />
       )}
-    </div>
+    </DashboardShell>
   );
 }
+
 
 
 
