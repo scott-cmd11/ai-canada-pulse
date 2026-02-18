@@ -1,5 +1,6 @@
 from collections import defaultdict
 from datetime import UTC, datetime, timedelta
+from math import sqrt
 
 from sqlalchemy import and_, func, select, text
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -13,6 +14,7 @@ from backend.app.schemas.ai_development import (
     StatsAlertItem,
     StatsAlertsResponse,
 )
+from backend.app.services.feed import parse_time_window
 
 
 def _calc_delta(current: int, previous: int) -> float:
@@ -32,6 +34,30 @@ async def _count_between(db: AsyncSession, start: datetime, end: datetime) -> in
         and_(AIDevelopment.published_at >= start, AIDevelopment.published_at < end)
     )
     return int((await db.execute(stmt)).scalar_one())
+
+
+async def _category_counts_between(db: AsyncSession, start: datetime, end: datetime) -> dict[str, int]:
+    stmt = (
+        select(AIDevelopment.category, func.count(AIDevelopment.id))
+        .where(and_(AIDevelopment.published_at >= start, AIDevelopment.published_at < end))
+        .group_by(AIDevelopment.category)
+    )
+    rows = (await db.execute(stmt)).all()
+    return {_enum_name(category): int(count) for category, count in rows}
+
+
+def _mean(values: list[int]) -> float:
+    if len(values) == 0:
+        return 0.0
+    return float(sum(values) / len(values))
+
+
+def _stddev(values: list[int], mean_value: float | None = None) -> float:
+    if len(values) < 2:
+        return 0.0
+    center = _mean(values) if mean_value is None else mean_value
+    variance = sum((value - center) ** 2 for value in values) / len(values)
+    return sqrt(max(0.0, variance))
 
 
 async def fetch_kpis(db: AsyncSession) -> KPIsResponse:
@@ -160,14 +186,7 @@ async def fetch_weekly_timeseries(db: AsyncSession) -> EChartsTimeseriesResponse
 
 async def fetch_sources_breakdown(db: AsyncSession, *, time_window: str = "7d", limit: int = 8) -> dict[str, object]:
     now = datetime.now(UTC)
-    since = now - (
-        {
-            "1h": timedelta(hours=1),
-            "24h": timedelta(hours=24),
-            "7d": timedelta(days=7),
-            "30d": timedelta(days=30),
-        }.get(time_window, timedelta(days=7))
-    )
+    since = now - parse_time_window(time_window)
 
     total_stmt = select(func.count(AIDevelopment.id)).where(AIDevelopment.published_at >= since)
     total = int((await db.execute(total_stmt)).scalar_one())
@@ -198,14 +217,7 @@ async def fetch_sources_breakdown(db: AsyncSession, *, time_window: str = "7d", 
 
 async def fetch_jurisdictions_breakdown(db: AsyncSession, *, time_window: str = "7d", limit: int = 12) -> dict[str, object]:
     now = datetime.now(UTC)
-    since = now - (
-        {
-            "1h": timedelta(hours=1),
-            "24h": timedelta(hours=24),
-            "7d": timedelta(days=7),
-            "30d": timedelta(days=30),
-        }.get(time_window, timedelta(days=7))
-    )
+    since = now - parse_time_window(time_window)
 
     total_stmt = select(func.count(AIDevelopment.id)).where(AIDevelopment.published_at >= since)
     total = int((await db.execute(total_stmt)).scalar_one())
@@ -227,14 +239,7 @@ async def fetch_jurisdictions_breakdown(db: AsyncSession, *, time_window: str = 
 
 async def fetch_entities_breakdown(db: AsyncSession, *, time_window: str = "7d", limit: int = 12) -> dict[str, object]:
     now = datetime.now(UTC)
-    since = now - (
-        {
-            "1h": timedelta(hours=1),
-            "24h": timedelta(hours=24),
-            "7d": timedelta(days=7),
-            "30d": timedelta(days=30),
-        }.get(time_window, timedelta(days=7))
-    )
+    since = now - parse_time_window(time_window)
     bounded_limit = max(1, min(limit, 30))
     total_stmt = select(func.count(AIDevelopment.id)).where(AIDevelopment.published_at >= since)
     total = int((await db.execute(total_stmt)).scalar_one())
@@ -266,14 +271,7 @@ async def fetch_entities_breakdown(db: AsyncSession, *, time_window: str = "7d",
 
 async def fetch_tags_breakdown(db: AsyncSession, *, time_window: str = "7d", limit: int = 14) -> dict[str, object]:
     now = datetime.now(UTC)
-    since = now - (
-        {
-            "1h": timedelta(hours=1),
-            "24h": timedelta(hours=24),
-            "7d": timedelta(days=7),
-            "30d": timedelta(days=30),
-        }.get(time_window, timedelta(days=7))
-    )
+    since = now - parse_time_window(time_window)
     bounded_limit = max(1, min(limit, 30))
     total_stmt = select(func.count(AIDevelopment.id)).where(AIDevelopment.published_at >= since)
     total = int((await db.execute(total_stmt)).scalar_one())
@@ -305,14 +303,7 @@ async def fetch_tags_breakdown(db: AsyncSession, *, time_window: str = "7d", lim
 
 async def fetch_brief_snapshot(db: AsyncSession, *, time_window: str = "24h") -> dict[str, object]:
     now = datetime.now(UTC)
-    since = now - (
-        {
-            "1h": timedelta(hours=1),
-            "24h": timedelta(hours=24),
-            "7d": timedelta(days=7),
-            "30d": timedelta(days=30),
-        }.get(time_window, timedelta(hours=24))
-    )
+    since = now - parse_time_window(time_window)
 
     total_stmt = select(func.count(AIDevelopment.id)).where(AIDevelopment.published_at >= since)
     total = int((await db.execute(total_stmt)).scalar_one())
@@ -383,14 +374,7 @@ async def fetch_brief_snapshot(db: AsyncSession, *, time_window: str = "24h") ->
 
 async def fetch_scope_compare(db: AsyncSession, *, time_window: str = "7d") -> dict[str, object]:
     now = datetime.now(UTC)
-    since = now - (
-        {
-            "1h": timedelta(hours=1),
-            "24h": timedelta(hours=24),
-            "7d": timedelta(days=7),
-            "30d": timedelta(days=30),
-        }.get(time_window, timedelta(days=7))
-    )
+    since = now - parse_time_window(time_window)
     total_stmt = select(func.count(AIDevelopment.id)).where(AIDevelopment.published_at >= since)
     total = int((await db.execute(total_stmt)).scalar_one())
 
@@ -442,14 +426,7 @@ async def fetch_scope_compare(db: AsyncSession, *, time_window: str = "7d") -> d
 
 async def fetch_confidence_profile(db: AsyncSession, *, time_window: str = "7d") -> dict[str, object]:
     now = datetime.now(UTC)
-    since = now - (
-        {
-            "1h": timedelta(hours=1),
-            "24h": timedelta(hours=24),
-            "7d": timedelta(days=7),
-            "30d": timedelta(days=30),
-        }.get(time_window, timedelta(days=7))
-    )
+    since = now - parse_time_window(time_window)
     total_stmt = select(func.count(AIDevelopment.id)).where(AIDevelopment.published_at >= since)
     avg_stmt = select(func.avg(AIDevelopment.confidence)).where(AIDevelopment.published_at >= since)
     total = int((await db.execute(total_stmt)).scalar_one())
@@ -514,14 +491,7 @@ def _concentration_label(hhi: float) -> str:
 
 async def fetch_concentration(db: AsyncSession, *, time_window: str = "7d") -> dict[str, object]:
     now = datetime.now(UTC)
-    since = now - (
-        {
-            "1h": timedelta(hours=1),
-            "24h": timedelta(hours=24),
-            "7d": timedelta(days=7),
-            "30d": timedelta(days=30),
-        }.get(time_window, timedelta(days=7))
-    )
+    since = now - parse_time_window(time_window)
     total_stmt = select(func.count(AIDevelopment.id)).where(AIDevelopment.published_at >= since)
     total = int((await db.execute(total_stmt)).scalar_one())
 
@@ -579,12 +549,7 @@ async def fetch_concentration(db: AsyncSession, *, time_window: str = "7d") -> d
 
 async def fetch_momentum(db: AsyncSession, *, time_window: str = "24h", limit: int = 8) -> dict[str, object]:
     now = datetime.now(UTC)
-    window = {
-        "1h": timedelta(hours=1),
-        "24h": timedelta(hours=24),
-        "7d": timedelta(days=7),
-        "30d": timedelta(days=30),
-    }.get(time_window, timedelta(hours=24))
+    window = parse_time_window(time_window)
     current_start = now - window
     previous_start = now - (window * 2)
 
@@ -675,14 +640,7 @@ async def fetch_momentum(db: AsyncSession, *, time_window: str = "24h", limit: i
 
 async def fetch_risk_index(db: AsyncSession, *, time_window: str = "24h") -> dict[str, object]:
     now = datetime.now(UTC)
-    since = now - (
-        {
-            "1h": timedelta(hours=1),
-            "24h": timedelta(hours=24),
-            "7d": timedelta(days=7),
-            "30d": timedelta(days=30),
-        }.get(time_window, timedelta(hours=24))
-    )
+    since = now - parse_time_window(time_window)
     total_stmt = select(func.count(AIDevelopment.id)).where(AIDevelopment.published_at >= since)
     incidents_stmt = select(func.count(AIDevelopment.id)).where(
         and_(AIDevelopment.published_at >= since, AIDevelopment.category == CategoryType.incidents)
@@ -744,12 +702,7 @@ async def fetch_risk_index(db: AsyncSession, *, time_window: str = "24h") -> dic
 
 async def fetch_entity_momentum(db: AsyncSession, *, time_window: str = "24h", limit: int = 10) -> dict[str, object]:
     now = datetime.now(UTC)
-    window = {
-        "1h": timedelta(hours=1),
-        "24h": timedelta(hours=24),
-        "7d": timedelta(days=7),
-        "30d": timedelta(days=30),
-    }.get(time_window, timedelta(hours=24))
+    window = parse_time_window(time_window)
     current_start = now - window
     previous_start = now - (window * 2)
 
@@ -842,6 +795,26 @@ async def fetch_risk_trend(db: AsyncSession, *, time_window: str = "24h") -> dic
         unit = "day"
         steps = 7
         step_delta = timedelta(days=1)
+    elif time_window == "90d":
+        since = now - timedelta(days=90)
+        unit = "week"
+        steps = 13
+        step_delta = timedelta(weeks=1)
+    elif time_window == "1y":
+        since = now - timedelta(days=365)
+        unit = "month"
+        steps = 12
+        step_delta = timedelta(days=30)
+    elif time_window == "2y":
+        since = now - timedelta(days=730)
+        unit = "month"
+        steps = 24
+        step_delta = timedelta(days=30)
+    elif time_window == "5y":
+        since = now - timedelta(days=1825)
+        unit = "month"
+        steps = 60
+        step_delta = timedelta(days=30)
     else:
         since = now - timedelta(days=30)
         unit = "day"
@@ -898,10 +871,16 @@ async def fetch_risk_trend(db: AsyncSession, *, time_window: str = "24h") -> dic
     low_conf_map = {row[0]: int(row[1]) for row in low_conf_rows}
 
     start = since.replace(second=0, microsecond=0)
-    if unit == "hour":
+    if unit == "minute":
+        pass  # keep minutes as-is
+    elif unit == "hour":
         start = start.replace(minute=0)
     elif unit == "day":
         start = start.replace(hour=0, minute=0)
+    elif unit == "week":
+        start = start.replace(hour=0, minute=0) - timedelta(days=start.weekday())
+    elif unit == "month":
+        start = start.replace(day=1, hour=0, minute=0)
     buckets = [start + (step_delta * i) for i in range(steps)]
 
     labels: list[str] = []
@@ -917,7 +896,14 @@ async def fetch_risk_trend(db: AsyncSession, *, time_window: str = "24h") -> dic
         lr = low_conf / max(1, total)
         score = min(100.0, round((ir * 60.0 + lr * 40.0) * 100.0, 2))
 
-        labels.append(bucket.strftime("%H:%M") if unit in {"minute", "hour"} else bucket.strftime("%Y-%m-%d"))
+        if unit in {"minute", "hour"}:
+            labels.append(bucket.strftime("%H:%M"))
+        elif unit == "month":
+            labels.append(bucket.strftime("%Y-%m"))
+        elif unit == "week":
+            labels.append(bucket.strftime("%Y-%m-%d"))
+        else:
+            labels.append(bucket.strftime("%Y-%m-%d"))
         risk_scores.append(score)
         incidents_ratio.append(round(ir * 100.0, 2))
         low_conf_ratio.append(round(lr * 100.0, 2))
@@ -966,14 +952,7 @@ async def fetch_summary(db: AsyncSession, *, time_window: str = "24h") -> dict[s
 
 async def fetch_coverage(db: AsyncSession, *, time_window: str = "7d", limit: int = 8) -> dict[str, object]:
     now = datetime.now(UTC)
-    since = now - (
-        {
-            "1h": timedelta(hours=1),
-            "24h": timedelta(hours=24),
-            "7d": timedelta(days=7),
-            "30d": timedelta(days=30),
-        }.get(time_window, timedelta(days=7))
-    )
+    since = now - parse_time_window(time_window)
     bounded_limit = max(1, min(limit, 20))
     total_stmt = select(func.count(AIDevelopment.id)).where(AIDevelopment.published_at >= since)
     total = int((await db.execute(total_stmt)).scalar_one())
@@ -1045,47 +1024,51 @@ async def fetch_alerts(
     time_window: str = "24h",
     min_baseline: int = 3,
     min_delta_percent: float = 35.0,
+    min_z_score: float = 1.2,
 ) -> StatsAlertsResponse:
     now = datetime.now(UTC)
-    window = {
-        "1h": timedelta(hours=1),
-        "24h": timedelta(hours=24),
-        "7d": timedelta(days=7),
-        "30d": timedelta(days=30),
-    }.get(time_window, timedelta(hours=24))
+    window = parse_time_window(time_window)
     current_start = now - window
-    previous_start = now - (window * 2)
+    lookback_windows = 8
+    if window >= timedelta(days=365):
+        lookback_windows = 4
+    elif window >= timedelta(days=90):
+        lookback_windows = 6
 
-    current_stmt = (
-        select(AIDevelopment.category, func.count(AIDevelopment.id))
-        .where(and_(AIDevelopment.published_at >= current_start, AIDevelopment.published_at < now))
-        .group_by(AIDevelopment.category)
-    )
-    previous_stmt = (
-        select(AIDevelopment.category, func.count(AIDevelopment.id))
-        .where(and_(AIDevelopment.published_at >= previous_start, AIDevelopment.published_at < current_start))
-        .group_by(AIDevelopment.category)
-    )
-
-    current_rows = (await db.execute(current_stmt)).all()
-    previous_rows = (await db.execute(previous_stmt)).all()
-    current_map = {_enum_name(category): int(count) for category, count in current_rows}
-    previous_map = {_enum_name(category): int(count) for category, count in previous_rows}
+    current_map = await _category_counts_between(db, current_start, now)
+    history_maps: list[dict[str, int]] = []
+    for window_index in range(lookback_windows, 0, -1):
+        history_start = current_start - (window * window_index)
+        history_end = history_start + window
+        history_maps.append(await _category_counts_between(db, history_start, history_end))
 
     categories = [c.value for c in CategoryType]
     alerts: list[StatsAlertItem] = []
     for category in categories:
         current = current_map.get(category, 0)
-        previous = previous_map.get(category, 0)
-        baseline = max(previous, min_baseline)
+        history_series = [history_map.get(category, 0) for history_map in history_maps]
+        previous = history_series[-1] if len(history_series) > 0 else 0
+        baseline_mean = _mean(history_series)
+        baseline_stddev = _stddev(history_series, baseline_mean)
+
         delta = _calc_delta(current, previous)
-        if baseline < min_baseline and current < min_baseline:
-            continue
-        if abs(delta) < min_delta_percent:
+        if baseline_stddev > 0:
+            z_score = (current - baseline_mean) / baseline_stddev
+        else:
+            shift = current - baseline_mean
+            variance_floor = max(2.0, baseline_mean * 0.5)
+            z_score = 2.0 if shift >= variance_floor else -2.0 if shift <= -variance_floor else 0.0
+
+        baseline_anchor = max(previous, int(round(baseline_mean)))
+        baseline_ready = baseline_anchor >= min_baseline or current >= min_baseline
+        delta_trigger = baseline_ready and abs(delta) >= min_delta_percent
+        z_trigger = baseline_ready and abs(z_score) >= min_z_score
+        if not delta_trigger and not z_trigger:
             continue
 
-        direction = "up" if delta >= 0 else "down"
-        severity = "high" if abs(delta) >= 100 else "medium"
+        direction = "up" if current >= baseline_anchor else "down"
+        severity = "high" if abs(delta) >= 100 or abs(z_score) >= 2.5 else "medium"
+        trigger_reason = "hybrid" if (delta_trigger and z_trigger) else ("delta" if delta_trigger else "z_score")
         alerts.append(
             StatsAlertItem(
                 category=category,
@@ -1094,14 +1077,26 @@ async def fetch_alerts(
                 current=current,
                 previous=previous,
                 delta_percent=delta,
+                baseline_mean=round(baseline_mean, 2),
+                baseline_stddev=round(baseline_stddev, 2),
+                z_score=round(z_score, 2),
+                trigger_reason=trigger_reason,
             )
         )
 
-    alerts.sort(key=lambda item: abs(item.delta_percent), reverse=True)
+    def _alert_rank(item: StatsAlertItem) -> float:
+        delta_rank = abs(item.delta_percent) / max(min_delta_percent, 1.0)
+        z_rank = abs(item.z_score or 0.0) / max(min_z_score, 0.1)
+        severity_bonus = 2.0 if item.severity == "high" else 0.0
+        return max(delta_rank, z_rank) + severity_bonus
+
+    alerts.sort(key=_alert_rank, reverse=True)
     return StatsAlertsResponse(
         generated_at=now,
         time_window=time_window,
         min_baseline=min_baseline,
         min_delta_percent=min_delta_percent,
+        min_z_score=min_z_score,
+        lookback_windows=lookback_windows,
         alerts=alerts[:8],
     )

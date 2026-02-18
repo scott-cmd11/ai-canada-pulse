@@ -89,6 +89,20 @@ export function FeedList({
   const t = useTranslations();
   const [focusedIndex, setFocusedIndex] = useState(-1);
   const cardRefs = useRef<Map<number, HTMLElement>>(new Map());
+  const [keyboardHintDismissed, setKeyboardHintDismissed] = useState(true); // default hidden until hydration
+
+  useEffect(() => {
+    try {
+      setKeyboardHintDismissed(localStorage.getItem("ai_pulse_keyboard_hint_dismissed") === "true");
+    } catch {
+      setKeyboardHintDismissed(false);
+    }
+  }, []);
+
+  const dismissKeyboardHint = useCallback(() => {
+    setKeyboardHintDismissed(true);
+    try { localStorage.setItem("ai_pulse_keyboard_hint_dismissed", "true"); } catch { /* ignore */ }
+  }, []);
 
   // Keyboard navigation: j/k to move, Enter to open details
   const handleKeyDown = useCallback(
@@ -233,11 +247,23 @@ export function FeedList({
           {refreshError}
         </div>
       )}
-      {/* Keyboard hint */}
-      {!isInitialLoading && sortedFeed.length > 0 && (
-        <p className="mb-3 text-micro text-textMuted">
-          Use <kbd className="badge badge-neutral mx-0.5 font-mono px-1.5 py-0.5">j</kbd>/<kbd className="badge badge-neutral mx-0.5 font-mono px-1.5 py-0.5">k</kbd> to navigate, <kbd className="badge badge-neutral mx-0.5 font-mono px-1.5 py-0.5">Enter</kbd> to view details
-        </p>
+      {/* Keyboard hint — dismissible */}
+      {!isInitialLoading && sortedFeed.length > 0 && !keyboardHintDismissed && (
+        <div className="mb-3 flex items-center gap-2 text-micro text-textMuted">
+          <p>
+            {t.rich("feed.keyboardNav", {
+              j: (chunks) => <kbd className="badge badge-neutral mx-0.5 font-mono px-1.5 py-0.5">j</kbd>,
+              k: (chunks) => <kbd className="badge badge-neutral mx-0.5 font-mono px-1.5 py-0.5">k</kbd>,
+              enter: (chunks) => <kbd className="badge badge-neutral mx-0.5 font-mono px-1.5 py-0.5">Enter</kbd>,
+            })}
+          </p>
+          <button
+            onClick={dismissKeyboardHint}
+            className="ml-auto shrink-0 rounded border border-borderSoft px-2 py-0.5 text-micro text-textMuted hover:text-textSecondary"
+          >
+            {t("feed.keyboardDismiss")}
+          </button>
+        </div>
       )}
       <div
         className={`max-h-[900px] overflow-y-auto pr-1 ${density === "compact" ? "space-y-1.5" : "space-y-2"}`}
@@ -303,14 +329,16 @@ export function FeedList({
                 if (el) cardRefs.current.set(index, el);
                 else cardRefs.current.delete(index);
               }}
-              className={`feed-card elevated ${
-                density === "compact" ? "p-3" : "p-4"
-              } ${
-                focusedIndex === index
+              className={`feed-card elevated ${density === "compact" ? "p-3" : "p-4"
+                } ${focusedIndex === index
                   ? "!border-[var(--primary-action)] ring-2 ring-[var(--primary-action)]/30"
                   : ""
-              }`}
+                } cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary-action)]/50`}
               onClick={() => setFocusedIndex(index)}
+              onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onSelectItem(item); } }}
+              tabIndex={0}
+              role="button"
+              aria-label={item.title}
             >
               <div
                 className={`flex flex-wrap items-center text-textMuted ${density === "compact" ? "gap-1.5 text-micro" : "gap-2 text-caption"}`}
@@ -318,6 +346,8 @@ export function FeedList({
                 <span
                   className="h-2 w-2 shrink-0 rounded-full"
                   style={{ background: categoryColor[item.category] ?? "var(--text-muted)" }}
+                  aria-label={item.category}
+                  title={item.category}
                 />
                 <span className="inline-flex items-center gap-1">
                   <Clock size={10} />

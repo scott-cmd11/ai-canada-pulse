@@ -64,6 +64,10 @@ class StatsAlertItem(BaseModel):
     current: int
     previous: int
     delta_percent: float
+    baseline_mean: float | None = None
+    baseline_stddev: float | None = None
+    z_score: float | None = None
+    trigger_reason: str | None = None
 
 
 class StatsAlertsResponse(BaseModel):
@@ -71,4 +75,6 @@ class StatsAlertsResponse(BaseModel):
     time_window: str
     min_baseline: int
     min_delta_percent: float
+    min_z_score: float
+    lookback_windows: int
     alerts: list[StatsAlertItem]

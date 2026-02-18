@@ -70,6 +70,7 @@ import { TooltipHelp } from "./dashboard/tooltip-help";
 import { QuickGuideButton, QuickGuidePanel } from "./dashboard/quick-guide";
 import { DashboardShell } from "./dashboard/shell";
 import { MetricTile, Tile } from "./dashboard/tile";
+import { BackToTop } from "./dashboard/back-to-top";
 
 export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
   const t = useTranslations();
@@ -228,6 +229,17 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
   const otherLocale = locale === "en" ? "fr" : "en";
 
   // --- Effects ---
+
+  // Auto-expand filters on first visit
+  useEffect(() => {
+    try {
+      const shown = localStorage.getItem("ai_pulse_filters_shown");
+      if (!shown) {
+        setControlsOpen(true);
+        localStorage.setItem("ai_pulse_filters_shown", "true");
+      }
+    } catch { /* ignore */ }
+  }, []);
 
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedSearch(search.trim()), 300);
@@ -1183,15 +1195,27 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
 
         {/* Mode + Actions row */}
         <div className="dd-action-row flex flex-wrap items-center gap-2">
-          {mode === "policy" ? (
-            <button onClick={() => setMode("research")} className="btn-secondary">
-              {t("hero.openResearch")}
+          {/* Segmented mode toggle */}
+          <div className="inline-flex rounded-lg border border-borderSoft overflow-hidden">
+            <button
+              onClick={() => setMode("policy")}
+              className={`px-3 py-1.5 text-sm font-medium transition-colors ${mode === "policy"
+                ? "bg-[var(--primary-action)] text-white"
+                : "bg-transparent text-textSecondary hover:bg-surfaceInset"
+                }`}
+            >
+              {t("mode.policy")}
             </button>
-          ) : (
-            <button onClick={() => setMode("policy")} className="btn-secondary">
-              {t("hero.backPolicy")}
+            <button
+              onClick={() => setMode("research")}
+              className={`px-3 py-1.5 text-sm font-medium transition-colors ${mode === "research"
+                ? "bg-[var(--primary-action)] text-white"
+                : "bg-transparent text-textSecondary hover:bg-surfaceInset"
+                }`}
+            >
+              {t("mode.research")}
             </button>
-          )}
+          </div>
           <button
             onClick={() => setDensity((prev) => (prev === "comfortable" ? "compact" : "comfortable"))}
             className="btn-ghost"
@@ -1208,6 +1232,22 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
             {t("hero.howItWorks")}
           </Link>
         </div>
+
+        {/* Inline scenario presets — visible when filter bar is closed and no filters active */}
+        {!controlsOpen && activeFilters.length === 0 && (
+          <div className="flex gap-2 overflow-x-auto pb-1">
+            {scenarioPresets.map((scenario) => (
+              <button
+                key={scenario.id}
+                onClick={() => applyScenario(scenario)}
+                className="shrink-0 rounded-lg border border-borderSoft bg-surface px-3 py-2 text-left hover:bg-surfaceInset transition-colors"
+              >
+                <p className="text-sm font-medium">{t(`scenarios.${scenario.labelKey}`)}</p>
+                <p className="text-micro text-textMuted mt-0.5">{t(`scenarios.${scenario.descriptionKey}`)}</p>
+              </button>
+            ))}
+          </div>
+        )}
 
         {/* KPIs */}
         <section className="dd-kpi-band grid grid-cols-1 gap-3 xl:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
@@ -1630,6 +1670,8 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
       {selected && (
         <DetailModal item={selected} onClose={() => setSelected(null)} />
       )}
+
+      <BackToTop />
     </DashboardShell>
   );
 }

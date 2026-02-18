@@ -44,7 +44,7 @@ async def get_weekly(db: AsyncSession = Depends(get_db)) -> EChartsTimeseriesRes
 
 @router.get("/sources")
 async def get_sources_breakdown(
-    time_window: str = Query("7d", pattern="^(1h|24h|7d|30d)$"),
+    time_window: str = Query("7d", pattern="^(1h|24h|7d|30d|90d|1y|2y|5y)$"),
     limit: int = Query(8, ge=1, le=20),
     db: AsyncSession = Depends(get_db),
 ) -> dict[str, object]:
@@ -53,7 +53,7 @@ async def get_sources_breakdown(
 
 @router.get("/jurisdictions")
 async def get_jurisdictions_breakdown(
-    time_window: str = Query("7d", pattern="^(1h|24h|7d|30d)$"),
+    time_window: str = Query("7d", pattern="^(1h|24h|7d|30d|90d|1y|2y|5y)$"),
     limit: int = Query(12, ge=1, le=25),
     db: AsyncSession = Depends(get_db),
 ) -> dict[str, object]:
@@ -62,7 +62,7 @@ async def get_jurisdictions_breakdown(
 
 @router.get("/entities")
 async def get_entities_breakdown(
-    time_window: str = Query("7d", pattern="^(1h|24h|7d|30d)$"),
+    time_window: str = Query("7d", pattern="^(1h|24h|7d|30d|90d|1y|2y|5y)$"),
     limit: int = Query(12, ge=1, le=30),
     db: AsyncSession = Depends(get_db),
 ) -> dict[str, object]:
@@ -71,7 +71,7 @@ async def get_entities_breakdown(
 
 @router.get("/tags")
 async def get_tags_breakdown(
-    time_window: str = Query("7d", pattern="^(1h|24h|7d|30d)$"),
+    time_window: str = Query("7d", pattern="^(1h|24h|7d|30d|90d|1y|2y|5y)$"),
     limit: int = Query(14, ge=1, le=30),
     db: AsyncSession = Depends(get_db),
 ) -> dict[str, object]:
@@ -80,7 +80,7 @@ async def get_tags_breakdown(
 
 @router.get("/brief")
 async def get_brief_snapshot(
-    time_window: str = Query("24h", pattern="^(1h|24h|7d|30d)$"),
+    time_window: str = Query("24h", pattern="^(1h|24h|7d|30d|90d|1y|2y|5y)$"),
     db: AsyncSession = Depends(get_db),
 ) -> dict[str, object]:
     return await fetch_brief_snapshot(db, time_window=time_window)
@@ -88,7 +88,7 @@ async def get_brief_snapshot(
 
 @router.get("/compare")
 async def get_scope_compare(
-    time_window: str = Query("7d", pattern="^(1h|24h|7d|30d)$"),
+    time_window: str = Query("7d", pattern="^(1h|24h|7d|30d|90d|1y|2y|5y)$"),
     db: AsyncSession = Depends(get_db),
 ) -> dict[str, object]:
     return await fetch_scope_compare(db, time_window=time_window)
@@ -96,7 +96,7 @@ async def get_scope_compare(
 
 @router.get("/confidence")
 async def get_confidence_profile(
-    time_window: str = Query("7d", pattern="^(1h|24h|7d|30d)$"),
+    time_window: str = Query("7d", pattern="^(1h|24h|7d|30d|90d|1y|2y|5y)$"),
     db: AsyncSession = Depends(get_db),
 ) -> dict[str, object]:
     return await fetch_confidence_profile(db, time_window=time_window)
@@ -104,7 +104,7 @@ async def get_confidence_profile(
 
 @router.get("/concentration")
 async def get_concentration(
-    time_window: str = Query("7d", pattern="^(1h|24h|7d|30d)$"),
+    time_window: str = Query("7d", pattern="^(1h|24h|7d|30d|90d|1y|2y|5y)$"),
     db: AsyncSession = Depends(get_db),
 ) -> dict[str, object]:
     return await fetch_concentration(db, time_window=time_window)
@@ -112,7 +112,7 @@ async def get_concentration(
 
 @router.get("/momentum")
 async def get_momentum(
-    time_window: str = Query("24h", pattern="^(1h|24h|7d|30d)$"),
+    time_window: str = Query("24h", pattern="^(1h|24h|7d|30d|90d|1y|2y|5y)$"),
     limit: int = Query(8, ge=1, le=20),
     db: AsyncSession = Depends(get_db),
 ) -> dict[str, object]:
@@ -121,7 +121,7 @@ async def get_momentum(
 
 @router.get("/risk-index")
 async def get_risk_index(
-    time_window: str = Query("24h", pattern="^(1h|24h|7d|30d)$"),
+    time_window: str = Query("24h", pattern="^(1h|24h|7d|30d|90d|1y|2y|5y)$"),
     db: AsyncSession = Depends(get_db),
 ) -> dict[str, object]:
     return await fetch_risk_index(db, time_window=time_window)
@@ -129,7 +129,7 @@ async def get_risk_index(
 
 @router.get("/entity-momentum")
 async def get_entity_momentum(
-    time_window: str = Query("24h", pattern="^(1h|24h|7d|30d)$"),
+    time_window: str = Query("24h", pattern="^(1h|24h|7d|30d|90d|1y|2y|5y)$"),
     limit: int = Query(10, ge=1, le=20),
     db: AsyncSession = Depends(get_db),
 ) -> dict[str, object]:
@@ -138,7 +138,7 @@ async def get_entity_momentum(
 
 @router.get("/risk-trend")
 async def get_risk_trend(
-    time_window: str = Query("24h", pattern="^(1h|24h|7d|30d)$"),
+    time_window: str = Query("24h", pattern="^(1h|24h|7d|30d|90d|1y|2y|5y)$"),
     db: AsyncSession = Depends(get_db),
 ) -> dict[str, object]:
     return await fetch_risk_trend(db, time_window=time_window)
@@ -146,7 +146,7 @@ async def get_risk_trend(
 
 @router.get("/summary")
 async def get_summary(
-    time_window: str = Query("24h", pattern="^(1h|24h|7d|30d)$"),
+    time_window: str = Query("24h", pattern="^(1h|24h|7d|30d|90d|1y|2y|5y)$"),
     db: AsyncSession = Depends(get_db),
 ) -> dict[str, object]:
     return await fetch_summary(db, time_window=time_window)
@@ -154,7 +154,7 @@ async def get_summary(
 
 @router.get("/coverage")
 async def get_coverage(
-    time_window: str = Query("7d", pattern="^(1h|24h|7d|30d)$"),
+    time_window: str = Query("7d", pattern="^(1h|24h|7d|30d|90d|1y|2y|5y)$"),
     limit: int = Query(8, ge=1, le=20),
     db: AsyncSession = Depends(get_db),
 ) -> dict[str, object]:
@@ -163,9 +163,10 @@ async def get_coverage(
 
 @router.get("/alerts", response_model=StatsAlertsResponse)
 async def get_alerts(
-    time_window: str = Query("24h", pattern="^(1h|24h|7d|30d)$"),
+    time_window: str = Query("24h", pattern="^(1h|24h|7d|30d|90d|1y|2y|5y)$"),
     min_baseline: int = Query(3, ge=1, le=100),
     min_delta_percent: float = Query(35.0, ge=1.0, le=500.0),
+    min_z_score: float = Query(1.2, ge=0.5, le=10.0),
     db: AsyncSession = Depends(get_db),
 ) -> StatsAlertsResponse:
     return await fetch_alerts(
@@ -173,4 +174,5 @@ async def get_alerts(
         time_window=time_window,
         min_baseline=min_baseline,
         min_delta_percent=min_delta_percent,
+        min_z_score=min_z_score,
     )

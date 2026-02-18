@@ -78,6 +78,21 @@ export function DetailModal({ item, onClose }: DetailModalProps) {
   const CopyIcon =
     copyState === "copied" ? Check : copyState === "failed" ? AlertCircle : Copy;
 
+  const confidencePercent = Math.round(item.confidence * 100);
+  const confidenceColor =
+    item.confidence >= 0.8 ? "var(--research)" :
+      item.confidence >= 0.5 ? "var(--policy)" :
+        item.confidence >= 0.3 ? "var(--warning)" : "var(--incidents)";
+
+  const categoryColorVar: Record<string, string> = {
+    policy: "var(--policy)",
+    research: "var(--research)",
+    industry: "var(--industry)",
+    funding: "var(--funding)",
+    news: "var(--news)",
+    incidents: "var(--incidents)",
+  };
+
   return (
     <div
       className="modal-overlay fixed inset-0 z-50 flex items-center justify-center bg-black/45 p-4"
@@ -85,18 +100,51 @@ export function DetailModal({ item, onClose }: DetailModalProps) {
     >
       <div
         ref={dialogRef}
-        className="modal-panel max-h-[90vh] w-full max-w-2xl overflow-auto rounded-md border border-borderSoft bg-surface p-5 shadow-md"
+        className="modal-panel max-h-[90vh] w-full max-w-2xl overflow-auto rounded-lg border border-borderSoft bg-surface shadow-lg"
         role="dialog"
         aria-modal="true"
         aria-label={t("feed.details")}
         tabIndex={-1}
         onClick={(event) => event.stopPropagation()}
       >
-        <div className="mb-3 flex items-start justify-between">
-          <h3 className="text-lg font-semibold">{item.title}</h3>
-          <div className="flex items-center gap-2">
+        {/* Header */}
+        <div className="border-b border-borderSoft px-5 py-4">
+          <div className="flex items-start justify-between gap-3">
+            <h2 className="text-lg font-semibold leading-snug">{item.title}</h2>
             <button
-              className="btn-secondary"
+              className="btn-icon shrink-0"
+              onClick={onClose}
+              aria-label={t("feed.close")}
+            >
+              <X size={16} />
+            </button>
+          </div>
+          {/* Inline metadata badges */}
+          <div className="mt-2 flex flex-wrap items-center gap-2 text-caption">
+            <span className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5" style={{ background: categoryColorVar[item.category] ?? "var(--surfaceInset)", color: "white" }}>
+              {item.category}
+            </span>
+            <span className="badge badge-neutral">{item.publisher}</span>
+            <span className="badge badge-neutral">{item.jurisdiction}</span>
+            <span className="badge badge-neutral">{item.language.toUpperCase()}</span>
+          </div>
+        </div>
+
+        {/* Body */}
+        <div className="space-y-4 px-5 py-4">
+          {/* Source Link */}
+          <div>
+            <a
+              href={item.url}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-1.5 rounded-md border border-borderSoft px-3 py-2 text-sm font-medium hover:bg-surfaceInset transition-colors"
+            >
+              <ExternalLink size={14} />
+              {t("feed.details")}
+            </a>
+            <button
+              className="ml-2 inline-flex items-center gap-1.5 rounded-md border border-borderSoft px-3 py-2 text-sm hover:bg-surfaceInset transition-colors"
               onClick={copyUrl}
             >
               <CopyIcon size={14} />
@@ -106,74 +154,70 @@ export function DetailModal({ item, onClose }: DetailModalProps) {
                   ? t("feed.copyFailed")
                   : t("feed.copyUrl")}
             </button>
-            <button
-              className="btn-icon"
-              onClick={onClose}
-              aria-label={t("feed.close")}
-            >
-              <X size={14} />
-            </button>
           </div>
-        </div>
-        <div className="space-y-2 text-body">
-          <p>
-            <strong>URL:</strong>{" "}
-            <a
-              href={item.url}
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex items-center gap-1"
-            >
-              {item.url}
-              <ExternalLink size={12} className="shrink-0" />
-            </a>
-          </p>
-          <p>
-            <strong>{t("feed.publisher")}:</strong> {item.publisher}
-          </p>
-          <p>
-            <strong>{t("feed.jurisdiction")}:</strong> {item.jurisdiction}
-          </p>
-          <p>
-            <strong>{t("feed.language")}:</strong> {item.language}
-          </p>
-          <p>
-            <strong>{t("feed.confidence")}:</strong>{" "}
-            {item.confidence.toFixed(2)}
-          </p>
-          <p>
-            <strong>{t("feed.entities")}:</strong>{" "}
-            {item.entities.join(", ") || "-"}
-          </p>
-          <p>
-            <strong>{t("feed.tags")}:</strong> {item.tags.join(", ") || "-"}
-          </p>
-          <p>
-            <strong>published_at:</strong> {item.published_at}
-          </p>
-          <p>
-            <strong>ingested_at:</strong> {item.ingested_at}
-          </p>
+
+          {/* Metadata Grid */}
+          <div className="grid grid-cols-2 gap-3">
+            {/* Confidence */}
+            <div className="rounded-lg bg-surfaceInset p-3">
+              <p className="text-micro text-textMuted mb-1">{t("feed.confidence")}</p>
+              <div className="flex items-center gap-2">
+                <span className="text-lg font-semibold" style={{ color: confidenceColor }}>{confidencePercent}%</span>
+                <div className="flex-1 h-1.5 rounded-full bg-bg overflow-hidden">
+                  <div className="h-full rounded-full transition-all" style={{ width: `${confidencePercent}%`, background: confidenceColor }} />
+                </div>
+              </div>
+            </div>
+
+            {/* Published */}
+            <div className="rounded-lg bg-surfaceInset p-3">
+              <p className="text-micro text-textMuted mb-1">Published</p>
+              <p className="text-sm font-medium">{item.published_at ? new Date(item.published_at).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }) : "-"}</p>
+            </div>
+
+            {/* Entities */}
+            <div className="rounded-lg bg-surfaceInset p-3">
+              <p className="text-micro text-textMuted mb-1">{t("feed.entities")}</p>
+              {item.entities.length > 0 ? (
+                <div className="flex flex-wrap gap-1">
+                  {item.entities.map((e) => (
+                    <span key={e} className="badge badge-neutral text-micro">{e}</span>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm text-textMuted italic">-</p>
+              )}
+            </div>
+
+            {/* Tags */}
+            <div className="rounded-lg bg-surfaceInset p-3">
+              <p className="text-micro text-textMuted mb-1">{t("feed.tags")}</p>
+              {item.tags.length > 0 ? (
+                <div className="flex flex-wrap gap-1">
+                  {item.tags.map((tag) => (
+                    <span key={tag} className="badge badge-neutral text-micro">{tag}</span>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm text-textMuted italic">-</p>
+              )}
+            </div>
+          </div>
 
           {/* Debug toggle */}
           <button
             onClick={() => setShowDebug((prev) => !prev)}
-            className="mt-2 inline-flex items-center gap-1 text-caption text-textMuted hover:text-textSecondary"
+            className="inline-flex items-center gap-1 text-caption text-textMuted hover:text-textSecondary"
           >
             {showDebug ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
-            {showDebug ? "Hide debug info" : "Show debug info"}
+            {showDebug ? "Hide technical details" : "Show technical details"}
           </button>
           {showDebug && (
             <div className="space-y-1 rounded-lg bg-surfaceInset p-3 text-caption font-mono text-textMuted">
-              <p>
-                <strong>source_id:</strong> {item.source_id}
-              </p>
-              <p>
-                <strong>source_type:</strong> {item.source_type}
-              </p>
-              <p>
-                <strong>hash:</strong> {item.hash}
-              </p>
+              <p><strong>source_id:</strong> {item.source_id}</p>
+              <p><strong>source_type:</strong> {item.source_type}</p>
+              <p><strong>hash:</strong> {item.hash}</p>
+              <p><strong>ingested_at:</strong> {item.ingested_at}</p>
             </div>
           )}
         </div>

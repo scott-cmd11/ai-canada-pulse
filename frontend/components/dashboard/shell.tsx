@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState, type ReactNode } from "react";
 import { Activity, BarChart3, Globe2, Landmark, Menu, Moon, Sun, X } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 type Scope = "canada" | "world";
 
@@ -38,6 +39,7 @@ export function DashboardShell({
   children,
 }: DashboardShellProps) {
   const [railOpen, setRailOpen] = useState(false);
+  const t = useTranslations();
   const railBrand = "AI Pulse";
 
   return (
@@ -64,7 +66,7 @@ export function DashboardShell({
             <X size={14} />
           </button>
         </div>
-        <div className="dd-rail-section-title">Dashboards</div>
+        <div className="dd-rail-section-title">{t("shell.dashboards")}</div>
         <nav className="dd-rail-nav">
           <Link
             href={`/${locale}/canada`}
@@ -83,7 +85,7 @@ export function DashboardShell({
             {navLabels.world}
           </Link>
         </nav>
-        <div className="dd-rail-section-title">Reference</div>
+        <div className="dd-rail-section-title">{t("shell.reference")}</div>
         <nav className="dd-rail-nav">
           <Link
             href={`/${locale}/methods`}
@@ -96,7 +98,7 @@ export function DashboardShell({
         </nav>
         <div className="dd-rail-footer">
           <span className="dd-status-dot" aria-hidden="true" />
-          Live data stream
+          {t("shell.liveStream")}
         </div>
       </aside>
       <div className="dd-main">

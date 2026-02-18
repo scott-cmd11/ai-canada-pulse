@@ -4,6 +4,17 @@
     "world": "World",
     "methods": "Methods"
   },
+  "shell": {
+    "dashboards": "Dashboards",
+    "reference": "Reference",
+    "liveStream": "Live data stream"
+  },
+  "error": {
+    "title": "Something went wrong",
+    "description": "An unexpected error occurred while loading the dashboard. This may be a temporary issue with the data service.",
+    "retry": "Try again",
+    "backToDashboard": "Back to dashboard"
+  },
   "guide": {
     "trigger": "Guide",
     "title": "Quick Guide",
@@ -216,7 +227,9 @@
     "filteredHint": "Try resetting filters or widening the time window.",
     "resetFilters": "Reset filters",
     "expand7d": "Use 7d window",
-    "expand30d": "Use 30d window"
+    "expand30d": "Use 30d window",
+    "keyboardNav": "Use <j>j</j> / <k>k</k> to navigate, <enter>Enter</enter> to view details",
+    "keyboardDismiss": "Got it"
   },
   "charts": {
     "hourly": "Hourly Trend (24h)",

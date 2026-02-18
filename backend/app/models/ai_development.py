@@ -15,6 +15,7 @@ class SourceType(str, Enum):
     media = "media"
     industry = "industry"
     funding = "funding"
+    repository = "repository"
 
 
 class CategoryType(str, Enum):

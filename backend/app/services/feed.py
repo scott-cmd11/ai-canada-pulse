@@ -12,6 +12,10 @@ def parse_time_window(time_window: str) -> timedelta:
         "24h": timedelta(hours=24),
         "7d": timedelta(days=7),
         "30d": timedelta(days=30),
+        "90d": timedelta(days=90),
+        "1y": timedelta(days=365),
+        "2y": timedelta(days=730),
+        "5y": timedelta(days=1825),
     }
     return mapping.get(time_window, timedelta(hours=24))
 

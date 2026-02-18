@@ -19,7 +19,7 @@ router = APIRouter(prefix="/feed")
 
 @router.get("", response_model=FeedResponse)
 async def get_feed(
-    time_window: str = Query("24h", pattern="^(1h|24h|7d|30d)$"),
+    time_window: str = Query("24h", pattern="^(1h|24h|7d|30d|90d|1y|2y|5y)$"),
     category: str | None = Query(default=None),
     jurisdiction: str | None = Query(default=None),
     language: str | None = Query(default=None),
@@ -86,7 +86,7 @@ async def stream_feed() -> StreamingResponse:
 @router.get("/export")
 async def export_feed(
     fmt: str = Query("csv", pattern="^(csv|json)$"),
-    time_window: str = Query("24h", pattern="^(1h|24h|7d|30d)$"),
+    time_window: str = Query("24h", pattern="^(1h|24h|7d|30d|90d|1y|2y|5y)$"),
     category: str | None = Query(default=None),
     jurisdiction: str | None = Query(default=None),
     language: str | None = Query(default=None),

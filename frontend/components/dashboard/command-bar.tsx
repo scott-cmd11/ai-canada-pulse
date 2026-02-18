@@ -14,7 +14,7 @@ interface CommandBarProps {
   language: string;
   search: string;
   feedSort: "newest" | "confidence";
-  searchInputRef: RefObject<HTMLInputElement>;
+  searchInputRef: RefObject<HTMLInputElement | null>;
   presets: FilterPreset[];
   scenarioPresets: ScenarioPreset[];
   activeFilters: Array<{ id: string; label: string; clear: () => void }>;

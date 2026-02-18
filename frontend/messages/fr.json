@@ -4,6 +4,17 @@
     "world": "Monde",
     "methods": "Methodes"
   },
+  "shell": {
+    "dashboards": "Tableaux de bord",
+    "reference": "Référence",
+    "liveStream": "Flux de données en direct"
+  },
+  "error": {
+    "title": "Une erreur est survenue",
+    "description": "Une erreur inattendue s'est produite lors du chargement du tableau de bord. Il peut s'agir d'un problème temporaire.",
+    "retry": "Réessayer",
+    "backToDashboard": "Retour au tableau de bord"
+  },
   "guide": {
     "trigger": "Guide",
     "title": "Guide rapide",
@@ -216,7 +227,9 @@
     "filteredHint": "Essayez de reinitialiser les filtres ou d'elargir la periode.",
     "resetFilters": "Reinitialiser filtres",
     "expand7d": "Utiliser 7j",
-    "expand30d": "Utiliser 30j"
+    "expand30d": "Utiliser 30j",
+    "keyboardNav": "Utilisez <j>j</j> / <k>k</k> pour naviguer, <enter>Enter</enter> pour les détails",
+    "keyboardDismiss": "Compris"
   },
   "charts": {
     "hourly": "Tendance horaire (24 h)",

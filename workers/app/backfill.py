@@ -9,6 +9,7 @@ import httpx
 
 from workers.app.source_adapters import (
     _canada_relevance_score,
+    _clamp_future_date,
     _contains_ai,
     _detect_language,
     _extract_tags,
@@ -47,10 +48,10 @@ def _to_record(result: dict[str, Any]) -> dict[str, Any] | None:
     if not published_raw:
         return None
 
-    published_at = datetime.fromisoformat(f"{published_raw}T00:00:00+00:00")
+    published_at = _clamp_future_date(datetime.fromisoformat(f"{published_raw}T00:00:00+00:00"))
     primary_location = result.get("primary_location") or {}
     url = primary_location.get("landing_page_url") or f"https://openalex.org/{source_id}"
-    language = _detect_language(result.get("language"))
+    language = _detect_language(result.get("language"), title=title)
 
     institutions: list[str] = []
     has_canadian_institution = False
