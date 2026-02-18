@@ -1,0 +1,86 @@
+﻿node.exe :  ΓÜá Warning: Next.js 
+inferred your workspace root, but it 
+may not be correct.
+At line:1 char:1
++ & "C:\Program Files\nodejs/node.exe" 
+"C:\Program Files\nodejs/node_mo ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpeci 
+   fied: ( ΓÜá Warning: N...not be co  
+  rrect.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCo 
+   mmandError
+ 
+ We detected multiple lockfiles and 
+selected the directory of 
+C:\Users\scott\package-lock.json as 
+the root directory.
+ To silence this warning, set 
+`outputFileTracingRoot` in your 
+Next.js config, or consider removing 
+one of the lockfiles if it's not 
+needed.
+   See https://nextjs.org/docs/app/api-
+reference/config/next-config-js/output#
+caveats for more information.
+ Detected additional lockfiles: 
+   * C:\Users\scott\coding projects\ai-
+canada-pulse\package-lock.json
+
+   Γû▓ Next.js 15.5.12
+
+   Creating an optimized production build ...
+ Γ£ô Compiled successfully in 11.9s
+   Linting and checking validity of types ...
+   Collecting page data ...
+   Generating static pages (0/28) ...
+   Generating static pages (7/28) 
+   Generating static pages (14/28) 
+   Generating static pages (21/28) 
+ Γ£ô Generating static pages (28/28)
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (app)                                 Size  First Load JS
+Γöî Γùï /                                      200 B         102 kB
+Γö£ Γùï /_not-found                            999 B         103 kB
+Γö£ ╞Æ /[locale]                              200 B         102 kB
+Γö£ ╞Æ /[locale]/canada                     27.4 kB         151 kB
+Γö£ ╞Æ /[locale]/methods                      287 B         118 kB
+Γö£ ╞Æ /[locale]/world                      5.69 kB         129 kB
+Γö£ ╞Æ /api/v1/backfill/run                   200 B         102 kB
+Γö£ ╞Æ /api/v1/backfill/status                200 B         102 kB
+Γö£ ╞Æ /api/v1/feed                           200 B         102 kB
+Γö£ ╞Æ /api/v1/feed/export                    200 B         102 kB
+Γö£ ╞Æ /api/v1/feed/stream                    200 B         102 kB
+Γö£ ╞Æ /api/v1/sources/health                 200 B         102 kB
+Γö£ ╞Æ /api/v1/stats/alerts                   200 B         102 kB
+Γö£ ╞Æ /api/v1/stats/brief                    200 B         102 kB
+Γö£ ╞Æ /api/v1/stats/compare                  200 B         102 kB
+Γö£ ╞Æ /api/v1/stats/concentration            200 B         102 kB
+Γö£ ╞Æ /api/v1/stats/confidence               200 B         102 kB
+Γö£ ╞Æ /api/v1/stats/coverage                 200 B         102 kB
+Γö£ ╞Æ /api/v1/stats/entities                 200 B         102 kB
+Γö£ ╞Æ /api/v1/stats/entity-momentum          200 B         102 kB
+Γö£ ╞Æ /api/v1/stats/hourly                   200 B         102 kB
+Γö£ ╞Æ /api/v1/stats/jurisdictions            200 B         102 kB
+Γö£ ╞Æ /api/v1/stats/kpis                     200 B         102 kB
+Γö£ ╞Æ /api/v1/stats/momentum                 200 B         102 kB
+Γö£ ╞Æ /api/v1/stats/risk-index               200 B         102 kB
+Γö£ ╞Æ /api/v1/stats/risk-trend               200 B         102 kB
+Γö£ ╞Æ /api/v1/stats/sources                  200 B         102 kB
+Γö£ ╞Æ /api/v1/stats/summary                  200 B         102 kB
+Γö£ ╞Æ /api/v1/stats/tags                     200 B         102 kB
+Γöö ╞Æ /api/v1/stats/weekly                   200 B         102 kB
++ First Load JS shared by all             102 kB
+  Γö£ chunks/1255-a390e12b70b4a9fb.js        46 kB
+  Γö£ chunks/4bd1b696-f785427dddbba9fb.js  54.2 kB
+  Γöö other shared chunks (total)          2.03 kB
+
+
+╞Æ Middleware                             45.9 kB
+
+Γùï  (Static)   prerendered as static content
+╞Æ  (Dynamic)  server-rendered on demand
+
