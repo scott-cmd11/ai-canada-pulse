@@ -1394,8 +1394,8 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
                 ) : (summary?.bullets ?? []).length === 0 ? (
                   <p className="py-4 text-center text-caption text-textMuted italic">{t("summary.noData")}</p>
                 ) : (
-                  <ul className="mt-2 list-disc space-y-1 pl-4 text-sm text-textSecondary">
-                    {(summary?.bullets ?? []).map((line) => (<li key={line}>{line}</li>))}
+                  <ul className="mt-3 list-disc space-y-2.5 pl-5 text-sm leading-relaxed text-textSecondary">
+                    {(summary?.bullets ?? []).map((line) => (<li key={line} className="pl-1">{line}</li>))}
                   </ul>
                 )}
               </Tile>

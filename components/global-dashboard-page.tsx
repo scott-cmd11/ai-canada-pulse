@@ -42,7 +42,7 @@ export function GlobalDashboardPage() {
   const t = useTranslations();
   const locale = useLocale();
   const { theme, toggleTheme } = useTheme();
-  const [timeWindow, setTimeWindow] = useState<TimeWindow>("7d");
+  const [timeWindow, setTimeWindow] = useState<TimeWindow>("15d");
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [feed, setFeed] = useState<FeedItem[]>([]);
@@ -93,7 +93,7 @@ export function GlobalDashboardPage() {
         fetchRiskIndex(timeWindow),
         fetchSummary(timeWindow),
       ]);
-      setFeed(feedRes.items);
+      setFeed(feedRes.items.filter((item) => !isCanadaJurisdiction(item.jurisdiction)));
       setKpis(kpiRes);
       setSourcesBreakdown(sourcesRes);
       setJurisdictionsBreakdown(jurRes);
@@ -179,7 +179,7 @@ export function GlobalDashboardPage() {
           <span className={`dd-meta-pill ${refreshTone}`}>
             {isRefreshing ? t("feed.refreshing") : t("feed.live")}
           </span>
-          <span className="dd-meta-pill">{t("filters.timeWindow")}: {timeWindow}</span>
+          <span className="dd-meta-pill">{t("filters.timeWindow")}: {timeWindow.toUpperCase()}</span>
           <span className="dd-meta-pill">{t("global.latestSignals")}: {feed.length}</span>
         </div>
       )}
@@ -208,6 +208,7 @@ export function GlobalDashboardPage() {
               <option value="1h">1 Hour</option>
               <option value="24h">24 Hours</option>
               <option value="7d">7 Days</option>
+              <option value="15d">15 Days</option>
               <option value="30d">30 Days</option>
               <option value="90d">90 Days</option>
               <option value="1y">1 Year</option>
@@ -239,7 +240,7 @@ export function GlobalDashboardPage() {
           <div className="dd-hero-stats dd-hero-stats-inline mt-4">
             <div className="dd-hero-chip">
               <span>{t("filters.timeWindow")}</span>
-              <strong>{timeWindow}</strong>
+              <strong>{timeWindow.toUpperCase()}</strong>
             </div>
             <div className="dd-hero-chip">
               <span>{t("global.latestSignals")}</span>
@@ -301,8 +302,8 @@ export function GlobalDashboardPage() {
               {(summary?.bullets ?? []).length === 0 ? (
                 <p className="mt-2 text-sm text-textMuted">{t("summary.noData")}</p>
               ) : (
-                <ul className="mt-2 list-disc space-y-1 pl-4 text-sm text-textSecondary">
-                  {(summary?.bullets ?? []).map((line) => (<li key={line}>{line}</li>))}
+                <ul className="mt-3 list-disc space-y-2.5 pl-5 text-sm leading-relaxed text-textSecondary">
+                  {(summary?.bullets ?? []).map((line) => (<li key={line} className="pl-1">{line}</li>))}
                 </ul>
               )}
             </Tile>
