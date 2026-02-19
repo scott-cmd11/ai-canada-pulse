@@ -4,7 +4,7 @@ export type TrendDirection = 'up' | 'down' | 'flat';
 export type SourceKind = 'rss' | 'google-news' | 'arxiv' | 'github-api' | 'baseline';
 
 export interface RegionTag {
-  country: 'Canada';
+  country: string;
   province: string;
   city?: string;
   hub?: string;
@@ -343,6 +343,13 @@ export const SOURCE_REGISTRY: SourceDefinition[] = [
   { id: 'arxiv-canada-ai', name: 'arXiv Canada AI', kind: 'arxiv', type: 'research', category: 'Academic Research', query: 'all:"artificial intelligence" AND (all:"Canada" OR all:"Canadian")', cadenceMinutes: 180, reliability: 81 },
   { id: 'github-canada-ai', name: 'GitHub Canada AI', kind: 'github-api', type: 'github', category: 'Open Source', query: 'Canada artificial intelligence', cadenceMinutes: 120, reliability: 70 },
   { id: 'baseline-chatgpt', name: 'Historical Baseline Signals', kind: 'baseline', type: 'news', category: 'Historical Baseline', cadenceMinutes: 1440, reliability: 80 },
+  // ─── Global Sources ────────────────────────────────────────
+  { id: 'google-news-global-ai', name: 'Google News Global AI', kind: 'google-news', type: 'news', category: 'News and Analysis', query: 'artificial intelligence', cadenceMinutes: 60, reliability: 65 },
+  { id: 'google-news-eu-ai', name: 'Google News EU AI Act', kind: 'google-news', type: 'policy', category: 'Policy and Governance', query: 'EU AI Act regulation', cadenceMinutes: 90, reliability: 72 },
+  { id: 'google-news-global-funding', name: 'Google News AI Funding', kind: 'google-news', type: 'funding', category: 'Capital and Funding', query: 'AI startup funding', cadenceMinutes: 90, reliability: 68 },
+  { id: 'techcrunch-ai-rss', name: 'TechCrunch AI', kind: 'rss', type: 'news', category: 'News and Analysis', url: 'https://techcrunch.com/category/artificial-intelligence/feed/', cadenceMinutes: 60, reliability: 78 },
+  { id: 'mit-tech-ai-rss', name: 'MIT Tech Review AI', kind: 'rss', type: 'news', category: 'News and Analysis', url: 'https://www.technologyreview.com/feed/', cadenceMinutes: 120, reliability: 85 },
+  { id: 'venturebeat-ai-rss', name: 'VentureBeat AI', kind: 'rss', type: 'news', category: 'News and Analysis', url: 'https://venturebeat.com/category/ai/feed/', cadenceMinutes: 60, reliability: 75 },
 ];
 
 export const REGION_KEYWORDS: Array<{ region: string; province: string; city?: string; hub?: string; keywords: string[] }> = [
@@ -351,4 +358,18 @@ export const REGION_KEYWORDS: Array<{ region: string; province: string; city?: s
   { region: 'British Columbia', province: 'British Columbia', city: 'Vancouver', hub: 'Vancouver', keywords: ['british columbia', 'vancouver', 'bc ai'] },
   { region: 'Alberta', province: 'Alberta', city: 'Edmonton', hub: 'Edmonton-Calgary', keywords: ['alberta', 'edmonton', 'calgary', 'amii'] },
   { region: 'Federal', province: 'Federal', city: 'Ottawa', hub: 'Ottawa', keywords: ['ottawa', 'parliament', 'canada.ca', 'treasury board', 'ised'] },
+];
+
+export const GLOBAL_REGION_KEYWORDS: Array<{ country: string; keywords: string[] }> = [
+  { country: 'United States', keywords: ['united states', 'u.s.', 'silicon valley', 'san francisco', 'new york', 'washington', 'california', 'openai', 'meta ai', 'google ai', 'microsoft', 'amazon', 'nvidia', 'anthropic'] },
+  { country: 'European Union', keywords: ['european union', 'eu ai act', 'brussels', 'european commission', 'gdpr'] },
+  { country: 'United Kingdom', keywords: ['united kingdom', 'u.k.', 'london', 'deepmind', 'uk ai'] },
+  { country: 'China', keywords: ['china', 'beijing', 'baidu', 'alibaba', 'tencent', 'deepseek', 'chinese ai'] },
+  { country: 'Japan', keywords: ['japan', 'tokyo', 'japanese ai', 'softbank'] },
+  { country: 'South Korea', keywords: ['south korea', 'seoul', 'samsung', 'korean ai'] },
+  { country: 'India', keywords: ['india', 'mumbai', 'bangalore', 'indian ai'] },
+  { country: 'Australia', keywords: ['australia', 'sydney', 'melbourne', 'australian ai'] },
+  { country: 'France', keywords: ['france', 'paris', 'mistral'] },
+  { country: 'Germany', keywords: ['germany', 'berlin', 'munich', 'german ai'] },
+  { country: 'Israel', keywords: ['israel', 'tel aviv', 'israeli ai'] },
 ];

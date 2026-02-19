@@ -1,4 +1,4 @@
-﻿import { CHATGPT_MOMENT_ISO, MONITORED_ENTITIES, REGION_KEYWORDS, SOURCE_REGISTRY } from './legacy-types';
+﻿import { CHATGPT_MOMENT_ISO, GLOBAL_REGION_KEYWORDS, MONITORED_ENTITIES, REGION_KEYWORDS, SOURCE_REGISTRY } from './legacy-types';
 import type { IntelItem, IntelType, SourceDefinition } from './legacy-types';
 
 function generateId(): string {
@@ -59,6 +59,7 @@ async function fetchWithTimeout(url: string, timeoutMs = 12000): Promise<Respons
 function inferRegionTag(text: string, url?: string): NonNullable<IntelItem['regionTag']> {
   const lower = `${text} ${url || ''}`.toLowerCase();
 
+  // Check Canadian regions first
   for (const entry of REGION_KEYWORDS) {
     if (entry.keywords.some((keyword) => lower.includes(keyword.toLowerCase()))) {
       return {
@@ -70,10 +71,30 @@ function inferRegionTag(text: string, url?: string): NonNullable<IntelItem['regi
     }
   }
 
+  // Check global regions
+  for (const entry of GLOBAL_REGION_KEYWORDS) {
+    if (entry.keywords.some((keyword) => lower.includes(keyword.toLowerCase()))) {
+      return {
+        country: entry.country,
+        province: entry.country,
+      };
+    }
+  }
+
+  // If text contains Canada-related terms, default to National
+  const canadaTerms = ['canada', 'canadian'];
+  if (canadaTerms.some((term) => lower.includes(term))) {
+    return {
+      country: 'Canada',
+      province: 'National',
+      hub: 'Pan-Canadian',
+    };
+  }
+
+  // Truly unknown → International
   return {
-    country: 'Canada',
-    province: 'National',
-    hub: 'Pan-Canadian',
+    country: 'International',
+    province: 'International',
   };
 }
 
@@ -143,6 +164,31 @@ function isCanadaAiRelevant(text: string): boolean {
   return canadaSignals.some((term) => lower.includes(term)) && aiSignals.some((term) => lower.includes(term));
 }
 
+function isAiRelevant(text: string): boolean {
+  const lower = text.toLowerCase();
+  const aiSignals = [
+    'artificial intelligence', 'generative ai', 'ai model', 'ai strategy',
+    'large language model', 'machine learning', 'deep learning',
+    'foundation model', 'llm', 'neural network', 'chatbot', 'openai',
+    'anthropic', 'gemini', 'gpt', 'claude', 'ai regulation', 'ai act',
+    'ai safety', 'ai startup', 'ai funding', 'ai research',
+  ];
+  return aiSignals.some((term) => lower.includes(term));
+}
+
+const GLOBAL_SOURCE_IDS = new Set([
+  'google-news-global-ai',
+  'google-news-eu-ai',
+  'google-news-global-funding',
+  'techcrunch-ai-rss',
+  'mit-tech-ai-rss',
+  'venturebeat-ai-rss',
+]);
+
+function isGlobalSource(sourceDef: SourceDefinition): boolean {
+  return GLOBAL_SOURCE_IDS.has(sourceDef.id);
+}
+
 function deduplicateByUrl(items: IntelItem[]): IntelItem[] {
   const seen = new Set<string>();
   return items.filter((item) => {
@@ -187,6 +233,7 @@ function buildItem(params: {
   const combined = `${params.title} ${params.description}`;
   const entities = findEntities(combined);
   const regionTag = inferRegionTag(combined, params.link);
+  const isCanadian = regionTag.country === 'Canada';
 
   return {
     id: generateId(),
@@ -199,7 +246,7 @@ function buildItem(params: {
     publishedAt: params.publishedAt ? new Date(params.publishedAt).toISOString() : new Date().toISOString(),
     discoveredAt: new Date().toISOString(),
     relevanceScore: calculateRelevance(combined, entities),
-    entities: entities.length > 0 ? entities : ['Canada AI'],
+    entities: entities.length > 0 ? entities : (isCanadian ? ['Canada AI'] : ['Global AI']),
     category: params.sourceDef.category,
     region: regionTag.province,
     regionTag,
@@ -208,7 +255,7 @@ function buildItem(params: {
       sourceKind: params.sourceDef.kind,
       cadenceMinutes: params.sourceDef.cadenceMinutes,
       ingestedAt: new Date().toISOString(),
-      regionConfidence: regionTag.city ? 'high' : regionTag.province !== 'National' ? 'medium' : 'low',
+      regionConfidence: regionTag.city ? 'high' : regionTag.province !== 'National' && regionTag.province !== 'International' ? 'medium' : 'low',
     },
   };
 }
@@ -216,8 +263,11 @@ function buildItem(params: {
 async function scanGoogleNewsSource(sourceDef: SourceDefinition): Promise<IntelItem[]> {
   if (!sourceDef.query) return [];
   const items: IntelItem[] = [];
+  const global = isGlobalSource(sourceDef);
 
-  const url = `https://news.google.com/rss/search?q=${encodeURIComponent(sourceDef.query)}&hl=en-CA&gl=CA&ceid=CA:en`;
+  const url = global
+    ? `https://news.google.com/rss/search?q=${encodeURIComponent(sourceDef.query)}&hl=en-US&gl=US&ceid=US:en`
+    : `https://news.google.com/rss/search?q=${encodeURIComponent(sourceDef.query)}&hl=en-CA&gl=CA&ceid=CA:en`;
 
   try {
     const response = await fetchWithTimeout(url);
@@ -237,10 +287,14 @@ async function scanGoogleNewsSource(sourceDef: SourceDefinition): Promise<IntelI
       const combined = `${title} ${description}`;
 
       if (!title || !link) return;
-      if (!isCanadaAiRelevant(combined)) return;
+      if (global) {
+        if (!isAiRelevant(combined)) return;
+      } else {
+        if (!isCanadaAiRelevant(combined)) return;
+      }
 
       const normalizedDescription = description.toLowerCase().includes(title.toLowerCase())
-        ? 'Source coverage detected in Canada AI feed.'
+        ? (global ? 'Source coverage detected in global AI feed.' : 'Source coverage detected in Canada AI feed.')
         : description;
 
       items.push(
@@ -263,6 +317,7 @@ async function scanGoogleNewsSource(sourceDef: SourceDefinition): Promise<IntelI
 
 async function scanRssSource(sourceDef: SourceDefinition): Promise<IntelItem[]> {
   if (!sourceDef.url) return [];
+  const global = isGlobalSource(sourceDef);
 
   try {
     const response = await fetchWithTimeout(sourceDef.url);
@@ -284,7 +339,11 @@ async function scanRssSource(sourceDef: SourceDefinition): Promise<IntelItem[]> 
       const combined = `${title} ${description}`;
 
       if (!title || !link) return;
-      if (!isCanadaAiRelevant(combined)) return;
+      if (global) {
+        if (!isAiRelevant(combined)) return;
+      } else {
+        if (!isCanadaAiRelevant(combined)) return;
+      }
 
       items.push(buildItem({ sourceDef, title, description, link, publishedAt }));
     });
