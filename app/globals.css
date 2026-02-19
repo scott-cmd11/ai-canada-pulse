@@ -687,6 +687,21 @@ textarea:focus-visible,
   padding-bottom: 28px;
 }
 
+.dd-disclaimer {
+  padding: 1rem 1.25rem;
+  margin-top: 0.5rem;
+  text-align: center;
+  border-top: 1px solid var(--dd-tile-border);
+}
+
+.dd-disclaimer p {
+  font-size: 0.6875rem;
+  color: var(--text-muted);
+  letter-spacing: 0.01em;
+  line-height: 1.5;
+  margin: 0;
+}
+
 .dd-command-bar {
   background: transparent;
   border-bottom: none;

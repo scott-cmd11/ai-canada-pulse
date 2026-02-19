@@ -129,6 +129,9 @@ export function DashboardShell({
         {guidePanel}
         {utilityBar ? <div className="dd-utility-row">{utilityBar}</div> : null}
         <div className="dd-content">{children}</div>
+        <footer className="dd-disclaimer">
+          <p>This dashboard was built with AI assistance. Data is aggregated from public sources and may not be comprehensive.</p>
+        </footer>
       </div>
     </div>
   );
