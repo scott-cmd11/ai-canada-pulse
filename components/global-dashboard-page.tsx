@@ -31,7 +31,7 @@ import type {
 } from "../lib/types";
 import { useTheme } from "./theme-provider";
 
-import { categoryColor, isCanadaJurisdiction } from "./dashboard/constants";
+import { categoryColor } from "./dashboard/constants";
 import { Delta } from "./dashboard/helpers";
 import { DetailModal } from "./dashboard/detail-modal";
 import { QuickGuideButton, QuickGuidePanel } from "./dashboard/quick-guide";
@@ -93,7 +93,7 @@ export function GlobalDashboardPage() {
         fetchRiskIndex(timeWindow),
         fetchSummary(timeWindow),
       ]);
-      setFeed(feedRes.items.filter((item) => !isCanadaJurisdiction(item.jurisdiction)));
+      setFeed(feedRes.items);
       setKpis(kpiRes);
       setSourcesBreakdown(sourcesRes);
       setJurisdictionsBreakdown(jurRes);
@@ -143,7 +143,6 @@ export function GlobalDashboardPage() {
 
   const topCountries = useMemo(() => {
     return (jurisdictionsBreakdown?.jurisdictions ?? [])
-      .filter((item) => !isCanadaJurisdiction(item.name))
       .slice(0, 10);
   }, [jurisdictionsBreakdown]);
 

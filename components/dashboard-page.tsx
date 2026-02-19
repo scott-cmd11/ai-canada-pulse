@@ -122,24 +122,24 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
   const [lastLiveAt, setLastLiveAt] = useState("");
   const [presets, setPresets] = useState<FilterPreset[]>([]);
   const [panelVisibility, setPanelVisibility] = useState<Record<string, boolean>>({
-    backfill: true,
-    cleanup: true,
-    sourceHealth: true,
-    sourceFreshness: true,
-    sourceMix: true,
-    coverageMatrix: true,
-    sourceQuality: true,
-    confidenceProfile: true,
-    riskTrend: true,
-    momentum: true,
-    entityMomentum: true,
-    pinnedSignals: true,
-    briefHistory: true,
-    alerts: true,
-    alertCenter: true,
-    jurisdictions: true,
-    entities: true,
-    tags: true,
+    backfill: false,
+    cleanup: false,
+    sourceHealth: false,
+    sourceFreshness: false,
+    sourceMix: false,
+    coverageMatrix: false,
+    sourceQuality: false,
+    confidenceProfile: false,
+    riskTrend: false,
+    momentum: false,
+    entityMomentum: false,
+    pinnedSignals: false,
+    briefHistory: false,
+    alerts: false,
+    alertCenter: false,
+    jurisdictions: false,
+    entities: false,
+    tags: false,
     hourly: true,
     weekly: true,
   });
@@ -818,9 +818,16 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
           return header + rows;
         },
       },
-      legend: { data: hourly?.legend ?? [], textStyle: { color: "var(--text-secondary)" } },
-      xAxis: { type: "category", data: hourly?.xAxis ?? [], axisLabel: { color: "var(--text-muted)" } },
-      yAxis: { type: "value", axisLabel: { color: "var(--text-muted)" } },
+      legend: { show: false },
+      grid: { top: 20, right: 15, bottom: 50, left: 45 },
+      xAxis: {
+        type: "category",
+        data: (hourly?.xAxis ?? []).map((label: string) => {
+          try { return new Date(label).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }); } catch { return label; }
+        }),
+        axisLabel: { color: "var(--text-muted)", rotate: 45, fontSize: 11 },
+      },
+      yAxis: { type: "value", axisLabel: { color: "var(--text-muted)", fontSize: 11 } },
       series: (hourly?.series ?? []).map((item) => ({
         ...item,
         smooth: true,
@@ -851,9 +858,16 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
           return header + rows;
         },
       },
-      legend: { data: weekly?.legend ?? [], textStyle: { color: "var(--text-secondary)" } },
-      xAxis: { type: "category", data: weekly?.xAxis ?? [], axisLabel: { color: "var(--text-muted)" } },
-      yAxis: { type: "value", axisLabel: { color: "var(--text-muted)" } },
+      legend: { show: false },
+      grid: { top: 20, right: 15, bottom: 50, left: 45 },
+      xAxis: {
+        type: "category",
+        data: (weekly?.xAxis ?? []).map((label: string) => {
+          try { return new Date(label).toLocaleDateString([], { month: "short", day: "numeric" }); } catch { return label; }
+        }),
+        axisLabel: { color: "var(--text-muted)", rotate: 45, fontSize: 11 },
+      },
+      yAxis: { type: "value", axisLabel: { color: "var(--text-muted)", fontSize: 11 } },
       series: (weekly?.series ?? []).map((item) => ({
         ...item,
         itemStyle: { color: categoryColor[item.name] ?? "var(--text-secondary)" },
@@ -1259,15 +1273,6 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
               {t("mode.research")}
             </button>
           </div>
-          <button
-            onClick={() => setDensity((prev) => (prev === "comfortable" ? "compact" : "comfortable"))}
-            className="btn-ghost"
-          >
-            {density === "comfortable" ? t("density.comfortable") : t("density.compact")}
-          </button>
-          <button onClick={clearFilters} className="btn-ghost">
-            {t("hero.resetView")}
-          </button>
           <button onClick={() => setAnalysisExpanded((prev) => !prev)} className="btn-ghost">
             {analysisExpanded ? t("hero.hideAnalysis") : t("hero.showAnalysis")}
           </button>
@@ -1276,28 +1281,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
           </Link>
         </div>
 
-        {/* Inline scenario presets — visible when filter bar is closed and no filters active */}
-        {!controlsOpen && activeFilters.length === 0 && (
-          <div className="flex gap-2 overflow-x-auto pb-1">
-            {scenarioPresets.map((scenario) => (
-              <button
-                key={scenario.id}
-                onClick={() => applyScenario(scenario)}
-                className="shrink-0 rounded-lg border border-borderSoft bg-surface px-3 py-2 text-left hover:bg-surfaceInset transition-colors"
-              >
-                <p className="text-sm font-medium">{t(`scenarios.${scenario.labelKey}`)}</p>
-                <p className="text-micro text-textMuted mt-0.5">{t(`scenarios.${scenario.descriptionKey}`)}</p>
-              </button>
-            ))}
-          </div>
-        )}
 
-        {/* Signal of the Day */}
-        <SignalOfDay
-          feed={feed}
-          loading={isInitialLoading}
-          onSelect={setSelected}
-        />
 
         {/* KPIs */}
         <section className="dd-kpi-band grid grid-cols-1 gap-3 xl:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
