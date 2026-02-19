@@ -71,6 +71,13 @@ import { QuickGuideButton, QuickGuidePanel } from "./dashboard/quick-guide";
 import { DashboardShell } from "./dashboard/shell";
 import { MetricTile, Tile } from "./dashboard/tile";
 import { BackToTop } from "./dashboard/back-to-top";
+import { Sparkline } from "./dashboard/sparkline";
+import { PulseIndicator } from "./dashboard/pulse-indicator";
+import { SignalHeatmap } from "./dashboard/signal-heatmap";
+import { BriefCarousel } from "./dashboard/brief-carousel";
+import { ComparisonCard } from "./dashboard/comparison-card";
+import { CommandPalette } from "./dashboard/command-palette";
+import { SignalOfDay } from "./dashboard/signal-of-day";
 
 export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
   const t = useTranslations();
@@ -157,12 +164,25 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
   const [pinnedItems, setPinnedItems] = useState<FeedItem[]>([]);
   const [savedBriefs, setSavedBriefs] = useState<SavedBrief[]>([]);
   const [dismissedAlertIds, setDismissedAlertIds] = useState<string[]>([]);
+  const [cmdPaletteOpen, setCmdPaletteOpen] = useState(false);
   const refreshInFlight = useRef(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const isInitialLoading = isRefreshing && !kpis && feed.length === 0;
   const openControlsAndFocusSearch = useCallback(() => {
     setControlsOpen(true);
     requestAnimationFrame(() => searchInputRef.current?.focus());
+  }, []);
+
+  // ⌘K / Ctrl+K keyboard shortcut for command palette
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+        e.preventDefault();
+        setCmdPaletteOpen(prev => !prev);
+      }
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
   }, []);
 
   const scenarioPresets: ScenarioPreset[] = useMemo(
@@ -1154,6 +1174,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
       onToggleTheme={toggleTheme}
       headerMeta={(
         <div className="dd-meta-strip">
+          <PulseIndicator status={sseStatus} lastSignalAt={lastLiveAt} className="mr-1" />
           <span className={`dd-meta-pill ${liveStatusClass}`}>
             {t("feed.liveStatus")}
           </span>
@@ -1271,6 +1292,13 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
           </div>
         )}
 
+        {/* Signal of the Day */}
+        <SignalOfDay
+          feed={feed}
+          loading={isInitialLoading}
+          onSelect={setSelected}
+        />
+
         {/* KPIs */}
         <section className="dd-kpi-band grid grid-cols-1 gap-3 xl:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-2">
@@ -1285,6 +1313,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
                   <span className="dd-metric-footnote">{t("kpi.previous")}: {kpis?.m15.previous ?? 0}</span>
                 </div>
               )}
+              spark={hourly?.series?.[0]?.data ? <Sparkline data={hourly.series[0].data.slice(-12)} color="#2bbb83" width={72} height={24} /> : undefined}
             />
             <MetricTile
               label={t("kpi.new1h")}
@@ -1297,6 +1326,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
                   <span className="dd-metric-footnote">{t("kpi.previous")}: {kpis?.h1.previous ?? 0}</span>
                 </div>
               )}
+              spark={hourly?.series?.[0]?.data ? <Sparkline data={hourly.series[0].data.slice(-24)} color="#4585df" width={72} height={24} /> : undefined}
             />
             <MetricTile
               label={t("kpi.new7d")}
@@ -1309,6 +1339,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
                   <span className="dd-metric-footnote">{t("kpi.previous")}: {kpis?.d7.previous ?? 0}</span>
                 </div>
               )}
+              spark={weekly?.series?.[0]?.data ? <Sparkline data={weekly.series[0].data} color="#e3a954" width={72} height={24} /> : undefined}
             />
             <MetricTile
               label={t("risk.title")}
@@ -1362,6 +1393,27 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
             )}
           </Tile>
         </section>
+
+        {/* Signal Heatmap + Brief Carousel + Canada vs World */}
+        <div className="grid grid-cols-1 gap-3 xl:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
+          <div className="space-y-3">
+            <SignalHeatmap
+              hourlyData={hourly}
+              activeCategory={category}
+              onCellClick={(_slot, cat) => setCategory(cat === category ? "" : cat)}
+              loading={isInitialLoading}
+            />
+            <BriefCarousel
+              summary={summary}
+              brief={brief}
+              loading={isInitialLoading}
+            />
+          </div>
+          <ComparisonCard
+            compareData={compare}
+            loading={isInitialLoading}
+          />
+        </div>
 
         {analysisExpanded ? (
           <>
@@ -1694,6 +1746,22 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
       )}
 
       <BackToTop />
+
+      {/* Command Palette */}
+      <CommandPalette
+        isOpen={cmdPaletteOpen}
+        onClose={() => setCmdPaletteOpen(false)}
+        scope={scope}
+        theme={theme}
+        onToggleTheme={toggleTheme}
+        onSetCategory={setCategory}
+        onSetTimeWindow={(tw) => setTimeWindow(tw as any)}
+        locale={locale}
+        mode={mode}
+        onToggleMode={() => setMode(mode === "policy" ? "research" : "policy")}
+        analysisExpanded={analysisExpanded}
+        onToggleAnalysis={() => setAnalysisExpanded(prev => !prev)}
+      />
     </DashboardShell>
   );
 }

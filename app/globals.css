@@ -136,11 +136,11 @@ select,
 textarea,
 a {
   transition: background-color var(--duration-normal) var(--ease-out-expo),
-              border-color var(--duration-normal) var(--ease-out-expo),
-              color var(--duration-normal) var(--ease-out-expo),
-              box-shadow var(--duration-normal) var(--ease-out-expo),
-              transform var(--duration-fast) var(--ease-out-expo),
-              opacity var(--duration-normal) var(--ease-out-expo);
+    border-color var(--duration-normal) var(--ease-out-expo),
+    color var(--duration-normal) var(--ease-out-expo),
+    box-shadow var(--duration-normal) var(--ease-out-expo),
+    transform var(--duration-fast) var(--ease-out-expo),
+    opacity var(--duration-normal) var(--ease-out-expo);
 }
 
 /* ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚ÂÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚ÂÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚ÂÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ Premium Header (glass morphism) ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚ÂÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚ÂÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚ÂÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ */
@@ -268,14 +268,17 @@ a {
   background: color-mix(in oklab, var(--status-positive) 12%, var(--surface));
   border-color: color-mix(in oklab, var(--status-positive) 25%, transparent);
 }
+
 .pulse-shell .kpi-bg-negative {
   background: color-mix(in oklab, var(--status-negative) 12%, var(--surface));
   border-color: color-mix(in oklab, var(--status-negative) 25%, transparent);
 }
+
 .pulse-shell .kpi-bg-warning {
   background: color-mix(in oklab, var(--status-warning) 12%, var(--surface));
   border-color: color-mix(in oklab, var(--status-warning) 25%, transparent);
 }
+
 .pulse-shell .kpi-bg-info {
   background: color-mix(in oklab, var(--policy) 10%, var(--surface));
   border-color: color-mix(in oklab, var(--policy) 20%, transparent);
@@ -295,7 +298,7 @@ a {
 
 /* ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚ÂÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚ÂÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚ÂÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ Typography ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚ÂÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚ÂÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚ÂÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ */
 
-.pulse-shell .command-bar label > div:first-child {
+.pulse-shell .command-bar label>div:first-child {
   font-size: 0.6875rem;
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -340,12 +343,15 @@ textarea:focus-visible,
   cursor: pointer;
   transition: all var(--duration-normal) var(--ease-out-expo);
 }
+
 .pulse-shell .btn-primary:hover {
   background: var(--primary-hover);
 }
+
 .pulse-shell .btn-primary:active {
   transform: translateY(0);
 }
+
 .pulse-shell .btn-primary:disabled {
   opacity: 0.5;
   cursor: not-allowed;
@@ -367,10 +373,12 @@ textarea:focus-visible,
   cursor: pointer;
   transition: all var(--duration-normal) var(--ease-out-expo);
 }
+
 .pulse-shell .btn-secondary:hover {
   background: var(--bg-subtle);
   border-color: var(--border-strong);
 }
+
 .pulse-shell .btn-secondary:active {
   background: var(--bg);
 }
@@ -389,6 +397,7 @@ textarea:focus-visible,
   cursor: pointer;
   transition: all var(--duration-fast) var(--ease-out-expo);
 }
+
 .pulse-shell .btn-ghost:hover {
   color: var(--text-primary);
   background: var(--primary-subtle);
@@ -407,6 +416,7 @@ textarea:focus-visible,
   cursor: pointer;
   transition: all var(--duration-fast) var(--ease-out-expo);
 }
+
 .pulse-shell .btn-icon:hover {
   color: var(--text-primary);
   background: var(--primary-subtle);
@@ -460,6 +470,7 @@ textarea:focus-visible,
     opacity: 0;
     transform: scale(0.96) translateY(8px);
   }
+
   to {
     opacity: 1;
     transform: scale(1) translateY(0);
@@ -467,23 +478,47 @@ textarea:focus-visible,
 }
 
 @keyframes overlayFadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
+  0% {
+    background-position: -200% 0;
+  }
+
+  100% {
+    background-position: 200% 0;
+  }
 }
 
 @keyframes slideUp {
-  from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes scaleIn {
-  from { opacity: 0; transform: scale(0.97); }
-  to { opacity: 1; transform: scale(1); }
+  from {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 .modal-overlay {
@@ -509,6 +544,7 @@ textarea:focus-visible,
     opacity: 0;
     transform: translateY(-12px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -521,8 +557,17 @@ textarea:focus-visible,
 
 /* Pulsing indicator dot for new users */
 @keyframes pulseGlow {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.5; transform: scale(0.85); }
+
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 0.5;
+    transform: scale(0.85);
+  }
 }
 
 .guide-new-dot {
@@ -1072,11 +1117,9 @@ textarea:focus-visible,
 }
 
 .dd-rail-link.active {
-  background: linear-gradient(
-    to right,
-    color-mix(in oklab, #4f87ff 86%, #fff 14%),
-    color-mix(in oklab, #3256db 90%, #fff 10%)
-  );
+  background: linear-gradient(to right,
+      color-mix(in oklab, #4f87ff 86%, #fff 14%),
+      color-mix(in oklab, #3256db 90%, #fff 10%));
   border-color: rgba(255, 255, 255, 0.16);
   box-shadow: 0 7px 18px rgba(14, 27, 78, 0.36);
 }
@@ -1212,7 +1255,7 @@ textarea:focus-visible,
   max-width: 1720px;
 }
 
-.dd-command-grid label > div:first-child {
+.dd-command-grid label>div:first-child {
   font-size: 0.66rem;
   font-weight: 600;
   letter-spacing: 0.1em;
@@ -1413,11 +1456,9 @@ textarea:focus-visible,
 
 .dd-world-hero {
   background:
-    linear-gradient(
-      145deg,
+    linear-gradient(145deg,
       color-mix(in oklab, var(--dd-info) 9%, var(--dd-panel-strong)),
-      color-mix(in oklab, var(--dd-success) 7%, var(--dd-panel))
-    );
+      color-mix(in oklab, var(--dd-success) 7%, var(--dd-panel)));
 }
 
 .dd-signal-row {
@@ -2028,7 +2069,7 @@ textarea:focus-visible,
   letter-spacing: 0.045em;
 }
 
-.dd-shell .dd-command-grid label > div:first-child {
+.dd-shell .dd-command-grid label>div:first-child {
   font-size: 0.645rem;
   letter-spacing: 0.115em;
   font-weight: 700;
@@ -2180,7 +2221,7 @@ textarea:focus-visible,
   --dd-space-4: 32px;
 }
 
-.dd-shell .dd-dashboard-main > * + * {
+.dd-shell .dd-dashboard-main>*+* {
   margin-top: var(--dd-space-2) !important;
 }
 
@@ -2277,7 +2318,7 @@ textarea:focus-visible,
   gap: var(--dd-space-3);
 }
 
-.dd-shell .dd-kpi-band > div {
+.dd-shell .dd-kpi-band>div {
   gap: var(--dd-space-2);
 }
 
@@ -2315,7 +2356,7 @@ textarea:focus-visible,
 }
 
 @media (max-width: 760px) {
-  .dd-shell .dd-dashboard-main > * + * {
+  .dd-shell .dd-dashboard-main>*+* {
     margin-top: var(--dd-space-1) !important;
   }
 
@@ -2337,20 +2378,16 @@ textarea:focus-visible,
 /* Dashboard V4.4: refine toggle polish */
 .dd-shell .nav-button.is-active {
   border-color: color-mix(in oklab, var(--dd-v4-ocean) 44%, transparent);
-  background: linear-gradient(
-    135deg,
-    color-mix(in oklab, var(--dd-v4-ocean) 18%, white),
-    color-mix(in oklab, var(--dd-v4-ocean) 8%, white)
-  );
+  background: linear-gradient(135deg,
+      color-mix(in oklab, var(--dd-v4-ocean) 18%, white),
+      color-mix(in oklab, var(--dd-v4-ocean) 8%, white));
   color: #153b74;
 }
 
 .dark .dd-shell .nav-button.is-active {
-  background: linear-gradient(
-    135deg,
-    color-mix(in oklab, var(--dd-v4-ocean) 24%, #1e2f52),
-    color-mix(in oklab, var(--dd-v4-ocean) 16%, #162543)
-  );
+  background: linear-gradient(135deg,
+      color-mix(in oklab, var(--dd-v4-ocean) 24%, #1e2f52),
+      color-mix(in oklab, var(--dd-v4-ocean) 16%, #162543));
   color: #dce8ff;
 }
 
@@ -2358,6 +2395,7 @@ textarea:focus-visible,
   border: 1px solid color-mix(in oklab, var(--dd-v4-border) 92%, transparent);
   border-radius: 14px;
 }
+
 /* Dashboard V4.5: premium polish */
 .dd-shell {
   --dd-v5-bg: #edf3fd;
@@ -2552,7 +2590,7 @@ textarea:focus-visible,
   padding-bottom: 14px;
 }
 
-.dd-shell .dd-command-grid label > div:first-child {
+.dd-shell .dd-command-grid label>div:first-child {
   margin-bottom: 6px;
   color: var(--dd-v5-text-muted);
   font-size: 0.62rem;
@@ -2719,6 +2757,7 @@ textarea:focus-visible,
     font-size: clamp(1.9rem, 11vw, 2.4rem);
   }
 }
+
 /* Dashboard V4.6: touch + Android pass */
 :root {
   --dd-touch-target: 44px;
@@ -2738,6 +2777,7 @@ body {
 }
 
 @supports not ((backdrop-filter: blur(6px))) {
+
   .dd-shell .dd-topbar,
   .dd-shell .dd-command-surface,
   .dd-shell .dd-world-utility,
@@ -2759,6 +2799,7 @@ body {
 }
 
 @media (hover: none) and (pointer: coarse) {
+
   .dd-shell,
   .dd-shell * {
     -webkit-tap-highlight-color: transparent;
@@ -2830,6 +2871,7 @@ body {
     min-height: 100dvh;
   }
 }
+
 /* Dashboard V4.7: control-surface cleanup */
 .dd-shell .dd-command-surface {
   border: 1px solid color-mix(in oklab, var(--dd-v5-border, rgba(121, 145, 188, 0.34)) 92%, transparent);
@@ -2862,7 +2904,7 @@ body {
   background: linear-gradient(180deg, rgba(35, 55, 88, 0.9), rgba(27, 43, 71, 0.84));
 }
 
-.dd-shell .dd-filter-field > div:first-child {
+.dd-shell .dd-filter-field>div:first-child {
   margin-bottom: 4px;
   font-size: 0.6rem;
   font-weight: 700;
@@ -2871,7 +2913,7 @@ body {
   color: #6985b2;
 }
 
-.dark .dd-shell .dd-filter-field > div:first-child {
+.dark .dd-shell .dd-filter-field>div:first-child {
   color: #9fbae4;
 }
 
@@ -2990,6 +3032,7 @@ body {
     padding-right: 10px;
   }
 }
+
 /* Dashboard V4.8: scenario text readability */
 .dd-shell .dd-control-scenarios {
   padding-top: 4px;
@@ -3065,6 +3108,7 @@ body {
     font-size: 0.95rem;
   }
 }
+
 /* Dashboard V4.9: top strip + drawer organization */
 .dd-shell .dd-topbar {
   flex-wrap: nowrap;
@@ -3189,6 +3233,7 @@ body {
 .dd-shell .dd-scenarios-drawer .dd-scenario-card {
   min-height: 96px;
 }
+
 /* Dashboard V5.0: readability safety reset */
 .dd-shell {
   color: #142b49;
@@ -3248,13 +3293,13 @@ body {
 }
 
 .dd-shell .dd-meta-pill,
-.dd-shell .dd-filter-field > div:first-child,
+.dd-shell .dd-filter-field>div:first-child,
 .dd-shell .dd-scenarios-drawer-title {
   color: #5877a4;
 }
 
 .dark .dd-shell .dd-meta-pill,
-.dark .dd-shell .dd-filter-field > div:first-child,
+.dark .dd-shell .dd-filter-field>div:first-child,
 .dark .dd-shell .dd-scenarios-drawer-title {
   color: #b4c7ea;
 }
@@ -3274,6 +3319,7 @@ body {
 .dark .dd-shell .dd-scenarios-overlay {
   background: rgba(3, 10, 20, 0.22);
 }
+
 /* Dashboard V5.1: clarity + hierarchy */
 .dd-shell .dd-brand-kicker {
   display: none;
@@ -3288,7 +3334,7 @@ body {
   padding-block: 12px;
 }
 
-.dd-shell .dd-dashboard-main > * + * {
+.dd-shell .dd-dashboard-main>*+* {
   margin-top: 12px;
 }
 
@@ -3365,7 +3411,7 @@ body {
   padding-block: 6px;
 }
 
-.dd-shell .dd-filter-field > div:first-child {
+.dd-shell .dd-filter-field>div:first-child {
   margin-bottom: 6px;
 }
 
@@ -3426,6 +3472,7 @@ body {
     min-height: 116px;
   }
 }
+
 /* Dashboard V5.2: single-title hierarchy + KPI readability */
 .dd-shell .dd-topbar-left {
   gap: 10px;
@@ -3513,4 +3560,582 @@ body {
 
 .dark .dd-shell .dd-tone-info .dd-metric-value {
   color: #93c5fd !important;
+}
+
+/* ================================================================
+   Dashboard V6.0: Bloomberg Intelligence Premium System
+   ================================================================
+   - Deeper dark palette, refined glassmorphism
+   - Monospace data typography for metrics
+   - Micro-animation keyframes
+   - Skip-link for accessibility
+   - Signal-of-day glow animation
+   ================================================================ */
+
+/* --- Skip Link for Accessibility --- */
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: auto;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  z-index: 9999;
+  padding: 12px 24px;
+  border-radius: 0 0 12px 0;
+  background: var(--dd-v5-brand-accent, #2f67d8);
+  color: #fff;
+  font-size: 0.875rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.skip-link:focus {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: auto;
+  height: auto;
+  clip: auto;
+  outline: 2px solid #fff;
+  outline-offset: 2px;
+}
+
+/* --- Monospace Data Typography --- */
+.font-mono,
+.dd-shell .font-mono {
+  font-family: var(--font-mono), ui-monospace, SFMono-Regular, monospace;
+}
+
+.dd-shell .dd-metric-value {
+  font-family: var(--font-mono), ui-monospace, SFMono-Regular, monospace;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+.dd-shell .dd-hero-chip strong {
+  font-family: var(--font-mono), ui-monospace, SFMono-Regular, monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+/* --- Refined Dark Palette (Bloomberg Depth) --- */
+.dark .dd-shell.pulse-shell {
+  background:
+    radial-gradient(circle at 12% -18%, rgba(59, 102, 196, 0.09), transparent 52%),
+    radial-gradient(circle at 92% -26%, rgba(40, 156, 140, 0.07), transparent 48%),
+    #06090F;
+}
+
+.dark .dd-shell .dd-main::before {
+  opacity: 0.04;
+  background-image:
+    linear-gradient(to right, rgba(138, 164, 215, 0.06) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(138, 164, 215, 0.06) 1px, transparent 1px);
+  background-size: 48px 48px;
+}
+
+.dark .dd-shell .dd-rail {
+  background:
+    radial-gradient(640px 320px at -30% -20%, rgba(55, 95, 200, 0.12), transparent 56%),
+    linear-gradient(180deg, #080E1F 0%, #060A18 100%);
+}
+
+/* --- Micro-Animation Keyframes --- */
+@keyframes staggerFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(12px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes pulseWave {
+
+  0%,
+  100% {
+    opacity: 0.4;
+    transform: scaleX(1);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scaleX(1.05);
+  }
+}
+
+@keyframes deltaFlash {
+
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(74, 222, 128, 0);
+  }
+
+  50% {
+    box-shadow: 0 0 0 6px rgba(74, 222, 128, 0.18);
+  }
+}
+
+@keyframes glowBorder {
+
+  0%,
+  100% {
+    box-shadow: 0 0 8px 0 rgba(47, 103, 216, 0.12),
+      0 0 24px -4px rgba(47, 103, 216, 0.08);
+  }
+
+  50% {
+    box-shadow: 0 0 16px 2px rgba(47, 103, 216, 0.22),
+      0 0 40px -4px rgba(47, 103, 216, 0.14);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+/* --- Animation Utility Classes --- */
+.animate-stagger-fade {
+  animation: staggerFadeIn 400ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.animate-slide-in {
+  animation: slideInRight 350ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.animate-pulse-wave {
+  animation: pulseWave 2s ease-in-out infinite;
+}
+
+.animate-delta-flash {
+  animation: deltaFlash 1.5s ease-in-out 3;
+}
+
+.animate-glow-border {
+  animation: glowBorder 3s ease-in-out infinite;
+}
+
+.animate-fade-in {
+  animation: fadeIn 300ms ease-out both;
+}
+
+/* Stagger delay utilities */
+.stagger-1 {
+  animation-delay: 50ms;
+}
+
+.stagger-2 {
+  animation-delay: 100ms;
+}
+
+.stagger-3 {
+  animation-delay: 150ms;
+}
+
+.stagger-4 {
+  animation-delay: 200ms;
+}
+
+.stagger-5 {
+  animation-delay: 250ms;
+}
+
+.stagger-6 {
+  animation-delay: 300ms;
+}
+
+.stagger-7 {
+  animation-delay: 350ms;
+}
+
+.stagger-8 {
+  animation-delay: 400ms;
+}
+
+/* --- Glassmorphism Refinements --- */
+.dd-shell .glass-panel {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(248, 252, 255, 0.86));
+  border: 1px solid rgba(149, 172, 214, 0.28);
+  border-radius: 16px;
+  backdrop-filter: blur(12px);
+  box-shadow:
+    0 4px 16px rgba(15, 36, 72, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+
+.dark .dd-shell .glass-panel {
+  background: linear-gradient(180deg, rgba(18, 30, 52, 0.88), rgba(12, 22, 40, 0.82));
+  border-color: rgba(100, 132, 190, 0.22);
+  box-shadow:
+    0 8px 24px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(140, 175, 235, 0.06);
+}
+
+/* --- Signal of the Day Glow --- */
+.dd-signal-of-day {
+  position: relative;
+  border-radius: 18px;
+  overflow: hidden;
+}
+
+.dd-signal-of-day::before {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  border-radius: 20px;
+  padding: 2px;
+  background: conic-gradient(from 180deg,
+      rgba(47, 103, 216, 0.4),
+      rgba(40, 167, 232, 0.3),
+      rgba(30, 168, 109, 0.3),
+      rgba(47, 103, 216, 0.4));
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  -webkit-mask-composite: xor;
+  animation: glowBorder 3s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* --- Heatmap Cell Styles --- */
+.dd-heatmap-cell {
+  border-radius: 4px;
+  border: 1px solid transparent;
+  transition: transform 120ms ease, border-color 120ms ease, box-shadow 120ms ease;
+  cursor: pointer;
+}
+
+.dd-heatmap-cell:hover {
+  transform: scale(1.08);
+  border-color: rgba(47, 103, 216, 0.4);
+  box-shadow: 0 0 8px rgba(47, 103, 216, 0.2);
+}
+
+.dd-heatmap-cell:focus-visible {
+  outline: 2px solid var(--dd-v5-brand-accent, #2f67d8);
+  outline-offset: 1px;
+}
+
+/* --- Brief Carousel --- */
+.dd-brief-carousel {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  padding: 4px 0;
+}
+
+.dd-brief-carousel::-webkit-scrollbar {
+  display: none;
+}
+
+.dd-brief-card {
+  flex: 0 0 min(320px, 80vw);
+  scroll-snap-align: start;
+  border-radius: 16px;
+  border: 1px solid #c9d7ec;
+  background: #fbfdff;
+  padding: 16px;
+  box-shadow: 0 2px 8px rgba(15, 36, 72, 0.08);
+  transition: transform 180ms cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 180ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.dd-brief-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(24, 59, 122, 0.14);
+}
+
+.dark .dd-brief-card {
+  border-color: #39537f;
+  background: #182844;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.26);
+}
+
+/* --- Comparison Card --- */
+.dd-comparison-card {
+  border-radius: 16px;
+  border: 1px solid #c9d7ec;
+  background: #fbfdff;
+  padding: 16px;
+  box-shadow: 0 2px 8px rgba(15, 36, 72, 0.08);
+}
+
+.dark .dd-comparison-card {
+  border-color: #39537f;
+  background: #182844;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.26);
+}
+
+.dd-comparison-delta {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+}
+
+.dd-comparison-delta.positive {
+  color: #0f7a4f;
+}
+
+.dd-comparison-delta.negative {
+  color: #b4232d;
+}
+
+.dark .dd-comparison-delta.positive {
+  color: #4ade80;
+}
+
+.dark .dd-comparison-delta.negative {
+  color: #fb7185;
+}
+
+/* --- Command Palette Overlay --- */
+.dd-cmd-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(8, 14, 28, 0.5);
+  backdrop-filter: blur(4px);
+  z-index: 100;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 15vh;
+  animation: fadeIn 150ms ease-out;
+}
+
+.dd-cmd-panel {
+  width: min(560px, 92vw);
+  max-height: 480px;
+  border-radius: 18px;
+  border: 1px solid #c9d7ec;
+  background: #fbfdff;
+  box-shadow: 0 24px 64px rgba(10, 18, 36, 0.3);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  animation: staggerFadeIn 200ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.dark .dd-cmd-overlay {
+  background: rgba(4, 8, 16, 0.6);
+}
+
+.dark .dd-cmd-panel {
+  border-color: #39537f;
+  background: #111e38;
+  box-shadow: 0 28px 72px rgba(0, 0, 0, 0.5);
+}
+
+.dd-cmd-input {
+  width: 100%;
+  padding: 14px 18px;
+  border: 0;
+  border-bottom: 1px solid #e2eaf5;
+  background: transparent;
+  font-size: 1rem;
+  font-weight: 500;
+  color: inherit;
+  outline: none;
+}
+
+.dark .dd-cmd-input {
+  border-bottom-color: #2a3e60;
+}
+
+.dd-cmd-input::placeholder {
+  color: #8fa0c2;
+}
+
+.dd-cmd-results {
+  flex: 1;
+  overflow-y: auto;
+  padding: 6px;
+}
+
+.dd-cmd-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-size: 0.85rem;
+  color: #2b466d;
+  cursor: pointer;
+  border: 0;
+  background: transparent;
+  width: 100%;
+  text-align: left;
+  transition: background 100ms ease;
+}
+
+.dd-cmd-item:hover,
+.dd-cmd-item.is-selected {
+  background: rgba(47, 103, 216, 0.08);
+}
+
+.dark .dd-cmd-item {
+  color: #d7e5ff;
+}
+
+.dark .dd-cmd-item:hover,
+.dark .dd-cmd-item.is-selected {
+  background: rgba(88, 145, 255, 0.12);
+}
+
+.dd-cmd-item-label {
+  flex: 1;
+}
+
+.dd-cmd-item-hint {
+  font-size: 0.72rem;
+  font-family: var(--font-mono), monospace;
+  color: #8fa0c2;
+  letter-spacing: 0.03em;
+}
+
+/* --- Quiet Period State --- */
+.dd-quiet-period {
+  text-align: center;
+  padding: 32px 16px;
+  color: #6985b2;
+  font-size: 0.9rem;
+}
+
+.dark .dd-quiet-period {
+  color: #9fb5d9;
+}
+
+.dd-quiet-period svg {
+  margin: 0 auto 12px;
+  opacity: 0.5;
+}
+
+/* --- Focus Ring System --- */
+.dd-shell *:focus-visible {
+  outline: 2px solid var(--dd-v5-brand-accent, #2f67d8);
+  outline-offset: 2px;
+  border-radius: inherit;
+}
+
+/* --- Forced Colors / High Contrast Mode --- */
+@media (forced-colors: active) {
+
+  .dd-shell .dd-metric-tile,
+  .dd-shell .dd-tile,
+  .dd-shell .feed-card,
+  .dd-shell .dd-hero-card {
+    border: 2px solid CanvasText;
+  }
+
+  .dd-shell .dd-metric-value,
+  .dd-shell .dd-hero-title {
+    color: CanvasText !important;
+  }
+}
+
+/* --- Enhanced Reduced Motion --- */
+@media (prefers-reduced-motion: reduce) {
+
+  .dd-signal-of-day::before,
+  .animate-stagger-fade,
+  .animate-slide-in,
+  .animate-pulse-wave,
+  .animate-delta-flash,
+  .animate-glow-border,
+  .animate-fade-in {
+    animation: none !important;
+  }
+
+  .dd-heatmap-cell:hover {
+    transform: none;
+  }
+
+  .dd-brief-card:hover,
+  .dd-shell .dd-tile:hover,
+  .dd-shell .dd-metric-tile:hover,
+  .dd-shell .feed-card:hover,
+  .dd-shell .dd-signal-row:hover,
+  .dd-shell .nav-button:hover {
+    transform: none;
+  }
+}
+
+/* --- Mobile Bottom Sheet Navigation --- */
+@media (max-width: 768px) {
+  .dd-mobile-bottom-sheet {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 80;
+    background: #fbfdff;
+    border-top: 1px solid #c9d7ec;
+    box-shadow: 0 -4px 16px rgba(15, 36, 72, 0.08);
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    padding: 8px 0;
+    padding-bottom: max(8px, env(safe-area-inset-bottom));
+  }
+
+  .dark .dd-mobile-bottom-sheet {
+    background: #111e38;
+    border-top-color: #2a3e60;
+    box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.3);
+  }
+
+  .dd-mobile-bottom-sheet button {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    padding: 6px 12px;
+    border: 0;
+    background: transparent;
+    color: #5877a4;
+    font-size: 0.6rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    min-width: 44px;
+    min-height: 44px;
+    cursor: pointer;
+  }
+
+  .dark .dd-mobile-bottom-sheet button {
+    color: #9fb5d9;
+  }
+
+  .dd-mobile-bottom-sheet button.active {
+    color: var(--dd-v5-brand-accent, #2f67d8);
+  }
+
+  .dd-mobile-bottom-sheet button svg {
+    width: 20px;
+    height: 20px;
+  }
 }

@@ -251,6 +251,41 @@
     "topPublisher": "Top Publisher",
     "highAlerts": "High Alerts"
   },
+  "heatmap": {
+    "title": "Signal Heatmap"
+  },
+  "briefCarousel": {
+    "title": "Intelligence Brief",
+    "readMore": "Read more",
+    "prev": "Previous card",
+    "next": "Next card"
+  },
+  "comparison": {
+    "title": "Canada vs. World",
+    "delta": "Delta",
+    "canada": "Canada",
+    "world": "World",
+    "signals": "signals"
+  },
+  "commandPalette": {
+    "placeholder": "Type a command or search...",
+    "noResults": "No results found",
+    "navigate": "Navigate",
+    "filter": "Filter",
+    "action": "Action"
+  },
+  "signalOfDay": {
+    "title": "Signal of the Day",
+    "highestConfidence": "Highest confidence signal"
+  },
+  "quietPeriod": {
+    "message": "All clear — last signal was {hours}h ago",
+    "subtext": "The feed is quiet. New signals will appear automatically."
+  },
+  "advancedMode": {
+    "show": "Advanced",
+    "hide": "Simple"
+  },
   "briefing": {
     "title": "Morning Brief (Share-Ready)",
     "save": "Save",

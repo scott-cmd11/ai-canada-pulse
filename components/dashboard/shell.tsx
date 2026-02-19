@@ -44,6 +44,9 @@ export function DashboardShell({
 
   return (
     <div className={`pulse-shell dd-shell ${railOpen ? "dd-rail-open" : ""}`}>
+      <a href="#main-content" className="skip-link">
+        Skip to main content
+      </a>
       <button
         onClick={() => setRailOpen(false)}
         className="dd-rail-scrim"
@@ -128,7 +131,7 @@ export function DashboardShell({
         </header>
         {guidePanel}
         {utilityBar ? <div className="dd-utility-row">{utilityBar}</div> : null}
-        <div className="dd-content">{children}</div>
+        <main id="main-content" className="dd-content">{children}</main>
         <footer className="dd-disclaimer">
           <p>This dashboard was built with AI assistance. Data is aggregated from public sources and may not be comprehensive.</p>
         </footer>

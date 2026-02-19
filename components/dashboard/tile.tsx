@@ -56,7 +56,7 @@ export function MetricTile({
         </div>
       ) : (
         <>
-          <p className="dd-metric-value">{value}</p>
+          <p className="dd-metric-value font-mono">{value}</p>
           {footer ? <div className="dd-metric-footer">{footer}</div> : null}
           {spark ? <div className="dd-metric-spark">{spark}</div> : null}
           {children}
