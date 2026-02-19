@@ -42,7 +42,7 @@ export function GlobalDashboardPage() {
   const t = useTranslations();
   const locale = useLocale();
   const { theme, toggleTheme } = useTheme();
-  const [timeWindow, setTimeWindow] = useState<TimeWindow>("15d");
+  const [timeWindow, setTimeWindow] = useState<TimeWindow>("7d");
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [feed, setFeed] = useState<FeedItem[]>([]);

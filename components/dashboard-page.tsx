@@ -77,7 +77,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
   const locale = useLocale();
   const { theme, toggleTheme } = useTheme();
   const { mode, setMode } = useMode();
-  const [timeWindow, setTimeWindow] = useState<TimeWindow>("15d");
+  const [timeWindow, setTimeWindow] = useState<TimeWindow>("7d");
   const [category, setCategory] = useState("");
   const [jurisdiction, setJurisdiction] = useState("");
   const [language, setLanguage] = useState("");
