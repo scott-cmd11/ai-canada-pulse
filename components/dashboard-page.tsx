@@ -1291,6 +1291,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
               value={kpis?.m15.current ?? 0}
               tone={(kpis?.m15.delta_percent ?? 0) >= 0 ? "ok" : "critical"}
               loading={isInitialLoading}
+              className="dd-animate-scale" style={{ '--stagger': 0 } as React.CSSProperties}
               footer={(
                 <div className="flex items-center justify-between gap-2">
                   <Delta value={kpis?.m15.delta_percent ?? 0} />
@@ -1304,6 +1305,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
               value={kpis?.h1.current ?? 0}
               tone={(kpis?.h1.delta_percent ?? 0) >= 0 ? "ok" : "critical"}
               loading={isInitialLoading}
+              className="dd-animate-scale" style={{ '--stagger': 1 } as React.CSSProperties}
               footer={(
                 <div className="flex items-center justify-between gap-2">
                   <Delta value={kpis?.h1.delta_percent ?? 0} />
@@ -1317,6 +1319,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
               value={kpis?.d7.current ?? 0}
               tone={(kpis?.d7.delta_percent ?? 0) >= 0 ? "ok" : "critical"}
               loading={isInitialLoading}
+              className="dd-animate-scale" style={{ '--stagger': 2 } as React.CSSProperties}
               footer={(
                 <div className="flex items-center justify-between gap-2">
                   <Delta value={kpis?.d7.delta_percent ?? 0} />
@@ -1330,6 +1333,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
               value={(riskIndex?.score ?? 0).toFixed(1)}
               tone={riskIndex?.level === "high" ? "critical" : riskIndex?.level === "medium" ? "warn" : "info"}
               loading={isInitialLoading}
+              className="dd-animate-scale" style={{ '--stagger': 3 } as React.CSSProperties}
               footer={(
                 <div className="flex items-center justify-between gap-2">
                   <span className="capitalize">{t(`risk.${riskIndex?.level ?? "low"}`)}</span>

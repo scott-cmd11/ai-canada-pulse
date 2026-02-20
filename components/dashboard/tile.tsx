@@ -15,6 +15,7 @@ interface MetricTileProps {
   spark?: ReactNode;
   children?: ReactNode;
   className?: string;
+  style?: React.CSSProperties;
 }
 
 const toneClass: Record<TileTone, string> = {
@@ -43,16 +44,18 @@ export function MetricTile({
   spark,
   children,
   className = "",
+  style,
 }: MetricTileProps) {
   return (
     <article
       className={`dd-metric-tile ${toneClass[tone]} ${density === "compact" ? "dd-density-compact" : ""} ${className}`.trim()}
+      style={style}
     >
       <h2 className="dd-metric-label">{label}</h2>
       {loading ? (
         <div className="mt-3 space-y-2">
-          <div className="h-7 w-20 rounded bg-white/20" />
-          <div className="h-3 w-28 rounded bg-white/20" />
+          <div className="dd-skeleton h-7 w-20 rounded" />
+          <div className="dd-skeleton h-3 w-28 rounded" />
         </div>
       ) : (
         <>

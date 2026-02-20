@@ -111,7 +111,7 @@ export function StoryHero({
   }, [scope, timeWindowText, kpis, jurisdictionsBreakdown, alerts, totalSignals, t]);
 
   return (
-    <section className="story-hero dd-hero-card elevated p-5 md:p-6">
+    <section className="story-hero dd-hero-card dd-animate-in elevated p-5 md:p-6">
       <div className="dd-hero-grid">
         <div className="dd-hero-main">
           <h1 className="dd-hero-title">{scope === "canada" ? t("hero.canadaHeadline") : t("hero.globalHeadline")}</h1>

@@ -177,6 +177,7 @@ export function GlobalDashboardPage() {
       headerMeta={(
         <div className="dd-meta-strip">
           <span className={`dd-meta-pill ${refreshTone}`}>
+            {!isRefreshing && <span className="dd-pulse-dot" />}
             {isRefreshing ? t("feed.refreshing") : t("feed.live")}
           </span>
           <span className="dd-meta-pill">{t("filters.timeWindow")}: {timeWindow.toUpperCase()}</span>
@@ -231,7 +232,7 @@ export function GlobalDashboardPage() {
     >
       <main className="dd-dashboard-main mx-auto max-w-[1720px] space-y-4 px-4 py-4 md:px-5">
         {/* Hero */}
-        <section className="dd-tile dd-world-hero dd-hero-card p-5 md:p-6">
+        <section className="dd-tile dd-world-hero dd-hero-card dd-animate-in p-5 md:p-6">
           <p className="dd-hero-eyebrow">{t("global.scopeLabel")}</p>
           <h1 className="dd-hero-title">{t("hero.globalHeadline")}</h1>
           <p className="dd-hero-subtitle mt-2 max-w-3xl text-sm text-textSecondary">
@@ -265,6 +266,7 @@ export function GlobalDashboardPage() {
             tone={(kpis?.m15.delta_percent ?? 0) >= 0 ? "ok" : "critical"}
             loading={isInitialLoading}
             footer={<Delta value={kpis?.m15.delta_percent ?? 0} />}
+            className="dd-animate-scale" style={{ '--stagger': 0 } as React.CSSProperties}
           />
           <MetricTile
             label={t("kpi.new1h")}
@@ -272,6 +274,7 @@ export function GlobalDashboardPage() {
             tone={(kpis?.h1.delta_percent ?? 0) >= 0 ? "ok" : "critical"}
             loading={isInitialLoading}
             footer={<Delta value={kpis?.h1.delta_percent ?? 0} />}
+            className="dd-animate-scale" style={{ '--stagger': 1 } as React.CSSProperties}
           />
           <MetricTile
             label={t("kpi.new7d")}
@@ -279,6 +282,7 @@ export function GlobalDashboardPage() {
             tone={(kpis?.d7.delta_percent ?? 0) >= 0 ? "ok" : "critical"}
             loading={isInitialLoading}
             footer={<Delta value={kpis?.d7.delta_percent ?? 0} />}
+            className="dd-animate-scale" style={{ '--stagger': 2 } as React.CSSProperties}
           />
           <MetricTile
             label={t("risk.title")}
@@ -286,6 +290,7 @@ export function GlobalDashboardPage() {
             tone={riskIndex?.level === "high" ? "critical" : riskIndex?.level === "medium" ? "warn" : "info"}
             loading={isInitialLoading}
             footer={<span className="capitalize">{riskIndex?.level ?? "low"}</span>}
+            className="dd-animate-scale" style={{ '--stagger': 3 } as React.CSSProperties}
           />
         </section>
 
@@ -421,12 +426,12 @@ export function GlobalDashboardPage() {
         <section className="dd-tile dd-world-feed p-4">
           <h3 className="mb-3 text-sm font-semibold text-textSecondary">{t("global.latestSignals")}</h3>
           <div className="space-y-2">
-            {feed.slice(0, 20).map((item) => (
+            {feed.slice(0, 20).map((item, i) => (
               <button
                 key={item.id}
                 onClick={() => setSelected(item)}
-                className="dd-signal-row block w-full rounded border border-borderSoft px-3 py-2 text-left text-xs transition-all hover:shadow-sm"
-                style={{ borderLeftColor: categoryColor[item.category] ?? "var(--border-soft)", borderLeftWidth: 3 }}
+                className="dd-signal-row dd-animate-row block w-full rounded border border-borderSoft px-3 py-2 text-left text-xs"
+                style={{ borderLeftColor: categoryColor[item.category] ?? "var(--border-soft)", borderLeftWidth: 3, '--stagger': i } as React.CSSProperties}
               >
                 <div className="flex items-center justify-between">
                   <span className="line-clamp-1 font-medium text-text">{item.title}</span>

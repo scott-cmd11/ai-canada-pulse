@@ -84,7 +84,7 @@ function qsFeed(params: FeedParams): string {
 
 export async function fetchFeed(params: FeedParams): Promise<FeedResponse> {
   if (USE_MOCK_DATA) {
-    return { items: MOCK_FEED_ITEMS, total: MOCK_FEED_ITEMS.length, page: 1, pages: 1 };
+    return { items: MOCK_FEED_ITEMS, total: MOCK_FEED_ITEMS.length, page: 1, page_size: MOCK_FEED_ITEMS.length };
   }
   const query = qsFeed(params);
   const res = await fetch(`${API_BASE}/feed?${query}`, { cache: "no-store" });
