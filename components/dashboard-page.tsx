@@ -316,6 +316,9 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
   }
 
   function matchesLiveFilters(item: FeedItem): boolean {
+    const inCanada = isCanadaJurisdiction(item.jurisdiction);
+    if (scope === "canada" && !inCanada) return false;
+    if (scope === "world" && inCanada) return false;
     if (category && item.category !== category) return false;
     if (jurisdiction && item.jurisdiction !== jurisdiction) return false;
     if (language && item.language !== language) return false;
@@ -359,9 +362,12 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
         fetchSummary(timeWindow),
         fetchCoverage(timeWindow, 8),
       ]);
-      // Client-side deduplication: keep first occurrence per normalized title
+      // Scope filter + client-side deduplication
       const seen = new Set<string>();
       const deduped = feedResponse.items.filter((item) => {
+        const inCanada = isCanadaJurisdiction(item.jurisdiction);
+        if (scope === "canada" && !inCanada) return false;
+        if (scope === "world" && inCanada) return false;
         const key = item.title.toLowerCase().replace(/[^a-z0-9]/g, "");
         if (seen.has(key)) return false;
         seen.add(key);
