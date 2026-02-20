@@ -25,6 +25,18 @@ const timeWindowKeys: Record<TimeWindow, string> = {
   "5y": "storyHero.timeWindow5y",
 };
 
+const timeWindowLabels: Record<TimeWindow, string> = {
+  "1h": "storyHero.label1h",
+  "24h": "storyHero.label24h",
+  "7d": "storyHero.label7d",
+  "15d": "storyHero.label15d",
+  "30d": "storyHero.label30d",
+  "90d": "storyHero.label90d",
+  "1y": "storyHero.label1y",
+  "2y": "storyHero.label2y",
+  "5y": "storyHero.label5y",
+};
+
 export function StoryHero({
   scope,
   timeWindow,
@@ -34,7 +46,8 @@ export function StoryHero({
   totalSignals,
 }: StoryHeroProps) {
   const t = useTranslations();
-  const timeWindowLabel = t(timeWindowKeys[timeWindow] ?? "storyHero.timeWindow24h");
+  const timeWindowText = t(timeWindowKeys[timeWindow] ?? "storyHero.timeWindow24h");
+  const timeWindowChip = t(timeWindowLabels[timeWindow] ?? "storyHero.label24h");
   const highAlertCount = alerts.filter((a) => a.severity === "high").length;
   const delta7d = kpis?.d7?.delta_percent ?? 0;
 
@@ -46,14 +59,14 @@ export function StoryHero({
     if (totalSignals > 0) {
       parts.push(
         t("storyHero.detected", {
-          window: timeWindowLabel,
+          window: timeWindowText,
           count: totalSignals.toLocaleString(),
           region,
         })
       );
     } else {
       parts.push(
-        t("storyHero.noSignals", { region, window: timeWindowLabel })
+        t("storyHero.noSignals", { region, window: timeWindowText })
       );
       return parts;
     }
@@ -95,7 +108,7 @@ export function StoryHero({
     }
 
     return parts;
-  }, [scope, timeWindowLabel, kpis, jurisdictionsBreakdown, alerts, totalSignals, t]);
+  }, [scope, timeWindowText, kpis, jurisdictionsBreakdown, alerts, totalSignals, t]);
 
   return (
     <section className="story-hero dd-hero-card elevated p-5 md:p-6">
@@ -107,7 +120,7 @@ export function StoryHero({
         <div className="dd-hero-stats">
           <div className="dd-hero-chip">
             <span>{t("filters.timeWindow")}</span>
-            <strong>{timeWindowLabel}</strong>
+            <strong>{timeWindowChip}</strong>
           </div>
           <div className="dd-hero-chip">
             <span>{t("global.latestSignals")}</span>

@@ -3,6 +3,7 @@
 import { useMemo } from "react";
 import { useTranslations } from "next-intl";
 import type { EChartsResponse } from "../../lib/types";
+import { categoryColor } from "./constants";
 
 interface SignalHeatmapProps {
     /** Hourly data from the hourly API */
@@ -28,18 +29,6 @@ export function SignalHeatmap({
 }: SignalHeatmapProps) {
     const t = useTranslations();
 
-    // Category colors for heatmap rows
-    const categoryColors: Record<string, string> = {
-        "Policy & Regulation": "#3174d4",
-        "Industry & Economy": "#1ea86d",
-        "Research & Innovation": "#9b59b6",
-        "Ethics & Society": "#e67e22",
-        "Infrastructure & Compute": "#2a9d8f",
-        "Security & Defence": "#d95a67",
-        "Talent & Education": "#4585df",
-        "International": "#6c5ce7",
-    };
-
     // Parse hourly data into a heatmap grid
     const { categories, timeSlots, grid, maxValue } = useMemo(() => {
         if (!hourlyData?.series || !hourlyData?.xAxis) {
@@ -48,8 +37,8 @@ export function SignalHeatmap({
 
         const cats = hourlyData.series.map((s) => s.name);
         // Show last 12 time slots to keep it compact
-        const slots = hourlyData.xAxis.slice(-12);
-        const slotStart = hourlyData.xAxis.length - 12;
+        const startIndex = Math.max(0, hourlyData.xAxis.length - 12);
+        const slots = hourlyData.xAxis.slice(startIndex);
 
         const g: Record<string, Record<string, number>> = {};
         let max = 1;
@@ -57,7 +46,7 @@ export function SignalHeatmap({
         for (const series of hourlyData.series) {
             g[series.name] = {};
             for (let i = 0; i < slots.length; i++) {
-                const dataIdx = slotStart + i;
+                const dataIdx = startIndex + i;
                 const val = series.data[dataIdx] ?? 0;
                 g[series.name][slots[i]] = val;
                 if (val > max) max = val;
@@ -90,6 +79,15 @@ export function SignalHeatmap({
             return slot.split(":")[0] + "h";
         }
         // If it's a date, show short
+        if (slot.includes("T")) {
+            // Handle ISO timestamp
+            try {
+                const d = new Date(slot);
+                return d.getHours() + "h";
+            } catch {
+                return slot;
+            }
+        }
         if (slot.includes("-")) {
             const parts = slot.split("-");
             return `${parts[1]}/${parts[2]}`;
@@ -122,7 +120,7 @@ export function SignalHeatmap({
 
                 {/* Data rows: one per category */}
                 {categories.map((cat) => {
-                    const color = categoryColors[cat] ?? "#7783a1";
+                    const color = categoryColor[cat.toLowerCase()] ?? "#7783a1";
                     return (
                         <div key={cat} className="contents" role="row">
                             <div
@@ -135,7 +133,7 @@ export function SignalHeatmap({
                                     style={{ background: color }}
                                     aria-hidden="true"
                                 />
-                                <span className="truncate">{cat}</span>
+                                <span className="truncate capitalize">{cat}</span>
                             </div>
                             {timeSlots.map((slot) => {
                                 const value = grid[cat]?.[slot] ?? 0;

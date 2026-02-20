@@ -4139,3 +4139,132 @@ body {
     height: 20px;
   }
 }
+
+/* ═══════════════════════════════════════════════════════
+   World Dashboard UI Polish
+   ═══════════════════════════════════════════════════════ */
+
+/* Hero Card — gradient accent bar + subtle background */
+.dd-hero-card {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(135deg, var(--surface) 0%, color-mix(in oklab, var(--primary-action) 4%, var(--surface)) 100%);
+}
+
+.dd-hero-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--gradient-from), var(--gradient-via), var(--gradient-to));
+  border-radius: 6px 6px 0 0;
+}
+
+.dark .dd-hero-card {
+  background: linear-gradient(135deg, var(--surface) 0%, color-mix(in oklab, var(--primary-action) 6%, var(--surface)) 100%);
+}
+
+/* Hero eyebrow (small label above title) */
+.dd-hero-eyebrow {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--primary-action);
+  margin-bottom: 0.25rem;
+}
+
+/* Hero title */
+.dd-hero-title {
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  line-height: 1.15;
+  color: var(--text-primary);
+}
+
+/* Hero subtitle */
+.dd-hero-subtitle {
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+/* Hero stats — inline pill layout (overrides grid from earlier rules) */
+.dd-shell .dd-hero-stats-inline {
+  display: flex !important;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  grid-template-columns: none;
+}
+
+/* Individual chip pill (overrides card-style from earlier rules) */
+.dd-shell .dd-hero-chip {
+  display: inline-flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.375rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  min-height: auto;
+  background: color-mix(in oklab, var(--primary-action) 8%, var(--surface));
+  border: 1px solid color-mix(in oklab, var(--primary-action) 15%, transparent);
+  white-space: nowrap;
+  transition: all var(--duration-normal, 0.2s) var(--ease-out-expo, ease-out);
+}
+
+.dd-shell .dd-hero-chip span {
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.dd-shell .dd-hero-chip strong {
+  color: var(--text-primary);
+  font-weight: 700;
+  margin-top: 0;
+}
+
+.dd-shell .dd-hero-chip:hover {
+  border-color: color-mix(in oklab, var(--primary-action) 30%, transparent);
+  background: color-mix(in oklab, var(--primary-action) 12%, var(--surface));
+}
+
+.dark .dd-shell .dd-hero-chip {
+  background: color-mix(in oklab, var(--primary-action) 10%, var(--surface));
+  border-color: color-mix(in oklab, var(--primary-action) 20%, transparent);
+}
+
+/* Signal row hover polish */
+.dd-signal-row {
+  transition: all var(--duration-normal) var(--ease-out-expo);
+  cursor: pointer;
+}
+
+.dd-signal-row:hover {
+  border-color: color-mix(in oklab, var(--primary-action) 30%, var(--border-soft));
+  background: color-mix(in oklab, var(--primary-action) 3%, var(--surface));
+  box-shadow: 0 2px 8px rgba(79, 70, 229, 0.06);
+  transform: translateX(2px);
+}
+
+.dark .dd-signal-row:hover {
+  background: color-mix(in oklab, var(--primary-action) 6%, var(--surface));
+  box-shadow: 0 2px 8px rgba(129, 140, 248, 0.08);
+}
+
+/* Show Analysis button emphasis */
+.dd-action-row .btn-ghost {
+  font-weight: 600;
+  color: var(--primary-action);
+  border: 1px solid color-mix(in oklab, var(--primary-action) 20%, transparent);
+  background: color-mix(in oklab, var(--primary-action) 5%, transparent);
+  padding: 0.5rem 1.25rem;
+  border-radius: 999px;
+}
+
+.dd-action-row .btn-ghost:hover {
+  background: color-mix(in oklab, var(--primary-action) 12%, transparent);
+  border-color: var(--primary-action);
+}

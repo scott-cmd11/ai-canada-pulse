@@ -106,7 +106,7 @@ export function BriefCarousel({ summary, brief, loading = false }: BriefCarousel
         "Ethics & Society": "#e67e22",
         "Infrastructure & Compute": "#2a9d8f",
         "Security & Defence": "#d95a67",
-        "Summary": "#4585df",
+        "Summary": "#1d4ed8",
         "Regional": "#2a9d8f",
         "Alert": "#d95a67",
     };
