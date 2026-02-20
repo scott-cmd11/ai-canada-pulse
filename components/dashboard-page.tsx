@@ -316,9 +316,6 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
   }
 
   function matchesLiveFilters(item: FeedItem): boolean {
-    const inCanada = isCanadaJurisdiction(item.jurisdiction);
-    if (scope === "canada" && !inCanada) return false;
-    if (scope === "world" && inCanada) return false;
     if (category && item.category !== category) return false;
     if (jurisdiction && item.jurisdiction !== jurisdiction) return false;
     if (language && item.language !== language) return false;
@@ -362,15 +359,9 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
         fetchSummary(timeWindow),
         fetchCoverage(timeWindow, 8),
       ]);
-      const scopeFiltered = feedResponse.items.filter((item) => {
-        const inCanada = isCanadaJurisdiction(item.jurisdiction);
-        if (scope === "canada") return inCanada;
-        if (scope === "world") return !inCanada;
-        return true;
-      });
       // Client-side deduplication: keep first occurrence per normalized title
       const seen = new Set<string>();
-      const deduped = scopeFiltered.filter((item) => {
+      const deduped = feedResponse.items.filter((item) => {
         const key = item.title.toLowerCase().replace(/[^a-z0-9]/g, "");
         if (seen.has(key)) return false;
         seen.add(key);
@@ -695,7 +686,9 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
     } else {
       insights.push(t("pulse.noMajorShifts"));
     }
-    const topJurisdiction = jurisdictionsBreakdown?.jurisdictions?.[0];
+    const topJurisdiction = scope === "canada"
+      ? (jurisdictionsBreakdown?.jurisdictions ?? []).find((j) => isCanadaJurisdiction(j.name))
+      : jurisdictionsBreakdown?.jurisdictions?.[0];
     if (topJurisdiction) insights.push(`${t("pulse.topJurisdiction")} ${topJurisdiction.name} (${topJurisdiction.count}).`);
     return insights.slice(0, 3);
   }, [alerts, jurisdictionsBreakdown?.jurisdictions, t, topInsights]);
@@ -1593,29 +1586,31 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
             <span className="text-micro text-textMuted">{t("regional.helper")}</span>
           </div>
           <div className="space-y-2">
-            {(jurisdictionsBreakdown?.jurisdictions ?? []).slice(0, 6).map((item) => {
-              const total = Math.max(1, jurisdictionsBreakdown?.total ?? 1);
-              const width = Math.max(6, Math.round((item.count / total) * 100));
-              const active = jurisdiction === item.name;
-              return (
-                <button
-                  key={item.name}
-                  onClick={() => {
-                    setJurisdiction(item.name);
-                    setMode("research");
-                  }}
-                  className="block w-full rounded-lg bg-surfaceInset px-3 py-2.5 text-left text-caption transition-all hover:shadow-xs"
-                >
-                  <div className="mb-1.5 flex items-center justify-between">
-                    <span className={active ? "font-semibold" : ""}>{item.name}</span>
-                    <span>{item.count}</span>
-                  </div>
-                  <div className="h-1 rounded-full bg-bg">
-                    <div className="h-1 rounded-full transition-all duration-500" style={{ width: `${width}%`, background: "var(--primary-action)" }} />
-                  </div>
-                </button>
-              );
-            })}
+            {(jurisdictionsBreakdown?.jurisdictions ?? [])
+              .filter((item) => scope !== "canada" || isCanadaJurisdiction(item.name))
+              .slice(0, 6).map((item) => {
+                const total = Math.max(1, jurisdictionsBreakdown?.total ?? 1);
+                const width = Math.max(6, Math.round((item.count / total) * 100));
+                const active = jurisdiction === item.name;
+                return (
+                  <button
+                    key={item.name}
+                    onClick={() => {
+                      setJurisdiction(item.name);
+                      setMode("research");
+                    }}
+                    className="block w-full rounded-lg bg-surfaceInset px-3 py-2.5 text-left text-caption transition-all hover:shadow-xs"
+                  >
+                    <div className="mb-1.5 flex items-center justify-between">
+                      <span className={active ? "font-semibold" : ""}>{item.name}</span>
+                      <span>{item.count}</span>
+                    </div>
+                    <div className="h-1 rounded-full bg-bg">
+                      <div className="h-1 rounded-full transition-all duration-500" style={{ width: `${width}%`, background: "var(--primary-action)" }} />
+                    </div>
+                  </button>
+                );
+              })}
           </div>
         </section>
 
