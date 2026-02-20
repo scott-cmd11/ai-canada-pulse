@@ -350,6 +350,23 @@ export const SOURCE_REGISTRY: SourceDefinition[] = [
   { id: 'techcrunch-ai-rss', name: 'TechCrunch AI', kind: 'rss', type: 'news', category: 'News and Analysis', url: 'https://techcrunch.com/category/artificial-intelligence/feed/', cadenceMinutes: 60, reliability: 78 },
   { id: 'mit-tech-ai-rss', name: 'MIT Tech Review AI', kind: 'rss', type: 'news', category: 'News and Analysis', url: 'https://www.technologyreview.com/feed/', cadenceMinutes: 120, reliability: 85 },
   { id: 'venturebeat-ai-rss', name: 'VentureBeat AI', kind: 'rss', type: 'news', category: 'News and Analysis', url: 'https://venturebeat.com/category/ai/feed/', cadenceMinutes: 60, reliability: 75 },
+  // ─── Feedly Global Feeds ────────────────────────────────────────
+  { id: 'google-alert-psac', name: 'Google Alert - PSAC', kind: 'rss', type: 'news', category: 'Global News and Analysis', url: 'https://www.google.com/alerts/feeds/03030665084568507357/9930358928441203007', cadenceMinutes: 60, reliability: 70 },
+  { id: 'google-alert-agi', name: 'Google Alert - AGI', kind: 'rss', type: 'news', category: 'Global News and Analysis', url: 'https://www.google.com/alerts/feeds/03030665084568507357/6619274340374812968', cadenceMinutes: 60, reliability: 70 },
+  { id: 'google-alert-job-replacement', name: 'Google Alert - Job Replacement AI', kind: 'rss', type: 'news', category: 'Global News and Analysis', url: 'https://www.google.com/alerts/feeds/03030665084568507357/11653796448320099668', cadenceMinutes: 60, reliability: 70 },
+  { id: 'google-alert-public-sector', name: 'Google Alert - Public Sector AI', kind: 'rss', type: 'news', category: 'Global News and Analysis', url: 'https://www.google.com/alerts/feeds/03030665084568507357/5306089899663451631', cadenceMinutes: 60, reliability: 70 },
+  { id: 'anthropic-press', name: 'Anthropic Press Releases', kind: 'rss', type: 'news', category: 'Global News and Analysis', url: 'https://feedproxy.feedly.com/5b36e586-cfce-45df-9d64-1cf9fed78e5b', cadenceMinutes: 60, reliability: 80 },
+  { id: 'google-alert-ethics', name: 'Google Alert - Ethics AI', kind: 'rss', type: 'news', category: 'Global News and Analysis', url: 'https://www.google.com/alerts/feeds/03030665084568507357/2891758781116511337', cadenceMinutes: 60, reliability: 70 },
+  { id: 'google-alert-governance', name: 'Google Alert - Governance AI', kind: 'rss', type: 'news', category: 'Global News and Analysis', url: 'https://www.google.com/alerts/feeds/03030665084568507357/2278791836030122678', cadenceMinutes: 60, reliability: 70 },
+  { id: 'ms-research-blog', name: 'Microsoft Research Blog', kind: 'rss', type: 'research', category: 'Global Research', url: 'http://research.microsoft.com/rss/news.xml', cadenceMinutes: 120, reliability: 85 },
+  { id: 'google-alert-canada-ai', name: 'Google Alert - Canada AI', kind: 'rss', type: 'news', category: 'Global News and Analysis', url: 'https://www.google.com/alerts/feeds/03030665084568507357/8343122122122789666', cadenceMinutes: 60, reliability: 70 },
+  { id: 'google-alert-privacy', name: 'Google Alert - Privacy AI', kind: 'rss', type: 'news', category: 'Global News and Analysis', url: 'https://www.google.com/alerts/feeds/03030665084568507357/16866512384761599386', cadenceMinutes: 60, reliability: 70 },
+  { id: 'mit-tech-review-rss', name: 'MIT Technology Review', kind: 'rss', type: 'news', category: 'Global News and Analysis', url: 'http://www.technologyreview.com/rss/rss.aspx', cadenceMinutes: 120, reliability: 85 },
+  { id: 'openai-blog', name: 'OpenAI Blog', kind: 'rss', type: 'research', category: 'Global Research', url: 'https://blog.openai.com/rss/', cadenceMinutes: 120, reliability: 85 },
+  { id: 'deepmind-blog', name: 'DeepMind Blog', kind: 'rss', type: 'research', category: 'Global Research', url: 'https://deepmind.com/blog/feed/basic/', cadenceMinutes: 120, reliability: 85 },
+  { id: 'google-alert-security', name: 'Google Alert - Security AI', kind: 'rss', type: 'news', category: 'Global News and Analysis', url: 'https://www.google.com/alerts/feeds/03030665084568507357/15942459126004772098', cadenceMinutes: 60, reliability: 70 },
+  { id: 'google-alert-asi', name: 'Google Alert - ASI', kind: 'rss', type: 'news', category: 'Global News and Analysis', url: 'https://www.google.com/alerts/feeds/03030665084568507357/5237285988387868375', cadenceMinutes: 60, reliability: 70 },
+  { id: 'google-alert-regulation', name: 'Google Alert - Regulation AI', kind: 'rss', type: 'news', category: 'Global News and Analysis', url: 'https://www.google.com/alerts/feeds/03030665084568507357/7622957089141856354', cadenceMinutes: 60, reliability: 70 },
 ];
 
 export const REGION_KEYWORDS: Array<{ region: string; province: string; city?: string; hub?: string; keywords: string[] }> = [

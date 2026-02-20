@@ -1182,6 +1182,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
         canada: t("nav.canada"),
         world: t("nav.world"),
         methods: t("nav.methods"),
+        resources: t("nav.resources"),
       }}
       otherLocale={otherLocale}
       theme={theme}

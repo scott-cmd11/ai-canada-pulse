@@ -2,7 +2,8 @@
   "nav": {
     "canada": "Canada",
     "world": "Monde",
-    "methods": "Methodes"
+    "methods": "Methodes",
+    "resources": "Ressources"
   },
   "shell": {
     "dashboards": "Tableaux de bord",
@@ -211,6 +212,7 @@
     "exportCsv": "Exporter CSV",
     "exportJson": "Exporter JSON",
     "details": "Details de l'element",
+    "relatedResources": "Explorer les ressources mondiales liees",
     "copyUrl": "Copier URL",
     "copied": "Copie",
     "copyFailed": "Echec copie",
@@ -477,5 +479,11 @@
       "a4": "L'interface du tableau de bord est disponible en anglais et en francais. Le contenu des signaux peut apparaitre dans n'importe quelle langue, avec une etiquette de langue pour chacun."
     },
     "back": "Retour au tableau de bord"
+  },
+  "resources": {
+    "title": "Ressources Mondiales en IA",
+    "description": "Explorez un annuaire curaté d'organisations, cadres, indices et modeles open-source qui stimulent l'ecosysteme mondial de l'IA. Filtrez par categorie ou recherchez par mot-cle pour decouvrir des atouts cles.",
+    "searchPlaceholder": "Rechercher des ressources...",
+    "categoryFilter": "Toutes les categories"
   }
 }

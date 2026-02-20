@@ -2,10 +2,10 @@
 
 import Link from "next/link";
 import { useState, type ReactNode } from "react";
-import { Activity, BarChart3, Globe2, Landmark, Menu, Moon, Sun, X } from "lucide-react";
+import { Activity, BarChart3, BookOpen, Globe2, Landmark, Menu, Moon, Sun, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 
-type Scope = "canada" | "world";
+type Scope = "canada" | "world" | "methods" | "resources";
 
 interface DashboardShellProps {
   locale: string;
@@ -14,6 +14,7 @@ interface DashboardShellProps {
     canada: string;
     world: string;
     methods: string;
+    resources: string;
   };
   otherLocale: string;
   theme: "light" | "dark";
@@ -92,11 +93,19 @@ export function DashboardShell({
         <nav className="dd-rail-nav">
           <Link
             href={`/${locale}/methods`}
-            className="dd-rail-link"
+            className={`dd-rail-link ${activeScope === "methods" ? "active" : ""}`}
             onClick={() => setRailOpen(false)}
           >
             <BarChart3 size={14} />
             {navLabels.methods}
+          </Link>
+          <Link
+            href={`/${locale}/resources`}
+            className={`dd-rail-link ${activeScope === "resources" ? "active" : ""}`}
+            onClick={() => setRailOpen(false)}
+          >
+            <BookOpen size={14} />
+            {navLabels.resources}
           </Link>
         </nav>
         <div className="dd-rail-footer">
@@ -115,7 +124,7 @@ export function DashboardShell({
               <Menu size={14} />
             </button>
             <span className="dd-scope-pill">
-              {activeScope === "canada" ? navLabels.canada : navLabels.world}
+              {activeScope === "canada" ? navLabels.canada : activeScope === "world" ? navLabels.world : activeScope === "resources" ? navLabels.resources : navLabels.methods}
             </span>
           </div>
           <div className="dd-topbar-center">{headerMeta}</div>

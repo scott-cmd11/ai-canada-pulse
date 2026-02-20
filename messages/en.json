@@ -2,7 +2,8 @@
   "nav": {
     "canada": "Canada",
     "world": "World",
-    "methods": "Methods"
+    "methods": "Methods",
+    "resources": "Global Resources"
   },
   "shell": {
     "dashboards": "Dashboards",
@@ -220,6 +221,7 @@
     "exportCsv": "Export CSV",
     "exportJson": "Export JSON",
     "details": "Feed item details",
+    "relatedResources": "Explore Related Global Resources",
     "copyUrl": "Copy URL",
     "copied": "Copied",
     "copyFailed": "Copy failed",
@@ -521,5 +523,11 @@
       "a4": "The dashboard interface is available in English and French. Signal content may appear in any language, with a language tag for each."
     },
     "back": "Back to dashboard"
+  },
+  "resources": {
+    "title": "Global AI Resources",
+    "description": "Explore a curated directory of organizations, frameworks, indices, and open-source models driving the worldwide AI ecosystem. Filter by category or search by keyword to discover key assets.",
+    "searchPlaceholder": "Search resources...",
+    "categoryFilter": "All Categories"
   }
 }
