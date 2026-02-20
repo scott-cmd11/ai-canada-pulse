@@ -47,7 +47,7 @@ import {
 } from "./mock-data";
 
 const API_BASE = "/api/v1";
-const USE_MOCK_DATA = process.env.NEXT_PUBLIC_USE_MOCK_DATA === "true" || true; // Only for visual audit session
+const USE_MOCK_DATA = process.env.NEXT_PUBLIC_USE_MOCK_DATA === "true";
 
 
 export interface FeedParams {
