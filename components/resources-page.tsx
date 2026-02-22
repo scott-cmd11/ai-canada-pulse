@@ -14,11 +14,29 @@ interface ResourcesPageProps {
 
 /* ── Category styling map ── */
 const CATEGORY_STYLES: Record<string, { color: string; icon: string }> = {
-    "Evaluation & Benchmarks": { color: "var(--status-warning)", icon: "📊" },
-    "Government & Policy": { color: "var(--policy)", icon: "🏛️" },
-    "Media & Newsletters": { color: "var(--news)", icon: "📰" },
-    "Models & Repositories": { color: "var(--industry)", icon: "🤖" },
-    "Research & Institutes": { color: "var(--research)", icon: "🔬" },
+    "AI Evaluation & Progress": { color: "var(--status-warning)", icon: "📊" },
+    "AI in Government": { color: "var(--policy)", icon: "🏛️" },
+    "AI/Robotics & Automation - Impact": { color: "var(--research)", icon: "⚙️" },
+    "Regulation": { color: "var(--feature-a)", icon: "⚖️" },
+    "AI Agents vs. Agentic AI": { color: "var(--feature-b)", icon: "🤖" },
+    "Popular AI Terms": { color: "var(--feature-c)", icon: "💬" },
+    "Governance": { color: "var(--feature-d)", icon: "🛡️" },
+    "AI Institutes in Canada": { color: "var(--text-primary)", icon: "🍁" },
+    "Intelligence Exponentials": { color: "var(--feature-e)", icon: "📈" },
+    "Prompting": { color: "var(--feature-c)", icon: "⌨️" },
+    "Learning": { color: "var(--feature-f)", icon: "📚" },
+    "Deciding Use Cases / Adoption": { color: "var(--primary-action)", icon: "💡" },
+    "Agent Examples & Browsers": { color: "var(--feature-a)", icon: "🌐" },
+    "Safety & Security": { color: "var(--status-danger)", icon: "🔒" },
+    "Emerging Research": { color: "var(--research)", icon: "🧬" },
+    "Policy & Environment": { color: "var(--status-success)", icon: "🌍" },
+    "Agentic Engineering (Vibe Coding)": { color: "var(--feature-b)", icon: "💻" },
+    "BCI & BMIs": { color: "var(--feature-d)", icon: "🧠" },
+    "Humanoid Robots": { color: "var(--feature-e)", icon: "🦾" },
+    "Agent Adoption": { color: "var(--text-secondary)", icon: "🤝" },
+    "Ethics": { color: "var(--feature-f)", icon: "⚖️" },
+    "Glasses & Wearables": { color: "var(--feature-a)", icon: "👓" },
+    "Quantum Computing": { color: "var(--feature-c)", icon: "⚛️" }
 };
 
 function getCategoryStyle(cat: string) {
