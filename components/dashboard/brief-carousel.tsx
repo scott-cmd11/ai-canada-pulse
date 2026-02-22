@@ -152,8 +152,8 @@ export function BriefCarousel({ summary, brief, loading = false }: BriefCarousel
                         >
                             <div className="flex items-center gap-2 mb-2">
                                 <span
-                                    className="inline-block px-2 py-0.5 rounded-full text-white text-micro font-semibold"
-                                    style={{ background: color }}
+                                    className="badge badge-category rounded-full"
+                                    style={{ "--badge-color": color } as React.CSSProperties}
                                 >
                                     {card.category}
                                 </span>

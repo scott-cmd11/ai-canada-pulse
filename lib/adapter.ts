@@ -319,12 +319,20 @@ export function buildBrief(items: IntelItem[], tw: TimeWindow): StatsBriefRespon
 
 // ─── Scope compare ────────────────────────────────────────
 
+function isCanada(i: IntelItem): boolean {
+    const j = (i.regionTag?.province || i.region || 'canada').trim().toLowerCase();
+    const canadaRegions = new Set([
+        "canada", "national", "federal", "ontario", "quebec", "alberta",
+        "british columbia", "manitoba", "saskatchewan", "nova scotia",
+        "new brunswick", "newfoundland and labrador", "prince edward island",
+        "northwest territories", "nunavut", "yukon"
+    ]);
+    return canadaRegions.has(j);
+}
+
 export function buildScopeCompare(items: IntelItem[], tw: TimeWindow): ScopeCompareResponse {
     const filtered = filterByWindow(items, tw);
-    const canada = filtered.filter((i) => {
-        const j = (i.regionTag?.province || i.region || '').toLowerCase();
-        return j !== 'national' && j !== '' && j !== 'Canada'.toLowerCase();
-    }).length;
+    const canada = filtered.filter(isCanada).length;
     const total = filtered.length;
 
     const categories: Category[] = ['policy', 'research', 'industry', 'funding', 'news', 'incidents'];
@@ -338,8 +346,8 @@ export function buildScopeCompare(items: IntelItem[], tw: TimeWindow): ScopeComp
         other: 0,
         categories: categories.map((name) => ({
             name,
-            canada: filtered.filter((i) => mapCategory(i) === name && (i.regionTag?.province || '').toLowerCase() !== 'national').length,
-            global: filtered.filter((i) => mapCategory(i) === name && (i.regionTag?.province || '').toLowerCase() === 'national').length,
+            canada: filtered.filter((i) => mapCategory(i) === name && isCanada(i)).length,
+            global: filtered.filter((i) => mapCategory(i) === name && !isCanada(i)).length,
         })),
     };
 }
