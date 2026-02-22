@@ -32,7 +32,7 @@ interface LegacyMomentumItem {
 }
 import { Redis } from '@upstash/redis';
 
-const INTEL_KEY = 'canada_ai_intel_items';
+const GET_INTEL_KEY = (scope: "canada" | "world") => `${scope}_ai_intel_items`;
 const LAST_SCAN_KEY = 'canada_ai_intel_last_scan';
 const NOTES_KEY = 'canada_ai_intel_notes';
 
@@ -760,12 +760,13 @@ function buildRelationshipGraph(items: IntelItem[]): RelationshipGraph {
   };
 }
 
-export async function getIntelItems(): Promise<IntelItem[]> {
+export async function getIntelItems(scope: "canada" | "world" = "canada"): Promise<IntelItem[]> {
   const client = getRedis();
+  const cacheKey = GET_INTEL_KEY(scope);
 
   if (client) {
     try {
-      const items = await client.get<IntelItem[]>(INTEL_KEY);
+      const items = await client.get<IntelItem[]>(cacheKey);
       return (items || []).map(normalizeItem);
     } catch (error) {
       console.error('Redis error, using memory fallback:', error);
@@ -775,8 +776,9 @@ export async function getIntelItems(): Promise<IntelItem[]> {
   return memoryStore.items.map(normalizeItem);
 }
 
-export async function addIntelItems(newItems: IntelItem[]): Promise<number> {
-  const existing = await getIntelItems();
+export async function addIntelItems(newItems: IntelItem[], scope: "canada" | "world" = "canada"): Promise<number> {
+  const existing = await getIntelItems(scope);
+  const cacheKey = GET_INTEL_KEY(scope);
   const existingUrls = new Set(existing.map((item) => item.url));
 
   const uniqueNewItems = newItems.map(normalizeItem).filter((item) => !existingUrls.has(item.url));
@@ -789,7 +791,7 @@ export async function addIntelItems(newItems: IntelItem[]): Promise<number> {
     const client = getRedis();
     if (client) {
       try {
-        await client.set(INTEL_KEY, combined);
+        await client.set(cacheKey, combined);
       } catch (error) {
         console.error('Redis write error:', error);
         memoryStore.items = combined;

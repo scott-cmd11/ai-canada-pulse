@@ -6,7 +6,8 @@ import type { TimeWindow } from '@/lib/types';
 export async function GET(request: Request) {
     try {
         const { searchParams } = new URL(request.url);
-        const items = await getIntelItems();
+        const scope = searchParams.get('scope') || 'canada';
+        const items = await getIntelItems(scope as any);
 
         const response = buildFeedResponse(items, {
             page: Number(searchParams.get('page')) || 1,

@@ -7,7 +7,8 @@ export async function GET(request: Request) {
     try {
         const { searchParams } = new URL(request.url);
         const tw = (searchParams.get('time_window') as TimeWindow) || '7d';
-        const items = await getIntelItems();
+        const scope = searchParams.get('scope') || 'canada';
+        const items = await getIntelItems(scope as any);
         return NextResponse.json(buildEntitiesBreakdown(items, tw));
     } catch (error) {
         console.error('Entities breakdown error:', error);

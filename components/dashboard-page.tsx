@@ -79,12 +79,13 @@ import { ComparisonCard } from "./dashboard/comparison-card";
 import { CommandPalette } from "./dashboard/command-palette";
 import { SignalOfDay } from "./dashboard/signal-of-day";
 
-export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
+export function DashboardPage({ scope, initialTimeWindow = "7d", initialMode }: { scope: "canada" | "world", initialTimeWindow?: string, initialMode?: string }) {
+  const hasHydratedTracker = useRef(false);
   const t = useTranslations();
   const locale = useLocale();
   const { theme, toggleTheme } = useTheme();
   const { mode, setMode } = useMode();
-  const [timeWindow, setTimeWindow] = useState<TimeWindow>("7d");
+  const [timeWindow, setTimeWindow] = useState<TimeWindow>((initialTimeWindow as TimeWindow) || "7d");
   const [category, setCategory] = useState("");
   const [jurisdiction, setJurisdiction] = useState("");
   const [language, setLanguage] = useState("");
@@ -335,7 +336,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
     setIsRefreshing(true);
     setRefreshError("");
     try {
-      const [feedResponse, kpiResponse, hourlyResponse, weeklyResponse, jurisdictionsResponse, sourcesResponse, tagsResponse, briefResponse, compareResponse, confidenceResponse, concentrationResponse, momentumResponse, riskResponse, entityMomentumResponse, riskTrendResponse, summaryResponse, coverageResponse] = await Promise.all([
+      const results = await Promise.allSettled([
         fetchFeed({
           time_window: timeWindow,
           category: category || undefined,
@@ -362,34 +363,36 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
         fetchSummary(timeWindow),
         fetchCoverage(timeWindow, 8),
       ]);
-      // Scope filter + client-side deduplication
+
       const seen = new Set<string>();
-      const deduped = feedResponse.items.filter((item) => {
-        const inCanada = isCanadaJurisdiction(item.jurisdiction);
-        if (scope === "canada" && !inCanada) return false;
-        if (scope === "world" && inCanada) return false;
-        const key = item.title.toLowerCase().replace(/[^a-z0-9]/g, "");
-        if (seen.has(key)) return false;
-        seen.add(key);
-        return true;
-      });
-      setFeed(deduped);
-      setKpis(kpiResponse);
-      setHourly(hourlyResponse);
-      setWeekly(weeklyResponse);
-      setJurisdictionsBreakdown(jurisdictionsResponse);
-      setSourcesBreakdown(sourcesResponse);
-      setTagsBreakdown(tagsResponse);
-      setBrief(briefResponse);
-      setCompare(compareResponse);
-      setConfidenceProfile(confidenceResponse);
-      setConcentration(concentrationResponse);
-      setMomentum(momentumResponse);
-      setRiskIndex(riskResponse);
-      setEntityMomentum(entityMomentumResponse);
-      setRiskTrend(riskTrendResponse);
-      setSummary(summaryResponse);
-      setCoverage(coverageResponse);
+      if (results[0].status === "fulfilled") {
+        const deduped = results[0].value.items.filter((item) => {
+          const inCanada = isCanadaJurisdiction(item.jurisdiction);
+          if (scope === "canada" && !inCanada) return false;
+          if (scope === "world" && inCanada) return false;
+          const key = item.title.toLowerCase().replace(/[^a-z0-9]/g, "");
+          if (seen.has(key)) return false;
+          seen.add(key);
+          return true;
+        });
+        setFeed(deduped);
+      }
+      if (results[1].status === "fulfilled") setKpis(results[1].value);
+      if (results[2].status === "fulfilled") setHourly(results[2].value);
+      if (results[3].status === "fulfilled") setWeekly(results[3].value);
+      if (results[4].status === "fulfilled") setJurisdictionsBreakdown(results[4].value);
+      if (results[5].status === "fulfilled") setSourcesBreakdown(results[5].value);
+      if (results[6].status === "fulfilled") setTagsBreakdown(results[6].value);
+      if (results[7].status === "fulfilled") setBrief(results[7].value);
+      if (results[8].status === "fulfilled") setCompare(results[8].value);
+      if (results[9].status === "fulfilled") setConfidenceProfile(results[9].value);
+      if (results[10].status === "fulfilled") setConcentration(results[10].value);
+      if (results[11].status === "fulfilled") setMomentum(results[11].value);
+      if (results[12].status === "fulfilled") setRiskIndex(results[12].value);
+      if (results[13].status === "fulfilled") setEntityMomentum(results[13].value);
+      if (results[14].status === "fulfilled") setRiskTrend(results[14].value);
+      if (results[15].status === "fulfilled") setSummary(results[15].value);
+      if (results[16].status === "fulfilled") setCoverage(results[16].value);
       setLastRefreshAt(new Date().toISOString());
     } catch {
       setRefreshError(t("feed.refreshFailed"));
@@ -417,9 +420,10 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
     source.onopen = () => {
       setSseStatus("live");
     };
-    source.onerror = () => {
+    source.onerror = (err) => {
       // SSE is not supported on Vercel Serverless — fall back to polling.
       // Show "live" status since the polling-based refresh keeps data fresh.
+      console.warn("SSE encountered an error, falling back to polling.", err);
       source.close();
       setSseStatus("live");
     };
@@ -438,6 +442,15 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
     return () => source.close();
   }, [scope, category, jurisdiction, language, debouncedSearch, timeWindow]);
 
+  const hasTranslation = (key: string) => {
+    try {
+      t(key);
+      return true;
+    } catch {
+      return false;
+    }
+  };
+
   useEffect(() => {
     if (mode !== "research") return;
 
@@ -446,7 +459,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
 
     const poll = async () => {
       try {
-        const [status, sources, breakdown, jurisdictions, entities, tags, alertsResponse] = await Promise.all([
+        const results = await Promise.allSettled([
           fetchBackfillStatus(),
           fetchSourcesHealth(),
           fetchSourcesBreakdown(timeWindow),
@@ -456,19 +469,24 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
           fetchAlerts(timeWindow),
         ]);
         if (!mounted) return;
-        setBackfillStatus(status);
-        setIsBackfillRunning(status.state === "running");
-        setSourceHealth(sources.sources ?? []);
-        setSourceHealthUpdatedAt(sources.updated_at ?? "");
-        setSourceHealthRunStatus(sources.run_status ?? "");
-        setSourceHealthInsertedTotal(sources.inserted_total ?? 0);
-        setSourceHealthCandidatesTotal(sources.candidates_total ?? 0);
-        setSourceHealthSkippedLockCount(sources.skipped_lock_count ?? 0);
-        setSourcesBreakdown(breakdown);
-        setJurisdictionsBreakdown(jurisdictions);
-        setEntitiesBreakdown(entities);
-        setTagsBreakdown(tags);
-        setAlerts(alertsResponse.alerts ?? []);
+        if (results[0].status === "fulfilled") {
+          setBackfillStatus(results[0].value);
+          setIsBackfillRunning(results[0].value.state === "running");
+        }
+        if (results[1].status === "fulfilled") {
+          const sources = results[1].value;
+          setSourceHealth(sources.sources ?? []);
+          setSourceHealthUpdatedAt(sources.updated_at ?? "");
+          setSourceHealthRunStatus(sources.run_status ?? "");
+          setSourceHealthInsertedTotal(sources.inserted_total ?? 0);
+          setSourceHealthCandidatesTotal(sources.candidates_total ?? 0);
+          setSourceHealthSkippedLockCount(sources.skipped_lock_count ?? 0);
+        }
+        if (results[2].status === "fulfilled") setSourcesBreakdown(results[2].value);
+        if (results[3].status === "fulfilled") setJurisdictionsBreakdown(results[3].value);
+        if (results[4].status === "fulfilled") setEntitiesBreakdown(results[4].value);
+        if (results[5].status === "fulfilled") setTagsBreakdown(results[5].value);
+        if (results[6].status === "fulfilled") setAlerts(results[6].value.alerts ?? []);
       } catch {
         if (!mounted) return;
       }
@@ -498,6 +516,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
   }, [mode]);
 
   useEffect(() => {
+    if (!hasHydratedTracker.current) return;
     if (mode !== "research") return;
     localStorage.setItem("research_panel_visibility", JSON.stringify(panelVisibility));
   }, [mode, panelVisibility]);
@@ -514,6 +533,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
   }, [scope]);
 
   useEffect(() => {
+    if (!hasHydratedTracker.current) return;
     localStorage.setItem(`dashboard_presets_${scope}`, JSON.stringify(presets));
   }, [presets, scope]);
 
@@ -543,6 +563,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
   }, []);
 
   useEffect(() => {
+    if (!hasHydratedTracker.current) return;
     localStorage.setItem("dashboard_density", density);
   }, [density]);
 
@@ -558,6 +579,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
   }, []);
 
   useEffect(() => {
+    if (!hasHydratedTracker.current) return;
     localStorage.setItem("dashboard_feed_sort", feedSort);
   }, [feedSort]);
 
@@ -574,6 +596,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
   }, []);
 
   useEffect(() => {
+    if (!hasHydratedTracker.current) return;
     localStorage.setItem("dashboard_auto_refresh_sec", String(autoRefreshSec));
   }, [autoRefreshSec]);
 
@@ -589,6 +612,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
   }, [scope]);
 
   useEffect(() => {
+    if (!hasHydratedTracker.current) return;
     localStorage.setItem(`pinned_signals_${scope}`, JSON.stringify(pinnedItems));
   }, [pinnedItems, scope]);
 
@@ -604,6 +628,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
   }, [scope]);
 
   useEffect(() => {
+    if (!hasHydratedTracker.current) return;
     localStorage.setItem(`saved_briefs_${scope}`, JSON.stringify(savedBriefs));
   }, [savedBriefs, scope]);
 
@@ -619,27 +644,32 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
   }, [scope]);
 
   useEffect(() => {
+    if (!hasHydratedTracker.current) return;
     localStorage.setItem(`dismissed_alerts_${scope}`, JSON.stringify(dismissedAlertIds));
   }, [dismissedAlertIds, scope]);
 
   useEffect(() => {
+    if (initialMode && (initialMode === "policy" || initialMode === "research")) {
+      setMode(initialMode as "policy" | "research");
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
     if (typeof window === "undefined") return;
     const params = new URLSearchParams(window.location.search);
-    const tw = params.get("tw");
     const cat = params.get("cat");
     const jur = params.get("jur");
     const lang = params.get("lang");
     const q = params.get("q");
-    const m = params.get("m");
-    if (tw === "1h" || tw === "24h" || tw === "7d" || tw === "15d" || tw === "30d" || tw === "90d" || tw === "1y" || tw === "2y" || tw === "5y") setTimeWindow(tw);
     if (cat) setCategory(cat);
     if (jur) setJurisdiction(jur);
     if (lang) setLanguage(lang);
     if (q) setSearch(q);
-    if (m === "policy" || m === "research") setMode(m);
-  }, [setMode]);
+  }, []);
 
   useEffect(() => {
+    if (!hasHydratedTracker.current) return;
     if (typeof window === "undefined") return;
     const params = new URLSearchParams();
     params.set("tw", timeWindow);
@@ -651,6 +681,10 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
     const next = `${window.location.pathname}?${params.toString()}`;
     window.history.replaceState(null, "", next);
   }, [timeWindow, category, jurisdiction, language, search, mode]);
+
+  useEffect(() => {
+    hasHydratedTracker.current = true;
+  }, []);
 
   // --- Computed values ---
 
@@ -792,7 +826,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
       .filter((reason) => reason !== "stable_signal_profile")
       .forEach((reason) => {
         const id = `risk-${reason}`;
-        const msg = `${t("risk.title")}: ${t(`riskReason.${reason}`)}`;
+        const msg = hasTranslation(`riskReason.${reason}`) ? `${t("risk.title")}: ${hasTranslation(`riskReason.${reason}`) ? t(`riskReason.${reason}`) : reason}` : `${t("risk.title")}: ${reason}`;
         items.push({ id, severity: "high", message: msg });
       });
     return items.filter((item) => !dismissedAlertIds.includes(item.id)).slice(0, 20);
@@ -1577,7 +1611,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
                 <div className="mt-3 flex flex-wrap gap-2">
                   {(riskIndex?.reasons ?? []).map((reason) => (
                     <span key={reason} className="badge badge-neutral">
-                      {t(`riskReason.${reason}`)}
+                      {hasTranslation(`riskReason.${reason}`) ? t(`riskReason.${reason}`) : reason}
                     </span>
                   ))}
                 </div>
@@ -1755,6 +1789,7 @@ export function DashboardPage({ scope }: { scope: "canada" | "world" }) {
     </DashboardShell>
   );
 }
+
 
 
 

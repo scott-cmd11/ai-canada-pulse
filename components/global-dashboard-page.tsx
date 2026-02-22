@@ -38,11 +38,11 @@ import { QuickGuideButton, QuickGuidePanel } from "./dashboard/quick-guide";
 import { DashboardShell } from "./dashboard/shell";
 import { MetricTile, Tile } from "./dashboard/tile";
 
-export function GlobalDashboardPage() {
+export function GlobalDashboardPage({ initialTimeWindow = "7d" }: { initialTimeWindow?: string }) {
   const t = useTranslations();
   const locale = useLocale();
   const { theme, toggleTheme } = useTheme();
-  const [timeWindow, setTimeWindow] = useState<TimeWindow>("7d");
+  const [timeWindow, setTimeWindow] = useState<TimeWindow>((initialTimeWindow as TimeWindow) || "7d");
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [feed, setFeed] = useState<FeedItem[]>([]);
@@ -76,33 +76,35 @@ export function GlobalDashboardPage() {
     refreshInFlight.current = true;
     setIsRefreshing(true);
     try {
-      const [feedRes, kpiRes, sourcesRes, jurRes, briefRes, compareRes, coverageRes, momentumRes, riskRes, summaryRes] = await Promise.all([
+      const results = await Promise.allSettled([
         fetchFeed({
           time_window: timeWindow,
           search: debouncedSearch || undefined,
           page: 1,
           page_size: 50,
+          scope: "world",
         }),
-        fetchKpis(),
-        fetchSourcesBreakdown(timeWindow),
-        fetchJurisdictionsBreakdown(timeWindow),
-        fetchBrief(timeWindow),
-        fetchCompare(timeWindow),
-        fetchCoverage(timeWindow, 8),
-        fetchMomentum(timeWindow, 8),
-        fetchRiskIndex(timeWindow),
-        fetchSummary(timeWindow),
+        fetchKpis("world"),
+        fetchSourcesBreakdown(timeWindow, "world"),
+        fetchJurisdictionsBreakdown(timeWindow, "world"),
+        fetchBrief(timeWindow, "world"),
+        fetchCompare(timeWindow, "world"),
+        fetchCoverage(timeWindow, 8, "world"),
+        fetchMomentum(timeWindow, 8, "world"),
+        fetchRiskIndex(timeWindow, "world"),
+        fetchSummary(timeWindow, "world"),
       ]);
-      setFeed(feedRes.items.filter((item) => !isCanadaJurisdiction(item.jurisdiction)));
-      setKpis(kpiRes);
-      setSourcesBreakdown(sourcesRes);
-      setJurisdictionsBreakdown(jurRes);
-      setBrief(briefRes);
-      setCompare(compareRes);
-      setCoverage(coverageRes);
-      setMomentum(momentumRes);
-      setRiskIndex(riskRes);
-      setSummary(summaryRes);
+
+      if (results[0].status === "fulfilled") setFeed(results[0].value.items.filter((item) => !isCanadaJurisdiction(item.jurisdiction)));
+      if (results[1].status === "fulfilled") setKpis(results[1].value);
+      if (results[2].status === "fulfilled") setSourcesBreakdown(results[2].value);
+      if (results[3].status === "fulfilled") setJurisdictionsBreakdown(results[3].value);
+      if (results[4].status === "fulfilled") setBrief(results[4].value);
+      if (results[5].status === "fulfilled") setCompare(results[5].value);
+      if (results[6].status === "fulfilled") setCoverage(results[6].value);
+      if (results[7].status === "fulfilled") setMomentum(results[7].value);
+      if (results[8].status === "fulfilled") setRiskIndex(results[8].value);
+      if (results[9].status === "fulfilled") setSummary(results[9].value);
     } catch {
       /* ignore */
     } finally {
@@ -113,6 +115,7 @@ export function GlobalDashboardPage() {
 
   useEffect(() => {
     refreshData().catch(() => undefined);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [timeWindow, debouncedSearch]);
 
   useEffect(() => {

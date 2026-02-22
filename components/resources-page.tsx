@@ -17,7 +17,7 @@ const CATEGORY_STYLES: Record<string, { color: string; icon: string }> = {
     "Evaluation & Benchmarks": { color: "var(--status-warning)", icon: "📊" },
     "Government & Policy": { color: "var(--policy)", icon: "🏛️" },
     "Media & Newsletters": { color: "var(--news)", icon: "📰" },
-    "Models & Robotics": { color: "var(--industry)", icon: "🤖" },
+    "Models & Repositories": { color: "var(--industry)", icon: "🤖" },
     "Research & Institutes": { color: "var(--research)", icon: "🔬" },
 };
 
@@ -33,9 +33,11 @@ export function ResourcesPage({
     const { theme, toggleTheme } = useTheme();
     const [searchQuery, setSearchQuery] = useState("");
     const [activeCategory, setActiveCategory] = useState<string>("All");
-    const [collapsedSections, setCollapsedSections] = useState<Set<string>>(new Set());
-
     const categories = ["All", ...Array.from(new Set(resourcesRegistry.map((r) => r.category))).sort()];
+
+    const [collapsedSections, setCollapsedSections] = useState<Set<string>>(
+        new Set(categories.filter((c) => c !== "All"))
+    );
 
     const filteredResources = useMemo(() => {
         return resourcesRegistry.filter((r) => {
@@ -296,6 +298,11 @@ function ResourceCard({ resource }: { resource: (typeof resourcesRegistry)[numbe
                 >
                     {resource.title}
                 </h3>
+                {resource.description && (
+                    <p className="mt-2 text-xs line-clamp-3 leading-relaxed" style={{ color: "var(--text-secondary)" }}>
+                        {resource.description}
+                    </p>
+                )}
             </div>
             <div className="mt-3 flex items-center gap-1.5 text-xs opacity-80 group-hover:opacity-100 transition-opacity" style={{ color: "var(--text-muted)" }}>
                 <span className="truncate">{(() => { try { return new URL(resource.url).hostname.replace('www.', ''); } catch { return resource.url; } })()}</span>
@@ -303,3 +310,5 @@ function ResourceCard({ resource }: { resource: (typeof resourcesRegistry)[numbe
         </a>
     );
 }
+
+

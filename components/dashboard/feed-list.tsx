@@ -108,7 +108,6 @@ export function FeedList({
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
       if (!sortedFeed.length) return;
-      // Only handle if no input/select/textarea is focused
       const tag = (e.target as HTMLElement).tagName;
       if (tag === "INPUT" || tag === "SELECT" || tag === "TEXTAREA") return;
 
@@ -116,14 +115,22 @@ export function FeedList({
         e.preventDefault();
         setFocusedIndex((prev) => {
           const next = Math.min(prev + 1, sortedFeed.length - 1);
-          cardRefs.current.get(next)?.scrollIntoView({ block: "nearest", behavior: "smooth" });
+          const el = cardRefs.current.get(next);
+          if (el) {
+            el.focus({ preventScroll: true });
+            el.scrollIntoView({ block: "nearest", behavior: "smooth" });
+          }
           return next;
         });
       } else if (e.key === "k" || e.key === "ArrowUp") {
         e.preventDefault();
         setFocusedIndex((prev) => {
           const next = Math.max(prev - 1, 0);
-          cardRefs.current.get(next)?.scrollIntoView({ block: "nearest", behavior: "smooth" });
+          const el = cardRefs.current.get(next);
+          if (el) {
+            el.focus({ preventScroll: true });
+            el.scrollIntoView({ block: "nearest", behavior: "smooth" });
+          }
           return next;
         });
       } else if (e.key === "Enter" && focusedIndex >= 0 && focusedIndex < sortedFeed.length) {
@@ -395,9 +402,8 @@ export function FeedList({
                 <span
                   className="inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-micro font-medium"
                   style={{
-                    background: item.confidence >= 0.8 ? "var(--research)" : item.confidence >= 0.5 ? "var(--policy)" : item.confidence >= 0.3 ? "var(--warning)" : "var(--incidents)",
-                    color: "white",
-                    opacity: 0.85,
+                    background: `color-mix(in oklab, ${item.confidence >= 0.8 ? "var(--research)" : item.confidence >= 0.5 ? "var(--policy)" : item.confidence >= 0.3 ? "var(--warning)" : "var(--incidents)"} 15%, transparent)`,
+                    color: item.confidence >= 0.8 ? "var(--research)" : item.confidence >= 0.5 ? "var(--policy)" : item.confidence >= 0.3 ? "var(--warning)" : "var(--incidents)",
                   }}
                   title={`${t("feed.confidence")}: ${(item.confidence * 100).toFixed(0)}%`}
                 >

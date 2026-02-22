@@ -51,6 +51,7 @@ const USE_MOCK_DATA = process.env.NEXT_PUBLIC_USE_MOCK_DATA === "true";
 
 
 export interface FeedParams {
+  scope?: "canada" | "world";
   time_window: TimeWindow;
   category?: string;
   jurisdiction?: string;
@@ -72,6 +73,7 @@ function qsGeneric(params: Record<string, string | number | undefined>): string 
 
 function qsFeed(params: FeedParams): string {
   return qsGeneric({
+    scope: params.scope,
     time_window: params.time_window,
     category: params.category,
     jurisdiction: params.jurisdiction,
@@ -92,23 +94,23 @@ export async function fetchFeed(params: FeedParams): Promise<FeedResponse> {
   return res.json();
 }
 
-export async function fetchKpis(): Promise<KPIsResponse> {
+export async function fetchKpis(scope: "canada" | "world" = "canada"): Promise<KPIsResponse> {
   if (USE_MOCK_DATA) return MOCK_KPIs;
-  const res = await fetch(`${API_BASE}/stats/kpis`, { cache: "no-store" });
+  const res = await fetch(`${API_BASE}/stats/kpis?scope=${scope}`, { cache: "no-store" });
   if (!res.ok) throw new Error("Failed to fetch kpis");
   return res.json();
 }
 
-export async function fetchHourly(): Promise<EChartsResponse> {
+export async function fetchHourly(scope: "canada" | "world" = "canada"): Promise<EChartsResponse> {
   if (USE_MOCK_DATA) return MOCK_HOURLY;
-  const res = await fetch(`${API_BASE}/stats/hourly`, { cache: "no-store" });
+  const res = await fetch(`${API_BASE}/stats/hourly?scope=${scope}`, { cache: "no-store" });
   if (!res.ok) throw new Error("Failed to fetch hourly");
   return res.json();
 }
 
-export async function fetchWeekly(): Promise<EChartsResponse> {
+export async function fetchWeekly(scope: "canada" | "world" = "canada"): Promise<EChartsResponse> {
   if (USE_MOCK_DATA) return MOCK_WEEKLY;
-  const res = await fetch(`${API_BASE}/stats/weekly`, { cache: "no-store" });
+  const res = await fetch(`${API_BASE}/stats/weekly?scope=${scope}`, { cache: "no-store" });
   if (!res.ok) throw new Error("Failed to fetch weekly");
   return res.json();
 }
@@ -156,109 +158,110 @@ export async function fetchSourcesHealth(): Promise<SourcesHealthResponse> {
   return res.json();
 }
 
-export async function fetchSourcesBreakdown(time_window: TimeWindow = "7d"): Promise<SourcesBreakdownResponse> {
+export async function fetchSourcesBreakdown(time_window: TimeWindow = "7d", scope: "canada" | "world" = "canada"): Promise<SourcesBreakdownResponse> {
   if (USE_MOCK_DATA) return MOCK_SOURCES;
-  const res = await fetch(`${API_BASE}/stats/sources?time_window=${time_window}&limit=8`, { cache: "no-store" });
+  const res = await fetch(`${API_BASE}/stats/sources?time_window=${time_window}&scope=${scope}&limit=8`, { cache: "no-store" });
   if (!res.ok) throw new Error("Failed to fetch sources breakdown");
   return res.json();
 }
 
-export async function fetchJurisdictionsBreakdown(time_window: TimeWindow = "7d"): Promise<JurisdictionsBreakdownResponse> {
+export async function fetchJurisdictionsBreakdown(time_window: TimeWindow = "7d", scope: "canada" | "world" = "canada"): Promise<JurisdictionsBreakdownResponse> {
   if (USE_MOCK_DATA) return MOCK_JURISDICTIONS;
-  const res = await fetch(`${API_BASE}/stats/jurisdictions?time_window=${time_window}&limit=12`, { cache: "no-store" });
+  const res = await fetch(`${API_BASE}/stats/jurisdictions?time_window=${time_window}&scope=${scope}&limit=12`, { cache: "no-store" });
   if (!res.ok) throw new Error("Failed to fetch jurisdictions breakdown");
   return res.json();
 }
 
-export async function fetchEntitiesBreakdown(time_window: TimeWindow = "7d"): Promise<EntitiesBreakdownResponse> {
+export async function fetchEntitiesBreakdown(time_window: TimeWindow = "7d", scope: "canada" | "world" = "canada"): Promise<EntitiesBreakdownResponse> {
   if (USE_MOCK_DATA) return MOCK_ENTITIES;
-  const res = await fetch(`${API_BASE}/stats/entities?time_window=${time_window}&limit=12`, { cache: "no-store" });
+  const res = await fetch(`${API_BASE}/stats/entities?time_window=${time_window}&scope=${scope}&limit=12`, { cache: "no-store" });
   if (!res.ok) throw new Error("Failed to fetch entities breakdown");
   return res.json();
 }
 
-export async function fetchTagsBreakdown(time_window: TimeWindow = "7d"): Promise<TagsBreakdownResponse> {
+export async function fetchTagsBreakdown(time_window: TimeWindow = "7d", scope: "canada" | "world" = "canada"): Promise<TagsBreakdownResponse> {
   if (USE_MOCK_DATA) return MOCK_TAGS;
-  const res = await fetch(`${API_BASE}/stats/tags?time_window=${time_window}&limit=14`, { cache: "no-store" });
+  const res = await fetch(`${API_BASE}/stats/tags?time_window=${time_window}&scope=${scope}&limit=14`, { cache: "no-store" });
   if (!res.ok) throw new Error("Failed to fetch tags breakdown");
   return res.json();
 }
 
-export async function fetchAlerts(time_window: TimeWindow = "24h"): Promise<StatsAlertsResponse> {
+export async function fetchAlerts(time_window: TimeWindow = "24h", scope: "canada" | "world" = "canada"): Promise<StatsAlertsResponse> {
   const res = await fetch(
-    `${API_BASE}/stats/alerts?time_window=${time_window}&min_baseline=3&min_delta_percent=35&min_z_score=1.2`,
+    `${API_BASE}/stats/alerts?time_window=${time_window}&scope=${scope}&min_baseline=3&min_delta_percent=35&min_z_score=1.2`,
     { cache: "no-store" }
   );
   if (!res.ok) throw new Error("Failed to fetch alerts");
   return res.json();
 }
 
-export async function fetchBrief(time_window: TimeWindow = "24h"): Promise<StatsBriefResponse> {
+export async function fetchBrief(time_window: TimeWindow = "24h", scope: "canada" | "world" = "canada"): Promise<StatsBriefResponse> {
   if (USE_MOCK_DATA) return MOCK_BRIEF;
-  const res = await fetch(`${API_BASE}/stats/brief?time_window=${time_window}`, { cache: "no-store" });
+  const res = await fetch(`${API_BASE}/stats/brief?time_window=${time_window}&scope=${scope}`, { cache: "no-store" });
   if (!res.ok) throw new Error("Failed to fetch brief snapshot");
   return res.json();
 }
 
-export async function fetchCompare(time_window: TimeWindow = "7d"): Promise<ScopeCompareResponse> {
+export async function fetchCompare(time_window: TimeWindow = "7d", scope: "canada" | "world" = "canada"): Promise<ScopeCompareResponse> {
   if (USE_MOCK_DATA) return MOCK_COMPARE;
-  const res = await fetch(`${API_BASE}/stats/compare?time_window=${time_window}`, { cache: "no-store" });
+  const res = await fetch(`${API_BASE}/stats/compare?time_window=${time_window}&scope=${scope}`, { cache: "no-store" });
   if (!res.ok) throw new Error("Failed to fetch scope compare");
   return res.json();
 }
 
-export async function fetchConfidence(time_window: TimeWindow = "7d"): Promise<ConfidenceProfileResponse> {
+export async function fetchConfidence(time_window: TimeWindow = "7d", scope: "canada" | "world" = "canada"): Promise<ConfidenceProfileResponse> {
   if (USE_MOCK_DATA) return MOCK_CONFIDENCE;
-  const res = await fetch(`${API_BASE}/stats/confidence?time_window=${time_window}`, { cache: "no-store" });
+  const res = await fetch(`${API_BASE}/stats/confidence?time_window=${time_window}&scope=${scope}`, { cache: "no-store" });
   if (!res.ok) throw new Error("Failed to fetch confidence profile");
   return res.json();
 }
 
-export async function fetchConcentration(time_window: TimeWindow = "7d"): Promise<ConcentrationResponse> {
+export async function fetchConcentration(time_window: TimeWindow = "7d", scope: "canada" | "world" = "canada"): Promise<ConcentrationResponse> {
   if (USE_MOCK_DATA) return MOCK_CONCENTRATION;
-  const res = await fetch(`${API_BASE}/stats/concentration?time_window=${time_window}`, { cache: "no-store" });
+  const res = await fetch(`${API_BASE}/stats/concentration?time_window=${time_window}&scope=${scope}`, { cache: "no-store" });
   if (!res.ok) throw new Error("Failed to fetch concentration");
   return res.json();
 }
 
-export async function fetchMomentum(time_window: TimeWindow = "24h", limit = 8): Promise<MomentumResponse> {
+export async function fetchMomentum(time_window: TimeWindow = "24h", limit = 8, scope: "canada" | "world" = "canada"): Promise<MomentumResponse> {
   if (USE_MOCK_DATA) return MOCK_MOMENTUM;
-  const res = await fetch(`${API_BASE}/stats/momentum?time_window=${time_window}&limit=${limit}`, { cache: "no-store" });
+  const res = await fetch(`${API_BASE}/stats/momentum?time_window=${time_window}&scope=${scope}&limit=${limit}`, { cache: "no-store" });
   if (!res.ok) throw new Error("Failed to fetch momentum");
   return res.json();
 }
 
-export async function fetchRiskIndex(time_window: TimeWindow = "24h"): Promise<RiskIndexResponse> {
+export async function fetchRiskIndex(time_window: TimeWindow = "24h", scope: "canada" | "world" = "canada"): Promise<RiskIndexResponse> {
   if (USE_MOCK_DATA) return MOCK_RISK_INDEX;
-  const res = await fetch(`${API_BASE}/stats/risk-index?time_window=${time_window}`, { cache: "no-store" });
+  const res = await fetch(`${API_BASE}/stats/risk-index?time_window=${time_window}&scope=${scope}`, { cache: "no-store" });
   if (!res.ok) throw new Error("Failed to fetch risk index");
   return res.json();
 }
 
-export async function fetchEntityMomentum(time_window: TimeWindow = "24h", limit = 10): Promise<EntityMomentumResponse> {
+export async function fetchEntityMomentum(time_window: TimeWindow = "24h", limit = 10, scope: "canada" | "world" = "canada"): Promise<EntityMomentumResponse> {
   if (USE_MOCK_DATA) return MOCK_ENTITY_MOMENTUM;
-  const res = await fetch(`${API_BASE}/stats/entity-momentum?time_window=${time_window}&limit=${limit}`, { cache: "no-store" });
+  const res = await fetch(`${API_BASE}/stats/entity-momentum?time_window=${time_window}&scope=${scope}&limit=${limit}`, { cache: "no-store" });
   if (!res.ok) throw new Error("Failed to fetch entity momentum");
   return res.json();
 }
 
-export async function fetchRiskTrend(time_window: TimeWindow = "24h"): Promise<RiskTrendResponse> {
+export async function fetchRiskTrend(time_window: TimeWindow = "24h", scope: "canada" | "world" = "canada"): Promise<RiskTrendResponse> {
   if (USE_MOCK_DATA) return MOCK_RISK_TREND;
-  const res = await fetch(`${API_BASE}/stats/risk-trend?time_window=${time_window}`, { cache: "no-store" });
+  const res = await fetch(`${API_BASE}/stats/risk-trend?time_window=${time_window}&scope=${scope}`, { cache: "no-store" });
   if (!res.ok) throw new Error("Failed to fetch risk trend");
   return res.json();
 }
 
-export async function fetchSummary(time_window: TimeWindow = "24h"): Promise<SummaryResponse> {
+export async function fetchSummary(time_window: TimeWindow = "24h", scope: "canada" | "world" = "canada"): Promise<SummaryResponse> {
   if (USE_MOCK_DATA) return MOCK_SUMMARY;
-  const res = await fetch(`${API_BASE}/stats/summary?time_window=${time_window}`, { cache: "no-store" });
+  const res = await fetch(`${API_BASE}/stats/summary?time_window=${time_window}&scope=${scope}`, { cache: "no-store" });
   if (!res.ok) throw new Error("Failed to fetch summary");
   return res.json();
 }
 
-export async function fetchCoverage(time_window: TimeWindow = "7d", limit = 8): Promise<CoverageResponse> {
+export async function fetchCoverage(time_window: TimeWindow = "7d", limit = 8, scope: "canada" | "world" = "canada"): Promise<CoverageResponse> {
   if (USE_MOCK_DATA) return MOCK_COVERAGE;
-  const res = await fetch(`${API_BASE}/stats/coverage?time_window=${time_window}&limit=${limit}`, { cache: "no-store" });
+  const res = await fetch(`${API_BASE}/stats/coverage?time_window=${time_window}&scope=${scope}&limit=${limit}`, { cache: "no-store" });
   if (!res.ok) throw new Error("Failed to fetch coverage");
   return res.json();
 }
+
