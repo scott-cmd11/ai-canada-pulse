@@ -20,7 +20,8 @@ async function handleScan(request: Request) {
             ...result.funding,
         ];
 
-        const inserted = await addIntelItems(allItems);
+        const inserted = await addIntelItems(allItems, "canada");
+        await addIntelItems(allItems, "world");
         await updateLastScan();
 
         return NextResponse.json({
