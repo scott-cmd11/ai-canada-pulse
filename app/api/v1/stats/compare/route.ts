@@ -7,8 +7,10 @@ export async function GET(request: Request) {
     try {
         const { searchParams } = new URL(request.url);
         const tw = (searchParams.get('time_window') as TimeWindow) || '7d';
-        const scope = searchParams.get('scope') || 'canada';
-        const items = await getIntelItems(scope as any);
+        const pCanada = getIntelItems('canada');
+        const pWorld = getIntelItems('world');
+        const [canadaItems, worldItems] = await Promise.all([pCanada, pWorld]);
+        const items = [...canadaItems, ...worldItems];
         return NextResponse.json(buildScopeCompare(items, tw));
     } catch (error) {
         console.error('Scope compare error:', error);

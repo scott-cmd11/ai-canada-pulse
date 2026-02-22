@@ -35,7 +35,15 @@ def build_feed_query(
     if category:
         clauses.append(AIDevelopment.category == category)
     if jurisdiction:
-        clauses.append(AIDevelopment.jurisdiction == jurisdiction)
+        if jurisdiction.lower() == "national":
+            clauses.append(
+                or_(
+                    func.lower(AIDevelopment.jurisdiction) == "national",
+                    func.lower(AIDevelopment.jurisdiction) == "federal"
+                )
+            )
+        else:
+            clauses.append(AIDevelopment.jurisdiction == jurisdiction)
     if language:
         clauses.append(AIDevelopment.language == language)
     if search:

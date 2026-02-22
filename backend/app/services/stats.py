@@ -233,7 +233,7 @@ async def fetch_jurisdictions_breakdown(db: AsyncSession, *, time_window: str = 
     return {
         "time_window": time_window,
         "total": total,
-        "jurisdictions": [{"name": str(name), "count": int(count)} for name, count in rows],
+        "jurisdictions": sorted([{"name": k, "count": sum(int(c) for n, c in rows if ("National" if str(n).lower() == "federal" else str(n)) == k)} for k in set("National" if str(n).lower() == "federal" else str(n) for n, c in rows)], key=lambda x: x["count"], reverse=True)[:limit],
     }
 
 
