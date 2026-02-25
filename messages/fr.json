@@ -1,13 +1,9 @@
 {
   "nav": {
     "canada": "Canada",
-    "world": "Monde",
-    "methods": "Methodes",
-    "resources": "Ressources"
+    "methods": "Méthodes"
   },
   "shell": {
-    "dashboards": "Tableaux de bord",
-    "reference": "Référence",
     "liveStream": "Flux de données en direct"
   },
   "error": {

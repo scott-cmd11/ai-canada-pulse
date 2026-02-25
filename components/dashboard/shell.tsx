@@ -1,20 +1,18 @@
 "use client";
 
 import Link from "next/link";
-import { useState, type ReactNode } from "react";
-import { Activity, BarChart3, BookOpen, Globe2, Landmark, Menu, Moon, Sun, X } from "lucide-react";
+import { type ReactNode } from "react";
+import { BarChart3, Landmark, Moon, Sun } from "lucide-react";
 import { useTranslations } from "next-intl";
 
-type Scope = "canada" | "world" | "methods" | "resources";
+type Scope = "canada" | "methods";
 
 interface DashboardShellProps {
   locale: string;
   activeScope: Scope;
   navLabels: {
     canada: string;
-    world: string;
     methods: string;
-    resources: string;
   };
   otherLocale: string;
   theme: "light" | "dark";
@@ -39,93 +37,30 @@ export function DashboardShell({
   utilityBar,
   children,
 }: DashboardShellProps) {
-  const [railOpen, setRailOpen] = useState(false);
   const t = useTranslations();
-  const railBrand = "AI Pulse";
 
   return (
-    <div className={`pulse-shell dd-shell ${railOpen ? "dd-rail-open" : ""}`}>
+    <div className={`pulse-shell dd-shell`}>
       <a href="#main-content" className="skip-link">
         Skip to main content
       </a>
-      <button
-        onClick={() => setRailOpen(false)}
-        className="dd-rail-scrim"
-        aria-hidden={!railOpen}
-        tabIndex={-1}
-      />
-      <aside className="dd-rail" aria-label="Dashboard navigation">
-        <div className="dd-rail-brand-wrap">
-          <div className="dd-rail-logo" aria-hidden="true">
-            <Activity size={14} />
-          </div>
-          <div>
-            <div className="dd-rail-brand">{railBrand}</div>
-          </div>
-          <button
-            onClick={() => setRailOpen(false)}
-            className="dd-rail-close"
-            aria-label="Close navigation"
-          >
-            <X size={14} />
-          </button>
-        </div>
-        <div className="dd-rail-section-title">{t("shell.dashboards")}</div>
-        <nav className="dd-rail-nav">
-          <Link
-            href={`/${locale}/canada`}
-            className={`dd-rail-link ${activeScope === "canada" ? "active" : ""}`}
-            onClick={() => setRailOpen(false)}
-          >
-            <Landmark size={14} />
-            {navLabels.canada}
-          </Link>
-          <Link
-            href={`/${locale}/world`}
-            className={`dd-rail-link ${activeScope === "world" ? "active" : ""}`}
-            onClick={() => setRailOpen(false)}
-          >
-            <Globe2 size={14} />
-            {navLabels.world}
-          </Link>
-        </nav>
-        <div className="dd-rail-section-title">{t("shell.reference")}</div>
-        <nav className="dd-rail-nav">
-          <Link
-            href={`/${locale}/methods`}
-            className={`dd-rail-link ${activeScope === "methods" ? "active" : ""}`}
-            onClick={() => setRailOpen(false)}
-          >
-            <BarChart3 size={14} />
-            {navLabels.methods}
-          </Link>
-          <Link
-            href={`/${locale}/resources`}
-            className={`dd-rail-link ${activeScope === "resources" ? "active" : ""}`}
-            onClick={() => setRailOpen(false)}
-          >
-            <BookOpen size={14} />
-            {navLabels.resources}
-          </Link>
-        </nav>
-        <div className="dd-rail-footer">
-          <span className="dd-status-dot" aria-hidden="true" />
-          {t("shell.liveStream")}
-        </div>
-      </aside>
       <div className="dd-main">
         <header className="dd-topbar">
           <div className="dd-topbar-left">
-            <button
-              onClick={() => setRailOpen((prev) => !prev)}
-              className="dd-rail-toggle"
-              aria-label="Toggle navigation"
+            <Link
+              href={`/${locale}/canada`}
+              className={`nav-button ${activeScope === "canada" ? "is-active" : ""}`}
             >
-              <Menu size={14} />
-            </button>
-            <span className="dd-scope-pill">
-              {activeScope === "canada" ? navLabels.canada : activeScope === "world" ? navLabels.world : activeScope === "resources" ? navLabels.resources : navLabels.methods}
-            </span>
+              <Landmark size={14} />
+              {navLabels.canada}
+            </Link>
+            <Link
+              href={`/${locale}/methods`}
+              className={`nav-button ${activeScope === "methods" ? "is-active" : ""}`}
+            >
+              <BarChart3 size={14} />
+              {navLabels.methods}
+            </Link>
           </div>
           <div className="dd-topbar-center">{headerMeta}</div>
           <div className="dd-topbar-actions">
@@ -148,9 +83,3 @@ export function DashboardShell({
     </div>
   );
 }
-
-
-
-
-
-

@@ -79,7 +79,7 @@ import { ComparisonCard } from "./dashboard/comparison-card";
 import { CommandPalette } from "./dashboard/command-palette";
 import { SignalOfDay } from "./dashboard/signal-of-day";
 
-export function DashboardPage({ scope, initialTimeWindow = "7d", initialMode }: { scope: "canada" | "world", initialTimeWindow?: string, initialMode?: string }) {
+export function DashboardPage({ scope, initialTimeWindow = "7d", initialMode }: { scope: "canada", initialTimeWindow?: string, initialMode?: string }) {
   const hasHydratedTracker = useRef(false);
   const t = useTranslations();
   const locale = useLocale();
@@ -263,10 +263,7 @@ export function DashboardPage({ scope, initialTimeWindow = "7d", initialMode }: 
     setCategory("");
     setLanguage("");
     setSearch("");
-    if (scope === "canada" && jurisdiction && !isCanadaJurisdiction(jurisdiction)) {
-      setJurisdiction("");
-    }
-    if (scope === "world" && jurisdiction && isCanadaJurisdiction(jurisdiction)) {
+    if (jurisdiction && !isCanadaJurisdiction(jurisdiction)) {
       setJurisdiction("");
     }
   }, [mode, scope]);
@@ -317,9 +314,7 @@ export function DashboardPage({ scope, initialTimeWindow = "7d", initialMode }: 
   }
 
   function matchesLiveFilters(item: FeedItem): boolean {
-    const inCanada = isCanadaJurisdiction(item.jurisdiction);
-    if (scope === "canada" && !inCanada) return false;
-    if (scope === "world" && inCanada) return false;
+    if (!isCanadaJurisdiction(item.jurisdiction)) return false;
     if (category && item.category !== category) return false;
     if (jurisdiction && item.jurisdiction !== jurisdiction) return false;
     if (language && item.language !== language) return false;
@@ -367,9 +362,7 @@ export function DashboardPage({ scope, initialTimeWindow = "7d", initialMode }: 
       const seen = new Set<string>();
       if (results[0].status === "fulfilled") {
         const deduped = results[0].value.items.filter((item) => {
-          const inCanada = isCanadaJurisdiction(item.jurisdiction);
-          if (scope === "canada" && !inCanada) return false;
-          if (scope === "world" && inCanada) return false;
+          if (!isCanadaJurisdiction(item.jurisdiction)) return false;
           const key = item.title.toLowerCase().replace(/[^a-z0-9]/g, "");
           if (seen.has(key)) return false;
           seen.add(key);
@@ -1148,7 +1141,7 @@ export function DashboardPage({ scope, initialTimeWindow = "7d", initialMode }: 
     const blob = new Blob([markdown], { type: "text/markdown;charset=utf-8" });
     const url = URL.createObjectURL(blob);
     const anchor = document.createElement("a");
-    const prefix = scope === "canada" ? "canada" : "world";
+    const prefix = "canada";
     const datePart = stamp ? stamp.slice(0, 10) : new Date().toISOString().slice(0, 10);
     anchor.href = url;
     anchor.download = `${prefix}-ai-pulse-brief-${datePart}.md`;
@@ -1213,9 +1206,7 @@ export function DashboardPage({ scope, initialTimeWindow = "7d", initialMode }: 
       activeScope={scope}
       navLabels={{
         canada: t("nav.canada"),
-        world: t("nav.world"),
         methods: t("nav.methods"),
-        resources: t("nav.resources"),
       }}
       otherLocale={otherLocale}
       theme={theme}

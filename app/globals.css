@@ -674,10 +674,6 @@ textarea:focus-visible,
 }
 
 :root {
-  --dd-rail-bg: #1f2230;
-  --dd-rail-border: #2c3145;
-  --dd-rail-text: #d4d9e8;
-  --dd-rail-muted: #8f97ad;
   --dd-topbar: #f5f7fa;
   --dd-tile-border: #d7dde8;
   --dd-ok: #62bc6d;
@@ -687,10 +683,6 @@ textarea:focus-visible,
 }
 
 .dark {
-  --dd-rail-bg: #0f1421;
-  --dd-rail-border: #252d42;
-  --dd-rail-text: #d9deec;
-  --dd-rail-muted: #8b96b6;
   --dd-topbar: #131b2d;
   --dd-tile-border: #2d3a57;
   --dd-ok: #4ba857;
@@ -700,7 +692,7 @@ textarea:focus-visible,
 }
 
 .pulse-shell.dd-shell {
-  display: flex;
+  display: block;
   min-height: 100vh;
   background: #eef1f5;
 }
@@ -709,66 +701,8 @@ textarea:focus-visible,
   background: #0d1424;
 }
 
-.dd-rail {
-  width: 228px;
-  min-height: 100vh;
-  background: color-mix(in oklab, var(--dd-rail-bg) 60%, transparent);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  border-right: 1px solid color-mix(in oklab, var(--dd-rail-border) 40%, transparent);
-  color: var(--dd-rail-text);
-  padding: 14px 12px;
-  position: sticky;
-  top: 0;
-  align-self: flex-start;
-  z-index: 50;
-}
-
-.dd-rail-brand {
-  font-size: 1.25rem;
-  font-weight: 700;
-  letter-spacing: 0.02em;
-  margin: 2px 6px 18px;
-}
-
-.dd-rail-section-title {
-  color: var(--dd-rail-muted);
-  font-size: 0.6875rem;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  margin: 0 6px 8px;
-}
-
-.dd-rail-nav {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.dd-rail-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  color: var(--dd-rail-text);
-  text-decoration: none;
-  border-radius: 4px;
-  padding: 0.5rem 0.625rem;
-  font-size: 0.8125rem;
-  border: 1px solid transparent;
-}
-
-.dd-rail-link:hover {
-  background: color-mix(in oklab, var(--dd-rail-border) 70%, transparent);
-}
-
-.dd-rail-link.active {
-  background: color-mix(in oklab, var(--primary-action) 28%, var(--dd-rail-bg));
-  border-color: color-mix(in oklab, var(--primary-action) 45%, var(--dd-rail-bg));
-  color: #fff;
-}
-
 .dd-main {
-  flex: 1;
+  width: 100%;
   min-width: 0;
   display: flex;
   flex-direction: column;
@@ -799,19 +733,6 @@ textarea:focus-visible,
   display: inline-flex;
   align-items: center;
   gap: 0.375rem;
-}
-
-.dd-rail-toggle {
-  width: 1.8rem;
-  height: 1.8rem;
-  border: 1px solid var(--dd-tile-border);
-  border-radius: 4px;
-  background: var(--surface);
-  color: var(--text-secondary);
-  display: none;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
 }
 
 .dd-scope-pill {
@@ -1051,25 +972,6 @@ textarea:focus-visible,
   color: rgba(255, 255, 255, 0.9);
 }
 
-@media (max-width: 1180px) {
-  .dd-rail {
-    position: fixed;
-    left: 0;
-    top: 0;
-    z-index: 60;
-    transform: translateX(-100%);
-    transition: transform 200ms var(--ease-out-expo);
-  }
-
-  .pulse-shell.dd-shell.dd-rail-open .dd-rail {
-    transform: translateX(0);
-  }
-
-  .dd-rail-toggle {
-    display: inline-flex;
-  }
-}
-
 /* Dashboard V3 premium overrides */
 
 :root {
@@ -1081,10 +983,6 @@ textarea:focus-visible,
   --dd-panel-border: #d4dceb;
   --dd-panel-border-strong: #a8b5cd;
   --dd-glow: rgba(31, 111, 235, 0.14);
-  --dd-rail-bg: #151a27;
-  --dd-rail-border: #2a3448;
-  --dd-rail-text: #dbe4f8;
-  --dd-rail-muted: #8fa0c2;
   --dd-topbar: rgba(246, 250, 255, 0.92);
   --dd-topbar-border: #d1daeb;
   --dd-success: #1f9c67;
@@ -1102,10 +1000,6 @@ textarea:focus-visible,
   --dd-panel-border: #2b3b5c;
   --dd-panel-border-strong: #42557e;
   --dd-glow: rgba(88, 145, 255, 0.18);
-  --dd-rail-bg: #0a1222;
-  --dd-rail-border: #22304e;
-  --dd-rail-text: #d7e3fe;
-  --dd-rail-muted: #8ca0cc;
   --dd-topbar: rgba(14, 22, 40, 0.9);
   --dd-topbar-border: #2b3a58;
   --dd-success: #28aa78;
@@ -1139,123 +1033,6 @@ textarea:focus-visible,
 .dd-main {
   position: relative;
   z-index: 2;
-}
-
-.dd-rail-scrim {
-  display: none;
-  position: fixed;
-  inset: 0;
-  z-index: 55;
-  border: 0;
-  background: rgba(8, 12, 20, 0.58);
-  opacity: 0;
-  pointer-events: none;
-}
-
-.pulse-shell.dd-shell.dd-rail-open .dd-rail-scrim {
-  opacity: 1;
-  pointer-events: auto;
-}
-
-.dd-rail {
-  width: 246px;
-  display: flex;
-  flex-direction: column;
-  padding: 14px 12px;
-  box-shadow: inset -1px 0 0 rgba(255, 255, 255, 0.04);
-  background:
-    linear-gradient(to bottom, color-mix(in oklab, var(--dd-rail-bg) 96%, #fff 4%), var(--dd-rail-bg));
-}
-
-.dd-rail-brand-wrap {
-  display: flex;
-  align-items: center;
-  gap: 0.625rem;
-  margin: 2px 4px 18px;
-}
-
-.dd-rail-logo {
-  display: inline-flex;
-  height: 1.85rem;
-  width: 1.85rem;
-  align-items: center;
-  justify-content: center;
-  border-radius: 0.55rem;
-  background: linear-gradient(145deg, #3a86ff, #2b58d9);
-  color: #fff;
-  box-shadow: 0 5px 14px rgba(19, 50, 120, 0.42);
-}
-
-.dd-rail-brand {
-  margin: 0;
-  font-size: 0.95rem;
-  font-weight: 700;
-  letter-spacing: 0.01em;
-  line-height: 1.1;
-}
-
-.dd-rail-subtitle {
-  margin-top: 0.08rem;
-  font-size: 0.69rem;
-  color: var(--dd-rail-muted);
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-
-.dd-rail-close {
-  margin-left: auto;
-  display: none;
-  align-items: center;
-  justify-content: center;
-  width: 1.7rem;
-  height: 1.7rem;
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 0.45rem;
-  background: transparent;
-  color: var(--dd-rail-muted);
-}
-
-.dd-rail-section-title {
-  margin: 0 6px 8px;
-  font-size: 0.64rem;
-  letter-spacing: 0.12em;
-  color: var(--dd-rail-muted);
-}
-
-.dd-rail-nav {
-  gap: 5px;
-  margin-bottom: 12px;
-}
-
-.dd-rail-link {
-  min-height: 2.05rem;
-  border-radius: 0.5rem;
-  border-color: transparent;
-  font-size: 0.78rem;
-  letter-spacing: 0.02em;
-}
-
-.dd-rail-link:hover {
-  border-color: rgba(255, 255, 255, 0.08);
-  background: rgba(255, 255, 255, 0.05);
-}
-
-.dd-rail-link.active {
-  background: linear-gradient(to right,
-      color-mix(in oklab, #4f87ff 86%, #fff 14%),
-      color-mix(in oklab, #3256db 90%, #fff 10%));
-  border-color: rgba(255, 255, 255, 0.16);
-  box-shadow: 0 7px 18px rgba(14, 27, 78, 0.36);
-}
-
-.dd-rail-footer {
-  margin: auto 6px 4px;
-  padding-top: 14px;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.45rem;
-  font-size: 0.71rem;
-  color: var(--dd-rail-muted);
 }
 
 .dd-status-dot {
@@ -1602,18 +1379,6 @@ textarea:focus-visible,
 }
 
 @media (max-width: 1180px) {
-  .dd-rail-scrim {
-    display: block;
-  }
-
-  .dd-rail {
-    width: 252px;
-  }
-
-  .dd-rail-close {
-    display: inline-flex;
-  }
-
   .dd-topbar {
     height: 52px;
     padding: 0 12px;
@@ -1633,11 +1398,6 @@ textarea:focus-visible,
 }
 
 @media (max-width: 780px) {
-  .dd-rail {
-    width: 88vw;
-    max-width: 286px;
-  }
-
   .dd-topbar-actions .nav-button span {
     display: none;
   }
@@ -1695,43 +1455,6 @@ textarea:focus-visible,
     radial-gradient(900px 460px at 0% -5%, rgba(71, 114, 210, 0.17), transparent 58%),
     radial-gradient(760px 360px at 100% 0%, rgba(38, 170, 226, 0.16), transparent 62%),
     linear-gradient(170deg, var(--dd-v4-bg), var(--dd-v4-bg-2));
-}
-
-.dd-shell .dd-rail {
-  background:
-    radial-gradient(640px 320px at -30% -20%, rgba(77, 123, 255, 0.22), transparent 56%),
-    linear-gradient(180deg, #0f1a33 0%, #0b1529 100%);
-  border-right-color: rgba(126, 153, 212, 0.3);
-}
-
-.dd-shell .dd-rail-logo {
-  background: linear-gradient(140deg, var(--dd-v4-ocean), var(--dd-v4-cyan));
-  box-shadow: 0 8px 20px rgba(35, 92, 220, 0.48);
-}
-
-.dd-shell .dd-rail-brand {
-  font-size: 1rem;
-  letter-spacing: 0.005em;
-}
-
-.dd-shell .dd-rail-subtitle {
-  color: rgba(203, 218, 247, 0.66);
-}
-
-.dd-shell .dd-rail-link {
-  border-color: rgba(146, 169, 214, 0.06);
-  color: #d6e2fb;
-}
-
-.dd-shell .dd-rail-link:hover {
-  border-color: rgba(146, 169, 214, 0.24);
-  background: rgba(255, 255, 255, 0.08);
-}
-
-.dd-shell .dd-rail-link.active {
-  background: linear-gradient(135deg, var(--dd-v4-ocean), #5b86ff);
-  border-color: rgba(194, 213, 255, 0.42);
-  color: #fff;
 }
 
 .dd-shell .dd-main {
@@ -2932,9 +2655,7 @@ body {
   .dd-shell .nav-button,
   .dd-shell .btn-secondary,
   .dd-shell .btn-ghost,
-  .dd-shell .dd-rail-link,
-  .dd-shell .dd-scope-pill,
-  .dd-shell .dd-rail-toggle {
+  .dd-shell .dd-scope-pill {
     min-height: var(--dd-touch-target);
   }
 
@@ -3758,12 +3479,6 @@ body {
     linear-gradient(to right, rgba(138, 164, 215, 0.06) 1px, transparent 1px),
     linear-gradient(to bottom, rgba(138, 164, 215, 0.06) 1px, transparent 1px);
   background-size: 48px 48px;
-}
-
-.dark .dd-shell .dd-rail {
-  background:
-    radial-gradient(640px 320px at -30% -20%, rgba(55, 95, 200, 0.12), transparent 56%),
-    linear-gradient(180deg, #080E1F 0%, #060A18 100%);
 }
 
 /* --- Micro-Animation Keyframes --- */

@@ -1,19 +1,19 @@
-import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import {
+  ArrowRight,
   BookOpen,
   Landmark,
   Newspaper,
   Globe,
   Github,
   FileText,
-  ArrowRight,
   Download,
   BarChart3,
   Shield,
   HelpCircle,
   AlertTriangle,
 } from "lucide-react";
+import { MethodsShell } from "../../../components/methods-shell";
 
 const sourceIcons = [
   { key: "openalex", Icon: BookOpen, color: "var(--research)" },
@@ -44,7 +44,8 @@ export default async function MethodsPage({
   const t = await getTranslations({ locale, namespace: "methods" });
 
   return (
-    <main className="mx-auto max-w-5xl space-y-8 p-6">
+    <MethodsShell>
+    <div className="mx-auto max-w-5xl space-y-8 p-6">
       {/* Header */}
       <section className="elevated rounded-2xl border border-borderSoft bg-surface p-6">
         <h1 className="text-3xl font-semibold">{t("title")}</h1>
@@ -157,14 +158,7 @@ export default async function MethodsPage({
         </div>
       </section>
 
-      {/* Back link */}
-      <Link
-        href={`/${locale}/canada`}
-        className="inline-flex items-center gap-2 rounded-lg border border-borderSoft px-4 py-2 text-sm hover:bg-bg"
-      >
-        <ArrowRight size={14} className="rotate-180" />
-        {t("back")}
-      </Link>
-    </main>
+    </div>
+    </MethodsShell>
   );
 }

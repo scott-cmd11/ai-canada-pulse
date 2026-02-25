@@ -6,7 +6,6 @@ import {
     Search,
     Moon,
     Sun,
-    Globe2,
     Landmark,
     BarChart3,
     Filter,
@@ -94,16 +93,6 @@ export function CommandPalette({
             group: "navigate",
             onSelect: () => {
                 window.location.href = `/${locale}/canada`;
-            },
-        });
-        items.push({
-            id: "nav-world",
-            label: "Go to World Dashboard",
-            hint: `/${locale}/world`,
-            icon: <Globe2 size={14} />,
-            group: "navigate",
-            onSelect: () => {
-                window.location.href = `/${locale}/world`;
             },
         });
         items.push({

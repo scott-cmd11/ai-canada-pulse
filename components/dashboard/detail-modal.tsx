@@ -4,7 +4,6 @@ import { useEffect, useRef, useState } from "react";
 import { Copy, ExternalLink, X, ChevronDown, ChevronUp, Check, AlertCircle } from "lucide-react";
 import { useTranslations } from "next-intl";
 import type { FeedItem } from "../../lib/types";
-import { resourcesRegistry, AIResource } from "../../lib/resources-registry";
 
 interface DetailModalProps {
   item: FeedItem;
@@ -93,31 +92,6 @@ export function DetailModal({ item, onClose }: DetailModalProps) {
     news: "var(--news)",
     incidents: "var(--incidents)",
   };
-
-  // Option C: Contextual Links
-  function getRelatedResources(): AIResource[] {
-    const searchTerms = [
-      ...item.entities,
-      ...item.tags,
-      item.publisher,
-      item.jurisdiction,
-    ].map(t => t.toLowerCase());
-
-    const wordsInTitle = item.title.toLowerCase().split(/\W+/).filter(w => w.length > 4);
-    searchTerms.push(...wordsInTitle);
-
-    const matches = resourcesRegistry.filter(r => {
-      const rTitle = r.title.toLowerCase();
-      const rDesc = r.description.toLowerCase();
-      // If any specific search term is mentioned in the resource title/desc
-      return searchTerms.some(term => rTitle.includes(term) || rDesc.includes(term));
-    });
-
-    // Deduplicate and limit to top 3
-    return Array.from(new Set(matches)).slice(0, 3);
-  }
-
-  const relatedResources = getRelatedResources();
 
   return (
     <div
@@ -256,38 +230,6 @@ export function DetailModal({ item, onClose }: DetailModalProps) {
             </ul>
           </div>
 
-          {/* Related Resources (Option C) */}
-          {relatedResources.length > 0 && (
-            <div className="rounded-lg border border-purple-500/20 bg-purple-500/5 p-4">
-              <h3 className="mb-3 text-sm font-semibold text-purple-300">
-                {t("feed.relatedResources")}
-              </h3>
-              <div className="space-y-2">
-                {relatedResources.map((res) => (
-                  <a
-                    key={res.id}
-                    href={res.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="group block rounded-md border border-zinc-800 bg-zinc-900/50 p-2.5 transition-all hover:-translate-y-0.5 hover:border-zinc-700 hover:bg-zinc-800"
-                  >
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium text-zinc-200 group-hover:text-purple-300 transition-colors">
-                        {res.title}
-                      </span>
-                      <ExternalLink size={12} className="text-zinc-600 transition-colors group-hover:text-zinc-400" />
-                    </div>
-                    <div className="mt-1 flex items-center gap-2">
-                      <span className="inline-block rounded-sm bg-zinc-800/80 px-1.5 py-0.5 text-[9px] uppercase tracking-wider text-zinc-400">
-                        {res.category}
-                      </span>
-                      <span className="text-xs text-zinc-500 truncate">{new URL(res.url).hostname.replace('www.', '')}</span>
-                    </div>
-                  </a>
-                ))}
-              </div>
-            </div>
-          )}
 
           {/* Debug toggle */}
           <button
