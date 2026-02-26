@@ -1,6 +1,8 @@
 "use client"
 
-import { pulseScore } from "@/lib/mock-data"
+import { useState, useEffect } from "react"
+import { pulseScore as fallbackPulse } from "@/lib/mock-data"
+import type { PulseData } from "@/lib/mock-data"
 
 const moodConfig = {
   green: {
@@ -9,7 +11,7 @@ const moodConfig = {
     accent: "#16a34a",
     text: "#15803d",
     emoji: "🟢",
-    headline: "Canada is doing well",
+    headline: "Canada's AI sector is thriving",
   },
   amber: {
     bg: "#fffbeb",
@@ -17,7 +19,7 @@ const moodConfig = {
     accent: "#d97706",
     text: "#b45309",
     emoji: "🟡",
-    headline: "Canada is holding steady",
+    headline: "Canada's AI sector is holding steady",
   },
   red: {
     bg: "#fef2f2",
@@ -25,7 +27,7 @@ const moodConfig = {
     accent: "#dc2626",
     text: "#b91c1c",
     emoji: "🔴",
-    headline: "Canada is under pressure",
+    headline: "Canada's AI sector is under pressure",
   },
 }
 
@@ -38,41 +40,59 @@ function relativeTime(iso: string) {
 }
 
 export default function PulseScore() {
-  const { mood, description, updatedAt } = pulseScore
+  const [pulse, setPulse] = useState<PulseData>(fallbackPulse)
+
+  useEffect(() => {
+    fetch("/api/v1/stories")
+      .then((res) => res.json())
+      .then((json) => {
+        if (json.pulse) {
+          setPulse(json.pulse)
+        }
+      })
+      .catch(() => {}) // keep fallback
+  }, [])
+
+  const { mood, description, updatedAt } = pulse
   const config = moodConfig[mood]
 
   return (
     <div
-      className="rounded-2xl border-2 p-5 sm:p-6 shadow-sm"
-      style={{ background: config.bg, borderColor: config.border }}
+      className="rounded-2xl border-2 overflow-hidden shadow-sm"
+      style={{ borderColor: config.border }}
     >
-      <p
-        className="text-xs font-semibold uppercase tracking-widest mb-3"
-        style={{ color: config.accent }}
-      >
-        Today in Canada
-      </p>
+      {/* Animated gradient accent bar */}
+      <div className="pulse-accent-bar" />
 
-      <div className="flex items-center gap-3 mb-3">
-        <span className="text-3xl" aria-hidden="true">{config.emoji}</span>
-        <h2
-          className="text-xl sm:text-2xl font-bold leading-tight"
+      <div className="p-5 sm:p-6" style={{ background: config.bg }}>
+        <p
+          className="text-xs font-semibold uppercase tracking-widest mb-3"
+          style={{ color: config.accent }}
+        >
+          AI in Canada Today
+        </p>
+
+        <div className="flex items-center gap-3 mb-3">
+          <span className="text-3xl" aria-hidden="true">{config.emoji}</span>
+          <h2
+            className="text-xl sm:text-2xl font-bold leading-tight"
+            style={{ color: config.text }}
+          >
+            {config.headline}
+          </h2>
+        </div>
+
+        <p
+          className="text-sm sm:text-base leading-relaxed max-w-2xl"
           style={{ color: config.text }}
         >
-          {config.headline}
-        </h2>
+          {description}
+        </p>
+
+        <p className="text-xs mt-3" style={{ color: config.accent }}>
+          Updated {relativeTime(updatedAt)}
+        </p>
       </div>
-
-      <p
-        className="text-sm sm:text-base leading-relaxed max-w-2xl"
-        style={{ color: config.text }}
-      >
-        {description}
-      </p>
-
-      <p className="text-xs mt-3" style={{ color: config.accent }}>
-        Updated {relativeTime(updatedAt)}
-      </p>
     </div>
   )
 }

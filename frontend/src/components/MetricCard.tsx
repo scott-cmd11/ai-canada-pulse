@@ -8,9 +8,10 @@ const sentimentStyles = {
 
 interface Props {
   metric: Metric
+  barDelay?: number
 }
 
-export default function MetricCard({ metric }: Props) {
+export default function MetricCard({ metric, barDelay = 0 }: Props) {
   const style = sentimentStyles[metric.sentiment]
 
   return (
@@ -30,10 +31,10 @@ export default function MetricCard({ metric }: Props) {
         </p>
       </div>
 
-      {/* Coloured accent bar replaces sparkline */}
+      {/* Animated coloured accent bar */}
       <div
-        className="h-1 rounded-full mt-auto"
-        style={{ background: style.dot }}
+        className="h-1 rounded-full mt-auto metric-bar"
+        style={{ background: style.dot, "--bar-delay": `${barDelay}ms` } as React.CSSProperties}
       />
     </div>
   )

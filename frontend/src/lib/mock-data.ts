@@ -1,4 +1,4 @@
-export type Category = "Jobs & Money" | "Homes & Rent" | "Your Government" | "Canada & the US" | "Climate"
+export type Category = "Research" | "Policy & Regulation" | "Industry & Startups" | "Talent & Education" | "Global AI Race"
 export type Sentiment = "positive" | "neutral" | "concerning"
 export type Trend = "up" | "flat" | "down"
 
@@ -11,6 +11,15 @@ export interface Story {
   publishedAt: string
   sentiment: Sentiment
   isBriefingTop: boolean
+  sourceUrl?: string
+  sourceName?: string
+}
+
+export interface PulseData {
+  mood: "green" | "amber" | "red"
+  moodLabel: string
+  description: string
+  updatedAt: string
 }
 
 export interface Metric {
@@ -27,49 +36,49 @@ export interface Metric {
 
 export const metrics: Metric[] = [
   {
-    id: "economy",
-    icon: "💼",
-    label: "Jobs",
-    status: "Steady",
+    id: "research",
+    icon: "🔬",
+    label: "Research",
+    status: "World-leading",
     trend: "up",
-    description: "Hiring is strong and wages are growing in most parts of Canada",
+    description: "Canadian AI labs produced record publications this quarter, led by Mila and Vector Institute",
     sentiment: "positive",
   },
   {
-    id: "housing",
-    icon: "🏠",
-    label: "Homes",
-    status: "Under Pressure",
-    trend: "down",
-    description: "Rent and home prices are still high in most cities",
-    sentiment: "concerning",
-  },
-  {
-    id: "politics",
-    icon: "🏛️",
-    label: "Your Government",
-    status: "In Session",
+    id: "policy",
+    icon: "⚖️",
+    label: "AI Policy",
+    status: "Active",
     trend: "flat",
-    description: "Parliament is back and a lot is on the table right now",
+    description: "The federal government is advancing its AI and Data Act through committee review",
     sentiment: "neutral",
   },
   {
-    id: "trade",
+    id: "startups",
+    icon: "🚀",
+    label: "Startups & Funding",
+    status: "Growing fast",
+    trend: "up",
+    description: "Canadian AI startups raised $2.1B in Q4, up 38% year-over-year",
+    sentiment: "positive",
+  },
+  {
+    id: "global",
     icon: "🌐",
-    label: "Canada & the US",
-    status: "At Risk",
-    trend: "down",
-    description: "New US tariff threats could affect Canadian jobs and prices",
-    sentiment: "concerning",
+    label: "Global Standing",
+    status: "Competitive",
+    trend: "flat",
+    description: "Canada ranks 4th globally in AI research output and 3rd in AI talent density",
+    sentiment: "neutral",
   },
 ]
 
 // ─── Pulse Score ──────────────────────────────────────────────────────────────
 
 export const pulseScore = {
-  mood: "amber" as "green" | "amber" | "red",
-  moodLabel: "Holding Steady",
-  description: "Canada is navigating some real pressures — especially on trade and housing — while jobs remain mostly stable.",
+  mood: "green" as "green" | "amber" | "red",
+  moodLabel: "Thriving",
+  description: "Canada's AI ecosystem is firing on all cylinders — Mila and Vector Institute are publishing at record pace, Cohere just closed a major funding round, and Ottawa is moving forward with its AI safety framework. The talent pipeline remains strong.",
   updatedAt: new Date(Date.now() - 12 * 60 * 1000).toISOString(),
 }
 
@@ -80,132 +89,132 @@ const now = Date.now()
 export const stories: Story[] = [
   {
     id: "s1",
-    headline: "US Threatens New Tariffs on Canadian Steel and Aluminum",
+    headline: "Cohere Raises $500M to Scale Enterprise AI Platform",
     summary:
-      "The White House is signalling a fresh round of tariffs targeting Canadian metals. Ottawa says it will respond with counter-measures if the tariffs go ahead.",
-    category: "Canada & the US",
-    region: "Federal",
+      "Toronto-based Cohere has closed a $500M Series D round, valuing the company at $5.5B. The funding will accelerate its enterprise-focused large language model platform and expand its Montreal research office.",
+    category: "Industry & Startups",
+    region: "Ontario",
     publishedAt: new Date(now - 1.5 * 60 * 60 * 1000).toISOString(),
-    sentiment: "concerning",
+    sentiment: "positive",
     isBriefingTop: true,
   },
   {
     id: "s2",
-    headline: "Bank of Canada Rate Decision Coming Next Week",
+    headline: "Mila Publishes Breakthrough in Energy-Efficient AI Training",
     summary:
-      "Experts are split on whether the Bank of Canada will hold interest rates or cut them. A cut could ease mortgage costs for millions of Canadians.",
-    category: "Jobs & Money",
-    region: "Federal",
+      "Researchers at Mila have developed a new training method that reduces compute costs by 40% for large language models. The paper, led by Yoshua Bengio's team, has been accepted at a top conference.",
+    category: "Research",
+    region: "Quebec",
     publishedAt: new Date(now - 3 * 60 * 60 * 1000).toISOString(),
-    sentiment: "neutral",
+    sentiment: "positive",
     isBriefingTop: true,
   },
   {
     id: "s3",
-    headline: "Toronto Rent Prices Hold Steady for Second Month in a Row",
+    headline: "Ottawa Announces AI Safety Framework for High-Risk Systems",
     summary:
-      "After years of sharp increases, average rent in Toronto has stopped climbing — a tentative sign of relief for renters in Canada's most expensive city.",
-    category: "Homes & Rent",
-    region: "Ontario",
-    publishedAt: new Date(now - 4 * 60 * 60 * 1000).toISOString(),
-    sentiment: "positive",
-    isBriefingTop: false,
-  },
-  {
-    id: "s4",
-    headline: "Parliament Resumes with Confidence Vote on the Horizon",
-    summary:
-      "MPs return to Ottawa this week with opposition parties signalling they may force a non-confidence vote before spring, potentially triggering an election.",
-    category: "Your Government",
+      "The federal government has released its proposed AI safety framework, requiring impact assessments for high-risk AI systems in healthcare, finance, and criminal justice. Industry consultation opens next month.",
+    category: "Policy & Regulation",
     region: "Federal",
-    publishedAt: new Date(now - 5 * 60 * 60 * 1000).toISOString(),
+    publishedAt: new Date(now - 4 * 60 * 60 * 1000).toISOString(),
     sentiment: "neutral",
     isBriefingTop: true,
   },
   {
-    id: "s5",
-    headline: "Canada Added 35,000 Jobs Last Month",
+    id: "s4",
+    headline: "Vector Institute Partners with Ontario Hospitals on AI Diagnostics",
     summary:
-      "The latest jobs report shows strong hiring in construction and healthcare. The unemployment rate dipped slightly to 6.1%.",
-    category: "Jobs & Money",
+      "Vector Institute has launched a clinical AI partnership with five Ontario hospitals, deploying machine learning models for early detection of sepsis and cardiac events in emergency departments.",
+    category: "Research",
+    region: "Ontario",
+    publishedAt: new Date(now - 5 * 60 * 60 * 1000).toISOString(),
+    sentiment: "positive",
+    isBriefingTop: false,
+  },
+  {
+    id: "s5",
+    headline: "Canadian AI Talent Increasingly Recruited by US Giants",
+    summary:
+      "A new report shows 30% of Canadian AI PhD graduates received offers from US tech firms last year, raising concerns about brain drain despite competitive salaries at domestic labs.",
+    category: "Talent & Education",
     region: "Federal",
     publishedAt: new Date(now - 6 * 60 * 60 * 1000).toISOString(),
-    sentiment: "positive",
+    sentiment: "concerning",
     isBriefingTop: true,
   },
   {
     id: "s6",
-    headline: "BC Wildfire Season Expected to Start Earlier This Year",
+    headline: "Ontario Invests $200M in AI Skills Training Programs",
     summary:
-      "Provincial officials are warning of a potentially severe wildfire season due to low snowpack and dry conditions across the BC Interior.",
-    category: "Climate",
-    region: "BC",
+      "The Ontario government announced a $200M investment in AI upskilling programs targeting displaced workers and new graduates, with partnerships across colleges and universities province-wide.",
+    category: "Talent & Education",
+    region: "Ontario",
     publishedAt: new Date(now - 7 * 60 * 60 * 1000).toISOString(),
-    sentiment: "concerning",
+    sentiment: "positive",
     isBriefingTop: false,
   },
   {
     id: "s7",
-    headline: "Alberta Pushes Back on Federal Carbon Pricing Rules",
+    headline: "CIFAR Renews Pan-Canadian AI Strategy with $443M in New Funding",
     summary:
-      "Alberta's government is escalating its dispute with Ottawa over carbon pricing, threatening to withhold co-operation on energy transition funding.",
-    category: "Your Government",
-    region: "Alberta",
+      "CIFAR has secured renewed federal funding for the next phase of Canada's national AI strategy, supporting the three national AI institutes and expanding compute infrastructure.",
+    category: "Policy & Regulation",
+    region: "Federal",
     publishedAt: new Date(now - 8 * 60 * 60 * 1000).toISOString(),
-    sentiment: "concerning",
+    sentiment: "positive",
     isBriefingTop: false,
   },
   {
     id: "s8",
-    headline: "New Homes Plan Targets 1.2 Million Units by 2030",
+    headline: "Montreal Ranked Among Top-3 Global AI Research Hubs",
     summary:
-      "The federal government announced a major housing plan pledging to unlock funding for 1.2 million new homes over the next six years, focusing on rental and affordable units.",
-    category: "Homes & Rent",
-    region: "Federal",
+      "A new global index ranks Montreal third worldwide for AI research output per capita, behind only San Francisco and London, citing Mila's influence and the city's growing startup ecosystem.",
+    category: "Global AI Race",
+    region: "Quebec",
     publishedAt: new Date(now - 9 * 60 * 60 * 1000).toISOString(),
     sentiment: "positive",
     isBriefingTop: false,
   },
   {
     id: "s9",
-    headline: "Canadian Auto Sector Warns of US Tariff Impact on Jobs",
+    headline: "Tenstorrent Expands AI Chip Design Operations in Toronto",
     summary:
-      "Auto manufacturers in Ontario say new US tariffs could put thousands of jobs at risk as cross-border supply chains come under pressure.",
-    category: "Canada & the US",
+      "Jim Keller-led Tenstorrent is doubling its Toronto engineering team to 400 people as it scales production of its RISC-V-based AI accelerator chips, competing directly with Nvidia.",
+    category: "Industry & Startups",
     region: "Ontario",
     publishedAt: new Date(now - 10 * 60 * 60 * 1000).toISOString(),
-    sentiment: "concerning",
-    isBriefingTop: false,
-  },
-  {
-    id: "s10",
-    headline: "Quebec Launches Green Transit Expansion in Montreal",
-    summary:
-      "Montreal will receive $4 billion to expand its metro and electric bus network, cutting commute times for hundreds of thousands of residents.",
-    category: "Climate",
-    region: "Quebec",
-    publishedAt: new Date(now - 11 * 60 * 60 * 1000).toISOString(),
     sentiment: "positive",
     isBriefingTop: false,
   },
   {
-    id: "s11",
-    headline: "Grocery Prices Still High Despite Retailer Pledges",
+    id: "s10",
+    headline: "Alberta Launches AI-in-Energy Pilot Across Oil Sands Operations",
     summary:
-      "Food costs remain elevated across Canada even as major grocery chains promised to stabilize prices. Advocacy groups say more accountability is needed.",
-    category: "Jobs & Money",
+      "Alberta's government is funding pilot programs to deploy AI for predictive maintenance and emissions monitoring across oil sands operations, aiming to cut methane leaks by 25%.",
+    category: "Industry & Startups",
+    region: "Alberta",
+    publishedAt: new Date(now - 11 * 60 * 60 * 1000).toISOString(),
+    sentiment: "neutral",
+    isBriefingTop: false,
+  },
+  {
+    id: "s11",
+    headline: "Canada and US Sign AI Safety Cooperation Agreement",
+    summary:
+      "Canada and the United States have signed a bilateral agreement on AI safety standards, committing to shared testing protocols for frontier models and coordinated incident reporting.",
+    category: "Global AI Race",
     region: "Federal",
     publishedAt: new Date(now - 12 * 60 * 60 * 1000).toISOString(),
-    sentiment: "concerning",
+    sentiment: "positive",
     isBriefingTop: false,
   },
   {
     id: "s12",
-    headline: "Halifax Housing Market Shows Signs of Cooling",
+    headline: "UBC and Waterloo AI Programs See Record Enrolment",
     summary:
-      "After a post-pandemic surge, home prices in Halifax have begun to ease as demand softens and more listings come to market.",
-    category: "Homes & Rent",
-    region: "Nova Scotia",
+      "Applications to AI and machine learning graduate programs at UBC and the University of Waterloo have surged 45% year-over-year, with international students making up over 60% of applicants.",
+    category: "Talent & Education",
+    region: "Federal",
     publishedAt: new Date(now - 13 * 60 * 60 * 1000).toISOString(),
     sentiment: "positive",
     isBriefingTop: false,

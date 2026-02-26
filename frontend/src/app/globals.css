@@ -34,3 +34,80 @@ body {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
 }
+
+/* ── Animated page background ───────────────────────── */
+@keyframes bgShift {
+  0%, 100% { background-position: 0% 50%; }
+  50%       { background-position: 100% 50%; }
+}
+
+.pulse-bg {
+  background: linear-gradient(135deg, #f0f4fa, #f4f5f7, #eef2f8, #f4f5f7);
+  background-size: 300% 300%;
+  animation: bgShift 12s ease-in-out infinite;
+}
+
+/* ── Animated accent bar on MetricCard ──────────────── */
+@keyframes barGrow {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
+}
+
+.metric-bar {
+  transform-origin: left;
+  animation: barGrow 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: var(--bar-delay, 0ms);
+}
+
+/* ── Animated gradient bar (PulseScore top accent) ─── */
+@keyframes gradientSlide {
+  0%   { background-position: 0% 50%; }
+  100% { background-position: 200% 50%; }
+}
+
+.pulse-accent-bar {
+  height: 4px;
+  border-radius: 2px 2px 0 0;
+  background: linear-gradient(90deg,
+    #16a34a, #2563eb, #7c3aed, #dc2626, #d97706, #16a34a);
+  background-size: 300% 100%;
+  animation: gradientSlide 4s linear infinite;
+}
+
+/* ── Story card hover lift ───────────────────────────── */
+.story-card-lift {
+  transition:
+    transform 200ms cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 200ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.story-card-lift:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+}
+
+/* ── Staggered story card entrance ──────────────────── */
+@keyframes cardSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.story-card-enter {
+  animation: cardSlideIn 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: var(--card-delay, 0ms);
+}
+
+/* ── Respect reduced-motion ─────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .pulse-bg { animation: none !important; }
+  .metric-bar { animation: none !important; }
+  .pulse-accent-bar { animation: none !important; }
+  .story-card-enter { animation: none !important; opacity: 1 !important; }
+  .story-card-lift { transition: none !important; }
+}
