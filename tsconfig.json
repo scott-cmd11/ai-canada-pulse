@@ -37,6 +37,7 @@
   ],
   "exclude": [
     "node_modules",
-    "legacy_root"
+    "legacy_root",
+    "frontend"
   ]
 }

@@ -73,7 +73,7 @@ export function CommandBar({
     }
   }
 
-  const gridCols = mode === "research" ? "md:grid-cols-5" : "md:grid-cols-3";
+  const gridCols = mode === "research" ? "md:grid-cols-3 lg:grid-cols-5" : "md:grid-cols-3";
 
   return (
     <div className="command-bar dd-command-bar dd-command-surface z-20">
@@ -89,15 +89,15 @@ export function CommandBar({
             value={timeWindow}
             onChange={(e) => onTimeWindowChange(e.target.value as TimeWindow)}
           >
-            <option value="1h">1 Hour</option>
-            <option value="24h">24 Hours</option>
-            <option value="7d">7 Days</option>
-            <option value="15d">15 Days</option>
-            <option value="30d">30 Days</option>
-            <option value="90d">90 Days</option>
-            <option value="1y">1 Year</option>
-            <option value="2y">2 Years</option>
-            <option value="5y">5 Years</option>
+            <option value="1h">Last hour</option>
+            <option value="24h">Last 24 hours</option>
+            <option value="7d">Last 7 days</option>
+            <option value="15d">Last 2 weeks</option>
+            <option value="30d">Last month</option>
+            <option value="90d">Last 3 months</option>
+            <option value="1y">Last year</option>
+            <option value="2y">Last 2 years</option>
+            <option value="5y">Last 5 years</option>
           </select>
         </label>
         {mode === "research" && (
@@ -110,13 +110,13 @@ export function CommandBar({
               value={category}
               onChange={(e) => onCategoryChange(e.target.value)}
             >
-              <option value="">All</option>
-              <option value="policy">Policy</option>
-              <option value="research">Research</option>
-              <option value="industry">Industry</option>
-              <option value="funding">Funding</option>
-              <option value="news">News</option>
-              <option value="incidents">Incidents</option>
+              <option value="">All Topics</option>
+              <option value="policy">Government</option>
+              <option value="research">Science &amp; Tech</option>
+              <option value="industry">Business</option>
+              <option value="funding">Grants</option>
+              <option value="news">In the News</option>
+              <option value="incidents">Alerts</option>
             </select>
           </label>
         )}

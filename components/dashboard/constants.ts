@@ -74,3 +74,22 @@ export const confidenceTone: Record<string, string> = {
   medium: "var(--warning)",
   low: "var(--incidents)",
 };
+
+// Plain-language display names for API category values
+export const CATEGORY_DISPLAY: Record<string, string> = {
+  policy:    "Government",
+  research:  "Science & Tech",
+  industry:  "Business",
+  funding:   "Grants",
+  news:      "In the News",
+  incidents: "Alerts",
+  "":        "All Topics",
+};
+
+// Plain-language confidence label replacing raw percentage
+export function confidenceLabel(score: number): { label: string; color: string } {
+  if (score >= 0.8) return { label: "Strong match",  color: "var(--research)" };
+  if (score >= 0.5) return { label: "Good match",    color: "var(--policy)" };
+  if (score >= 0.3) return { label: "Partial match", color: "var(--warning)" };
+  return               { label: "Possible match", color: "var(--incidents)" };
+}

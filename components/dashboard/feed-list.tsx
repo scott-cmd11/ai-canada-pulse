@@ -5,7 +5,7 @@ import { Clock, RefreshCw, Pin, PinOff, ExternalLink, Info, Download, Search, Gi
 import { useTranslations } from "next-intl";
 import type { FeedItem, Mode, TimeWindow } from "../../lib/types";
 import { exportUrl } from "../../lib/api";
-import { categoryColor } from "./constants";
+import { categoryColor, CATEGORY_DISPLAY, confidenceLabel } from "./constants";
 import { RelativeTime, SkeletonLine } from "./helpers";
 
 function SourceIcon({ type, size = 12 }: { type: string; size?: number }) {
@@ -353,8 +353,8 @@ export function FeedList({
                 <span
                   className="h-2 w-2 shrink-0 rounded-full"
                   style={{ background: categoryColor[item.category] ?? "var(--text-muted)" }}
-                  aria-label={item.category}
-                  title={item.category}
+                  aria-label={CATEGORY_DISPLAY[item.category] ?? item.category}
+                  title={CATEGORY_DISPLAY[item.category] ?? item.category}
                 />
                 <span className="inline-flex items-center gap-1">
                   <Clock size={10} />
@@ -369,7 +369,7 @@ export function FeedList({
                   className="badge badge-category cursor-pointer"
                   style={{ "--badge-color": categoryColor[item.category] } as React.CSSProperties}
                 >
-                  {item.category}
+                  {CATEGORY_DISPLAY[item.category] ?? item.category}
                 </button>
                 <button
                   onClick={() => {
@@ -402,12 +402,12 @@ export function FeedList({
                 <span
                   className="inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-micro font-medium"
                   style={{
-                    background: `color-mix(in oklab, ${item.confidence >= 0.8 ? "var(--research)" : item.confidence >= 0.5 ? "var(--policy)" : item.confidence >= 0.3 ? "var(--warning)" : "var(--incidents)"} 15%, transparent)`,
-                    color: item.confidence >= 0.8 ? "var(--research)" : item.confidence >= 0.5 ? "var(--policy)" : item.confidence >= 0.3 ? "var(--warning)" : "var(--incidents)",
+                    background: `color-mix(in oklab, ${confidenceLabel(item.confidence).color} 15%, transparent)`,
+                    color: confidenceLabel(item.confidence).color,
                   }}
-                  title={`${t("feed.confidence")}: ${(item.confidence * 100).toFixed(0)}%`}
+                  title={`${t("feed.confidence")}: ${confidenceLabel(item.confidence).label}`}
                 >
-                  {(item.confidence * 100).toFixed(0)}%
+                  {confidenceLabel(item.confidence).label}
                 </span>
               </div>
               <h4
