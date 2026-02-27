@@ -14,12 +14,11 @@ interface VectorConfig {
 }
 
 export const VECTOR_REGISTRY: Record<string, VectorConfig> = {
-  unemployment:       { vectorId: 2062815, latestN: 50 },  // LFS 14-10-0287, Canada 15+ SA
+  unemployment:         { vectorId: 2062815, latestN: 50 },  // LFS 14-10-0287, Canada 15+ SA
   "youth-unemployment": { vectorId: 2062842, latestN: 50 },  // LFS 14-10-0287, Canada 15-24 SA
-  // Add more as coordinates are discovered:
-  // "job-vacancy":     { vectorId: XXXXX, latestN: 20 },
-  // "labour-productivity": { vectorId: XXXXX, latestN: 16 },
-  // "tech-employment": { vectorId: XXXXX, latestN: 50 },
+  "participation-rate": { vectorId: 2062816, latestN: 50 },  // LFS 14-10-0287, Canada 15+ SA
+  "employment-rate":    { vectorId: 2062817, latestN: 50 },  // LFS 14-10-0287, Canada 15+ SA
+  "cpi":                { vectorId: 41690973, latestN: 50 },  // CPI 18-10-0004, Canada All-items
 }
 
 // ─── In-memory cache ────────────────────────────────────────────────────────

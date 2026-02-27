@@ -1,18 +1,18 @@
 import { NextResponse } from "next/server"
-import { indicators as fallbackIndicators } from "@/lib/indicators-data"
+import { indicators } from "@/lib/indicators-data"
 import { fetchAllIndicators } from "@/lib/statscan-client"
 
 export async function GET() {
   try {
-    const data = await fetchAllIndicators(fallbackIndicators)
+    const data = await fetchAllIndicators(indicators)
 
     return NextResponse.json(data, {
       headers: {
-        "Cache-Control": "public, max-age=86400, stale-while-revalidate=3600",
+        "Cache-Control": "public, max-age=3600, stale-while-revalidate=7200",
       },
     })
   } catch {
-    // If everything fails, return mock data
-    return NextResponse.json(fallbackIndicators)
+    // If Stats Canada API is down, return indicators with empty data arrays
+    return NextResponse.json(indicators)
   }
 }

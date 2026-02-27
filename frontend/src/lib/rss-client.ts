@@ -37,6 +37,35 @@ function isAIRelated(title: string, description: string): boolean {
   return AI_KEYWORDS.test(title) || AI_KEYWORDS.test(description)
 }
 
+// ─── Finance / crypto exclusion filter ──────────────────────────────────────
+
+const EXCLUSION_KEYWORDS =
+  /\b(stocks?|TSX|NASDAQ|NYSE|ETF|dividends?|portfolio|investors?|buy(?:ing)?|sell(?:ing)?|rally|bull(?:ish)?|bear(?:ish)?|market\s*cap|share\s*price|earnings|valuation|crypto(?:currency)?|bitcoin|ethereum|blockchain|tokens?|NFT|DeFi|Web3)\b|(?:I[''\u2019]d\s+buy|top\s+picks|best\s+stocks|investment\s+opportunit)/i
+
+function isFinanceNoise(title: string, description: string): boolean {
+  return EXCLUSION_KEYWORDS.test(title) || EXCLUSION_KEYWORDS.test(description)
+}
+
+// ─── Sentiment classification ───────────────────────────────────────────────
+
+const POSITIVE_KEYWORDS =
+  /\b(funding|funded|investment|invest|partnership|partner|launch|launches|launched|breakthrough|growth|growing|hire|hiring|expand|expanding|billion|million|innovation|innovative|advance|advancing|milestone|award|awarded|succeed|success|promising|opportunity|record|boost|lead|leading)\b/i
+
+const NEGATIVE_KEYWORDS =
+  /\b(layoff|laid off|cut|cuts|cutting|risk|risks|concern|concerns|ban|banned|restrict|restriction|threat|threatens|decline|declining|struggle|struggling|warning|warns|investigation|shutdown|shutting|lawsuit|sued|bias|biased|harm|harmful|replace|replacing|job loss|danger|dangerous|scrutiny|backlash|controversy|fraud|misinformation|deepfake)\b/i
+
+function classifySentiment(title: string, description: string): "positive" | "neutral" | "concerning" {
+  const text = `${title} ${description}`
+  const posMatches = text.match(POSITIVE_KEYWORDS)
+  const negMatches = text.match(NEGATIVE_KEYWORDS)
+  const posCount = posMatches ? posMatches.length : 0
+  const negCount = negMatches ? negMatches.length : 0
+
+  if (posCount > negCount) return "positive"
+  if (negCount > posCount) return "concerning"
+  return "neutral"
+}
+
 // ─── Category assignment ────────────────────────────────────────────────────
 
 const CATEGORY_RULES: { pattern: RegExp; category: Category }[] = [
@@ -114,8 +143,12 @@ async function fetchSingleFeed(config: FeedConfig): Promise<Story[]> {
 
     return (feed.items || [])
       .filter((item) => {
+        const t = item.title || ""
+        const d = item.contentSnippet || item.content || ""
+        // Exclude finance/crypto noise FIRST (applies to ALL feeds, including aiOnly)
+        if (isFinanceNoise(t, d)) return false
         if (config.aiOnly) return true
-        return isAIRelated(item.title || "", item.contentSnippet || item.content || "")
+        return isAIRelated(t, d)
       })
       .map((item, index) => {
         const title = item.title || "Untitled"
@@ -129,7 +162,7 @@ async function fetchSingleFeed(config: FeedConfig): Promise<Story[]> {
           category: assignCategory(title, cleanSummary),
           region: detectRegion(title, cleanSummary),
           publishedAt: item.isoDate || item.pubDate || new Date().toISOString(),
-          sentiment: "neutral" as const,
+          sentiment: classifySentiment(title, cleanSummary),
           isBriefingTop: false,
           sourceUrl: item.link || "",
           sourceName: config.name,
@@ -143,7 +176,7 @@ async function fetchSingleFeed(config: FeedConfig): Promise<Story[]> {
 
 // ─── Public: fetch all stories with cache + fallback ────────────────────────
 
-export async function fetchAllStories(fallback: Story[]): Promise<Story[]> {
+export async function fetchAllStories(): Promise<Story[]> {
   // Check cache
   if (storyCache && Date.now() - storyCache.fetchedAt < CACHE_TTL) {
     return storyCache.stories
@@ -185,8 +218,8 @@ export async function fetchAllStories(fallback: Story[]): Promise<Story[]> {
     return allStories
   }
 
-  // All feeds failed — return mock fallback
-  return fallback
+  // All feeds failed — return empty (no mock data)
+  return []
 }
 
 // ─── Public: derive PulseScore from story sentiment distribution ────────────
@@ -215,13 +248,13 @@ export function derivePulseFromStories(stories: Story[]): PulseData {
 
   if (positiveRatio >= 0.5) {
     mood = "green"
-    moodLabel = "Thriving"
+    moodLabel = "Positive"
   } else if (concerningRatio >= 0.4) {
     mood = "red"
-    moodLabel = "Under pressure"
+    moodLabel = "Negative"
   } else {
     mood = "amber"
-    moodLabel = "Holding steady"
+    moodLabel = "Neutral"
   }
 
   // Build a summary from the category distribution

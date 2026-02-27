@@ -1,23 +1,9 @@
 import type { Story } from "@/lib/mock-data"
 
-const categoryColors: Record<string, { border: string; bg: string; text: string }> = {
-  "Research":              { border: "#2563eb", bg: "#dbeafe", text: "#1d4ed8" },
-  "Policy & Regulation":   { border: "#7c3aed", bg: "#ede9fe", text: "#6d28d9" },
-  "Industry & Startups":   { border: "#16a34a", bg: "#dcfce7", text: "#15803d" },
-  "Talent & Education":    { border: "#d97706", bg: "#fef3c7", text: "#b45309" },
-  "Global AI Race":        { border: "#dc2626", bg: "#fee2e2", text: "#b91c1c" },
-}
-
-const sentimentDot: Record<string, string> = {
-  positive:   "#16a34a",
-  neutral:    "#d97706",
-  concerning: "#dc2626",
-}
-
-const sentimentLabel: Record<string, string> = {
-  positive:   "Good news",
-  neutral:    "Steady",
-  concerning: "Heads up",
+const sentimentLabel: Record<string, { label: string; color: string }> = {
+  positive:   { label: "Positive",  color: "#10b981" },
+  neutral:    { label: "Neutral",   color: "#64748b" },
+  concerning: { label: "Negative",  color: "#ef4444" },
 }
 
 function relativeTime(iso: string) {
@@ -36,62 +22,48 @@ interface Props {
   cardDelay?: number
 }
 
-export default function StoryCard({ story, cardDelay = 0 }: Props) {
-  const cat = categoryColors[story.category] ?? { border: "#6b7280", bg: "#f3f4f6", text: "#374151" }
-  const dot = sentimentDot[story.sentiment]
+export default function StoryCard({ story }: Props) {
+  const sent = sentimentLabel[story.sentiment] ?? sentimentLabel.neutral
 
   return (
-    <article
-      className="story-card-lift story-card-enter bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden flex"
-      style={{ "--card-delay": `${cardDelay}ms` } as React.CSSProperties}
-    >
-      {/* Left colour stripe */}
-      <div className="w-1 flex-shrink-0" style={{ background: cat.border }} />
+    <article className="bg-slate-800/60 rounded border border-slate-700/50 p-4 card-hover flex flex-col gap-2">
+      {/* Meta row */}
+      <div className="flex items-center gap-2 text-xs">
+        <span className="text-slate-400 font-medium">{story.category}</span>
+        <span className="text-slate-600">|</span>
+        <span style={{ color: sent.color }} className="font-medium">{sent.label}</span>
+        {story.sourceName && (
+          <>
+            <span className="text-slate-600">|</span>
+            <span className="text-slate-500">{story.sourceName}</span>
+          </>
+        )}
+        <span className="ml-auto text-slate-500">{relativeTime(story.publishedAt)}</span>
+      </div>
 
-      <div className="p-4 flex flex-col gap-2 flex-1">
-        {/* Top row: category + region + source + sentiment */}
-        <div className="flex items-center gap-2 flex-wrap">
-          <span
-            className="text-xs font-semibold px-2 py-0.5 rounded-full"
-            style={{ background: cat.bg, color: cat.text }}
+      {/* Headline */}
+      <h3 className="text-sm font-semibold text-slate-200 leading-snug">
+        {story.headline}
+      </h3>
+
+      {/* Summary */}
+      <p className="text-xs text-slate-400 leading-relaxed line-clamp-2">
+        {story.summary}
+      </p>
+
+      {/* Footer */}
+      <div className="flex items-center gap-3 mt-auto pt-1">
+        <span className="text-xs text-slate-500">{story.region}</span>
+        {story.sourceUrl && (
+          <a
+            href={story.sourceUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-xs text-blue-400 hover:text-blue-300 ml-auto"
           >
-            {story.category}
-          </span>
-          <span className="text-xs text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">
-            {story.region}
-          </span>
-          {story.sourceName && (
-            <span className="text-xs text-gray-400">via {story.sourceName}</span>
-          )}
-          <span
-            className="ml-auto flex items-center gap-1 text-xs font-medium"
-            style={{ color: dot }}
-          >
-            <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: dot }} />
-            {sentimentLabel[story.sentiment]}
-          </span>
-        </div>
-
-        {/* Headline */}
-        <h3 className="text-base font-bold text-gray-900 leading-snug">{story.headline}</h3>
-
-        {/* Summary */}
-        <p className="text-sm text-gray-600 leading-snug line-clamp-2">{story.summary}</p>
-
-        {/* Time + source link */}
-        <div className="flex items-center gap-3 mt-auto pt-1">
-          <p className="text-xs text-gray-400">{relativeTime(story.publishedAt)}</p>
-          {story.sourceUrl && (
-            <a
-              href={story.sourceUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-xs text-blue-600 hover:underline"
-            >
-              Read more &#8599;
-            </a>
-          )}
-        </div>
+            Source &#8599;
+          </a>
+        )}
       </div>
     </article>
   )

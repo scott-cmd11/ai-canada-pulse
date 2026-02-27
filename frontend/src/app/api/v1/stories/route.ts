@@ -1,10 +1,9 @@
 import { NextResponse } from "next/server"
-import { stories as fallbackStories, pulseScore as fallbackPulse } from "@/lib/mock-data"
 import { fetchAllStories, derivePulseFromStories } from "@/lib/rss-client"
 
 export async function GET() {
   try {
-    const stories = await fetchAllStories(fallbackStories)
+    const stories = await fetchAllStories()
     const pulse = derivePulseFromStories(stories)
 
     return NextResponse.json(
@@ -17,8 +16,13 @@ export async function GET() {
     )
   } catch {
     return NextResponse.json({
-      stories: fallbackStories,
-      pulse: fallbackPulse,
+      stories: [],
+      pulse: {
+        mood: "amber",
+        moodLabel: "Awaiting data",
+        description: "Unable to fetch stories at this time.",
+        updatedAt: new Date().toISOString(),
+      },
     })
   }
 }
