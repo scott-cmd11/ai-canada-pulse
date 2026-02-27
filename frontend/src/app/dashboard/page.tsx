@@ -12,32 +12,43 @@ export default function DashboardPage() {
     <div className="min-h-screen bg-slate-950">
       <Header />
 
-      <main className="max-w-6xl mx-auto px-4 sm:px-6 py-6 flex flex-col gap-8">
-        {/* Sector Pulse */}
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6 flex flex-col gap-8">
+        {/* Sector Pulse — full width */}
         <PulseScore />
 
-        {/* Economic Indicators */}
-        <IndicatorsSection />
+        {/* Two-column layout */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
 
-        {/* Google Trends: AI Search Interest in Canada */}
-        <TrendsSection />
+          {/* LEFT: Stories + Research */}
+          <div className="flex flex-col gap-8">
+            {/* Top Story */}
+            <BriefingCard />
 
-        {/* AI Adoption: Government vs Private Sector */}
-        <AdoptionComparison />
+            {/* Stories Feed */}
+            <section>
+              <h2 className="text-xs font-medium uppercase tracking-widest text-slate-400 mb-3">
+                Latest Stories
+              </h2>
+              <StoryFeed />
+            </section>
 
-        {/* Top Story */}
-        <BriefingCard />
+            {/* Canadian AI Research */}
+            <ResearchSection />
+          </div>
 
-        {/* Stories Feed */}
-        <section>
-          <h2 className="text-xs font-medium uppercase tracking-widest text-slate-400 mb-3">
-            Latest Stories
-          </h2>
-          <StoryFeed />
-        </section>
+          {/* RIGHT: Economic Indicators + Visuals */}
+          <div className="flex flex-col gap-8">
+            {/* Economic Indicators */}
+            <IndicatorsSection />
 
-        {/* Canadian AI Research */}
-        <ResearchSection />
+            {/* Google Trends: AI Search Interest in Canada */}
+            <TrendsSection />
+
+            {/* AI Adoption: Government vs Private Sector */}
+            <AdoptionComparison />
+          </div>
+
+        </div>
       </main>
 
       <footer className="text-center text-xs text-slate-600 py-8 border-t border-slate-800">
