@@ -6,6 +6,11 @@ import TrendsSection from "@/components/TrendsSection"
 import StoryFeed from "@/components/StoryFeed"
 import AdoptionComparison from "@/components/AdoptionComparison"
 import ResearchSection from "@/components/ResearchSection"
+import GovRegistrySection from "@/components/GovRegistrySection"
+import ParliamentSection from "@/components/ParliamentSection"
+import JobMarketSection from "@/components/JobMarketSection"
+import SentimentSection from "@/components/SentimentSection"
+import StocksSection from "@/components/StocksSection"
 
 export default function DashboardPage() {
   return (
@@ -19,7 +24,7 @@ export default function DashboardPage() {
         {/* Two-column layout */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
 
-          {/* LEFT: Stories + Research */}
+          {/* LEFT: Stories + Research + Policy */}
           <div className="flex flex-col gap-8">
             {/* Top Story */}
             <BriefingCard />
@@ -34,9 +39,15 @@ export default function DashboardPage() {
 
             {/* Canadian AI Research */}
             <ResearchSection />
+
+            {/* Federal AI Systems Registry */}
+            <GovRegistrySection />
+
+            {/* AI in Parliament */}
+            <ParliamentSection />
           </div>
 
-          {/* RIGHT: Economic Indicators + Visuals */}
+          {/* RIGHT: Economic Indicators + Visuals + Market */}
           <div className="flex flex-col gap-8">
             {/* Economic Indicators */}
             <IndicatorsSection />
@@ -44,8 +55,17 @@ export default function DashboardPage() {
             {/* Google Trends: AI Search Interest in Canada */}
             <TrendsSection />
 
+            {/* Media Sentiment (GDELT) */}
+            <SentimentSection />
+
             {/* AI Adoption: Government vs Private Sector */}
             <AdoptionComparison />
+
+            {/* Canadian AI Stocks */}
+            <StocksSection />
+
+            {/* AI Job Market */}
+            <JobMarketSection />
           </div>
 
         </div>
