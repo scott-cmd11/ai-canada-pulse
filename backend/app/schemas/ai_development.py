@@ -11,6 +11,7 @@ class FeedItem(BaseModel):
     source_type: str
     category: str
     title: str
+    description: str = ""
     url: str
     publisher: str
     published_at: datetime

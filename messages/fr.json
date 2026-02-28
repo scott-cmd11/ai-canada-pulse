@@ -229,7 +229,9 @@
     "expand15d": "Utiliser 15j",
     "expand30d": "Utiliser 30j",
     "keyboardNav": "Utilisez <j>j</j> / <k>k</k> pour naviguer, <enter>Enter</enter> pour les détails",
-    "keyboardDismiss": "Compris"
+    "keyboardDismiss": "Compris",
+    "loadMore": "Voir plus",
+    "showing": "{visible} sur {total} articles affichés"
   },
   "charts": {
     "hourly": "Tendance horaire (24 h)",

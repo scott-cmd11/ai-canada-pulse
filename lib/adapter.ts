@@ -96,6 +96,7 @@ export function toFeedItem(item: IntelItem): FeedItem {
         tags: [item.type, item.category || ''].filter(Boolean),
         hash: simpleHash(item.url),
         confidence: Math.min(1, (item.relevanceScore || 2.5) / 5),
+        description: item.description || '',
     };
 }
 

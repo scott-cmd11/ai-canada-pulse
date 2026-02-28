@@ -35,6 +35,7 @@ class AIDevelopment(Base):
     source_type: Mapped[SourceType] = mapped_column(SQLEnum(SourceType, name="source_type_enum"), nullable=False, index=True)
     category: Mapped[CategoryType] = mapped_column(SQLEnum(CategoryType, name="category_enum"), nullable=False, index=True)
     title: Mapped[str] = mapped_column(Text, nullable=False)
+    description: Mapped[str | None] = mapped_column(Text, nullable=True, default="")
     url: Mapped[str] = mapped_column(Text, nullable=False)
     publisher: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
     published_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, index=True)

@@ -18,6 +18,7 @@ export interface FeedItem {
   tags: string[];
   hash: string;
   confidence: number;
+  description?: string;
 }
 
 export interface FeedResponse {

@@ -238,7 +238,9 @@
     "expand15d": "Last 15 days",
     "expand30d": "Last 30 days",
     "keyboardNav": "Use <j>j</j> / <k>k</k> to navigate, <enter>Enter</enter> to view details",
-    "keyboardDismiss": "Got it"
+    "keyboardDismiss": "Got it",
+    "loadMore": "Load More",
+    "showing": "Showing {visible} of {total} stories"
   },
   "charts": {
     "hourly": "Hourly Trend (24h)",

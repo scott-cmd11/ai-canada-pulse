@@ -90,6 +90,8 @@ export function FeedList({
   const [focusedIndex, setFocusedIndex] = useState(-1);
   const cardRefs = useRef<Map<number, HTMLElement>>(new Map());
   const [keyboardHintDismissed, setKeyboardHintDismissed] = useState(true); // default hidden until hydration
+  const PAGE_SIZE = 10;
+  const [displayCount, setDisplayCount] = useState(PAGE_SIZE);
 
   useEffect(() => {
     try {
@@ -146,9 +148,10 @@ export function FeedList({
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [handleKeyDown]);
 
-  // Reset focused index when feed changes
+  // Reset focused index and display count when feed changes
   useEffect(() => {
     setFocusedIndex(-1);
+    setDisplayCount(PAGE_SIZE);
   }, [sortedFeed.length]);
 
   return (
@@ -329,7 +332,7 @@ export function FeedList({
           </div>
         )}
         {!isInitialLoading &&
-          sortedFeed.map((item, index) => (
+          sortedFeed.slice(0, displayCount).map((item, index) => (
             <article
               key={item.id}
               ref={(el) => {
@@ -418,6 +421,11 @@ export function FeedList({
                   <ExternalLink size={12} className="shrink-0 opacity-0 group-hover:opacity-100 text-textMuted" />
                 </a>
               </h4>
+              {item.description && (
+                <p className={`line-clamp-2 text-textMuted ${density === "compact" ? "mt-1 text-micro" : "mt-1.5 text-caption"}`}>
+                  {item.description}
+                </p>
+              )}
               {mode === "research" && (
                 <div
                   className={`flex flex-wrap ${density === "compact" ? "mt-1.5 gap-1.5" : "mt-2 gap-2"}`}
@@ -461,6 +469,19 @@ export function FeedList({
               </div>
             </article>
           ))}
+        {!isInitialLoading && sortedFeed.length > displayCount && (
+          <div className="mt-4 flex flex-col items-center gap-2">
+            <span className="text-caption text-textMuted">
+              {t("feed.showing", { visible: Math.min(displayCount, sortedFeed.length), total: sortedFeed.length })}
+            </span>
+            <button
+              onClick={() => setDisplayCount((prev) => prev + PAGE_SIZE)}
+              className="btn-secondary px-6"
+            >
+              {t("feed.loadMore")}
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
