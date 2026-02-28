@@ -15,10 +15,13 @@ const CATEGORIES: { value: typeof ALL | Category; label: string }[] = [
   { value: "Global AI Race", label: "Global" },
 ]
 
+const PAGE_SIZE = 10
+
 export default function StoryFeed() {
   const [active, setActive] = useState<typeof ALL | Category>(ALL)
   const [stories, setStories] = useState<Story[]>([])
   const [loading, setLoading] = useState(true)
+  const [displayCount, setDisplayCount] = useState(PAGE_SIZE)
 
   useEffect(() => {
     fetch("/api/v1/stories")
@@ -38,6 +41,8 @@ export default function StoryFeed() {
     ? feedStories
     : feedStories.filter((s) => s.category === active)
 
+  const visible = filtered.slice(0, displayCount)
+
   return (
     <div>
       {/* Category tabs — underline style */}
@@ -45,7 +50,7 @@ export default function StoryFeed() {
         {CATEGORIES.map((cat) => (
           <button
             key={cat.value}
-            onClick={() => setActive(cat.value)}
+            onClick={() => { setActive(cat.value); setDisplayCount(PAGE_SIZE) }}
             className={[
               "px-3 py-2 text-sm font-medium transition-colors whitespace-nowrap flex-shrink-0",
               active === cat.value
@@ -60,10 +65,24 @@ export default function StoryFeed() {
 
       {/* Story grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        {filtered.map((story) => (
+        {visible.map((story) => (
           <StoryCard key={story.id} story={story} />
         ))}
       </div>
+
+      {filtered.length > displayCount && (
+        <div className="flex flex-col items-center gap-2 mt-4">
+          <span className="text-xs text-slate-500">
+            Showing {Math.min(displayCount, filtered.length)} of {filtered.length} stories
+          </span>
+          <button
+            onClick={() => setDisplayCount((prev) => prev + PAGE_SIZE)}
+            className="px-6 py-2 text-sm font-medium text-blue-400 border border-slate-600 rounded hover:bg-slate-700/50 transition-colors"
+          >
+            Load More
+          </button>
+        </div>
+      )}
 
       {loading && (
         <p className="text-xs text-slate-500 mt-4 text-center">Fetching latest stories...</p>
