@@ -1,0 +1,6 @@
+pytest-cache-files-*
+backend/
+workers/
+.git
+node_modules
+.next
