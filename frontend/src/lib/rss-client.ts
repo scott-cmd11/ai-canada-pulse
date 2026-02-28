@@ -1,4 +1,5 @@
 import Parser from "rss-parser"
+import { unstable_cache } from "next/cache"
 import type { Story, Category, PulseData } from "./mock-data"
 
 // ─── Feed registry ──────────────────────────────────────────────────────────
@@ -117,17 +118,6 @@ function detectRegion(title: string, description: string): string {
   return "Canada"
 }
 
-// ─── Caching ────────────────────────────────────────────────────────────────
-
-const CACHE_TTL = 30 * 60 * 1000 // 30 minutes
-
-interface CacheEntry {
-  stories: Story[]
-  fetchedAt: number
-}
-
-let storyCache: CacheEntry | null = null
-
 // ─── RSS parser instance ────────────────────────────────────────────────────
 
 const parser = new Parser({
@@ -176,12 +166,7 @@ async function fetchSingleFeed(config: FeedConfig): Promise<Story[]> {
 
 // ─── Public: fetch all stories with cache + fallback ────────────────────────
 
-export async function fetchAllStories(): Promise<Story[]> {
-  // Check cache
-  if (storyCache && Date.now() - storyCache.fetchedAt < CACHE_TTL) {
-    return storyCache.stories
-  }
-
+async function _fetchAllStories(): Promise<Story[]> {
   const feedResults = await Promise.allSettled(
     FEED_REGISTRY.map((config) => fetchSingleFeed(config))
   )
@@ -212,15 +197,14 @@ export async function fetchAllStories(): Promise<Story[]> {
     allStories[0].isBriefingTop = true
   }
 
-  // Cache and return if we got results
-  if (allStories.length > 0) {
-    storyCache = { stories: allStories, fetchedAt: Date.now() }
-    return allStories
-  }
-
-  // All feeds failed — return empty (no mock data)
-  return []
+  return allStories
 }
+
+export const fetchAllStories = unstable_cache(
+  _fetchAllStories,
+  ["rss-stories-canada-ai"],
+  { revalidate: 1800 } // 30 minutes
+)
 
 // ─── Public: derive PulseScore from story sentiment distribution ────────────
 

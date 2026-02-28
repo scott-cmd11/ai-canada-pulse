@@ -13,7 +13,8 @@ export async function GET() {
         },
       }
     )
-  } catch {
+  } catch (err) {
+    console.warn("[api/jobs] Failed:", err)
     return NextResponse.json({ data: null })
   }
 }

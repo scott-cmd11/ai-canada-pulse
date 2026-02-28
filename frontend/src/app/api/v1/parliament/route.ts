@@ -13,7 +13,8 @@ export async function GET() {
         },
       }
     )
-  } catch {
+  } catch (err) {
+    console.warn("[api/parliament] Failed:", err)
     return NextResponse.json({ data: { mentions: [], totalCount: 0 } })
   }
 }

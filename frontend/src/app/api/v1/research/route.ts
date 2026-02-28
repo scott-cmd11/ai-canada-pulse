@@ -13,7 +13,8 @@ export async function GET() {
         },
       }
     )
-  } catch {
+  } catch (err) {
+    console.warn("[api/research] Failed:", err)
     return NextResponse.json({ papers: [] })
   }
 }

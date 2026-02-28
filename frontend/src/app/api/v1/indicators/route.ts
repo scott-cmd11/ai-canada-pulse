@@ -11,7 +11,8 @@ export async function GET() {
         "Cache-Control": "public, max-age=3600, stale-while-revalidate=7200",
       },
     })
-  } catch {
+  } catch (err) {
+    console.warn("[api/indicators] Failed:", err)
     // If Stats Canada API is down, return indicators with empty data arrays
     return NextResponse.json(indicators)
   }

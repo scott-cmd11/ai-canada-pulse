@@ -2,8 +2,9 @@
 // OpenAlex is free, open, and requires no API key
 // Docs: https://docs.openalex.org
 
+import { unstable_cache } from "next/cache"
+
 const OPENALEX_BASE = "https://api.openalex.org"
-const CACHE_TTL = 6 * 60 * 60 * 1000 // 6 hours
 
 export interface ResearchPaper {
   id: string
@@ -18,12 +19,6 @@ export interface ResearchPaper {
   concepts: string[]
 }
 
-interface CacheEntry {
-  papers: ResearchPaper[]
-  fetchedAt: number
-}
-
-let cache: CacheEntry | null = null
 
 // Canadian AI-focused institutions (OpenAlex institution IDs)
 // These are top Canadian research institutions known for AI work
@@ -55,12 +50,7 @@ interface OpenAlexWork {
   concepts?: Array<{ display_name?: string; level?: number }>
 }
 
-export async function fetchCanadianAIResearch(): Promise<ResearchPaper[]> {
-  // Check cache
-  if (cache && Date.now() - cache.fetchedAt < CACHE_TTL) {
-    return cache.papers
-  }
-
+async function _fetchCanadianAIResearch(): Promise<ResearchPaper[]> {
   try {
     const params = new URLSearchParams({
       filter: `${CANADIAN_INSTITUTION_FILTER},${AI_CONCEPT_FILTER},from_publication_date:2024-01-01`,
@@ -110,9 +100,15 @@ export async function fetchCanadianAIResearch(): Promise<ResearchPaper[]> {
         .filter(Boolean),
     }))
 
-    cache = { papers, fetchedAt: Date.now() }
     return papers
-  } catch {
+  } catch (err) {
+    console.warn("[research-client] Failed to fetch Canadian AI research:", err)
     return []
   }
 }
+
+export const fetchCanadianAIResearch = unstable_cache(
+  _fetchCanadianAIResearch,
+  ["openalex-canadian-ai-research"],
+  { revalidate: 21600 } // 6 hours
+)

@@ -84,7 +84,8 @@ export async function fetchParliamentAIMentions(): Promise<ParliamentData> {
 
     cache = { data, fetchedAt: Date.now() }
     return data
-  } catch {
+  } catch (err) {
+    console.warn("[parliament-client] Failed to fetch AI mentions:", err)
     return cache?.data ?? { mentions: [], totalCount: 0 }
   }
 }

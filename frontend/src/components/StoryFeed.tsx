@@ -7,12 +7,12 @@ import StoryCard from "./StoryCard"
 const ALL = "All"
 
 const CATEGORIES: { value: typeof ALL | Category; label: string }[] = [
-  { value: "All",                  label: "All" },
-  { value: "Research",             label: "Research" },
-  { value: "Policy & Regulation",  label: "Policy" },
-  { value: "Industry & Startups",  label: "Startups" },
-  { value: "Talent & Education",   label: "Talent" },
-  { value: "Global AI Race",       label: "Global" },
+  { value: "All", label: "All" },
+  { value: "Research", label: "Research" },
+  { value: "Policy & Regulation", label: "Policy" },
+  { value: "Industry & Startups", label: "Startups" },
+  { value: "Talent & Education", label: "Talent" },
+  { value: "Global AI Race", label: "Global" },
 ]
 
 export default function StoryFeed() {
@@ -28,7 +28,7 @@ export default function StoryFeed() {
           setStories(json.stories)
         }
       })
-      .catch(() => {})
+      .catch((err) => console.warn("[StoryFeed] fetch failed:", err))
       .finally(() => setLoading(false))
   }, [])
 

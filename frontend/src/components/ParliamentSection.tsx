@@ -21,7 +21,7 @@ export default function ParliamentSection() {
       .then((json) => {
         if (json.data) setData(json.data)
       })
-      .catch(() => {})
+      .catch((err) => console.warn("[ParliamentSection] fetch failed:", err))
       .finally(() => setLoading(false))
   }, [])
 

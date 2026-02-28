@@ -14,7 +14,8 @@ export async function GET() {
         },
       }
     )
-  } catch {
+  } catch (err) {
+    console.warn("[api/stories] Failed:", err)
     return NextResponse.json({
       stories: [],
       pulse: {

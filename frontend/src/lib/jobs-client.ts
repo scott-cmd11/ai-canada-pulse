@@ -130,7 +130,8 @@ export async function fetchAIJobMarket(): Promise<JobMarketData | null> {
 
     cache = { data, fetchedAt: Date.now() }
     return data
-  } catch {
+  } catch (err) {
+    console.warn("[jobs-client] Failed to fetch AI job market:", err)
     return cache?.data ?? null
   }
 }

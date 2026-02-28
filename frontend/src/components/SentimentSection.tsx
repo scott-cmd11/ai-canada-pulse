@@ -22,7 +22,7 @@ export default function SentimentSection() {
       .then((json) => {
         if (json.data) setData(json.data)
       })
-      .catch(() => {})
+      .catch((err) => console.warn("[SentimentSection] fetch failed:", err))
       .finally(() => setLoading(false))
   }, [])
 

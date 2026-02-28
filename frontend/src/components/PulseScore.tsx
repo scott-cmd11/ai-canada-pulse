@@ -38,7 +38,7 @@ export default function PulseScore() {
       .then((json) => {
         if (json.pulse) setPulse(json.pulse)
       })
-      .catch(() => {})
+      .catch((err) => console.warn("[PulseScore] fetch failed:", err))
   }, [])
 
   if (!pulse) {

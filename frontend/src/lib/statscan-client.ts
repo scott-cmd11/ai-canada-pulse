@@ -14,11 +14,11 @@ interface VectorConfig {
 }
 
 export const VECTOR_REGISTRY: Record<string, VectorConfig> = {
-  unemployment:         { vectorId: 2062815, latestN: 50 },  // LFS 14-10-0287, Canada 15+ SA
+  unemployment: { vectorId: 2062815, latestN: 50 },  // LFS 14-10-0287, Canada 15+ SA
   "youth-unemployment": { vectorId: 2062842, latestN: 50 },  // LFS 14-10-0287, Canada 15-24 SA
   "participation-rate": { vectorId: 2062816, latestN: 50 },  // LFS 14-10-0287, Canada 15+ SA
-  "employment-rate":    { vectorId: 2062817, latestN: 50 },  // LFS 14-10-0287, Canada 15+ SA
-  "cpi":                { vectorId: 41690973, latestN: 50 },  // CPI 18-10-0004, Canada All-items
+  "employment-rate": { vectorId: 2062817, latestN: 50 },  // LFS 14-10-0287, Canada 15+ SA
+  "cpi": { vectorId: 41690973, latestN: 50 },  // CPI 18-10-0004, Canada All-items
 }
 
 // ─── In-memory cache ────────────────────────────────────────────────────────
@@ -57,7 +57,8 @@ async function fetchVector(vectorId: number, latestN: number): Promise<DataPoint
       .sort((a: DataPoint, b: DataPoint) => a.date.localeCompare(b.date))
 
     return points.length > 0 ? points : null
-  } catch {
+  } catch (err) {
+    console.warn(`[statscan-client] Failed to fetch vector ${vectorId}:`, err)
     return null
   }
 }

@@ -17,7 +17,8 @@ export async function GET() {
         },
       }
     )
-  } catch {
+  } catch (err) {
+    console.warn("[api/trends] Failed:", err)
     return NextResponse.json({ data: null })
   }
 }

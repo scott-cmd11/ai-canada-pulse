@@ -95,7 +95,8 @@ export async function fetchCanadianAIStocks(): Promise<StocksData | null> {
     }
     cache = { data, fetchedAt: Date.now() }
     return data
-  } catch {
+  } catch (err) {
+    console.warn("[stocks-client] Spark endpoint failed, trying quote:", err)
     return await fetchViaQuoteEndpoint()
   }
 }
@@ -135,7 +136,8 @@ async function fetchViaQuoteEndpoint(): Promise<StocksData | null> {
     }
     cache = { data, fetchedAt: Date.now() }
     return data
-  } catch {
+  } catch (err) {
+    console.warn("[stocks-client] Quote endpoint failed:", err)
     return cache?.data ?? null
   }
 }

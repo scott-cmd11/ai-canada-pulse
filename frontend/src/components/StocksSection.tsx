@@ -13,7 +13,7 @@ export default function StocksSection() {
       .then((json) => {
         if (json.data) setData(json.data)
       })
-      .catch(() => {})
+      .catch((err) => console.warn("[StocksSection] fetch failed:", err))
       .finally(() => setLoading(false))
   }, [])
 
@@ -105,11 +105,10 @@ function StockCard({ quote }: { quote: StockQuote }) {
           {quote.symbol.replace(".TO", "").replace(".V", "")}
         </span>
         <span
-          className={`text-[10px] font-medium px-1.5 py-0.5 rounded ${
-            isUp
+          className={`text-[10px] font-medium px-1.5 py-0.5 rounded ${isUp
               ? "text-emerald-400 bg-emerald-500/10"
               : "text-red-400 bg-red-500/10"
-          }`}
+            }`}
         >
           {isUp ? "+" : ""}
           {quote.changePercent}%

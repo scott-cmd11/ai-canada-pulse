@@ -17,7 +17,7 @@ export default function IndicatorsSection() {
           setData(json)
         }
       })
-      .catch(() => {})
+      .catch((err) => console.warn("[IndicatorsSection] fetch failed:", err))
       .finally(() => setLoading(false))
   }, [])
 

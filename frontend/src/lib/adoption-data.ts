@@ -2,6 +2,11 @@
 // Sources:
 // - Statistics Canada, "Artificial intelligence and Canadian businesses" (11-621-m, Q2 2025)
 // - Treasury Board of Canada Secretariat, "AI in the Government of Canada" (2024)
+//
+// ⚠  REFRESH SCHEDULE: This file contains static data that needs manual updates.
+//    - Stats Canada 11-621-m releases quarterly: check https://www150.statcan.gc.ca/n1/en/catalogue/11-621-M
+//    - Treasury Board reports annually: check https://www.canada.ca/en/government/system/digital-government/digital-government-innovations/responsible-use-ai.html
+//    - Last verified: February 2026
 
 export interface AdoptionDataPoint {
   sector: string

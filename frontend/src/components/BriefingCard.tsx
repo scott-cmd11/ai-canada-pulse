@@ -4,9 +4,9 @@ import { useState, useEffect } from "react"
 import type { Story } from "@/lib/mock-data"
 
 const sentimentConfig: Record<string, { label: string; color: string }> = {
-  positive:   { label: "Positive",  color: "#10b981" },
-  neutral:    { label: "Neutral",   color: "#64748b" },
-  concerning: { label: "Negative",  color: "#ef4444" },
+  positive: { label: "Positive", color: "#10b981" },
+  neutral: { label: "Neutral", color: "#64748b" },
+  concerning: { label: "Negative", color: "#ef4444" },
 }
 
 function relativeTime(iso: string) {
@@ -33,7 +33,7 @@ export default function BriefingCard() {
           else setTopStory(json.stories[0])
         }
       })
-      .catch(() => {})
+      .catch((err) => console.warn("[BriefingCard] fetch failed:", err))
   }, [])
 
   if (!topStory) return null

@@ -21,7 +21,7 @@ export default function GovRegistrySection() {
       .then((json) => {
         if (json.systems?.length > 0) setSystems(json.systems)
       })
-      .catch(() => {})
+      .catch((err) => console.warn("[GovRegistrySection] fetch failed:", err))
       .finally(() => setLoading(false))
   }, [])
 

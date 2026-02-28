@@ -66,7 +66,8 @@ export async function GET() {
         },
       }
     )
-  } catch {
+  } catch (err) {
+    console.warn("[api/sentiment] Failed:", err)
     return NextResponse.json({ data: null })
   }
 }

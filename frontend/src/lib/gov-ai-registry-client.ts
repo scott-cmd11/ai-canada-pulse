@@ -68,7 +68,8 @@ export async function fetchGovAIRegistry(): Promise<GovAISystem[]> {
 
     cache = { systems, fetchedAt: Date.now() }
     return systems
-  } catch {
+  } catch (err) {
+    console.warn("[gov-registry-client] Failed to fetch AI registry:", err)
     return cache?.systems ?? []
   }
 }

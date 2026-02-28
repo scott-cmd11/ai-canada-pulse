@@ -13,7 +13,8 @@ export async function GET() {
         },
       }
     )
-  } catch {
+  } catch (err) {
+    console.warn("[api/stocks] Failed:", err)
     return NextResponse.json({ data: null })
   }
 }

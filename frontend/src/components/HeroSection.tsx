@@ -23,7 +23,7 @@ export default function HeroSection() {
     fetch("/api/v1/stories")
       .then((r) => r.json())
       .then((j) => { if (j.pulse) setPulse(j.pulse) })
-      .catch(() => {})
+      .catch((err) => console.warn("[HeroSection] fetch failed:", err))
   }, [])
 
   const config = pulse ? moodConfig[pulse.mood] : null
