@@ -18,7 +18,7 @@ import {
   fetchMomentum,
   fetchRiskTrend,
   fetchRiskIndex,
-  fetchSummary,
+  fetchAiSummary,
   fetchFeed,
   fetchHourly,
   fetchJurisdictionsBreakdown,
@@ -355,7 +355,7 @@ export function DashboardPage({ scope, initialTimeWindow = "7d", initialMode }: 
         fetchRiskIndex(timeWindow),
         fetchEntityMomentum(timeWindow, 10),
         fetchRiskTrend(timeWindow),
-        fetchSummary(timeWindow),
+        fetchAiSummary(timeWindow),
         fetchCoverage(timeWindow, 8),
       ]);
 

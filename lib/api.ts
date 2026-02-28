@@ -258,6 +258,13 @@ export async function fetchSummary(time_window: TimeWindow = "24h", scope: "cana
   return res.json();
 }
 
+export async function fetchAiSummary(time_window: TimeWindow = "24h", scope: "canada" | "world" = "canada"): Promise<SummaryResponse> {
+  if (USE_MOCK_DATA) return MOCK_SUMMARY;
+  const res = await fetch(`${API_BASE}/stats/ai-summary?time_window=${time_window}&scope=${scope}`, { cache: "no-store" });
+  if (!res.ok) throw new Error("Failed to fetch AI summary");
+  return res.json();
+}
+
 export async function fetchCoverage(time_window: TimeWindow = "7d", limit = 8, scope: "canada" | "world" = "canada"): Promise<CoverageResponse> {
   if (USE_MOCK_DATA) return MOCK_COVERAGE;
   const res = await fetch(`${API_BASE}/stats/coverage?time_window=${time_window}&scope=${scope}&limit=${limit}`, { cache: "no-store" });
