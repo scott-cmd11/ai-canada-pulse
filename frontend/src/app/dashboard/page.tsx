@@ -1,5 +1,5 @@
 import Header from "@/components/Header"
-import PulseScore from "@/components/PulseScore"
+import HeroSection from "@/components/HeroSection"
 import BriefingCard from "@/components/BriefingCard"
 import IndicatorsSection from "@/components/IndicatorsSection"
 import TrendsSection from "@/components/TrendsSection"
@@ -18,8 +18,8 @@ export default function DashboardPage() {
       <Header />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6 flex flex-col gap-8">
-        {/* Sector Pulse — full width */}
-        <PulseScore />
+        {/* Hero — full width */}
+        <HeroSection />
 
         {/* Two-column layout */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
