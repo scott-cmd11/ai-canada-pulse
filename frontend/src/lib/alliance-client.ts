@@ -1,21 +1,41 @@
 /**
  * Digital Research Alliance of Canada — Compute Status Client
- * Monitors PAICE HPC cluster uptime and incidents.
+ * Parses the live HTML status page at status.alliancecan.ca
+ * to extract real-time cluster operational status and incidents.
  */
 
 const TIMEOUT_MS = 10_000
 const STATUS_URL = "https://status.alliancecan.ca/"
 
+// HPC compute clusters we care about (excludes cloud, storage, and support services)
+const HPC_CLUSTERS = [
+    { name: "Narval", location: "Calcul Québec, Montreal" },
+    { name: "Béluga", location: "Calcul Québec, Montreal" },
+    { name: "Cedar", location: "WestGrid, Vancouver" },
+    { name: "Graham", location: "SHARCNET, Waterloo" },
+    { name: "Niagara", location: "SciNet, Toronto" },
+    { name: "Arbutus", location: "UVic, Victoria" },
+    { name: "Nibi", location: "Calcul Québec" },
+    { name: "Rorqual", location: "Calcul Québec" },
+    { name: "Trillium", location: "SciNet, Toronto" },
+    { name: "Fir", location: "WestGrid, Vancouver" },
+    { name: "Juno", location: "SciNet, Toronto" },
+    { name: "Killarney", location: "ACENET" },
+    { name: "Lunaris", location: "DRAC" },
+    { name: "Vulcan", location: "WestGrid" },
+]
+
 export interface ComputeCluster {
     name: string
-    status: "operational" | "degraded" | "outage" | "maintenance" | "unknown"
+    status: "operational" | "degraded" | "outage" | "maintenance" | "decommissioned" | "unknown"
     location: string
+    incident?: string
 }
 
 export interface AllianceData {
     clusters: ComputeCluster[]
     overallStatus: string
-    activeIncidents: number
+    activeIncidents: string[]
     fetchedAt: string
     isLive: boolean
 }
@@ -32,6 +52,7 @@ export async function fetchAllianceStatus(): Promise<AllianceData> {
         clearTimeout(timer)
 
         if (!res.ok) {
+            console.warn(`[alliance-client] Status page returned ${res.status}`)
             return getFallbackStatus()
         }
 
@@ -46,49 +67,70 @@ export async function fetchAllianceStatus(): Promise<AllianceData> {
 function parseStatusPage(html: string): AllianceData {
     const clusters: ComputeCluster[] = []
 
-    // Known PAICE/Alliance clusters
-    const knownClusters = [
-        { name: "Narval", location: "Montreal, QC" },
-        { name: "Béluga", location: "Montreal, QC" },
-        { name: "Cedar", location: "Vancouver, BC" },
-        { name: "Graham", location: "Waterloo, ON" },
-        { name: "Niagara", location: "Toronto, ON" },
-    ]
-
-    for (const cluster of knownClusters) {
-        // Try to find status indicators in the HTML
-        const statusRegex = new RegExp(
-            `${cluster.name}[\\s\\S]{0,500}?(operational|degraded|major|partial|maintenance)`,
-            "i"
-        )
-        const match = html.match(statusRegex)
-        let status: ComputeCluster["status"] = "unknown"
-
-        if (match) {
-            const raw = match[1].toLowerCase()
-            if (raw.includes("operation")) status = "operational"
-            else if (raw.includes("degrad") || raw.includes("partial")) status = "degraded"
-            else if (raw.includes("major")) status = "outage"
-            else if (raw.includes("maintenance")) status = "maintenance"
-        } else if (html.includes(cluster.name)) {
-            // If the cluster is mentioned but no status keyword found, assume operational
-            status = "operational"
+    // Extract active incidents from the HTML
+    const activeIncidents: string[] = []
+    const incidentRegex = /view_incident\?incident=\d+[^>]*>([^<]+)</g
+    let incidentMatch
+    while ((incidentMatch = incidentRegex.exec(html)) !== null) {
+        const title = incidentMatch[1].trim()
+        if (title && !activeIncidents.includes(title)) {
+            activeIncidents.push(title)
         }
-
-        clusters.push({ name: cluster.name, status, location: cluster.location })
     }
 
-    // Count incidents
-    const incidentMatches = html.match(/incident/gi) || []
-    const activeIncidents = Math.min(incidentMatches.length, 5) // cap to avoid noise
+    for (const cluster of HPC_CLUSTERS) {
+        let status: ComputeCluster["status"] = "unknown"
+        let incident: string | undefined
 
-    const allOperational = clusters.every((c) => c.status === "operational")
-    const hasOutage = clusters.some((c) => c.status === "outage")
+        // Find incident text near system name
+        const clusterIncident = activeIncidents.find((inc) => {
+            // Find if there's an incident associated with this cluster
+            const escapedName = cluster.name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
+            const nearbyPattern = new RegExp(
+                `${escapedName}[\\s\\S]{0,300}?view_incident[^>]*>([^<]+)`,
+                "i"
+            )
+            const match = html.match(nearbyPattern)
+            return match && inc === match[1].trim()
+        })
+
+        if (clusterIncident) {
+            incident = clusterIncident
+            const lower = clusterIncident.toLowerCase()
+            if (lower.includes("decommission") || lower.includes("end of service") || lower.includes("fin de service")) {
+                status = "decommissioned"
+            } else if (lower.includes("outage") || lower.includes("arrêt")) {
+                status = "maintenance"
+            } else if (lower.includes("degraded") || lower.includes("missing") || lower.includes("partial")) {
+                status = "degraded"
+            } else {
+                status = "degraded"
+            }
+        } else {
+            // Check if system name appears with no linked incident → likely operational
+            if (html.includes(`>${cluster.name}<`)) {
+                status = "operational"
+            }
+        }
+
+        clusters.push({ name: cluster.name, status, location: cluster.location, incident })
+    }
+
+    // Overall status
+    const hasOutage = html.toLowerCase().includes("experiencing an outage")
+    const decomCount = clusters.filter((c) => c.status === "decommissioned").length
+    const degradedCount = clusters.filter((c) => c.status === "degraded").length
+    const operationalCount = clusters.filter((c) => c.status === "operational").length
+
+    let overallStatus = "All Systems Operational"
+    if (hasOutage) overallStatus = "Service Outage Detected"
+    else if (degradedCount > 0) overallStatus = `${operationalCount} Operational, ${degradedCount} Degraded`
+    else if (decomCount > 0) overallStatus = `${operationalCount} Operational, ${decomCount} Decommissioning`
 
     return {
         clusters,
-        overallStatus: hasOutage ? "Partial Outage" : allOperational ? "All Systems Operational" : "Some Degradation",
-        activeIncidents: activeIncidents > 2 ? 0 : activeIncidents, // filter noise
+        overallStatus,
+        activeIncidents: activeIncidents.slice(0, 5),
         fetchedAt: new Date().toISOString(),
         isLive: true,
     }
@@ -96,15 +138,9 @@ function parseStatusPage(html: string): AllianceData {
 
 function getFallbackStatus(): AllianceData {
     return {
-        clusters: [
-            { name: "Narval", status: "operational", location: "Montreal, QC" },
-            { name: "Béluga", status: "operational", location: "Montreal, QC" },
-            { name: "Cedar", status: "operational", location: "Vancouver, BC" },
-            { name: "Graham", status: "operational", location: "Waterloo, ON" },
-            { name: "Niagara", status: "operational", location: "Toronto, ON" },
-        ],
-        overallStatus: "Status page unreachable — assuming operational",
-        activeIncidents: 0,
+        clusters: HPC_CLUSTERS.map((c) => ({ ...c, status: "unknown" as const })),
+        overallStatus: "Status page unreachable",
+        activeIncidents: [],
         fetchedAt: new Date().toISOString(),
         isLive: false,
     }

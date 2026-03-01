@@ -19,9 +19,11 @@ export default function ComputeStatusSection() {
             <div className="flex items-center justify-between mb-4">
                 <h2 className="section-header">National AI Compute (PAICE)</h2>
                 {data && (
-                    <span className={`text-xs font-bold px-2.5 py-1 rounded-full border ${data.overallStatus.includes("Operational")
-                            ? "text-emerald-700 bg-emerald-50 border-emerald-200"
-                            : "text-amber-700 bg-amber-50 border-amber-200"
+                    <span className={`text-xs font-bold px-2.5 py-1 rounded-full border ${data.overallStatus.includes("Outage")
+                            ? "text-red-700 bg-red-50 border-red-200"
+                            : data.overallStatus.includes("Degraded") || data.overallStatus.includes("Decommissioning")
+                                ? "text-amber-700 bg-amber-50 border-amber-200"
+                                : "text-emerald-700 bg-emerald-50 border-emerald-200"
                         }`}>
                         {data.overallStatus}
                     </span>
@@ -35,23 +37,39 @@ export default function ComputeStatusSection() {
             )}
 
             {!loading && data && (
-                <div className="saas-card p-5">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                        {data.clusters.map((cluster) => (
-                            <ClusterCard key={cluster.name} cluster={cluster} />
-                        ))}
+                <>
+                    <div className="saas-card p-5">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                            {data.clusters.map((cluster) => (
+                                <ClusterCard key={cluster.name} cluster={cluster} />
+                            ))}
+                        </div>
+
+                        {!data.isLive && (
+                            <p className="text-[10px] text-amber-600 mt-3 italic">
+                                Status page unreachable — showing last known state
+                            </p>
+                        )}
                     </div>
 
-                    {!data.isLive && (
-                        <p className="text-[10px] text-amber-600 mt-3 italic">
-                            Status page unreachable — showing last known state
-                        </p>
+                    {/* Active incidents */}
+                    {data.activeIncidents.length > 0 && (
+                        <div className="saas-card p-4 mt-3 border-l-4 border-l-amber-400">
+                            <p className="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">
+                                Active Notices
+                            </p>
+                            <ul className="flex flex-col gap-1">
+                                {data.activeIncidents.map((inc, i) => (
+                                    <li key={i} className="text-xs text-slate-600">{inc}</li>
+                                ))}
+                            </ul>
+                        </div>
                     )}
-                </div>
+                </>
             )}
 
             <p className="mt-3 text-[11px] font-semibold uppercase tracking-wider text-slate-400 text-right">
-                Source: Digital Research Alliance of Canada · status.alliancecan.ca
+                Source: Digital Research Alliance of Canada · status.alliancecan.ca · {data?.isLive ? "Live" : "Fallback"}
             </p>
         </section>
     )
@@ -63,13 +81,17 @@ function ClusterCard({ cluster }: { cluster: ComputeCluster }) {
         degraded: { dot: "bg-amber-500", bg: "bg-amber-50", text: "text-amber-700", label: "Degraded" },
         outage: { dot: "bg-red-500", bg: "bg-red-50", text: "text-red-700", label: "Outage" },
         maintenance: { dot: "bg-blue-500", bg: "bg-blue-50", text: "text-blue-700", label: "Maintenance" },
-        unknown: { dot: "bg-slate-400", bg: "bg-slate-50", text: "text-slate-600", label: "Unknown" },
+        decommissioned: { dot: "bg-slate-400", bg: "bg-slate-50", text: "text-slate-500", label: "Decommissioning" },
+        unknown: { dot: "bg-slate-300", bg: "bg-slate-50", text: "text-slate-500", label: "Unknown" },
     }
 
     const cfg = statusConfig[cluster.status]
 
     return (
-        <div className={`p-4 rounded-lg border border-slate-200 ${cfg.bg}`}>
+        <div
+            className={`p-4 rounded-lg border border-slate-200 ${cfg.bg}`}
+            title={cluster.incident || ""}
+        >
             <div className="flex items-center justify-between mb-2">
                 <p className="text-sm font-bold text-slate-900">{cluster.name}</p>
                 <div className="flex items-center gap-1.5">
@@ -80,6 +102,11 @@ function ClusterCard({ cluster }: { cluster: ComputeCluster }) {
                 </div>
             </div>
             <p className="text-xs text-slate-500">{cluster.location}</p>
+            {cluster.incident && (
+                <p className="text-[10px] text-amber-600 mt-1 truncate" title={cluster.incident}>
+                    ⚠ {cluster.incident}
+                </p>
+            )}
         </div>
     )
 }
