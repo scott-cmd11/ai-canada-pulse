@@ -116,16 +116,19 @@ function parseStatusPage(html: string): AllianceData {
         clusters.push({ name: cluster.name, status, location: cluster.location, incident })
     }
 
-    // Overall status
-    const hasOutage = html.toLowerCase().includes("experiencing an outage")
+    // Overall status — derive from actual cluster statuses, not the page banner
+    // (The page banner shows "experiencing an outage" for planned decommissions too)
+    const outageCount = clusters.filter((c) => c.status === "outage").length
     const decomCount = clusters.filter((c) => c.status === "decommissioned").length
     const degradedCount = clusters.filter((c) => c.status === "degraded").length
+    const maintenanceCount = clusters.filter((c) => c.status === "maintenance").length
     const operationalCount = clusters.filter((c) => c.status === "operational").length
 
     let overallStatus = "All Systems Operational"
-    if (hasOutage) overallStatus = "Service Outage Detected"
+    if (outageCount > 0) overallStatus = `${outageCount} System${outageCount > 1 ? "s" : ""} Down`
     else if (degradedCount > 0) overallStatus = `${operationalCount} Operational, ${degradedCount} Degraded`
-    else if (decomCount > 0) overallStatus = `${operationalCount} Operational, ${decomCount} Decommissioning`
+    else if (maintenanceCount > 0) overallStatus = `${operationalCount} Operational, ${maintenanceCount} In Maintenance`
+    else if (decomCount > 0) overallStatus = `${operationalCount} Active, ${decomCount} Retiring`
 
     return {
         clusters,
