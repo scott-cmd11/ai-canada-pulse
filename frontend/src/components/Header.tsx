@@ -50,7 +50,7 @@ export default function Header() {
           </div>
           <div className="h-4 w-px bg-slate-300 hidden sm:block"></div>
           <p className="text-sm hidden sm:block font-medium text-slate-500">
-            Tracking Canada&apos;s $2.4B AI Strategy
+            Tracking AI in Canada
           </p>
         </div>
 
