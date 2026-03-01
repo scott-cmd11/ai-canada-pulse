@@ -110,6 +110,9 @@ export default function AdoptionComparison() {
         </div>
 
       </div>
+      <p className="mt-3 text-[11px] font-semibold uppercase tracking-wider text-slate-400 text-right">
+        Source: Statistics Canada 11-621-M, Treasury Board of Canada
+      </p>
     </section>
   )
 }

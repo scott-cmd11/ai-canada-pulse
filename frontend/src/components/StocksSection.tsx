@@ -105,6 +105,9 @@ export default function StocksSection() {
           </tbody>
         </table>
       </div>
+      <p className="mt-3 text-[11px] font-semibold uppercase tracking-wider text-slate-400 text-right">
+        Source: Yahoo Finance · Updated every 30 min
+      </p>
     </section>
   )
 }

@@ -1,5 +1,7 @@
 "use client"
 
+import Link from "next/link"
+
 export default function Header() {
   const today = new Date().toLocaleDateString("en-CA", {
     weekday: "short",
@@ -27,6 +29,9 @@ export default function Header() {
         </div>
 
         <div className="flex items-center gap-4 text-sm font-medium">
+          <Link href="/methodology" className="text-slate-500 hover:text-indigo-700 hidden sm:block">
+            Sources
+          </Link>
           <span className="text-slate-500">{today}</span>
           <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 bg-green-50 text-green-700 rounded-full border border-green-200">
             <span className="relative flex h-2 w-2">

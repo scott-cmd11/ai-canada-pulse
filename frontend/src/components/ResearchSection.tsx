@@ -44,6 +44,9 @@ export default function ResearchSection() {
           ))}
         </div>
       )}
+      <p className="mt-3 text-[11px] font-semibold uppercase tracking-wider text-slate-400 text-right">
+        Source: OpenAlex API · Updated every 6 hrs
+      </p>
     </section>
   )
 }

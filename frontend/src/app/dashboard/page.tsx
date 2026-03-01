@@ -1,3 +1,4 @@
+import Link from "next/link"
 import Header from "@/components/Header"
 import HeroSection from "@/components/HeroSection"
 import BriefingCard from "@/components/BriefingCard"
@@ -103,8 +104,12 @@ export default function DashboardPage() {
               <div className="h-3 w-px bg-slate-300 hidden sm:block"></div>
               <span>Stats Canada</span>
               <span>OpenAlex</span>
-              <span>OpenParliament</span>
               <span>Yahoo Finance</span>
+              <span>Google Trends</span>
+              <span className="text-slate-300">•</span>
+              <Link href="/methodology" className="font-semibold text-indigo-700 hover:text-indigo-800 hover:underline">
+                View all sources →
+              </Link>
             </div>
           </div>
         </div>
