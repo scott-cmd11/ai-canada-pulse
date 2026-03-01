@@ -116,6 +116,12 @@ export default function DashboardPage() {
             <div>
               <p className="font-semibold text-slate-700">AI Canada Pulse Platform</p>
               <p>v3.0 — Dynamic AI Data Architecture</p>
+              <p className="mt-1">
+                Contact:{" "}
+                <a href="mailto:scott.hazlitt@gmail.com" className="text-indigo-700 hover:underline">
+                  scott.hazlitt@gmail.com
+                </a>
+              </p>
             </div>
             <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
               <span className="font-medium text-slate-600">Data Connections:</span>
@@ -133,6 +139,11 @@ export default function DashboardPage() {
                 View all sources →
               </Link>
             </div>
+          </div>
+          <div className="mt-6 pt-4 border-t border-slate-100 text-xs text-slate-400 leading-relaxed">
+            <p>
+              <strong className="text-slate-500">AI Disclaimer:</strong> This platform uses artificial intelligence models to generate article summaries, executive briefs, and sentiment analysis. AI-generated content is marked with a ✦ symbol and should not be treated as authoritative analysis. Market data is delayed and should not be used for trading decisions. Some datasets use research-based estimates from public reports rather than live feeds. Always verify critical information with primary sources.
+            </p>
           </div>
         </div>
       </footer>
