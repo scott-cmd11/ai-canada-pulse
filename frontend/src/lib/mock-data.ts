@@ -7,6 +7,7 @@ export interface Story {
   id: string
   headline: string
   summary: string
+  aiSummary?: string
   category: Category
   region: string
   publishedAt: string

@@ -3,12 +3,12 @@
 import { useState, useEffect } from "react"
 import type { ParliamentMention, ParliamentData } from "@/lib/parliament-client"
 
-const PARTY_COLORS: Record<string, string> = {
-  Liberal: "text-red-400",
-  Conservative: "text-blue-400",
-  NDP: "text-orange-400",
-  "Bloc Québécois": "text-cyan-400",
-  Green: "text-green-400",
+const PARTY_BADGES: Record<string, string> = {
+  Liberal: "bg-red-50 text-red-700 border-red-200",
+  Conservative: "bg-blue-50 text-blue-700 border-blue-200",
+  NDP: "bg-amber-50 text-amber-700 border-amber-200",
+  "Bloc Québécois": "bg-sky-50 text-sky-700 border-sky-200",
+  Green: "bg-green-50 text-green-700 border-green-200",
 }
 
 export default function ParliamentSection() {
@@ -27,72 +27,81 @@ export default function ParliamentSection() {
 
   return (
     <section>
-      <h2 className="text-xs font-medium uppercase tracking-widest text-slate-400 mb-3">
-        AI in Parliament
-      </h2>
+      <div className="section-header">
+        <h2>Parliamentary Records</h2>
+      </div>
 
       {loading && (
-        <div className="bg-slate-800/60 rounded border border-slate-700/50 p-6">
-          <p className="text-sm text-slate-500">Loading parliamentary debates from OpenParliament...</p>
+        <div className="py-8">
+          <p className="text-sm font-medium text-slate-500">Scanning Hansard database...</p>
         </div>
       )}
 
       {!loading && (!data || data.mentions.length === 0) && (
-        <div className="bg-slate-800/60 rounded border border-slate-700/50 p-6">
-          <p className="text-sm text-slate-500">Unable to load parliamentary data at this time.</p>
+        <div className="py-8">
+          <p className="text-sm font-medium text-slate-500">No recent parliamentary activity logged.</p>
         </div>
       )}
 
+      {/* Remove hidden overflow that was clipping text, let the table flow */}
       {data && data.mentions.length > 0 && (
-        <div className="bg-slate-800/60 rounded border border-slate-700/50 overflow-hidden">
-          <div className="px-4 py-3 border-b border-slate-700/50">
-            <span className="text-sm font-medium text-slate-200">
-              Recent AI-related debates in the House of Commons
-            </span>
-          </div>
-
-          <div className="divide-y divide-slate-700/30 max-h-[360px] overflow-y-auto">
-            {data.mentions.map((m, i) => (
-              <MentionRow key={`${m.url}-${i}`} mention={m} />
-            ))}
-          </div>
+        <div className="saas-card bg-white overflow-x-auto">
+          <table className="w-full text-left border-collapse min-w-[600px]">
+            <thead className="bg-slate-50 border-b border-slate-200">
+              <tr>
+                <th className="py-3 px-4 md:px-6 text-xs font-semibold tracking-wider uppercase text-slate-500 w-[110px]">Date</th>
+                <th className="py-3 px-4 md:px-6 text-xs font-semibold tracking-wider uppercase text-slate-500 min-w-[140px]">Member</th>
+                <th className="py-3 px-4 md:px-6 text-xs font-semibold tracking-wider uppercase text-slate-500">Excerpt</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {data.mentions.map((m, i) => (
+                <MentionRow key={`${m.url}-${i}`} mention={m} />
+              ))}
+            </tbody>
+          </table>
         </div>
-      )}
-
-      {data && data.mentions.length > 0 && (
-        <p className="text-[10px] text-slate-600 mt-2">
-          Source: OpenParliament.ca — tracking mentions of AI, AIDA, and machine learning
-        </p>
       )}
     </section>
   )
 }
 
 function MentionRow({ mention }: { mention: ParliamentMention }) {
+  const badgeClass = PARTY_BADGES[mention.party || ""] || "bg-slate-50 text-slate-600 border-slate-200"
+
   return (
-    <div className="px-4 py-3 hover:bg-slate-700/20 transition-colors">
-      <div className="flex items-center gap-2 mb-1">
-        <span className="text-xs font-medium text-slate-200">{mention.speaker}</span>
-        {mention.party && (
-          <span className={`text-[10px] ${PARTY_COLORS[mention.party] || "text-slate-400"}`}>
-            {mention.party}
+    <tr className="hover:bg-slate-50 transition-colors align-top">
+      <td className="py-4 px-4 md:px-6 text-sm font-medium text-slate-500 whitespace-nowrap">
+        {mention.date}
+      </td>
+
+      <td className="py-4 px-4 md:px-6">
+        <div className="flex flex-col items-start gap-1.5">
+          <span className="text-sm font-bold text-slate-900">
+            {mention.speaker}
           </span>
+          {mention.party && (
+            <span className={`px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wider rounded border ${badgeClass}`}>
+              {mention.party}
+            </span>
+          )}
+        </div>
+      </td>
+
+      <td className="py-4 px-4 md:px-6 text-sm leading-relaxed max-w-[500px]">
+        {mention.excerpt && (
+          /* Eradicate line-clamp to prevent truncation bugs entirely */
+          <p className="text-slate-700 italic border-l-2 border-slate-200 pl-3 mb-2">"{mention.excerpt}"</p>
         )}
-        <span className="text-[10px] text-slate-600 ml-auto">{mention.date}</span>
-      </div>
-
-      {mention.excerpt && (
-        <p className="text-xs text-slate-400 line-clamp-2">{mention.excerpt}</p>
-      )}
-
-      <a
-        href={mention.url}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="text-[10px] text-blue-400/70 hover:text-blue-400 mt-1 inline-block"
-      >
-        Read full statement
-      </a>
-    </div>
+        <a
+          href={mention.url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-xs font-bold uppercase tracking-wider text-indigo-700 hover:text-indigo-900"
+        >
+          View Transcript &rarr;
+        </a>
+      </td>
+    </tr>
   )
 }

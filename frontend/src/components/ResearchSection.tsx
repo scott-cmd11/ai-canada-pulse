@@ -21,34 +21,28 @@ export default function ResearchSection() {
 
   return (
     <section>
-      <h2 className="text-xs font-medium uppercase tracking-widest text-slate-400 mb-3">
-        Canadian AI Research
-      </h2>
+      <div className="section-header">
+        <h2>Fundamental Research</h2>
+      </div>
 
       {loading && (
-        <div className="bg-slate-800/60 rounded border border-slate-700/50 p-6">
-          <p className="text-sm text-slate-500">Loading research papers from OpenAlex...</p>
+        <div className="py-8">
+          <p className="text-sm font-medium text-slate-500">Querying academic indices...</p>
         </div>
       )}
 
       {!loading && papers.length === 0 && (
-        <div className="bg-slate-800/60 rounded border border-slate-700/50 p-6">
-          <p className="text-sm text-slate-500">Unable to load research data at this time.</p>
+        <div className="py-8">
+          <p className="text-sm font-medium text-slate-500">No high-impact research identified for current period.</p>
         </div>
       )}
 
       {papers.length > 0 && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {papers.map((paper) => (
+        <div className="flex flex-col gap-4">
+          {papers.slice(0, 4).map((paper) => (
             <PaperCard key={paper.id} paper={paper} />
           ))}
         </div>
-      )}
-
-      {papers.length > 0 && (
-        <p className="text-[10px] text-slate-600 mt-2">
-          Source: OpenAlex — open research database. Showing most-cited Canadian AI papers since 2024.
-        </p>
       )}
     </section>
   )
@@ -58,15 +52,27 @@ function PaperCard({ paper }: { paper: ResearchPaper }) {
   const link = paper.openAccessUrl || paper.doiUrl
 
   return (
-    <article className="bg-slate-800/60 rounded border border-slate-700/50 p-4 flex flex-col gap-2 card-hover">
-      {/* Title */}
-      <h3 className="text-sm font-semibold text-slate-200 leading-snug line-clamp-3">
+    <article className="saas-card bg-white p-5 border-l-4 border-l-sky-600 flex flex-col">
+      {paper.concepts.length > 0 && (
+        <div className="flex flex-wrap gap-1.5 mb-3">
+          {paper.concepts.slice(0, 3).map((c) => (
+            <span
+              key={c}
+              className="text-[11px] uppercase tracking-wider font-semibold px-2 py-0.5 rounded bg-slate-100 text-slate-600"
+            >
+              {c}
+            </span>
+          ))}
+        </div>
+      )}
+
+      <h3 className="text-base font-bold text-slate-900 leading-snug mb-2">
         {link ? (
           <a
             href={link}
             target="_blank"
             rel="noopener noreferrer"
-            className="hover:text-blue-400 transition-colors"
+            className="hover:text-indigo-700 hover:underline"
           >
             {paper.title}
           </a>
@@ -75,46 +81,26 @@ function PaperCard({ paper }: { paper: ResearchPaper }) {
         )}
       </h3>
 
-      {/* Authors */}
-      <p className="text-xs text-slate-500 line-clamp-1">
+      <div className="text-sm text-slate-600 leading-relaxed mb-4">
         {paper.authors.join(", ")}
         {paper.authors.length >= 5 && " et al."}
-      </p>
+      </div>
 
-      {/* Institutions */}
-      {paper.institutions.length > 0 && (
-        <p className="text-xs text-slate-400">
-          {paper.institutions.join(" / ")}
-        </p>
-      )}
-
-      {/* Concepts */}
-      {paper.concepts.length > 0 && (
-        <div className="flex flex-wrap gap-1 mt-1">
-          {paper.concepts.map((c) => (
-            <span
-              key={c}
-              className="text-[10px] text-slate-400 bg-slate-700/50 px-1.5 py-0.5 rounded"
-            >
-              {c}
-            </span>
-          ))}
-        </div>
-      )}
-
-      {/* Footer */}
-      <div className="flex items-center gap-3 mt-auto pt-1 text-xs">
-        {paper.journal && (
-          <span className="text-slate-500 truncate">{paper.journal}</span>
-        )}
-        <span className="text-slate-500 ml-auto whitespace-nowrap">
-          {paper.citationCount} citations
-        </span>
-        {paper.publicationDate && (
-          <span className="text-slate-600 whitespace-nowrap">
-            {paper.publicationDate.slice(0, 7)}
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-2 mt-auto text-xs font-medium text-slate-500">
+        {paper.institutions[0] && (
+          <span className="truncate max-w-[250px]" title={paper.institutions.join(" / ")}>
+            {paper.institutions[0]}
           </span>
         )}
+        <span className="text-slate-300 hidden sm:block">•</span>
+        {paper.journal && <span className="truncate max-w-[200px]">{paper.journal}</span>}
+        <span className="text-slate-300 hidden sm:block">•</span>
+        <span className="font-semibold text-slate-700 flex items-center gap-1">
+          <svg className="w-3.5 h-3.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+          </svg>
+          {paper.citationCount} Citations
+        </span>
       </div>
     </article>
   )

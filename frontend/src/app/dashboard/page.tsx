@@ -1,78 +1,113 @@
 import Header from "@/components/Header"
 import HeroSection from "@/components/HeroSection"
 import BriefingCard from "@/components/BriefingCard"
+import ExecutiveBriefSection from "@/components/ExecutiveBriefSection"
 import IndicatorsSection from "@/components/IndicatorsSection"
 import TrendsSection from "@/components/TrendsSection"
 import StoryFeed from "@/components/StoryFeed"
 import AdoptionComparison from "@/components/AdoptionComparison"
 import ResearchSection from "@/components/ResearchSection"
-import GovRegistrySection from "@/components/GovRegistrySection"
-import ParliamentSection from "@/components/ParliamentSection"
 import JobMarketSection from "@/components/JobMarketSection"
 import SentimentSection from "@/components/SentimentSection"
 import StocksSection from "@/components/StocksSection"
 
 export default function DashboardPage() {
   return (
-    <div className="min-h-screen bg-slate-950">
+    <div className="min-h-screen bg-slate-50 text-slate-900">
       <Header />
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6 flex flex-col gap-8">
-        {/* Hero — full width */}
-        <HeroSection />
+      {/* Fluid layout with tight padding, high density */}
+      <main className="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-8 flex flex-col gap-8">
 
-        {/* Two-column layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {/* Full width functional summary */}
+        <div>
+          <HeroSection />
+        </div>
 
-          {/* LEFT: Stories + Research + Policy */}
-          <div className="flex flex-col gap-8">
-            {/* Top Story */}
-            <BriefingCard />
+        <div className="grid grid-cols-1 xl:grid-cols-12 gap-8 lg:gap-10">
 
-            {/* Stories Feed */}
-            <section>
-              <h2 className="text-xs font-medium uppercase tracking-widest text-slate-400 mb-3">
-                Latest Stories
-              </h2>
+          {/* LEFT COLUMN: Narrative & Policy (7 cols) */}
+          <div className="xl:col-span-7 flex flex-col gap-10">
+
+            <div>
+              <div className="section-header">
+                <h2>Top Briefing</h2>
+              </div>
+              <BriefingCard />
+            </div>
+
+            {/* AI Executive Brief — appears when HF_API_TOKEN is configured */}
+            <ExecutiveBriefSection />
+
+            <div>
+              <div className="section-header flex items-center justify-between">
+                <h2>Latest Developments</h2>
+                <span className="text-xs font-semibold text-indigo-700 bg-indigo-50 px-2.5 py-1 rounded-full border border-indigo-200">
+                  REAL-TIME
+                </span>
+              </div>
               <StoryFeed />
-            </section>
+            </div>
 
-            {/* Canadian AI Research */}
-            <ResearchSection />
+            <div>
+              <ResearchSection />
+            </div>
 
-            {/* Federal AI Systems Registry */}
-            <GovRegistrySection />
 
-            {/* AI in Parliament */}
-            <ParliamentSection />
+
+
+
           </div>
 
-          {/* RIGHT: Economic Indicators + Visuals + Market */}
-          <div className="flex flex-col gap-8">
-            {/* Economic Indicators */}
-            <IndicatorsSection />
+          {/* RIGHT COLUMN: Data & Markets (5 cols) */}
+          <div className="xl:col-span-5 flex flex-col gap-10">
 
-            {/* Google Trends: AI Search Interest in Canada */}
-            <TrendsSection />
+            <div>
+              <StocksSection />
+            </div>
 
-            {/* Media Sentiment (GDELT) */}
-            <SentimentSection />
+            <div>
+              <IndicatorsSection />
+            </div>
 
-            {/* AI Adoption: Government vs Private Sector */}
-            <AdoptionComparison />
+            <div>
+              <TrendsSection />
+            </div>
 
-            {/* Canadian AI Stocks */}
-            <StocksSection />
+            <div>
+              <SentimentSection />
+            </div>
 
-            {/* AI Job Market */}
-            <JobMarketSection />
+            <div>
+              <AdoptionComparison />
+            </div>
+
+            <div>
+              <JobMarketSection />
+            </div>
           </div>
 
         </div>
       </main>
 
-      <footer className="text-center text-xs text-slate-600 py-8 border-t border-slate-800">
-        AI Canada Pulse — tracking artificial intelligence across Canada
+      {/* Functional SaaS Footer */}
+      <footer className="mt-12 border-t border-slate-200 bg-white">
+        <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-slate-500">
+            <div>
+              <p className="font-semibold text-slate-700">AI Canada Pulse Platform</p>
+              <p>v2.0 Database</p>
+            </div>
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+              <span className="font-medium text-slate-600">Data Connections:</span>
+              <div className="h-3 w-px bg-slate-300 hidden sm:block"></div>
+              <span>Stats Canada</span>
+              <span>OpenAlex</span>
+              <span>OpenParliament</span>
+              <span>Yahoo Finance</span>
+            </div>
+          </div>
+        </div>
       </footer>
     </div>
   )

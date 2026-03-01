@@ -23,24 +23,26 @@ export default function IndicatorsSection() {
 
   return (
     <section>
-      <h2 className="text-xs font-medium uppercase tracking-widest text-slate-400 mb-3">
-        Economic Indicators
-      </h2>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      <div className="section-header">
+        <h2>Economic Context</h2>
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {data.map((ind) => (
           <IndicatorChart
             key={ind.id}
             title={ind.title}
             data={ind.data}
             unit={ind.unit}
-            color={ind.color}
+            color={"var(--accent-primary)"}
             description={ind.description}
             sourceLabel={ind.sourceLabel}
           />
         ))}
       </div>
       {loading && (
-        <p className="text-xs text-slate-500 mt-2">Fetching latest data from Stats Canada...</p>
+        <p className="text-sm font-medium text-slate-500 mt-4">
+          Retrieving baseline economic data...
+        </p>
       )}
     </section>
   )

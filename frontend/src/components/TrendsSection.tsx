@@ -6,12 +6,6 @@ import type { TrendsData } from "@/lib/trends-client"
 
 const ReactECharts = dynamic(() => import("echarts-for-react"), { ssr: false })
 
-const KEYWORD_COLORS: Record<string, string> = {
-  "artificial intelligence": "#3b82f6",
-  "ChatGPT": "#10b981",
-  "machine learning": "#f59e0b",
-}
-
 export default function TrendsSection() {
   const [data, setData] = useState<TrendsData | null>(null)
   const [loading, setLoading] = useState(true)
@@ -29,11 +23,11 @@ export default function TrendsSection() {
   if (loading) {
     return (
       <section>
-        <h2 className="text-xs font-medium uppercase tracking-widest text-slate-400 mb-3">
-          Search Interest in Canada
-        </h2>
-        <div className="bg-slate-800/60 rounded border border-slate-700/50 p-6">
-          <p className="text-sm text-slate-500">Loading Google Trends data...</p>
+        <div className="section-header">
+          <h2>Market Search Velocity</h2>
+        </div>
+        <div className="saas-card p-6">
+          <p className="text-sm font-medium text-slate-500">Aggregating search volume data...</p>
         </div>
       </section>
     )
@@ -42,85 +36,91 @@ export default function TrendsSection() {
   if (!data) {
     return (
       <section>
-        <h2 className="text-xs font-medium uppercase tracking-widest text-slate-400 mb-3">
-          Search Interest in Canada
-        </h2>
-        <div className="bg-slate-800/60 rounded border border-slate-700/50 p-6">
-          <p className="text-sm text-slate-500">Unable to load trends data at this time.</p>
+        <div className="section-header">
+          <h2>Market Search Velocity</h2>
+        </div>
+        <div className="saas-card p-6">
+          <p className="text-sm font-medium text-slate-500">Data unavailable for regional search interest.</p>
         </div>
       </section>
     )
   }
 
+  // Functional, high-contrast B2B line colors (Indigo, Navy, Sky, Slate)
+  const lineColors = ["#4338CA", "#1E3A8A", "#0284C7", "#475569"]
+
   const option = {
-    grid: { top: 30, right: 16, bottom: 24, left: 42 },
+    grid: { top: 40, right: 16, bottom: 24, left: 40 },
     legend: {
       show: true,
       top: 0,
       left: 0,
-      textStyle: { color: "#94a3b8", fontSize: 11 },
+      textStyle: { color: "#475569", fontSize: 13, fontWeight: 500 }, // slate-600
       itemWidth: 16,
-      itemHeight: 2,
+      itemHeight: 4,
+      icon: "roundRect"
     },
     xAxis: {
       type: "category" as const,
       data: data.dates,
       axisLabel: {
-        fontSize: 10,
-        color: "#64748b",
+        fontSize: 11,
+        color: "#64748B", // slate-500
         interval: Math.floor(data.dates.length / 6),
         formatter: (v: string) => {
           const [y, m] = v.split("-")
           return `${m}/${y.slice(2)}`
         },
       },
-      axisLine: { show: false },
+      axisLine: { lineStyle: { color: "#CBD5E1" } }, // slate-300
       axisTick: { show: false },
     },
     yAxis: {
       type: "value" as const,
-      axisLabel: { fontSize: 10, color: "#64748b" },
-      splitLine: { lineStyle: { color: "#334155" } },
+      axisLabel: { fontSize: 11, color: "#64748B" },
+      splitLine: { lineStyle: { color: "#F1F5F9" } }, // slate-100
       max: 100,
-      name: "Interest",
-      nameTextStyle: { color: "#64748b", fontSize: 10 },
     },
-    series: data.series.map((s) => ({
+    series: data.series.map((s, idx) => ({
       name: s.keyword,
       type: "line" as const,
       data: s.values,
-      smooth: true,
-      symbol: "none",
-      lineStyle: { color: KEYWORD_COLORS[s.keyword] || "#64748b", width: 2 },
-      areaStyle: {
-        color: {
-          type: "linear" as const,
-          x: 0, y: 0, x2: 0, y2: 1,
-          colorStops: [
-            { offset: 0, color: (KEYWORD_COLORS[s.keyword] || "#64748b") + "18" },
-            { offset: 1, color: (KEYWORD_COLORS[s.keyword] || "#64748b") + "03" },
-          ],
-        },
-      },
+      smooth: false, // Strict data representation
+      symbol: "emptyCircle",
+      symbolSize: 4,
+      showSymbol: false,
+      lineStyle: { width: 2, color: lineColors[idx % lineColors.length] },
+      itemStyle: { color: lineColors[idx % lineColors.length] },
+      emphasis: { focus: "series" }
     })),
     tooltip: {
       trigger: "axis" as const,
-      backgroundColor: "#1e293b",
-      borderColor: "#334155",
-      textStyle: { color: "#f1f5f9", fontSize: 12 },
+      backgroundColor: "#FFFFFF",
+      borderColor: "#E2E8F0",
+      borderWidth: 1,
+      padding: [8, 12],
+      textStyle: { color: "#334155", fontSize: 13 },
     },
+    animation: false
   }
 
   return (
     <section>
-      <h2 className="text-xs font-medium uppercase tracking-widest text-slate-400 mb-3">
-        Search Interest in Canada
-      </h2>
-      <div className="bg-slate-800/60 rounded border border-slate-700/50 p-4">
-        <ReactECharts option={option} style={{ height: 260 }} opts={{ renderer: "svg" }} />
-        <p className="text-[10px] text-slate-600 mt-2">
-          Source: Google Trends — relative search interest in Canada (0-100 scale, past 12 months)
-        </p>
+      <div className="section-header">
+        <h2>Market Search Velocity</h2>
+      </div>
+      <div className="saas-card p-5 sm:p-6 lg:p-8 flex flex-col h-full border-t-4 border-t-sky-700">
+        <div className="w-full min-h-[300px]">
+          <ReactECharts option={option} style={{ height: '300px', width: '100%' }} opts={{ renderer: "svg" }} />
+        </div>
+        <div className="mt-4 pt-4 border-t border-slate-100 flex justify-between items-center text-xs font-medium text-slate-500">
+          <p>
+            Relative volume index (0-100), 12M Trailing
+          </p>
+          <span className="font-semibold uppercase tracking-wider text-slate-400">
+            Source: Google Trends
+          </span>
+        </div>
       </div>
     </section>
   )

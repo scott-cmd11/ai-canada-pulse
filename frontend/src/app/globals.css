@@ -1,18 +1,47 @@
 @import "tailwindcss";
 
-:root {
-  --bg-page: #0f172a;
-  --bg-card: #1e293b;
-  --bg-card-hover: #253349;
-  --text-primary: #f1f5f9;
-  --text-secondary: #94a3b8;
-  --text-muted: #64748b;
-  --border: #334155;
-  --accent: #3b82f6;
+/* ═══════════════════════════════════════════════════
+   AI Canada Pulse — Enterprise B2B SaaS Refactor (Valona Style)
+   ═══════════════════════════════════════════════════ */
 
-  --positive: #10b981;
-  --neutral: #64748b;
-  --negative: #ef4444;
+:root {
+  /* High Contrast Enterprise Light Theme */
+  --bg-page: #F8FAFC;
+  /* Slate 50 */
+  --bg-surface-primary: #FFFFFF;
+  --bg-surface-elevated: #FFFFFF;
+
+  --text-primary: #0F172A;
+  /* Slate 900 */
+  --text-secondary: #334155;
+  /* Slate 700 */
+  --text-muted: #64748B;
+  /* Slate 500 */
+
+  --border-subtle: #E2E8F0;
+  /* Slate 200 */
+  --border-strong: #CBD5E1;
+  /* Slate 300 */
+
+  /* Valona-style accents (Royal Indigo & Graphite) */
+  --accent-primary: #4338CA;
+  /* Indigo 700 */
+  --accent-secondary: #0284C7;
+  /* Sky 600 */
+  --accent-surface: #EEF2FF;
+  /* Indigo 50 */
+
+  --status-positive: #16A34A;
+  /* Green 600 */
+  --status-negative: #DC2626;
+  /* Red 600 */
+  --status-gold: #D97706;
+  /* Amber 600 */
+
+  /* Flat Card Settings */
+  --card-bg: #FFFFFF;
+  --card-border: #E2E8F0;
+  --card-border-hover: #CBD5E1;
 }
 
 * {
@@ -23,13 +52,102 @@ body {
   background-color: var(--bg-page);
   color: var(--text-primary);
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-/* ── Subtle card hover ─────────────────────────────── */
-.card-hover {
-  transition: background-color 150ms ease;
+/* ── SaaS Flat Card ──────────────────────── */
+.glass-card {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 8px;
+  /* Standard SaaS radius */
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.05);
+  /* shadow-sm */
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+  overflow: hidden;
+  /* Prevent content bleeding */
 }
 
-.card-hover:hover {
-  background-color: var(--bg-card-hover);
+.glass-card:hover {
+  border-color: var(--card-border-hover);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+  /* shadow-md */
+}
+
+/* Rename class for clarity going forward, map existing so a bulk replace isn't strictly necessary, 
+   but we should use saas-card conceptually */
+.saas-card {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 8px;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+
+.saas-card:hover {
+  border-color: var(--card-border-hover);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+/* ── Tab styles ──────────────────────────────────── */
+.tab-active {
+  color: var(--accent-primary);
+  border-bottom: 2px solid var(--accent-primary);
+  padding-bottom: calc(0.5rem - 2px);
+  font-weight: 600;
+}
+
+.tab-inactive {
+  color: var(--text-muted);
+  border-bottom: 2px solid transparent;
+  padding-bottom: calc(0.5rem - 2px);
+  font-weight: 500;
+  transition: color 150ms ease;
+}
+
+.tab-inactive:hover {
+  color: var(--text-secondary);
+  border-bottom-color: var(--border-strong);
+}
+
+/* ── Section header styling ──────────────────────── */
+.section-header {
+  margin-bottom: 16px;
+  /* Tighter margins */
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.section-header h2 {
+  font-size: 18px;
+  /* Tighter sizing */
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: 1.4;
+}
+
+/* ── Custom scrollbar (Light Theme) ─────────────── */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #CBD5E1;
+  /* Slate 300 */
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94A3B8;
+  /* Slate 400 */
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #CBD5E1 transparent;
 }

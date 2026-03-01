@@ -3,21 +3,15 @@
 import { useState, useEffect } from "react"
 import type { Story } from "@/lib/mock-data"
 
-const sentimentConfig: Record<string, { label: string; color: string }> = {
-  positive: { label: "Positive", color: "#10b981" },
-  neutral: { label: "Neutral", color: "#64748b" },
-  concerning: { label: "Negative", color: "#ef4444" },
-}
-
 function relativeTime(iso: string) {
   const diff = Math.floor((Date.now() - new Date(iso).getTime()) / 60000)
-  if (diff < 1) return "just now"
-  if (diff === 1) return "1 min ago"
-  if (diff < 60) return `${diff} min ago`
+  if (diff < 1) return "Just updated"
+  if (diff === 1) return "1m ago"
+  if (diff < 60) return `${diff}m ago`
   const h = Math.floor(diff / 60)
-  if (h < 24) return h === 1 ? "1 hr ago" : `${h} hrs ago`
+  if (h < 24) return h === 1 ? "1h ago" : `${h}h ago`
   const d = Math.floor(h / 24)
-  return d === 1 ? "1 day ago" : `${d} days ago`
+  return d === 1 ? "1d ago" : `${d}d ago`
 }
 
 export default function BriefingCard() {
@@ -38,54 +32,60 @@ export default function BriefingCard() {
 
   if (!topStory) return null
 
-  const sent = sentimentConfig[topStory.sentiment] ?? sentimentConfig.neutral
-
   return (
-    <div>
-      <h2 className="text-xs font-medium uppercase tracking-widest text-slate-400 mb-3">
-        Top Story
-      </h2>
+    <article className="saas-card bg-white p-6 sm:p-8 flex flex-col gap-4 border-l-4 border-l-indigo-600">
 
-      <article className="bg-slate-800/60 rounded border border-slate-700/50 p-5 sm:p-6 flex flex-col gap-3">
-        {/* Meta row */}
-        <div className="flex items-center gap-2 flex-wrap text-xs">
-          <span className="text-slate-400 font-medium">{topStory.category}</span>
-          <span className="text-slate-600">|</span>
-          <span className="font-medium" style={{ color: sent.color }}>{sent.label}</span>
-          {topStory.sourceName && (
-            <>
-              <span className="text-slate-600">|</span>
-              <span className="text-slate-500">{topStory.sourceName}</span>
-            </>
-          )}
-          <span className="ml-auto text-slate-500">{topStory.region}</span>
-        </div>
+      {/* Dense Meta row */}
+      <div className="flex flex-wrap items-center gap-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
+        <span className="text-indigo-700">
+          {topStory.category}
+        </span>
+        <span className="text-slate-300">•</span>
+        {topStory.sourceName && (
+          <>
+            <span className="text-slate-700">{topStory.sourceName}</span>
+            <span className="text-slate-300">•</span>
+          </>
+        )}
+        <span>{topStory.region}</span>
+      </div>
 
-        {/* Headline */}
-        <h3 className="text-lg sm:text-xl font-semibold text-slate-100 leading-snug">
-          {topStory.headline}
-        </h3>
+      {/* Fluid Headline */}
+      <h3 className="text-xl sm:text-2xl font-bold text-slate-900 leading-tight">
+        {topStory.headline}
+      </h3>
 
-        {/* Summary */}
-        <p className="text-sm text-slate-400 leading-relaxed">
+      {/* Readable Summary — prefer AI summary */}
+      {topStory.aiSummary ? (
+        <p className="text-sm sm:text-base text-slate-700 leading-relaxed">
+          <span className="text-indigo-500 text-xs mr-1">✦</span>
+          {topStory.aiSummary}
+        </p>
+      ) : (
+        <p className="text-sm sm:text-base text-slate-600 leading-relaxed">
           {topStory.summary}
         </p>
+      )}
 
-        {/* Footer */}
-        <div className="flex items-center gap-3">
-          <p className="text-xs text-slate-500">{relativeTime(topStory.publishedAt)}</p>
-          {topStory.sourceUrl && (
+      {/* Footer */}
+      <div className="flex items-center gap-4 mt-2">
+        <p className="text-sm font-medium text-slate-500">
+          {relativeTime(topStory.publishedAt)}
+        </p>
+        {topStory.sourceUrl && (
+          <>
+            <div className="w-px h-3 bg-slate-300"></div>
             <a
               href={topStory.sourceUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-xs text-blue-400 hover:text-blue-300"
+              className="text-sm font-semibold text-indigo-700 hover:text-indigo-800 hover:underline"
             >
-              Read full story &#8599;
+              Analyze source &rarr;
             </a>
-          )}
-        </div>
-      </article>
-    </div>
+          </>
+        )}
+      </div>
+    </article>
   )
 }
