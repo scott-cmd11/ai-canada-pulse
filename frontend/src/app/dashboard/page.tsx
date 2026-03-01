@@ -8,7 +8,7 @@ import TrendsSection from "@/components/TrendsSection"
 import StoryFeed from "@/components/StoryFeed"
 import AdoptionComparison from "@/components/AdoptionComparison"
 import ResearchSection from "@/components/ResearchSection"
-import JobMarketSection from "@/components/JobMarketSection"
+// import JobMarketSection from "@/components/JobMarketSection"
 import SentimentSection from "@/components/SentimentSection"
 import StocksSection from "@/components/StocksSection"
 
@@ -83,9 +83,7 @@ export default function DashboardPage() {
               <AdoptionComparison />
             </div>
 
-            <div>
-              <JobMarketSection />
-            </div>
+
           </div>
 
         </div>
