@@ -5,9 +5,9 @@ import Link from "next/link"
 import type { PulseData } from "@/lib/mock-data"
 
 const moodConfig = {
-  green: { bg: "bg-green-50", text: "text-green-700", border: "border-green-200", dot: "bg-green-500", label: "Positive Outlook" },
-  amber: { bg: "bg-amber-50", text: "text-amber-700", border: "border-amber-200", dot: "bg-amber-500", label: "Neutral/Cautious" },
-  red: { bg: "bg-red-50", text: "text-red-700", border: "border-red-200", dot: "bg-red-500", label: "Negative Watch" },
+  green: { bg: "bg-green-50", text: "text-green-700", border: "border-green-200", dot: "bg-green-500", label: "Positive Outlook", tooltip: "Overall sentiment across news, markets, and policy signals is trending positive for Canada's AI ecosystem." },
+  amber: { bg: "bg-amber-50", text: "text-amber-700", border: "border-amber-200", dot: "bg-amber-500", label: "Neutral/Cautious", tooltip: "Mixed signals across news sentiment, market performance, and policy activity. No strong positive or negative trend detected." },
+  red: { bg: "bg-red-50", text: "text-red-700", border: "border-red-200", dot: "bg-red-500", label: "Negative Watch", tooltip: "Negative sentiment detected across multiple indicators including news coverage, market shifts, or policy concerns." },
 }
 
 function relativeTime(iso: string) {
@@ -61,12 +61,15 @@ export default function Header() {
 
           {pulse && (
             <span className="text-xs text-slate-400 hidden sm:block">
-              {relativeTime(pulse.updatedAt)}
+              Sources updated {relativeTime(pulse.updatedAt)}
             </span>
           )}
 
           {config && (
-            <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full border ${config.bg} ${config.text} ${config.border}`}>
+            <div
+              className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full border cursor-help ${config.bg} ${config.text} ${config.border}`}
+              title={config.tooltip}
+            >
               <div className={`w-2 h-2 rounded-full ${config.dot}`}></div>
               <span className="text-xs font-semibold">{config.label}</span>
             </div>
