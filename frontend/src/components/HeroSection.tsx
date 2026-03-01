@@ -35,7 +35,7 @@ export default function HeroSection() {
           National Impact Overview
         </h1>
         <p className="text-sm text-slate-600 max-w-2xl">
-          Tracking the impact of artificial intelligence across Canadian policy, markets, research, and labor.
+          Tracking Canada&apos;s $2.4B AI strategy across policy, markets, research, open-source development, and national compute infrastructure.
         </p>
       </div>
 

@@ -6,11 +6,14 @@ import ExecutiveBriefSection from "@/components/ExecutiveBriefSection"
 import IndicatorsSection from "@/components/IndicatorsSection"
 import TrendsSection from "@/components/TrendsSection"
 import StoryFeed from "@/components/StoryFeed"
-import AdoptionComparison from "@/components/AdoptionComparison"
 import ResearchSection from "@/components/ResearchSection"
-// import JobMarketSection from "@/components/JobMarketSection"
 import SentimentSection from "@/components/SentimentSection"
 import StocksSection from "@/components/StocksSection"
+import OpenSourceSection from "@/components/OpenSourceSection"
+import ArxivSection from "@/components/ArxivSection"
+import OecdSection from "@/components/OecdSection"
+import AIAdoptionSection from "@/components/AIAdoptionSection"
+import ComputeStatusSection from "@/components/ComputeStatusSection"
 
 export default function DashboardPage() {
   return (
@@ -54,9 +57,9 @@ export default function DashboardPage() {
               <ResearchSection />
             </div>
 
-
-
-
+            <div>
+              <ArxivSection />
+            </div>
 
           </div>
 
@@ -80,13 +83,30 @@ export default function DashboardPage() {
             </div>
 
             <div>
-              <AdoptionComparison />
+              <ComputeStatusSection />
             </div>
-
 
           </div>
 
         </div>
+
+        {/* Full-width sections below the two-column layout */}
+        <div className="flex flex-col gap-10">
+
+          <div>
+            <OpenSourceSection />
+          </div>
+
+          <div>
+            <OecdSection />
+          </div>
+
+          <div>
+            <AIAdoptionSection />
+          </div>
+
+        </div>
+
       </main>
 
       {/* Functional SaaS Footer */}
@@ -95,7 +115,7 @@ export default function DashboardPage() {
           <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-slate-500">
             <div>
               <p className="font-semibold text-slate-700">AI Canada Pulse Platform</p>
-              <p>v2.0 Database</p>
+              <p>v3.0 — Dynamic AI Data Architecture</p>
             </div>
             <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
               <span className="font-medium text-slate-600">Data Connections:</span>
@@ -103,7 +123,11 @@ export default function DashboardPage() {
               <span>Stats Canada</span>
               <span>OpenAlex</span>
               <span>Yahoo Finance</span>
-              <span>Google Trends</span>
+              <span>Hugging Face</span>
+              <span>GitHub</span>
+              <span>arXiv</span>
+              <span>OECD</span>
+              <span>Alliance Canada</span>
               <span className="text-slate-300">•</span>
               <Link href="/methodology" className="font-semibold text-indigo-700 hover:text-indigo-800 hover:underline">
                 View all sources →
