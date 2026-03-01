@@ -14,6 +14,7 @@ import ArxivSection from "@/components/ArxivSection"
 import OecdSection from "@/components/OecdSection"
 import AIAdoptionSection from "@/components/AIAdoptionSection"
 import ComputeStatusSection from "@/components/ComputeStatusSection"
+import TrendsInsightsSection from "@/components/TrendsInsightsSection"
 
 export default function DashboardPage() {
   return (
@@ -97,6 +98,10 @@ export default function DashboardPage() {
 
           <div>
             <OecdSection />
+          </div>
+
+          <div>
+            <TrendsInsightsSection />
           </div>
 
           <div>
