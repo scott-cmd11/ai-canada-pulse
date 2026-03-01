@@ -66,9 +66,7 @@ export default function DashboardPage() {
           {/* RIGHT COLUMN: Data & Markets (5 cols) */}
           <div className="xl:col-span-5 flex flex-col gap-10">
 
-            <div>
-              <StocksSection />
-            </div>
+
 
             <div>
               <IndicatorsSection />
@@ -103,6 +101,10 @@ export default function DashboardPage() {
 
           <div>
             <AIAdoptionSection />
+          </div>
+
+          <div>
+            <StocksSection />
           </div>
 
         </div>
