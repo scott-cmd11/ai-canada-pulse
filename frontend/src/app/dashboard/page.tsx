@@ -1,6 +1,6 @@
 import Link from "next/link"
 import Header from "@/components/Header"
-import HeroSection from "@/components/HeroSection"
+// HeroSection removed — pulse data moved to Header
 import BriefingCard from "@/components/BriefingCard"
 import ExecutiveBriefSection from "@/components/ExecutiveBriefSection"
 import IndicatorsSection from "@/components/IndicatorsSection"
@@ -24,10 +24,7 @@ export default function DashboardPage() {
       {/* Fluid layout with tight padding, high density */}
       <main className="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-8 flex flex-col gap-8">
 
-        {/* Full width functional summary */}
-        <div>
-          <HeroSection />
-        </div>
+
 
         <div className="grid grid-cols-1 xl:grid-cols-12 gap-8 lg:gap-10">
 
