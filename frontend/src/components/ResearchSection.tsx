@@ -5,6 +5,7 @@ import type { ResearchPaper } from "@/lib/research-client"
 
 export default function ResearchSection() {
   const [papers, setPapers] = useState<ResearchPaper[]>([])
+  const [fetchedAt, setFetchedAt] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -14,10 +15,21 @@ export default function ResearchSection() {
         if (json.papers && json.papers.length > 0) {
           setPapers(json.papers)
         }
+        if (json.fetchedAt) setFetchedAt(json.fetchedAt)
       })
       .catch((err) => console.warn("[ResearchSection] fetch failed:", err))
       .finally(() => setLoading(false))
   }, [])
+
+  const lastUpdated = fetchedAt
+    ? new Date(fetchedAt).toLocaleDateString("en-CA", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    })
+    : null
 
   return (
     <section>
@@ -44,9 +56,17 @@ export default function ResearchSection() {
           ))}
         </div>
       )}
-      <p className="mt-3 text-[11px] font-semibold uppercase tracking-wider text-slate-400 text-right">
-        Source: OpenAlex API · Updated every 6 hrs
-      </p>
+
+      <div className="mt-3 flex justify-between items-center">
+        {lastUpdated && (
+          <p className="text-[11px] text-slate-400">
+            Last updated: {lastUpdated}
+          </p>
+        )}
+        <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 text-right ml-auto">
+          Source: OpenAlex API
+        </p>
+      </div>
     </section>
   )
 }
@@ -89,13 +109,9 @@ function PaperCard({ paper }: { paper: ResearchPaper }) {
         {paper.authors.length >= 5 && " et al."}
       </div>
 
-      {paper.summary && (
-        <p className="text-sm text-slate-500 italic leading-relaxed mb-4 line-clamp-2">
-          {paper.summary}
-        </p>
-      )}
-
-      {!paper.summary && <div className="mb-4" />}
+      <p className="text-sm text-slate-500 leading-relaxed mb-4 line-clamp-2">
+        {paper.summary || "No summary available."}
+      </p>
 
       <div className="flex flex-wrap items-center gap-x-3 gap-y-2 mt-auto text-xs font-medium text-slate-500">
         {paper.institutions[0] && (
@@ -106,11 +122,17 @@ function PaperCard({ paper }: { paper: ResearchPaper }) {
         <span className="text-slate-300 hidden sm:block">•</span>
         {paper.journal && <span className="truncate max-w-[200px]">{paper.journal}</span>}
         <span className="text-slate-300 hidden sm:block">•</span>
+        {paper.publicationDate && (
+          <>
+            <span>{paper.publicationDate}</span>
+            <span className="text-slate-300 hidden sm:block">•</span>
+          </>
+        )}
         <span className="font-semibold text-slate-700 flex items-center gap-1">
           <svg className="w-3.5 h-3.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
           </svg>
-          {paper.citationCount} Citations
+          {paper.citationCount.toLocaleString()} Citations
         </span>
       </div>
     </article>

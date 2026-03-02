@@ -1,20 +1,19 @@
 import { NextResponse } from "next/server"
 import { fetchCanadianAIResearch } from "@/lib/research-client"
 
+export const dynamic = "force-dynamic"
+export const revalidate = 0
+
 export async function GET() {
   try {
-    const papers = await fetchCanadianAIResearch()
+    const result = await fetchCanadianAIResearch()
 
-    return NextResponse.json(
-      { papers },
-      {
-        headers: {
-          "Cache-Control": "public, max-age=21600, stale-while-revalidate=3600",
-        },
-      }
-    )
+    return NextResponse.json({
+      papers: result.papers,
+      fetchedAt: result.fetchedAt,
+    })
   } catch (err) {
     console.warn("[api/research] Failed:", err)
-    return NextResponse.json({ papers: [] })
+    return NextResponse.json({ papers: [], fetchedAt: null })
   }
 }

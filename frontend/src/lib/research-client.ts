@@ -63,14 +63,32 @@ function reconstructAbstract(invertedIndex: Record<string, number[]> | undefined
   }
   words.sort((a, b) => a[0] - b[0])
   const text = words.map(([, w]) => w).join(" ")
-  // Truncate to ~200 chars at a word boundary
   if (text.length <= 200) return text
   const truncated = text.slice(0, 200)
   const lastSpace = truncated.lastIndexOf(" ")
   return (lastSpace > 150 ? truncated.slice(0, lastSpace) : truncated) + "…"
 }
 
-async function _fetchCanadianAIResearch(): Promise<ResearchPaper[]> {
+/** Generate a plain-language summary from title + concepts when no abstract is available */
+function generateFallbackSummary(title: string, concepts: string[], journal: string | null, citationCount: number): string {
+  const conceptStr = concepts.length > 0 ? concepts.slice(0, 3).join(", ").toLowerCase() : "AI research"
+  const impactNote = citationCount > 10000
+    ? "A landmark paper"
+    : citationCount > 1000
+      ? "A highly cited study"
+      : citationCount > 100
+        ? "A significant contribution"
+        : "Research"
+  const venue = journal ? ` published in ${journal}` : ""
+  return `${impactNote}${venue} in the field of ${conceptStr}. This work, \"${title.length > 80 ? title.slice(0, 80) + '...' : title}\", has been cited ${citationCount.toLocaleString()} times by other researchers.`
+}
+
+export interface ResearchResult {
+  papers: ResearchPaper[]
+  fetchedAt: string
+}
+
+async function _fetchCanadianAIResearch(): Promise<ResearchResult> {
   try {
     const params = new URLSearchParams({
       filter: `${CANADIAN_INSTITUTION_FILTER},${AI_CONCEPT_FILTER},from_publication_date:2024-01-01`,
@@ -85,7 +103,7 @@ async function _fetchCanadianAIResearch(): Promise<ResearchPaper[]> {
       },
     })
 
-    if (!res.ok) return []
+    if (!res.ok) return { papers: [], fetchedAt: new Date().toISOString() }
 
     const json = await res.json()
     const works: OpenAlexWork[] = json.results ?? []
@@ -118,13 +136,19 @@ async function _fetchCanadianAIResearch(): Promise<ResearchPaper[]> {
         .slice(0, 4)
         .map((c) => c.display_name || "")
         .filter(Boolean),
-      summary: reconstructAbstract(w.abstract_inverted_index),
+      summary: reconstructAbstract(w.abstract_inverted_index)
+        || generateFallbackSummary(
+          w.title || "Untitled",
+          (w.concepts || []).filter(c => (c.level ?? 0) >= 1 && (c.level ?? 0) <= 2).slice(0, 3).map(c => c.display_name || "").filter(Boolean),
+          w.primary_location?.source?.display_name || null,
+          w.cited_by_count || 0
+        ),
     }))
 
-    return papers
+    return { papers, fetchedAt: new Date().toISOString() }
   } catch (err) {
     console.warn("[research-client] Failed to fetch Canadian AI research:", err)
-    return []
+    return { papers: [], fetchedAt: new Date().toISOString() }
   }
 }
 
