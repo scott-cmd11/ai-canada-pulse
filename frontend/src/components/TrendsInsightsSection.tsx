@@ -16,7 +16,9 @@ export default function TrendsInsightsSection() {
             .finally(() => setLoading(false))
     }, [])
 
-    const maxValue = provinces.length > 0 ? Math.max(...provinces.map((p) => p.value)) : 100
+    const TERRITORIES = new Set(["Nunavut", "Yukon Territory", "Northwest Territories"])
+    const filtered = provinces.filter((p) => !TERRITORIES.has(p.name))
+    const maxValue = filtered.length > 0 ? Math.max(...filtered.map((p) => p.value)) : 100
 
     return (
         <section>
@@ -35,9 +37,9 @@ export default function TrendsInsightsSection() {
                     </div>
                 )}
 
-                {!loading && provinces.length > 0 && (
+                {!loading && filtered.length > 0 && (
                     <div className="flex flex-col gap-2">
-                        {provinces.map((p) => {
+                        {filtered.map((p) => {
                             const pct = (p.value / maxValue) * 100
                             return (
                                 <div key={p.code} className="flex items-center gap-3">
@@ -59,7 +61,7 @@ export default function TrendsInsightsSection() {
                     </div>
                 )}
 
-                {!loading && provinces.length === 0 && (
+                {!loading && filtered.length === 0 && (
                     <p className="text-sm text-slate-500 py-4 text-center">
                         Regional data unavailable at this time.
                     </p>
