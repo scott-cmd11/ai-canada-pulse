@@ -84,10 +84,18 @@ function PaperCard({ paper }: { paper: ResearchPaper }) {
         )}
       </h3>
 
-      <div className="text-sm text-slate-600 leading-relaxed mb-4">
+      <div className="text-sm text-slate-600 leading-relaxed mb-2">
         {paper.authors.join(", ")}
         {paper.authors.length >= 5 && " et al."}
       </div>
+
+      {paper.summary && (
+        <p className="text-sm text-slate-500 italic leading-relaxed mb-4 line-clamp-2">
+          {paper.summary}
+        </p>
+      )}
+
+      {!paper.summary && <div className="mb-4" />}
 
       <div className="flex flex-wrap items-center gap-x-3 gap-y-2 mt-auto text-xs font-medium text-slate-500">
         {paper.institutions[0] && (

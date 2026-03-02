@@ -17,6 +17,7 @@ export interface ResearchPaper {
   authors: string[]
   institutions: string[]
   concepts: string[]
+  summary: string | null
 }
 
 
@@ -48,6 +49,25 @@ interface OpenAlexWork {
     institutions?: Array<{ display_name?: string; country_code?: string }>
   }>
   concepts?: Array<{ display_name?: string; level?: number }>
+  abstract_inverted_index?: Record<string, number[]>
+}
+
+/** Reconstruct plain text from OpenAlex inverted index */
+function reconstructAbstract(invertedIndex: Record<string, number[]> | undefined): string | null {
+  if (!invertedIndex) return null
+  const words: [number, string][] = []
+  for (const [word, positions] of Object.entries(invertedIndex)) {
+    for (const pos of positions) {
+      words.push([pos, word])
+    }
+  }
+  words.sort((a, b) => a[0] - b[0])
+  const text = words.map(([, w]) => w).join(" ")
+  // Truncate to ~200 chars at a word boundary
+  if (text.length <= 200) return text
+  const truncated = text.slice(0, 200)
+  const lastSpace = truncated.lastIndexOf(" ")
+  return (lastSpace > 150 ? truncated.slice(0, lastSpace) : truncated) + "…"
 }
 
 async function _fetchCanadianAIResearch(): Promise<ResearchPaper[]> {
@@ -56,7 +76,7 @@ async function _fetchCanadianAIResearch(): Promise<ResearchPaper[]> {
       filter: `${CANADIAN_INSTITUTION_FILTER},${AI_CONCEPT_FILTER},from_publication_date:2024-01-01`,
       sort: "cited_by_count:desc",
       per_page: "15",
-      select: "id,title,publication_date,cited_by_count,primary_location,open_access,doi,authorships,concepts",
+      select: "id,title,publication_date,cited_by_count,primary_location,open_access,doi,authorships,concepts,abstract_inverted_index",
     })
 
     const res = await fetch(`${OPENALEX_BASE}/works?${params}`, {
@@ -98,6 +118,7 @@ async function _fetchCanadianAIResearch(): Promise<ResearchPaper[]> {
         .slice(0, 4)
         .map((c) => c.display_name || "")
         .filter(Boolean),
+      summary: reconstructAbstract(w.abstract_inverted_index),
     }))
 
     return papers
