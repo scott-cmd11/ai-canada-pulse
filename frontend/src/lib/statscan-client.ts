@@ -19,6 +19,7 @@ export const VECTOR_REGISTRY: Record<string, VectorConfig> = {
   "participation-rate": { vectorId: 2062816, latestN: 50 },  // LFS 14-10-0287, Canada 15+ SA
   "employment-rate": { vectorId: 2062817, latestN: 50 },  // LFS 14-10-0287, Canada 15+ SA
   "cpi": { vectorId: 41690973, latestN: 50 },  // CPI 18-10-0004, Canada All-items
+  "gdp": { vectorId: 65201210, latestN: 50 },  // GDP 36-10-0434, All industries, SA at annual rates, chained 2017 dollars
 }
 
 // ─── In-memory cache ────────────────────────────────────────────────────────

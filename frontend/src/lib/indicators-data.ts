@@ -74,4 +74,15 @@ export const indicators: Indicator[] = [
     sourceLabel: "Statistics Canada, Table 18-10-0004",
     data: [],
   },
+  {
+    id: "gdp",
+    title: "GDP (All Industries)",
+    unit: "$M",
+    color: "#0ea5e9",
+    description: "Monthly GDP at basic prices (chained 2017 dollars) — measures total economic output and the broader environment for AI investment and commercialization",
+    frequency: "monthly",
+    source: "statscan",
+    sourceLabel: "Statistics Canada, Table 36-10-0434",
+    data: [],
+  },
 ]
