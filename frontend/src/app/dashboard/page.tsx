@@ -17,44 +17,25 @@ export default function DashboardPage() {
     <div className="min-h-screen bg-slate-50 text-slate-900">
       <Header />
 
-      <main className="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-8 flex flex-col gap-8">
+      <main className="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-8 flex flex-col gap-6">
 
         <HeroBanner />
 
-        {/* Scroll indicator */}
-        <div className="flex justify-center -mt-4 mb-0 animate-bounce">
-          <div className="flex flex-col items-center gap-1 text-slate-400">
-            <span className="text-[10px] font-semibold uppercase tracking-widest">Scroll to explore</span>
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-            </svg>
+        {/* ── Full-width Briefing ── */}
+        <div>
+          <div className="section-header">
+            <h2>Top Briefing</h2>
           </div>
+          <BriefingCard />
         </div>
 
-        {/* ── ROW 1: Briefing + Executive Brief | Economic Indicators ── */}
-        <div className="grid grid-cols-1 xl:grid-cols-12 gap-8 lg:gap-10">
+        {/* ── ROW 1: Economic Indicators (Full Width) ── */}
+        <IndicatorsSection />
 
-          <div className="xl:col-span-7 flex flex-col gap-8">
-            <div>
-              <div className="section-header">
-                <h2>Top Briefing</h2>
-              </div>
-              <BriefingCard />
-            </div>
+        {/* ── ROW 2: Latest Developments | Sidebar (Executive Brief + Adoption + Sentiment + Compute + Trends) ── */}
+        <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 lg:gap-8 items-start">
 
-            <ExecutiveBriefSection />
-          </div>
-
-          <div className="xl:col-span-5">
-            <IndicatorsSection />
-          </div>
-
-        </div>
-
-        {/* ── ROW 2: Latest Developments | AI Tool Adoption + Sentiment ── */}
-        <div className="grid grid-cols-1 xl:grid-cols-12 gap-8 lg:gap-10">
-
-          <div className="xl:col-span-7 flex flex-col gap-8">
+          <div className="xl:col-span-7 flex flex-col gap-6">
             <div>
               <div className="section-header flex items-center justify-between">
                 <h2>Latest Developments</h2>
@@ -64,26 +45,20 @@ export default function DashboardPage() {
               </div>
               <StoryFeed />
             </div>
-          </div>
 
-          <div className="xl:col-span-5 flex flex-col gap-8">
-            <TrendsSection />
-            <SentimentSection />
-          </div>
-
-        </div>
-
-        {/* ── ROW 3: arXiv + Compute Status | Provincial Trends + Stocks ── */}
-        <div className="grid grid-cols-1 xl:grid-cols-12 gap-8 lg:gap-10">
-
-          <div className="xl:col-span-7 flex flex-col gap-8">
+            {/* arXiv + Stocks below the feed */}
             <ArxivSection />
             <StocksSection />
           </div>
 
-          <div className="xl:col-span-5 flex flex-col gap-8">
-            <ComputeStatusSection />
-            <TrendsInsightsSection />
+          <div className="xl:col-span-5">
+            <div className="xl:sticky xl:top-16 flex flex-col gap-6">
+              <ExecutiveBriefSection />
+              <TrendsSection />
+              <SentimentSection />
+              <ComputeStatusSection />
+              <TrendsInsightsSection />
+            </div>
           </div>
 
         </div>
