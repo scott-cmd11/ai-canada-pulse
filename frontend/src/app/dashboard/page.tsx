@@ -6,7 +6,7 @@ import ExecutiveBriefSection from "@/components/ExecutiveBriefSection"
 import IndicatorsSection from "@/components/IndicatorsSection"
 import TrendsSection from "@/components/TrendsSection"
 import StoryFeed from "@/components/StoryFeed"
-import ResearchSection from "@/components/ResearchSection"
+
 import SentimentSection from "@/components/SentimentSection"
 import StocksSection from "@/components/StocksSection"
 import ArxivSection from "@/components/ArxivSection"
@@ -47,9 +47,6 @@ export default function DashboardPage() {
               <StoryFeed />
             </div>
 
-            <div>
-              <ResearchSection />
-            </div>
 
             <div>
               <ArxivSection />
