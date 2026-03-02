@@ -10,8 +10,6 @@ import ResearchSection from "@/components/ResearchSection"
 import SentimentSection from "@/components/SentimentSection"
 import StocksSection from "@/components/StocksSection"
 import ArxivSection from "@/components/ArxivSection"
-import OecdSection from "@/components/OecdSection"
-import AIAdoptionSection from "@/components/AIAdoptionSection"
 import ComputeStatusSection from "@/components/ComputeStatusSection"
 import TrendsInsightsSection from "@/components/TrendsInsightsSection"
 
@@ -89,15 +87,7 @@ export default function DashboardPage() {
 
 
           <div>
-            <OecdSection />
-          </div>
-
-          <div>
             <TrendsInsightsSection />
-          </div>
-
-          <div>
-            <AIAdoptionSection />
           </div>
 
           <div>
@@ -128,11 +118,7 @@ export default function DashboardPage() {
               <span>Stats Canada</span>
               <span>OpenAlex</span>
               <span>Yahoo Finance</span>
-
-              <span>GitHub</span>
               <span>arXiv</span>
-              <span>OECD</span>
-              <span>Alliance Canada</span>
               <span className="text-slate-300">•</span>
               <Link href="/methodology" className="font-semibold text-indigo-700 hover:text-indigo-800 hover:underline">
                 View all sources →
