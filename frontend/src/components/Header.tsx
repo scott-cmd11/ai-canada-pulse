@@ -55,14 +55,14 @@ export default function Header() {
         </div>
 
         <div className="flex items-center gap-3 text-sm font-medium">
-          <Link href="/methodology" className="text-slate-500 hover:text-indigo-700 hidden sm:block">
-            Sources
-          </Link>
-
-          {pulse && (
-            <span className="text-xs text-slate-400 hidden sm:block">
+          {pulse ? (
+            <Link href="/methodology" className="text-xs text-slate-400 hover:text-indigo-700 hidden sm:block">
               Sources updated {relativeTime(pulse.updatedAt)}
-            </span>
+            </Link>
+          ) : (
+            <Link href="/methodology" className="text-slate-500 hover:text-indigo-700 hidden sm:block">
+              Sources
+            </Link>
           )}
 
           {config && (
