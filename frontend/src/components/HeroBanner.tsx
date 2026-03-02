@@ -54,7 +54,7 @@ export default function HeroBanner() {
                         </div>
                     </div>
                     <p className="text-base sm:text-lg text-indigo-200/80 leading-relaxed max-w-xl">
-                        Real-time intelligence on Canada&apos;s AI ecosystem — tracking policy, research, markets, compute infrastructure, and open-source development across the country.
+                        Real-time intelligence on Canada&apos;s AI ecosystem — tracking policy, economic indicators, market sentiment, and adoption trends across the country.
                     </p>
                     <div className="flex items-center gap-4 mt-5">
                         <Link
