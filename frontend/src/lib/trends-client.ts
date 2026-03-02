@@ -1,5 +1,5 @@
-// Google Trends client for Canadian AI search interest
-// Uses google-trends-api npm package (server-side only, no API key needed)
+// Google Trends client for Canadian AI tool adoption
+// Tracks specific AI product search interest from Jan 2022 → present
 
 import { unstable_cache } from "next/cache"
 
@@ -11,7 +11,6 @@ export interface TrendsData {
   series: { keyword: string; values: number[] }[]
 }
 
-
 interface TimelineDataPoint {
   time: string
   formattedTime: string
@@ -20,10 +19,9 @@ interface TimelineDataPoint {
 
 async function _fetchAITrendsCanada(): Promise<TrendsData | null> {
   try {
-    const startTime = new Date()
-    startTime.setFullYear(startTime.getFullYear() - 1)
+    const startTime = new Date("2022-01-01")
 
-    const keywords = ["artificial intelligence", "ChatGPT", "machine learning"]
+    const keywords = ["ChatGPT", "GitHub Copilot", "Midjourney", "Claude AI"]
 
     const result = await googleTrends.interestOverTime({
       keyword: keywords,
@@ -55,6 +53,6 @@ async function _fetchAITrendsCanada(): Promise<TrendsData | null> {
 
 export const fetchAITrendsCanada = unstable_cache(
   _fetchAITrendsCanada,
-  ["google-trends-canada-ai"],
+  ["google-trends-canada-ai-tools-2022"],
   { revalidate: 21600 } // 6 hours
 )
