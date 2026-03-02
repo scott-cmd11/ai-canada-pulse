@@ -39,8 +39,11 @@ export default function TrendsInsightsSection() {
 
                 {!loading && filtered.length > 0 && (
                     <div className="flex flex-col gap-2">
-                        {filtered.map((p) => {
+                        {filtered.map((p, i) => {
                             const pct = (p.value / maxValue) * 100
+                            const gradient = i % 2 === 0
+                                ? "from-violet-500 to-indigo-600"
+                                : "from-sky-500 to-indigo-500"
                             return (
                                 <div key={p.code} className="flex items-center gap-3">
                                     <span className="text-xs font-medium text-slate-700 w-[180px] shrink-0 truncate">
@@ -48,7 +51,7 @@ export default function TrendsInsightsSection() {
                                     </span>
                                     <div className="flex-1 h-5 bg-slate-100 rounded-full overflow-hidden">
                                         <div
-                                            className="h-full rounded-full bg-gradient-to-r from-violet-500 to-indigo-600 transition-all"
+                                            className={`h-full rounded-full bg-gradient-to-r ${gradient} transition-all`}
                                             style={{ width: `${pct}%` }}
                                         />
                                     </div>
