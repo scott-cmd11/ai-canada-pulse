@@ -1,6 +1,7 @@
 /**
  * GitHub Search API Client
  * Tracks Canadian AI repositories and developer activity.
+ * Fetches README excerpts for richer descriptions.
  */
 
 const TIMEOUT_MS = 15_000
@@ -13,6 +14,8 @@ export interface GitHubRepo {
     language: string
     url: string
     updatedAt: string
+    topics: string[]
+    readmeExcerpt: string | null
 }
 
 export interface GitHubData {
@@ -73,18 +76,28 @@ async function fetchRepos(): Promise<{
                 language?: string
                 html_url?: string
                 updated_at?: string
+                topics?: string[]
             }[]
         }
 
         const items = json.items || []
-        const topRepos: GitHubRepo[] = items.slice(0, 6).map((r) => ({
+        const top6 = items.slice(0, 6)
+
+        // Fetch README excerpts in parallel for richer descriptions
+        const readmeExcerpts = await Promise.all(
+            top6.map((r) => fetchReadmeExcerpt(r.full_name || ""))
+        )
+
+        const topRepos: GitHubRepo[] = top6.map((r, idx) => ({
             name: r.name || "",
             fullName: r.full_name || "",
-            description: (r.description || "").slice(0, 120),
+            description: r.description || "",
             stars: r.stargazers_count || 0,
             language: r.language || "Unknown",
             url: r.html_url || "",
             updatedAt: r.updated_at || "",
+            topics: (r.topics || []).slice(0, 5),
+            readmeExcerpt: readmeExcerpts[idx],
         }))
 
         const totalStars = items.reduce((sum, r) => sum + (r.stargazers_count || 0), 0)
@@ -93,6 +106,83 @@ async function fetchRepos(): Promise<{
     } catch (err) {
         console.warn("[github-client] Repo fetch failed:", err)
         return { totalRepos: 0, totalStars: 0, topRepos: [] }
+    }
+}
+
+/** Fetch the first meaningful paragraph of a repo's README */
+async function fetchReadmeExcerpt(fullName: string): Promise<string | null> {
+    if (!fullName) return null
+    try {
+        const controller = new AbortController()
+        const timer = setTimeout(() => controller.abort(), 8000)
+
+        const res = await fetch(`https://api.github.com/repos/${fullName}/readme`, {
+            headers: {
+                Accept: "application/vnd.github.v3+json",
+                "User-Agent": "AICanadaPulse/1.0",
+            },
+            signal: controller.signal,
+        })
+        clearTimeout(timer)
+
+        if (!res.ok) return null
+
+        const json = (await res.json()) as { content?: string; encoding?: string }
+        if (!json.content || json.encoding !== "base64") return null
+
+        // Decode base64 README
+        const decoded = Buffer.from(json.content, "base64").toString("utf-8")
+
+        // Strip markdown formatting and find first meaningful paragraph
+        const lines = decoded.split("\n")
+        const paragraphs: string[] = []
+        let current = ""
+
+        for (const line of lines) {
+            const trimmed = line.trim()
+
+            // Skip headings, badges, empty lines, HTML tags, links-only lines
+            if (
+                trimmed.startsWith("#") ||
+                trimmed.startsWith("!") ||
+                trimmed.startsWith("[![") ||
+                trimmed.startsWith("<") ||
+                trimmed.startsWith("---") ||
+                trimmed.startsWith("```") ||
+                trimmed.startsWith("|") ||
+                trimmed === ""
+            ) {
+                if (current.length > 30) {
+                    paragraphs.push(current.trim())
+                }
+                current = ""
+                continue
+            }
+
+            // Strip inline markdown
+            const clean = trimmed
+                .replace(/\*\*(.+?)\*\*/g, "$1")
+                .replace(/\*(.+?)\*/g, "$1")
+                .replace(/`(.+?)`/g, "$1")
+                .replace(/\[(.+?)\]\(.+?\)/g, "$1")
+                .trim()
+
+            if (clean.length > 5) {
+                current += (current ? " " : "") + clean
+            }
+        }
+        if (current.length > 30) paragraphs.push(current.trim())
+
+        // Return the first substantive paragraph, truncated to 200 chars
+        const best = paragraphs.find((p) => p.length > 40) || paragraphs[0]
+        if (!best) return null
+
+        if (best.length <= 200) return best
+        const truncated = best.slice(0, 200)
+        const lastSpace = truncated.lastIndexOf(" ")
+        return (lastSpace > 150 ? truncated.slice(0, lastSpace) : truncated) + "…"
+    } catch {
+        return null
     }
 }
 

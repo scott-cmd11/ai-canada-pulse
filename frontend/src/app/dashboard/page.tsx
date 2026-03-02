@@ -9,6 +9,7 @@ import StoryFeed from "@/components/StoryFeed"
 import ResearchSection from "@/components/ResearchSection"
 import SentimentSection from "@/components/SentimentSection"
 import StocksSection from "@/components/StocksSection"
+import OpenSourceSection from "@/components/OpenSourceSection"
 import ArxivSection from "@/components/ArxivSection"
 import OecdSection from "@/components/OecdSection"
 import AIAdoptionSection from "@/components/AIAdoptionSection"
@@ -87,6 +88,9 @@ export default function DashboardPage() {
         {/* Full-width sections below the two-column layout */}
         <div className="flex flex-col gap-10">
 
+          <div>
+            <OpenSourceSection />
+          </div>
 
           <div>
             <OecdSection />

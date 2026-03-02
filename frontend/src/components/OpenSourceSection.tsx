@@ -1,87 +1,58 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import type { HuggingFaceData } from "@/lib/huggingface-client"
 import type { GitHubData } from "@/lib/github-client"
 
 export default function OpenSourceSection() {
-    const [hf, setHf] = useState<HuggingFaceData | null>(null)
     const [gh, setGh] = useState<GitHubData | null>(null)
     const [loading, setLoading] = useState(true)
 
     useEffect(() => {
-        Promise.all([
-            fetch("/api/v1/huggingface").then((r) => r.json()),
-            fetch("/api/v1/github").then((r) => r.json()),
-        ])
-            .then(([hfJson, ghJson]) => {
-                if (hfJson.data) setHf(hfJson.data)
-                if (ghJson.data) setGh(ghJson.data)
-            })
+        fetch("/api/v1/github")
+            .then((r) => r.json())
+            .then((json) => { if (json.data) setGh(json.data) })
             .finally(() => setLoading(false))
     }, [])
 
     return (
         <section>
-            <h2 className="section-header mb-4">Open-Source AI Footprint</h2>
+            <div className="section-header">
+                <h2>Canadian AI on GitHub</h2>
+            </div>
+            <p className="text-sm text-slate-600 mb-4 max-w-3xl leading-relaxed">
+                Top Canadian AI repositories by stars. Summaries are extracted from each project&apos;s README to provide context on what each repository does and its relevance to the Canadian AI ecosystem.
+            </p>
 
             {loading && (
                 <div className="saas-card p-8 text-center">
-                    <div className="animate-pulse text-sm text-slate-500">Loading open-source data...</div>
+                    <div className="animate-pulse text-sm text-slate-500">Loading GitHub data...</div>
                 </div>
             )}
 
-            {!loading && (
+            {!loading && gh && (
                 <>
                     {/* KPI Row */}
-                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
-                        <KPI label="HF Models" value={hf?.totalModels ?? 0} />
-                        <KPI label="Total Downloads" value={formatNumber(hf?.totalDownloads ?? 0)} />
-                        <KPI label="GitHub Repos" value={formatNumber(gh?.totalRepos ?? 0)} />
-                        <KPI label="AI Developers" value={formatNumber(gh?.developerCount ?? 0)} />
+                    <div className="grid grid-cols-2 gap-3 mb-4">
+                        <KPI label="GitHub Repos" value={formatNumber(gh.totalRepos)} />
+                        <KPI label="AI Developers" value={formatNumber(gh.developerCount)} />
                     </div>
 
-                    {/* Org breakdown */}
-                    {hf && hf.orgs.length > 0 && (
-                        <div className="saas-card p-5 mb-4">
-                            <p className="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-3">
-                                Canadian AI Organizations on Hugging Face
-                            </p>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                {hf.orgs.map((org) => (
-                                    <div key={org.orgSlug} className="flex items-center justify-between bg-slate-50 p-3 rounded-lg">
-                                        <div>
-                                            <p className="text-sm font-bold text-slate-900">{org.orgName}</p>
-                                            <p className="text-xs text-slate-500">{org.modelCount} models</p>
-                                        </div>
-                                        <div className="text-right">
-                                            <p className="text-sm font-bold text-indigo-700">{formatNumber(org.totalDownloads)}</p>
-                                            <p className="text-[10px] text-slate-400 uppercase">downloads</p>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    )}
-
-                    {/* Top GitHub repos */}
-                    {gh && gh.topRepos.length > 0 && (
-                        <div className="saas-card p-5">
-                            <p className="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-3">
-                                Top Canadian AI Repositories
-                            </p>
-                            <div className="flex flex-col gap-2">
-                                {gh.topRepos.slice(0, 4).map((repo) => (
-                                    <a
-                                        key={repo.fullName}
-                                        href={repo.url}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="flex items-start justify-between p-3 bg-slate-50 rounded-lg hover:bg-slate-100 transition-colors"
-                                    >
+                    {/* Top repos with README summaries */}
+                    {gh.topRepos.length > 0 && (
+                        <div className="flex flex-col gap-3">
+                            {gh.topRepos.slice(0, 6).map((repo) => (
+                                <a
+                                    key={repo.fullName}
+                                    href={repo.url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="saas-card p-5 hover:shadow-md hover:border-indigo-200 transition-all group border-l-4 border-l-sky-600"
+                                >
+                                    <div className="flex items-start justify-between mb-2">
                                         <div className="flex-1 min-w-0">
-                                            <p className="text-sm font-bold text-slate-900 truncate">{repo.fullName}</p>
-                                            <p className="text-xs text-slate-500 truncate">{repo.description}</p>
+                                            <p className="text-sm font-bold text-slate-900 group-hover:text-indigo-700 truncate">
+                                                {repo.fullName}
+                                            </p>
                                         </div>
                                         <div className="flex items-center gap-1 ml-3 shrink-0">
                                             <svg className="w-3.5 h-3.5 text-amber-500" fill="currentColor" viewBox="0 0 20 20">
@@ -89,14 +60,38 @@ export default function OpenSourceSection() {
                                             </svg>
                                             <span className="text-xs font-bold text-slate-700">{formatNumber(repo.stars)}</span>
                                         </div>
-                                    </a>
-                                ))}
-                            </div>
+                                    </div>
+
+                                    {/* README-based summary (preferred) or fallback to description */}
+                                    <p className="text-sm text-slate-600 leading-relaxed line-clamp-2 mb-3">
+                                        {repo.readmeExcerpt || repo.description || "No description available."}
+                                    </p>
+
+                                    {/* Metadata row */}
+                                    <div className="flex items-center gap-3 text-xs text-slate-400">
+                                        {repo.language && repo.language !== "Unknown" && (
+                                            <span className="flex items-center gap-1">
+                                                <span className="w-2 h-2 rounded-full bg-indigo-500"></span>
+                                                {repo.language}
+                                            </span>
+                                        )}
+                                        {repo.topics.length > 0 && (
+                                            <div className="flex gap-1">
+                                                {repo.topics.slice(0, 3).map((t) => (
+                                                    <span key={t} className="px-1.5 py-0.5 bg-slate-100 rounded text-[10px] font-medium text-slate-500">
+                                                        {t}
+                                                    </span>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
+                                </a>
+                            ))}
                         </div>
                     )}
 
                     <p className="mt-3 text-[11px] font-semibold uppercase tracking-wider text-slate-400 text-right">
-                        Source: Hugging Face Hub API, GitHub Search API
+                        Source: GitHub Search API · Updated every 6 hrs
                     </p>
                 </>
             )}
