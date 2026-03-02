@@ -17,12 +17,24 @@ interface Props {
 function formatValue(value: number, unit: string): string {
   if (unit === "%") return `${value}%`
   if (unit === "index") return value.toFixed(1)
+  if (unit === "$M") {
+    if (value >= 1_000_000) return `$${(value / 1_000_000).toFixed(2)}T`
+    if (value >= 1_000) return `$${(value / 1_000).toFixed(1)}B`
+    return `$${value.toFixed(0)}M`
+  }
   return `${value} ${unit}`
 }
 
 function axisFormatter(unit: string): string | ((v: number) => string) {
   if (unit === "%") return "{value}%"
   if (unit === "index") return "{value}"
+  if (unit === "$M") {
+    return (v: number) => {
+      if (v >= 1_000_000) return `$${(v / 1_000_000).toFixed(1)}T`
+      if (v >= 1_000) return `$${(v / 1_000).toFixed(0)}B`
+      return `$${v}M`
+    }
+  }
   return `{value} ${unit}`
 }
 
@@ -44,7 +56,9 @@ export default function IndicatorChart({ title, data, unit, description, sourceL
   const latest = values[values.length - 1]
   const prev = values[values.length - 2]
   const delta = latest - prev
-  const deltaStr = delta >= 0 ? `+${delta.toFixed(1)}` : delta.toFixed(1)
+  const deltaFormatted = unit === "$M"
+    ? (delta >= 0 ? "+" : "") + formatValue(Math.abs(delta), unit)
+    : (delta >= 0 ? `+${delta.toFixed(1)}` : delta.toFixed(1))
 
   const option = {
     grid: { top: 16, right: 16, bottom: 24, left: 40 }, // Tighter grid
@@ -117,7 +131,7 @@ export default function IndicatorChart({ title, data, unit, description, sourceL
             {formatValue(latest, unit)}
           </span>
           <span className={`text-xs font-bold px-1.5 py-0.5 rounded ${delta > 0 ? "bg-red-50 text-red-700" : delta < 0 ? "bg-green-50 text-green-700" : "bg-slate-100 text-slate-600"}`}>
-            {deltaStr}
+            {deltaFormatted}
           </span>
         </div>
       </div>

@@ -50,10 +50,8 @@ async function fetchVector(vectorId: number, latestN: number): Promise<DataPoint
     const points: DataPoint[] = result.object.vectorDataPoint
       .map((dp: { refPer: string; value: number; scalarFactorCode: number }) => {
         const date = dp.refPer.slice(0, 7) // "2025-11-01" → "2025-11"
-        // Apply scalar factor (0 = units, 3 = thousands, 6 = millions)
-        const scalar = Math.pow(10, dp.scalarFactorCode)
-        const value = dp.scalarFactorCode === 0 ? dp.value : dp.value * scalar
-        return { date, value: Math.round(value * 10) / 10 }
+        // Use value as-is; scalarFactorCode describes the unit scale, not a multiplier
+        return { date, value: Math.round(dp.value * 10) / 10 }
       })
       .sort((a: DataPoint, b: DataPoint) => a.date.localeCompare(b.date))
 
