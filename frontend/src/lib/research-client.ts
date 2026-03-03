@@ -25,13 +25,6 @@ export interface ResearchPaper {
 // These are top Canadian research institutions known for AI work
 const CANADIAN_INSTITUTION_FILTER = "institutions.country_code:CA"
 
-// AI-related concept IDs in OpenAlex
-const AI_CONCEPT_FILTER = "concepts.id:C154945302|C11413529|C119857082|C41008148"
-// C154945302 = "Machine learning"
-// C11413529  = "Deep learning"
-// C119857082 = "Artificial intelligence"
-// C41008148  = "Computer science"
-
 interface OpenAlexWork {
   id: string
   title: string
@@ -108,8 +101,9 @@ async function _fetchCanadianAIResearch(): Promise<ResearchResult> {
     const fromDate = sixMonthsAgo.toISOString().slice(0, 10)
 
     const params = new URLSearchParams({
-      filter: `${CANADIAN_INSTITUTION_FILTER},${AI_CONCEPT_FILTER},from_publication_date:${fromDate},to_publication_date:${today},type:article|preprint`,
-      sort: "publication_date:desc",
+      search: "artificial intelligence machine learning deep learning neural network",
+      filter: `${CANADIAN_INSTITUTION_FILTER},from_publication_date:${fromDate},to_publication_date:${today},type:article|preprint`,
+      sort: "relevance_score:desc",
       per_page: "15",
       select: "id,title,publication_date,cited_by_count,primary_location,open_access,doi,authorships,concepts,abstract_inverted_index",
     })
