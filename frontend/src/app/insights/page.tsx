@@ -36,29 +36,29 @@ export default function InsightsPage() {
                     </p>
                 </div>
 
-                {/* ── Section 1: Government & Policy ── */}
-                <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 lg:gap-8">
-                    <GovRegistrySection />
-                    <ParliamentSection />
-                </div>
-
-                {/* ── Section 2: Labour & Economy ── */}
+                {/* ── Section 1: Labour & Economy ── */}
                 <JobMarketSection />
 
-                {/* ── Section 3: Research & Innovation ── */}
+                {/* ── Section 2: Research & Innovation ── */}
                 <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 lg:gap-8">
                     <ResearchSection />
                     <AIAdoptionSection />
                 </div>
 
-                {/* ── Section 4: Open Source & Models ── */}
+                {/* ── Section 3: Open Source & Models ── */}
                 <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 lg:gap-8">
                     <OpenSourceSection />
                     <HuggingFaceSection />
                 </div>
 
-                {/* ── Section 5: Regional Interest ── */}
+                {/* ── Section 4: Regional Interest ── */}
                 <TrendsInsightsSection />
+
+                {/* ── Section 5: Government & Policy ── */}
+                <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 lg:gap-8">
+                    <GovRegistrySection />
+                    <ParliamentSection />
+                </div>
 
             </main>
 
