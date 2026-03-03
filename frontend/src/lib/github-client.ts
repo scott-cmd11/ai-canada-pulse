@@ -45,43 +45,67 @@ async function fetchRepos(): Promise<{
     topRepos: GitHubRepo[]
 }> {
     try {
-        const controller = new AbortController()
-        const timer = setTimeout(() => controller.abort(), TIMEOUT_MS)
+        // Run multiple queries in parallel for broader coverage
+        const queries = [
+            "machine learning canada",
+            "deep learning canada",
+            "artificial intelligence canada",
+            "neural network canada",
+            "NLP canada",
+        ]
 
-        const query = encodeURIComponent("artificial intelligence canada language:python")
-        const res = await fetch(
-            `https://api.github.com/search/repositories?q=${query}&sort=stars&order=desc&per_page=10`,
-            {
-                headers: {
-                    Accept: "application/vnd.github.v3+json",
-                    "User-Agent": "AICanadaPulse/1.0",
-                },
-                signal: controller.signal,
-            }
+        const allItems: NonNullable<{
+            name?: string
+            full_name?: string
+            description?: string
+            stargazers_count?: number
+            language?: string
+            html_url?: string
+            updated_at?: string
+            topics?: string[]
+        }>[] = []
+        let totalCount = 0
+
+        const results = await Promise.all(
+            queries.map(async (q) => {
+                try {
+                    const controller = new AbortController()
+                    const timer = setTimeout(() => controller.abort(), TIMEOUT_MS)
+                    const encoded = encodeURIComponent(q)
+                    const res = await fetch(
+                        `https://api.github.com/search/repositories?q=${encoded}&sort=stars&order=desc&per_page=10`,
+                        {
+                            headers: {
+                                Accept: "application/vnd.github.v3+json",
+                                "User-Agent": "AICanadaPulse/1.0",
+                            },
+                            signal: controller.signal,
+                        }
+                    )
+                    clearTimeout(timer)
+                    if (!res.ok) return { total_count: 0, items: [] }
+                    return await res.json()
+                } catch {
+                    return { total_count: 0, items: [] }
+                }
+            })
         )
-        clearTimeout(timer)
 
-        if (!res.ok) {
-            console.warn(`[github-client] Repo search error: ${res.status}`)
-            return { totalRepos: 0, totalStars: 0, topRepos: [] }
+        const seen = new Set<string>()
+        for (const json of results) {
+            totalCount += json.total_count || 0
+            for (const item of json.items || []) {
+                const key = item.full_name || item.name
+                if (!seen.has(key)) {
+                    seen.add(key)
+                    allItems.push(item)
+                }
+            }
         }
 
-        const json = (await res.json()) as {
-            total_count?: number
-            items?: {
-                name?: string
-                full_name?: string
-                description?: string
-                stargazers_count?: number
-                language?: string
-                html_url?: string
-                updated_at?: string
-                topics?: string[]
-            }[]
-        }
-
-        const items = json.items || []
-        const top6 = items.slice(0, 6)
+        // Sort by stars and pick top 6
+        allItems.sort((a, b) => (b.stargazers_count || 0) - (a.stargazers_count || 0))
+        const top6 = allItems.slice(0, 6)
 
         // Fetch README excerpts in parallel for richer descriptions
         const readmeExcerpts = await Promise.all(
@@ -100,9 +124,9 @@ async function fetchRepos(): Promise<{
             readmeExcerpt: readmeExcerpts[idx],
         }))
 
-        const totalStars = items.reduce((sum, r) => sum + (r.stargazers_count || 0), 0)
+        const totalStars = allItems.reduce((sum, r) => sum + (r.stargazers_count || 0), 0)
 
-        return { totalRepos: json.total_count || 0, totalStars, topRepos }
+        return { totalRepos: totalCount, totalStars, topRepos }
     } catch (err) {
         console.warn("[github-client] Repo fetch failed:", err)
         return { totalRepos: 0, totalStars: 0, topRepos: [] }

@@ -9,9 +9,10 @@ const TIMEOUT_MS = 15_000
 
 const CANADIAN_ORGS = [
     { slug: "Cohere", name: "Cohere", search: false },
-    { slug: "CohereForAI", name: "Cohere for AI", search: true },
-    { slug: "mila-iqia", name: "Mila", search: true },
-    { slug: "VectorInstitute", name: "Vector Institute", search: true },
+    { slug: "CohereLabs", name: "Cohere Labs", search: false },
+    { slug: "ServiceNow", name: "ServiceNow Research", search: false },
+    { slug: "BorealisAI", name: "Borealis AI (RBC)", search: true },
+    { slug: "layer6ai-labs", name: "Layer 6 AI (TD)", search: true },
 ]
 
 export interface HFOrgStats {
