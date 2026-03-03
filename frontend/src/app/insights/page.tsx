@@ -14,7 +14,7 @@ export default function InsightsPage() {
         <div className="min-h-screen bg-slate-50 text-slate-900">
             <Header />
 
-            <main className="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-8 flex flex-col gap-8">
+            <main className="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-8 flex flex-col gap-6">
 
                 {/* Page Header */}
                 <div>
@@ -36,28 +36,68 @@ export default function InsightsPage() {
                     </p>
                 </div>
 
-                {/* ── Section 1: Labour & Economy ── */}
-                <JobMarketSection />
+                {/* ═══════════════════════════════════════════════ */}
+                {/* SECTION 1: Innovation Pipeline                 */}
+                {/* ═══════════════════════════════════════════════ */}
+                <div className="border-t border-slate-200 pt-6">
+                    <div className="flex items-center gap-2.5 mb-1">
+                        <span className="text-lg">🔬</span>
+                        <h2 className="text-lg font-bold text-slate-900">Innovation Pipeline</h2>
+                    </div>
+                    <p className="text-sm text-slate-500 mb-5">What&apos;s being researched and built across Canadian institutions and the open-source community.</p>
 
-                {/* ── Section 2: Research & Innovation ── */}
-                <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 lg:gap-8">
-                    <ResearchSection />
-                    <AIAdoptionSection />
+                    <div className="flex flex-col gap-6">
+                        <ResearchSection />
+                        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+                            <OpenSourceSection />
+                            <HuggingFaceSection />
+                        </div>
+                    </div>
                 </div>
 
-                {/* ── Section 3: Open Source & Models ── */}
-                <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 lg:gap-8">
-                    <OpenSourceSection />
-                    <HuggingFaceSection />
+                {/* ═══════════════════════════════════════════════ */}
+                {/* SECTION 2: Market & Adoption                   */}
+                {/* ═══════════════════════════════════════════════ */}
+                <div className="border-t border-slate-200 pt-6">
+                    <div className="flex items-center gap-2.5 mb-1">
+                        <span className="text-lg">📊</span>
+                        <h2 className="text-lg font-bold text-slate-900">Market &amp; Adoption</h2>
+                    </div>
+                    <p className="text-sm text-slate-500 mb-5">Where AI talent is in demand and which industries are adopting it fastest.</p>
+
+                    <div className="flex flex-col gap-6">
+                        <JobMarketSection />
+                        <AIAdoptionSection />
+                    </div>
                 </div>
 
-                {/* ── Section 4: Regional Interest ── */}
-                <TrendsInsightsSection />
+                {/* ═══════════════════════════════════════════════ */}
+                {/* SECTION 3: Regional Landscape                  */}
+                {/* ═══════════════════════════════════════════════ */}
+                <div className="border-t border-slate-200 pt-6">
+                    <div className="flex items-center gap-2.5 mb-1">
+                        <span className="text-lg">🗺️</span>
+                        <h2 className="text-lg font-bold text-slate-900">Regional Landscape</h2>
+                    </div>
+                    <p className="text-sm text-slate-500 mb-5">How AI interest and search activity vary across Canadian provinces.</p>
 
-                {/* ── Section 5: Government & Policy ── */}
-                <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 lg:gap-8">
-                    <GovRegistrySection />
-                    <ParliamentSection />
+                    <TrendsInsightsSection />
+                </div>
+
+                {/* ═══════════════════════════════════════════════ */}
+                {/* SECTION 4: Policy & Governance                 */}
+                {/* ═══════════════════════════════════════════════ */}
+                <div className="border-t border-slate-200 pt-6">
+                    <div className="flex items-center gap-2.5 mb-1">
+                        <span className="text-lg">🏛️</span>
+                        <h2 className="text-lg font-bold text-slate-900">Policy &amp; Governance</h2>
+                    </div>
+                    <p className="text-sm text-slate-500 mb-5">How the federal government is deploying and regulating AI systems.</p>
+
+                    <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+                        <GovRegistrySection />
+                        <ParliamentSection />
+                    </div>
                 </div>
 
             </main>
