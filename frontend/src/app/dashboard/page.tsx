@@ -29,10 +29,10 @@ export default function DashboardPage() {
           <BriefingCard />
         </div>
 
-        {/* ── ROW 1: Economic Indicators (Full Width) ── */}
-        <IndicatorsSection />
+        {/* ── Full-width Intelligence Brief ── */}
+        <ExecutiveBriefSection />
 
-        {/* ── ROW 2: Latest Developments | Sidebar (Executive Brief + Adoption + Sentiment + Compute + Trends) ── */}
+        {/* ── ROW 1: Latest Developments | Sidebar (Adoption + Sentiment + Compute + Regional) ── */}
         <div className="grid grid-cols-1 xl:grid-cols-12 gap-4 lg:gap-6 items-start">
 
           <div className="xl:col-span-7 flex flex-col gap-4">
@@ -45,23 +45,29 @@ export default function DashboardPage() {
               </div>
               <StoryFeed />
             </div>
-
-            {/* arXiv + Stocks below the feed */}
-            <ArxivSection />
-            <StocksSection />
           </div>
 
           <div className="xl:col-span-5">
             <div className="xl:sticky xl:top-16 flex flex-col gap-4">
-              <ExecutiveBriefSection />
-              <TrendsSection />
               <SentimentSection />
-              <ComputeStatusSection />
+              <TrendsSection />
               <TrendsInsightsSection />
             </div>
           </div>
 
         </div>
+
+        {/* ── ROW 2: Economic Context (Full Width) ── */}
+        <IndicatorsSection />
+
+        {/* ── ROW 3: Research + Markets ── */}
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 lg:gap-6">
+          <ArxivSection />
+          <StocksSection />
+        </div>
+
+        {/* ── ROW 4: Compute Infrastructure ── */}
+        <ComputeStatusSection />
 
       </main>
 
