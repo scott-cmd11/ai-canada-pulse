@@ -11,6 +11,8 @@ export async function GET() {
     let executiveBrief: string[] | null = null
 
     try {
+      console.log(`[api/stories] AI enrichment starting. HF_API_TOKEN set: ${!!process.env.HF_API_TOKEN}, stories count: ${stories.length}`)
+
       // Per-article summaries
       const articlesForAI = stories.map((s) => ({
         headline: s.headline,
@@ -23,6 +25,8 @@ export async function GET() {
         summarizeArticles(articlesForAI),
         generateExecutiveBrief(articlesForAI),
       ])
+
+      console.log(`[api/stories] AI results — summaryMap: ${summaryMap ? summaryMap.size + ' entries' : 'null'}, brief: ${brief ? brief.length + ' bullets' : 'null'}`)
 
       // Attach AI summaries to stories
       if (summaryMap) {
