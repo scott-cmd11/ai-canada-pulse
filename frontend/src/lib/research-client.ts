@@ -88,11 +88,27 @@ export interface ResearchResult {
   fetchedAt: string
 }
 
+/** Format YYYY-MM-DD into a readable date like "Feb 15, 2026" */
+function formatDate(dateStr: string | undefined): string {
+  if (!dateStr) return ""
+  try {
+    const d = new Date(dateStr + "T00:00:00")
+    return d.toLocaleDateString("en-CA", { month: "short", day: "numeric", year: "numeric" })
+  } catch {
+    return dateStr
+  }
+}
+
 async function _fetchCanadianAIResearch(): Promise<ResearchResult> {
   try {
+    // Use a 6-month window to get genuinely recent papers
+    const sixMonthsAgo = new Date()
+    sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6)
+    const fromDate = sixMonthsAgo.toISOString().slice(0, 10)
+
     const params = new URLSearchParams({
-      filter: `${CANADIAN_INSTITUTION_FILTER},${AI_CONCEPT_FILTER},from_publication_date:2024-01-01`,
-      sort: "cited_by_count:desc",
+      filter: `${CANADIAN_INSTITUTION_FILTER},${AI_CONCEPT_FILTER},from_publication_date:${fromDate},type:article|preprint`,
+      sort: "publication_date:desc",
       per_page: "15",
       select: "id,title,publication_date,cited_by_count,primary_location,open_access,doi,authorships,concepts,abstract_inverted_index",
     })
@@ -111,7 +127,7 @@ async function _fetchCanadianAIResearch(): Promise<ResearchResult> {
     const papers: ResearchPaper[] = works.map((w) => ({
       id: w.id,
       title: w.title || "Untitled",
-      publicationDate: w.publication_date || "",
+      publicationDate: formatDate(w.publication_date),
       citationCount: w.cited_by_count || 0,
       openAccessUrl: w.open_access?.oa_url || null,
       doiUrl: w.doi ? `https://doi.org/${w.doi.replace("https://doi.org/", "")}` : null,
