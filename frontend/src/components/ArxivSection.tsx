@@ -25,6 +25,10 @@ export default function ArxivSection() {
                 )}
             </div>
 
+            <p className="text-sm text-slate-600 mb-4 max-w-3xl leading-relaxed">
+                Recent AI research papers from Canadian universities and labs (Mila, Vector Institute, UBC, McGill, UAlberta, etc.) published on arXiv. Only papers with verified Canadian institutional affiliations are included.
+            </p>
+
             {loading && (
                 <div className="saas-card p-8 text-center">
                     <div className="animate-pulse text-sm text-slate-500">Loading arXiv data...</div>
