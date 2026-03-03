@@ -52,6 +52,10 @@ export default function Header() {
           <p className="text-sm hidden sm:block font-medium text-slate-500">
             Tracking AI in Canada
           </p>
+          <div className="h-4 w-px bg-slate-300 hidden sm:block"></div>
+          <Link href="/insights" className="text-sm hidden sm:block font-medium text-indigo-700 hover:text-indigo-900 hover:underline">
+            Insights
+          </Link>
         </div>
 
         <div className="flex items-center gap-3 text-sm font-medium">

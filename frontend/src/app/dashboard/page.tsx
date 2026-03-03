@@ -17,7 +17,7 @@ export default function DashboardPage() {
     <div className="min-h-screen bg-slate-50 text-slate-900">
       <Header />
 
-      <main className="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-8 flex flex-col gap-6">
+      <main className="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-4 lg:py-6 flex flex-col gap-4">
 
         <HeroBanner />
 
@@ -33,9 +33,9 @@ export default function DashboardPage() {
         <IndicatorsSection />
 
         {/* ── ROW 2: Latest Developments | Sidebar (Executive Brief + Adoption + Sentiment + Compute + Trends) ── */}
-        <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 lg:gap-8 items-start">
+        <div className="grid grid-cols-1 xl:grid-cols-12 gap-4 lg:gap-6 items-start">
 
-          <div className="xl:col-span-7 flex flex-col gap-6">
+          <div className="xl:col-span-7 flex flex-col gap-4">
             <div>
               <div className="section-header flex items-center justify-between">
                 <h2>Latest Developments</h2>
@@ -52,7 +52,7 @@ export default function DashboardPage() {
           </div>
 
           <div className="xl:col-span-5">
-            <div className="xl:sticky xl:top-16 flex flex-col gap-6">
+            <div className="xl:sticky xl:top-16 flex flex-col gap-4">
               <ExecutiveBriefSection />
               <TrendsSection />
               <SentimentSection />
@@ -66,7 +66,7 @@ export default function DashboardPage() {
       </main>
 
       {/* Footer */}
-      <footer className="mt-12 border-t border-slate-200 bg-white">
+      <footer className="mt-6 border-t border-slate-200 bg-white">
         <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-slate-500">
             <div>
@@ -86,6 +86,10 @@ export default function DashboardPage() {
               <span>Google Trends</span>
               <span>Yahoo Finance</span>
               <span>arXiv</span>
+              <span className="text-slate-300">•</span>
+              <Link href="/insights" className="font-semibold text-indigo-700 hover:text-indigo-800 hover:underline">
+                Deep Insights →
+              </Link>
               <span className="text-slate-300">•</span>
               <Link href="/methodology" className="font-semibold text-indigo-700 hover:text-indigo-800 hover:underline">
                 View all sources →

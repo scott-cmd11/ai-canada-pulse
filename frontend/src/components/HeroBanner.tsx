@@ -30,7 +30,7 @@ export default function HeroBanner() {
     const config = pulse ? moodConfig[pulse.mood] : null
 
     return (
-        <section className="relative overflow-hidden rounded-xl bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 px-6 sm:px-10 py-10 sm:py-14">
+        <section className="relative overflow-hidden rounded-xl bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 px-6 sm:px-10 py-8 sm:py-10">
             {/* Subtle grid pattern overlay */}
             <div className="absolute inset-0 opacity-[0.05]" style={{
                 backgroundImage: "url(\"data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23fff' fill-rule='evenodd'%3E%3Cpath d='M0 0h1v40H0zM39 0h1v40h-1zM0 0h40v1H0zM0 39h40v1H0z'/%3E%3C/g%3E%3C/svg%3E\")",

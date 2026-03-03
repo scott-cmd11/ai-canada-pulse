@@ -26,10 +26,10 @@ export default function IndicatorsSection() {
       <div className="section-header">
         <h2>Economic Context</h2>
       </div>
-      <p className="text-sm text-slate-600 mb-6 max-w-3xl leading-relaxed">
+      <p className="text-sm text-slate-600 mb-3 max-w-3xl leading-relaxed">
         Canada&apos;s macroeconomic conditions directly shape AI adoption, investment, and talent flows. Rising unemployment may signal AI-driven displacement; youth joblessness is an early indicator of entry-level automation. GDP growth fuels venture capital and R&amp;D budgets, while inflation affects the cost of compute infrastructure. All data is sourced live from Statistics Canada, updated monthly.
       </p>
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
         {data.map((ind) => (
           <IndicatorChart
             key={ind.id}
