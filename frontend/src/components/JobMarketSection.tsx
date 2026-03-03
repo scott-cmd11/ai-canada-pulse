@@ -97,8 +97,13 @@ export default function JobMarketSection() {
 
   return (
     <section>
-      <div className="section-header">
+      <div className="section-header flex items-center justify-between">
         <h2>Labour Demand</h2>
+        {isFallback && (
+          <span className="text-[10px] font-bold uppercase tracking-wider text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded">
+            Estimates
+          </span>
+        )}
       </div>
 
       {/* KPI Row — stacks on narrow viewports */}

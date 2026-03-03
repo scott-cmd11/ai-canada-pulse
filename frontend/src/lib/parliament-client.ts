@@ -71,7 +71,7 @@ export async function fetchParliamentAIMentions(): Promise<ParliamentData> {
             speaker: name || "Unknown",
             party,
             topic: speech.h2?.en || speech.h1?.en || "House Debate",
-            excerpt: truncateText(textContent, 250),
+            excerpt: extractAIExcerpt(textContent, 250),
           })
         }
       }
@@ -114,3 +114,36 @@ function truncateText(text: string, len: number): string {
   if (clean.length <= len) return clean
   return clean.slice(0, len).trimEnd() + "..."
 }
+
+/** Extract an excerpt centered around the first AI keyword match */
+function extractAIExcerpt(text: string, len: number): string {
+  const clean = text.replace(/\s+/g, " ").trim()
+  if (clean.length <= len) return clean
+
+  // Find the position of the first AI keyword match
+  const match = clean.match(AI_KEYWORDS)
+  if (!match || match.index === undefined) {
+    return truncateText(clean, len)
+  }
+
+  const matchPos = match.index
+  const halfWindow = Math.floor(len / 2)
+
+  // Calculate start/end of the excerpt window
+  let start = Math.max(0, matchPos - halfWindow)
+  let end = Math.min(clean.length, start + len)
+
+  // Adjust start if end hit the boundary
+  if (end === clean.length) {
+    start = Math.max(0, end - len)
+  }
+
+  let excerpt = clean.slice(start, end).trim()
+
+  // Add ellipsis if truncated
+  if (start > 0) excerpt = "..." + excerpt
+  if (end < clean.length) excerpt = excerpt + "..."
+
+  return excerpt
+}
+

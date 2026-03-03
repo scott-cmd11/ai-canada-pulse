@@ -101,13 +101,14 @@ function formatDate(dateStr: string | undefined): string {
 
 async function _fetchCanadianAIResearch(): Promise<ResearchResult> {
   try {
-    // Use a 6-month window to get genuinely recent papers
+    // Use a 6-month window to get genuinely recent papers, exclude future dates
+    const today = new Date().toISOString().slice(0, 10)
     const sixMonthsAgo = new Date()
     sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6)
     const fromDate = sixMonthsAgo.toISOString().slice(0, 10)
 
     const params = new URLSearchParams({
-      filter: `${CANADIAN_INSTITUTION_FILTER},${AI_CONCEPT_FILTER},from_publication_date:${fromDate},type:article|preprint`,
+      filter: `${CANADIAN_INSTITUTION_FILTER},${AI_CONCEPT_FILTER},from_publication_date:${fromDate},to_publication_date:${today},type:article|preprint`,
       sort: "publication_date:desc",
       per_page: "15",
       select: "id,title,publication_date,cited_by_count,primary_location,open_access,doi,authorships,concepts,abstract_inverted_index",
