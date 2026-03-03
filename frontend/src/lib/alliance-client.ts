@@ -130,10 +130,35 @@ function parseStatusPage(html: string): AllianceData {
     else if (maintenanceCount > 0) overallStatus = `${operationalCount} Operational, ${maintenanceCount} In Maintenance`
     else if (decomCount > 0) overallStatus = `${operationalCount} Active, ${decomCount} Retiring`
 
+    // Clean up active incidents: remove French text and deduplicate similar notices
+    const cleanedIncidents = activeIncidents
+        // Remove French-language notices
+        .filter((inc) => !/\b(est|avec|sont|qui|pas|encore|les|des|certains|prêts|une|sur|fin de)\b/i.test(inc))
+        // Remove pure date-range notices like "2025-01-06 - 2025-09-30 - ..."
+        .filter((inc) => !/^\d{4}-\d{2}-\d{2}\s*-\s*\d{4}/.test(inc))
+
+    // Deduplicate similar notices (e.g. multiple "End of Service" variants)
+    const deduped: string[] = []
+    const seenKeys = new Set<string>()
+    for (const inc of cleanedIncidents) {
+        // Normalize to a dedup key: lowercase, strip dates and punctuation
+        const key = inc.toLowerCase()
+            .replace(/\d{4}[-/]\d{2}[-/]\d{2}/g, "")
+            .replace(/[^a-z ]/g, "")
+            .replace(/\s+/g, " ")
+            .trim()
+        // Collapse similar short phrases
+        const shortKey = key.split(" ").slice(0, 3).join(" ")
+        if (!seenKeys.has(shortKey)) {
+            seenKeys.add(shortKey)
+            deduped.push(inc)
+        }
+    }
+
     return {
         clusters,
         overallStatus,
-        activeIncidents: activeIncidents.slice(0, 5),
+        activeIncidents: deduped.slice(0, 5),
         fetchedAt: new Date().toISOString(),
         isLive: true,
     }
