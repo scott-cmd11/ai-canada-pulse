@@ -15,6 +15,7 @@ export interface ArxivPaper {
     published: string
     summary: string
     arxivUrl: string
+    aiSummary?: string
 }
 
 export interface ArxivData {

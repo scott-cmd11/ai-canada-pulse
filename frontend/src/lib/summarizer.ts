@@ -116,6 +116,77 @@ Output ONLY a JSON array of strings, one per article, in the same order. Example
     }
 }
 
+// ─── arXiv Paper Summaries ──────────────────────────────────────────────────
+
+/**
+ * Generate plain-language summaries for arXiv papers.
+ * Takes titles and abstracts, returns accessible 1-2 sentence summaries.
+ */
+export async function summarizeArxivPapers(
+    papers: { title: string; summary: string }[]
+): Promise<Map<string, string> | null> {
+    if (!HF_API_TOKEN || papers.length === 0) return null
+
+    const paperList = papers
+        .map((p, i) => `${i + 1}. "${p.title}"\n   Abstract: ${p.summary.slice(0, 250)}`)
+        .join("\n\n")
+
+    const systemPrompt = `You are a science communicator. For each research paper, write a 1-2 sentence plain-language summary (30-50 words) that a non-technical reader can understand. Focus on: what problem it solves, the key finding or contribution, and why it matters. Avoid jargon. Output ONLY a JSON array of strings, one summary per paper.`
+
+    const userPrompt = `Summarize each paper in plain language:\n\n${paperList}\n\nJSON array of ${papers.length} summaries:`
+
+    try {
+        const controller = new AbortController()
+        const timer = setTimeout(() => controller.abort(), TIMEOUT_MS)
+
+        const res = await fetch(`${HF_BASE_URL}/chat/completions`, {
+            method: "POST",
+            headers: {
+                Authorization: `Bearer ${HF_API_TOKEN}`,
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                model: HF_MODEL,
+                messages: [
+                    { role: "system", content: systemPrompt },
+                    { role: "user", content: userPrompt },
+                ],
+                max_tokens: 1024,
+                temperature: 0.3,
+            }),
+            signal: controller.signal,
+        })
+
+        clearTimeout(timer)
+
+        if (!res.ok) {
+            console.warn(`[summarizer] arXiv summary API error ${res.status}`)
+            return null
+        }
+
+        const data = await res.json() as {
+            choices?: { message?: { content?: string } }[]
+        }
+
+        const raw = data?.choices?.[0]?.message?.content?.trim()
+        if (!raw) return null
+
+        const summaries = parseJsonArray(raw)
+        if (!summaries) return null
+
+        const results = new Map<string, string>()
+        papers.forEach((p, i) => {
+            if (summaries[i]) {
+                results.set(p.title, summaries[i])
+            }
+        })
+        return results
+    } catch (err) {
+        console.warn("[summarizer] arXiv summary error:", err)
+        return null
+    }
+}
+
 // ─── Executive Brief (thematic bullets) ────────────────────────────────────
 
 /**

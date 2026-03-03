@@ -68,9 +68,16 @@ function PaperCard({ paper }: { paper: ArxivPaper }) {
                 {paper.title}
             </a>
 
-            <p className="text-xs text-slate-500 mb-2 line-clamp-2">
-                {paper.summary}...
-            </p>
+            {paper.aiSummary ? (
+                <p className="text-xs text-slate-600 mb-2 leading-relaxed">
+                    <span className="text-indigo-500 font-bold mr-1">✦</span>
+                    {paper.aiSummary}
+                </p>
+            ) : (
+                <p className="text-xs text-slate-500 mb-2 line-clamp-2">
+                    {paper.summary}...
+                </p>
+            )}
 
             <div className="flex flex-wrap items-center gap-2 text-[11px] text-slate-500">
                 <span className="font-medium">{paper.authors.join(", ")}{paper.authors.length >= 3 ? " et al." : ""}</span>
