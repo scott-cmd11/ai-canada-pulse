@@ -37,10 +37,10 @@ export default function ComputeStatusSection() {
                 <h2 className="section-header">National AI Compute Infrastructure</h2>
                 {data && (
                     <span className={`text-xs font-bold px-2.5 py-1 rounded-full border ${data.overallStatus.includes("Outage")
-                            ? "text-red-700 bg-red-50 border-red-200"
-                            : data.overallStatus.includes("Degraded") || data.overallStatus.includes("Decommissioning")
-                                ? "text-amber-700 bg-amber-50 border-amber-200"
-                                : "text-emerald-700 bg-emerald-50 border-emerald-200"
+                        ? "text-red-700 bg-red-50 border-red-200"
+                        : data.overallStatus.includes("Degraded") || data.overallStatus.includes("Decommissioning")
+                            ? "text-amber-700 bg-amber-50 border-amber-200"
+                            : "text-emerald-700 bg-emerald-50 border-emerald-200"
                         }`}>
                         {data.overallStatus}
                     </span>
@@ -94,7 +94,7 @@ export default function ComputeStatusSection() {
             )}
 
             <p className="mt-3 text-[11px] font-semibold uppercase tracking-wider text-slate-400 text-right">
-                Source: Digital Research Alliance of Canada · status.alliancecan.ca · {data?.isLive ? "Live" : "Fallback"}
+                Source: <a href="https://status.alliancecan.ca" target="_blank" rel="noopener noreferrer" className="hover:text-indigo-600 hover:underline">Digital Research Alliance of Canada</a> · {data?.isLive ? "Live" : "Fallback"}
             </p>
         </section>
     )

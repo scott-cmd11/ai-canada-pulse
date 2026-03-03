@@ -64,7 +64,7 @@ export default function ResearchSection() {
           </p>
         )}
         <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 text-right ml-auto">
-          Source: OpenAlex API
+          Source: <a href="https://openalex.org" target="_blank" rel="noopener noreferrer" className="hover:text-indigo-600 hover:underline">OpenAlex API</a>
         </p>
       </div>
     </section>

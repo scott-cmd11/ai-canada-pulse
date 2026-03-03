@@ -165,11 +165,9 @@ export default function JobMarketSection() {
       </div>
 
       {/* Data source attribution */}
-      {isFallback && (
-        <p className="mt-4 text-[11px] font-medium text-slate-400 italic">
-          Estimates based on ISED Canada, CIFAR, and Statistics Canada public reports. Live job feed integration pending.
-        </p>
-      )}
+      <p className="mt-3 text-[11px] font-semibold uppercase tracking-wider text-slate-400 text-right">
+        Source: <a href="https://ised-isde.canada.ca/site/ai-strategy/en" target="_blank" rel="noopener noreferrer" className="hover:text-indigo-600 hover:underline">ISED Canada</a> · <a href="https://www150.statcan.gc.ca" target="_blank" rel="noopener noreferrer" className="hover:text-indigo-600 hover:underline">Statistics Canada</a>{isFallback ? " · Estimates" : ""}
+      </p>
     </section>
   )
 }

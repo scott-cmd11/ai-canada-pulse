@@ -91,7 +91,7 @@ export default function OpenSourceSection() {
                     )}
 
                     <p className="mt-3 text-[11px] font-semibold uppercase tracking-wider text-slate-400 text-right">
-                        Source: GitHub Search API · Updated every 6 hrs
+                        Source: <a href="https://github.com" target="_blank" rel="noopener noreferrer" className="hover:text-indigo-600 hover:underline">GitHub Search API</a> · Updated every 6 hrs
                     </p>
                 </>
             )}

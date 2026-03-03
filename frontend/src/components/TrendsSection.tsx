@@ -117,7 +117,7 @@ export default function TrendsSection() {
             Relative search interest (0–100), Jan 2022 → Present
           </p>
           <span className="font-semibold uppercase tracking-wider text-slate-400">
-            Source: Google Trends · Canada · Updated every 6 hrs
+            Source: <a href="https://trends.google.com/trends/explore?geo=CA&q=artificial%20intelligence" target="_blank" rel="noopener noreferrer" className="hover:text-indigo-600 hover:underline">Google Trends</a> · Canada · Updated every 6 hrs
           </span>
         </div>
       </div>

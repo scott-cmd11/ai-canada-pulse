@@ -46,7 +46,7 @@ export default function ArxivSection() {
             )}
 
             <p className="mt-3 text-[11px] font-semibold uppercase tracking-wider text-slate-400 text-right">
-                Source: arXiv.org API · Updated every 6 hrs
+                Source: <a href="https://arxiv.org" target="_blank" rel="noopener noreferrer" className="hover:text-indigo-600 hover:underline">arXiv.org API</a> · Updated every 6 hrs
             </p>
         </section>
     )

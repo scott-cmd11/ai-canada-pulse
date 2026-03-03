@@ -87,7 +87,7 @@ export default function HuggingFaceSection() {
             </div>
 
             <p className="mt-3 text-[11px] font-semibold uppercase tracking-wider text-slate-400 text-right">
-                Source: Hugging Face Hub API · Updated every 30 min
+                Source: <a href="https://huggingface.co" target="_blank" rel="noopener noreferrer" className="hover:text-indigo-600 hover:underline">Hugging Face Hub API</a> · Updated every 30 min
             </p>
         </section>
     )

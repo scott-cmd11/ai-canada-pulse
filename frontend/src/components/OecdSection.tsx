@@ -126,7 +126,7 @@ export default function OecdSection() {
             </div>
 
             <p className="mt-3 text-[11px] font-semibold uppercase tracking-wider text-slate-400 text-right">
-                Source: OECD AI Policy Observatory
+                Source: <a href="https://oecd.ai" target="_blank" rel="noopener noreferrer" className="hover:text-indigo-600 hover:underline">OECD AI Policy Observatory</a>
             </p>
         </section>
     )

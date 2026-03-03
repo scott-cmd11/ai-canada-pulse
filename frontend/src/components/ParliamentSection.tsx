@@ -62,6 +62,10 @@ export default function ParliamentSection() {
           </table>
         </div>
       )}
+
+      <p className="mt-3 text-[11px] font-semibold uppercase tracking-wider text-slate-400 text-right">
+        Source: <a href="https://openparliament.ca" target="_blank" rel="noopener noreferrer" className="hover:text-indigo-600 hover:underline">OpenParliament.ca</a>
+      </p>
     </section>
   )
 }

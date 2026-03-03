@@ -94,7 +94,7 @@ export default function AIAdoptionSection() {
             </div>
 
             <p className="mt-3 text-[11px] font-semibold uppercase tracking-wider text-slate-400 text-right">
-                Source: Statistics Canada, Canadian Survey on Business Conditions (PID 3310100001)
+                Source: <a href="https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3310100001" target="_blank" rel="noopener noreferrer" className="hover:text-indigo-600 hover:underline">Statistics Canada</a>, Canadian Survey on Business Conditions
             </p>
         </section>
     )

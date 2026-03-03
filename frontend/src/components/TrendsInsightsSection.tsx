@@ -76,7 +76,7 @@ export default function TrendsInsightsSection() {
             </div>
 
             <p className="mt-3 text-[11px] font-semibold uppercase tracking-wider text-slate-400 text-right">
-                Source: Google Trends · Regional breakdown · Updated every 6 hrs
+                Source: <a href="https://trends.google.com/trends/explore?geo=CA&q=artificial%20intelligence" target="_blank" rel="noopener noreferrer" className="hover:text-indigo-600 hover:underline">Google Trends</a> · Regional breakdown · Updated every 6 hrs
             </p>
         </section>
     )

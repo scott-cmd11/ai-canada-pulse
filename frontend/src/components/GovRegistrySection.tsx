@@ -121,6 +121,10 @@ export default function GovRegistrySection() {
           </span>
         )}
       </div>
+
+      <p className="mt-2 text-[11px] font-semibold uppercase tracking-wider text-slate-400 text-right">
+        Source: <a href="https://open.canada.ca/data/en/dataset/fcbc0200-79ba-4fa4-94a6-00e32facea6b" target="_blank" rel="noopener noreferrer" className="hover:text-indigo-600 hover:underline">Open Canada</a> · Federal AI Registry
+      </p>
     </section>
   )
 }
