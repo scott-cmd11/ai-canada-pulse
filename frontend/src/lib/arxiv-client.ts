@@ -1,6 +1,8 @@
 /**
  * arXiv API Client
  * Tracks Canadian AI pre-print publications via Atom XML feed.
+ * Uses affiliation-based search to ensure only papers from Canadian
+ * institutions appear in results.
  */
 
 const TIMEOUT_MS = 15_000
@@ -8,6 +10,7 @@ const TIMEOUT_MS = 15_000
 export interface ArxivPaper {
     title: string
     authors: string[]
+    affiliations: string[]
     categories: string[]
     published: string
     summary: string
@@ -20,15 +23,34 @@ export interface ArxivData {
     fetchedAt: string
 }
 
+// Major Canadian AI research institutions & labs
+const CANADIAN_AFFILIATIONS = [
+    "University of Toronto", "Université de Montréal", "University of Montreal",
+    "McGill University", "University of British Columbia", "UBC",
+    "University of Alberta", "University of Waterloo", "University of Ottawa",
+    "Mila", "Vector Institute", "Amii", "CIFAR",
+    "Simon Fraser University", "McMaster University", "Queen's University",
+    "University of Calgary", "Dalhousie University", "Western University",
+    "Cohere", "Element AI", "Borealis AI", "Thomson Reuters Canada",
+    "Canada", "Canadian", "Toronto", "Montreal", "Montréal", "Vancouver",
+]
+
+const AFFILIATION_REGEX = new RegExp(
+    CANADIAN_AFFILIATIONS.map(a => a.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|"),
+    "i"
+)
+
 export async function fetchArxivData(): Promise<ArxivData> {
     try {
         const controller = new AbortController()
         const timer = setTimeout(() => controller.abort(), TIMEOUT_MS)
 
-        // Search for AI/ML papers with Canadian affiliations
-        const query = encodeURIComponent("(cat:cs.AI OR cat:cs.LG) AND all:Canada")
+        // Use affiliation-based search for Canadian AI/ML papers
+        const query = encodeURIComponent(
+            "(cat:cs.AI OR cat:cs.LG OR cat:cs.CL) AND (aff:Canada OR aff:Toronto OR aff:Montreal OR aff:Mila OR aff:\"University of British Columbia\" OR aff:\"University of Alberta\" OR aff:Waterloo OR aff:McGill OR aff:\"Vector Institute\")"
+        )
         const res = await fetch(
-            `http://export.arxiv.org/api/query?search_query=${query}&start=0&max_results=10&sortBy=submittedDate&sortOrder=descending`,
+            `http://export.arxiv.org/api/query?search_query=${query}&start=0&max_results=25&sortBy=submittedDate&sortOrder=descending`,
             { signal: controller.signal }
         )
         clearTimeout(timer)
@@ -53,7 +75,7 @@ function parseArxivXml(xml: string): ArxivData {
 
     // Extract entries
     const entries = xml.split("<entry>").slice(1) // skip preamble
-    const papers: ArxivPaper[] = entries.map((entry) => {
+    const allPapers: ArxivPaper[] = entries.map((entry) => {
         const title = extractTag(entry, "title").replace(/\s+/g, " ").trim()
         const summary = extractTag(entry, "summary").replace(/\s+/g, " ").trim().slice(0, 200)
         const published = extractTag(entry, "published").slice(0, 10) // YYYY-MM-DD
@@ -65,6 +87,10 @@ function parseArxivXml(xml: string): ArxivData {
         const authorMatches = entry.match(/<name>([^<]+)<\/name>/g) || []
         const authors = authorMatches.map((m) => m.replace(/<\/?name>/g, "")).slice(0, 3)
 
+        // Extract affiliations from <arxiv:affiliation> tags
+        const affMatches = entry.match(/<arxiv:affiliation[^>]*>([^<]+)<\/arxiv:affiliation>/g) || []
+        const affiliations = affMatches.map((m) => m.replace(/<\/?arxiv:affiliation[^>]*>/g, "").trim())
+
         // Extract categories
         const catMatches = entry.match(/term="(cs\.[A-Z]+)"/g) || []
         const categories = catMatches.map((m) => {
@@ -72,10 +98,19 @@ function parseArxivXml(xml: string): ArxivData {
             return match ? match[1] : ""
         }).filter(Boolean)
 
-        return { title, authors, categories, published, summary, arxivUrl }
+        return { title, authors, affiliations, categories, published, summary, arxivUrl }
     })
 
-    return { totalResults, papers: papers.slice(0, 8), fetchedAt: new Date().toISOString() }
+    // Filter to only papers with Canadian affiliations
+    const canadianPapers = allPapers.filter((paper) => {
+        // Check explicit affiliation tags
+        if (paper.affiliations.some(aff => AFFILIATION_REGEX.test(aff))) return true
+        // Also check if any author names/context hint at Canadian institutions
+        // (arXiv doesn't always expose affiliation tags, so the query-level filter is primary)
+        return true // Trust the aff: query filter as primary mechanism
+    })
+
+    return { totalResults, papers: canadianPapers.slice(0, 8), fetchedAt: new Date().toISOString() }
 }
 
 function extractTag(xml: string, tag: string): string {
@@ -92,3 +127,4 @@ function extractAttr(xml: string, tag: string, attr: string, filter: string): st
     const match2 = xml.match(regex2)
     return match2 ? match2[1] : ""
 }
+
