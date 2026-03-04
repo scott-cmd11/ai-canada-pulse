@@ -1,13 +1,10 @@
 "use client"
 
 const sections = [
-    { id: "briefing", label: "📋 Briefing", emoji: true },
-    { id: "news", label: "📰 News Feed", emoji: true },
-    { id: "economy", label: "📈 Economy", emoji: true },
-    { id: "research", label: "🔬 Research", emoji: true },
-    { id: "infra", label: "🖥️ Infrastructure", emoji: true },
-    { id: "jobs", label: "💼 Jobs & Adoption", emoji: true },
-    { id: "models", label: "🤖 AI Models", emoji: true },
+    { id: "intelligence", label: "📋 Intelligence" },
+    { id: "markets", label: "📈 Markets & Economy" },
+    { id: "research", label: "🔬 Research & Innovation" },
+    { id: "landscape", label: "🌐 Trends & Infrastructure" },
 ]
 
 export default function SectionNav() {
