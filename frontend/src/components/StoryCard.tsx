@@ -50,11 +50,11 @@ export default function StoryCard({ story }: Props) {
             <span className="text-indigo-500 text-xs mr-1">✦</span>
             {story.aiSummary}
           </p>
-        ) : (
+        ) : story.summary && !story.headline.startsWith(story.summary.split("  ")[0]) ? (
           <p className="text-sm text-slate-600 leading-relaxed mt-1">
             {story.summary}
           </p>
-        )}
+        ) : null}
 
         <div className="flex flex-wrap items-center gap-2 mt-2 text-xs font-medium text-slate-500">
           {story.sourceName && <span>{story.sourceName}</span>}

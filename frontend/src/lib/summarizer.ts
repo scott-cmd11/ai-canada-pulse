@@ -82,7 +82,7 @@ async function callGemini(systemPrompt: string, userPrompt: string): Promise<str
                     ],
                     generationConfig: {
                         temperature: 0.3,
-                        maxOutputTokens: 1024,
+                        maxOutputTokens: 2048,
                         responseMimeType: "application/json",
                     },
                 }),
@@ -203,14 +203,24 @@ async function summarizeBatch(
     articles: ArticleForSummary[]
 ): Promise<Map<string, string> | null> {
     const articleList = articles
-        .map((a, i) => `${i + 1}. "${a.headline}" [${a.category}] — ${a.source}`)
+        .map((a, i) => {
+            // Include snippet only if it adds real info beyond the headline
+            const snippetUseful = a.snippet && !a.headline.startsWith(a.snippet.split("  ")[0])
+            const context = snippetUseful ? `\n   Context: ${a.snippet.slice(0, 200)}` : ""
+            return `${i + 1}. "${a.headline}" [${a.category}] — ${a.source}${context}`
+        })
         .join("\n")
 
-    const systemPrompt = `You are a senior intelligence analyst covering Canadian AI developments. For each headline below, write a 1-2 sentence analytical brief (30-50 words) explaining WHY the story matters and what the broader implications are for Canada's AI ecosystem. Draw on your knowledge of Canadian AI policy, industry, and institutions. Be specific and insightful — do NOT just rephrase the headline.
+    const systemPrompt = `You are a senior intelligence analyst covering Canadian AI developments. For each headline below, write a 2-3 sentence analytical brief (50-80 words) that:
+1. Explains the significance of the development in plain language
+2. Provides relevant context (e.g. related policies, companies, or trends)
+3. Notes the broader implications for Canada's AI ecosystem
+
+Draw on your deep knowledge of Canadian AI policy, industry players, research institutions, and global context. Be specific, insightful, and provide ORIGINAL ANALYSIS — never repeat or rephrase the headline. Some articles may have thin or missing context; use your knowledge to fill in the gaps.
 
 Output ONLY a JSON array of strings, one per article, in the same order.`
 
-    const userPrompt = `Write analytical briefs for these ${articles.length} headlines:\n\n${articleList}\n\nJSON array of ${articles.length} briefs:`
+    const userPrompt = `Write analytical briefs for these ${articles.length} articles:\n\n${articleList}\n\nJSON array of ${articles.length} briefs:`
 
     const raw = await callAI(systemPrompt, userPrompt)
     if (!raw) return null
