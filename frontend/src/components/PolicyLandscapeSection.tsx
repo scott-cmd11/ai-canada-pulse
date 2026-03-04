@@ -86,9 +86,6 @@ const POLICIES = [
 export default function PolicyLandscapeSection() {
     return (
         <section>
-            <div className="section-header">
-                <h2>AI Policy Landscape</h2>
-            </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {POLICIES.map((p) => (

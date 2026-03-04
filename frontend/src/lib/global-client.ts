@@ -107,13 +107,13 @@ export const fetchGlobalAINews = unstable_cache(
 
 // ─── 2. Global AI Interest by Country ───────────────────────────────────────
 
-const COUNTRY_MAP: Record<string, string> = {
-    "US": "United States", "CN": "China", "GB": "United Kingdom", "DE": "Germany",
-    "FR": "France", "JP": "Japan", "KR": "South Korea", "IN": "India",
-    "CA": "Canada", "AU": "Australia", "IL": "Israel", "SG": "Singapore",
-    "NL": "Netherlands", "SE": "Sweden", "CH": "Switzerland", "BR": "Brazil",
-    "IE": "Ireland", "FI": "Finland", "AE": "UAE", "ES": "Spain",
-}
+// Curated list of significant AI countries to filter Google Trends noise
+// (raw data often includes small territories with skewed ratios)
+const MAJOR_AI_COUNTRIES = new Set([
+    "US", "CN", "GB", "DE", "FR", "JP", "KR", "IN", "CA", "AU",
+    "IL", "SG", "NL", "SE", "CH", "BR", "IE", "FI", "AE", "ES",
+    "IT", "TW", "NO", "DK", "AT", "BE", "PL", "CZ", "NZ", "PT",
+])
 
 async function _fetchGlobalAIInterest(): Promise<CountryInterest[]> {
     try {
@@ -127,7 +127,9 @@ async function _fetchGlobalAIInterest(): Promise<CountryInterest[]> {
         const geoData = parsed?.default?.geoMapData || []
 
         const data: CountryInterest[] = geoData
-            .filter((item: { geoCode: string; value: number[] }) => item.value[0] > 0)
+            .filter((item: { geoCode: string; value: number[] }) =>
+                item.value[0] > 0 && MAJOR_AI_COUNTRIES.has(item.geoCode)
+            )
             .map((item: { geoCode: string; geoName: string; value: number[] }) => ({
                 country: item.geoName,
                 code: item.geoCode,
@@ -135,7 +137,7 @@ async function _fetchGlobalAIInterest(): Promise<CountryInterest[]> {
                 isCanada: item.geoCode === "CA",
             }))
             .sort((a: CountryInterest, b: CountryInterest) => b.value - a.value)
-            .slice(0, 20)
+            .slice(0, 10)
 
         if (data.length > 0) return data
         return FALLBACK_INTEREST
@@ -156,11 +158,6 @@ const FALLBACK_INTEREST: CountryInterest[] = [
     { country: "Germany", code: "DE", value: 48, isCanada: false },
     { country: "France", code: "FR", value: 44, isCanada: false },
     { country: "South Korea", code: "KR", value: 42, isCanada: false },
-    { country: "Netherlands", code: "NL", value: 40, isCanada: false },
-    { country: "Japan", code: "JP", value: 38, isCanada: false },
-    { country: "Israel", code: "IL", value: 36, isCanada: false },
-    { country: "Brazil", code: "BR", value: 32, isCanada: false },
-    { country: "Sweden", code: "SE", value: 28, isCanada: false },
 ]
 
 export const fetchGlobalAIInterest = unstable_cache(
@@ -170,6 +167,15 @@ export const fetchGlobalAIInterest = unstable_cache(
 )
 
 // ─── 3. Global Research Output by Country ───────────────────────────────────
+
+const COUNTRY_MAP: Record<string, string> = {
+    "US": "United States", "CN": "China", "GB": "United Kingdom", "DE": "Germany",
+    "FR": "France", "JP": "Japan", "KR": "South Korea", "IN": "India",
+    "CA": "Canada", "AU": "Australia", "IL": "Israel", "SG": "Singapore",
+    "NL": "Netherlands", "SE": "Sweden", "CH": "Switzerland", "BR": "Brazil",
+    "IE": "Ireland", "FI": "Finland", "AE": "UAE", "ES": "Spain",
+    "IT": "Italy", "TW": "Taiwan", "NO": "Norway", "DK": "Denmark",
+}
 
 async function _fetchGlobalResearchOutput(): Promise<CountryResearch[]> {
     try {

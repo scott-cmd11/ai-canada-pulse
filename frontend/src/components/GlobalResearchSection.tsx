@@ -19,9 +19,7 @@ export default function GlobalResearchSection() {
 
     return (
         <section>
-            <div className="section-header">
-                <h2>AI Research Output by Country</h2>
-            </div>
+            <h3 className="text-sm font-bold text-slate-800 mb-3">AI Research Output by Country</h3>
 
             {loading && (
                 <div className="saas-card p-8 text-center">
