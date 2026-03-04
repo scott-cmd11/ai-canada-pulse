@@ -4,14 +4,14 @@ import { useState, useEffect } from "react"
 
 interface Props {
     brief: string[] | null
+    sources?: { name: string; count: number }[]
 }
 
-export default function IntelligenceBrief({ brief }: Props) {
+export default function IntelligenceBrief({ brief, sources = [] }: Props) {
     const [visible, setVisible] = useState(false)
 
     useEffect(() => {
         if (brief && brief.length > 0) {
-            // Slight delay for smooth appearance
             const t = setTimeout(() => setVisible(true), 200)
             return () => clearTimeout(t)
         }
@@ -43,9 +43,27 @@ export default function IntelligenceBrief({ brief }: Props) {
                 ))}
             </ul>
 
-            <p className="mt-4 pt-3 border-t border-indigo-100 text-[11px] text-slate-400 italic">
-                This brief is machine-generated and may contain inaccuracies. Always verify claims with primary sources.
-            </p>
+            {/* Sources + Disclaimer */}
+            <div className="mt-4 pt-3 border-t border-indigo-100 flex flex-col gap-2">
+                {sources.length > 0 && (
+                    <div className="flex flex-wrap items-center gap-1.5">
+                        <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mr-1">
+                            Based on:
+                        </span>
+                        {sources.map((s) => (
+                            <span
+                                key={s.name}
+                                className="text-[10px] font-medium text-slate-500 bg-slate-100 border border-slate-200 px-2 py-0.5 rounded-full"
+                            >
+                                {s.name} ({s.count})
+                            </span>
+                        ))}
+                    </div>
+                )}
+                <p className="text-[11px] text-slate-400 italic">
+                    This brief is machine-generated and may contain inaccuracies. Always verify claims with primary sources.
+                </p>
+            </div>
         </div>
     )
 }
