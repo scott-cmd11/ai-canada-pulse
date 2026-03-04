@@ -136,7 +136,7 @@ export default function DashboardPage() {
           <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-slate-500">
             <div>
               <p className="font-semibold text-slate-700">AI Canada Pulse Platform</p>
-              <p>v3.0 — Dynamic AI Data Architecture</p>
+              <p>v3.0 — Dynamic AI Data Architecture · <span className="text-amber-600 font-semibold">🚧 Work in Progress</span></p>
               <p className="mt-1">
                 Contact:{" "}
                 <a href="mailto:scott.hazlitt@gmail.com" className="text-indigo-700 hover:underline">
