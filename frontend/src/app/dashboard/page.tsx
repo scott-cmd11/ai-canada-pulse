@@ -13,7 +13,7 @@ import ComputeStatusSection from "@/components/ComputeStatusSection"
 import TrendsInsightsSection from "@/components/TrendsInsightsSection"
 import LabFeedsSection from "@/components/LabFeedsSection"
 import HuggingFaceSection from "@/components/HuggingFaceSection"
-import EpochAISection from "@/components/EpochAISection"
+import METRHeroChart from "@/components/METRHeroChart"
 import JobMarketSection from "@/components/JobMarketSection"
 import AIAdoptionSection from "@/components/AIAdoptionSection"
 import SectionNav from "@/components/SectionNav"
@@ -27,7 +27,34 @@ export default function DashboardPage() {
 
       <main className="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-4 lg:py-6 flex flex-col gap-4">
 
-        <HeroBanner />
+        {/* ── Hero + METR Chart side by side ── */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-0 rounded-2xl overflow-hidden relative">
+          {/* Shared animated gradient background */}
+          <div
+            className="absolute inset-0"
+            style={{
+              background: "linear-gradient(135deg, #0f172a 0%, #1e1b4b 25%, #312e81 50%, #1e1b4b 75%, #0f172a 100%)",
+              backgroundSize: "400% 400%",
+              animation: "gradientShift 12s ease infinite",
+            }}
+          />
+          <div className="absolute inset-0 opacity-[0.07]" style={{
+            backgroundImage: "url(\"data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%23fff' stroke-width='0.5'%3E%3Cpath d='M0 30h60M30 0v60'/%3E%3C/g%3E%3C/svg%3E\")",
+          }} />
+          <div className="absolute -top-32 -right-32 w-[500px] h-[500px] bg-indigo-500/25 rounded-full blur-[120px] animate-pulse" />
+          <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-violet-600/20 rounded-full blur-[100px]" />
+
+          {/* Left: Hero content */}
+          <div className="relative z-10">
+            <HeroBanner embedded />
+          </div>
+
+          {/* Right: METR Chart */}
+          <div className="relative z-10 p-6 lg:p-8 border-l border-white/5">
+            <METRHeroChart />
+          </div>
+        </div>
+
 
         {/* ── Section Navigation ── */}
         <SectionNav />
@@ -93,9 +120,6 @@ export default function DashboardPage() {
             </div>
 
             <div className="flex flex-col gap-4">
-              {/* Epoch AI — AI Progress Tracker */}
-              <EpochAISection />
-
               {/* ArXiv + HuggingFace side by side */}
               <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 lg:gap-6">
                 <ArxivSection />

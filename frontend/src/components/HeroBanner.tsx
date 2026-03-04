@@ -37,7 +37,7 @@ function AnimatedNumber({ value, suffix = "" }: { value: number; suffix?: string
     return <>{display.toLocaleString()}{suffix}</>
 }
 
-export default function HeroBanner() {
+export default function HeroBanner({ embedded = false }: { embedded?: boolean }) {
     const [pulse, setPulse] = useState<PulseData | null>(null)
 
     useEffect(() => {
@@ -50,26 +50,26 @@ export default function HeroBanner() {
     const config = pulse ? moodConfig[pulse.mood] : null
 
     return (
-        <section className="relative overflow-hidden rounded-2xl">
-            {/* Animated gradient background */}
-            <div
-                className="absolute inset-0"
-                style={{
-                    background: "linear-gradient(135deg, #0f172a 0%, #1e1b4b 25%, #312e81 50%, #1e1b4b 75%, #0f172a 100%)",
-                    backgroundSize: "400% 400%",
-                    animation: "gradientShift 12s ease infinite",
-                }}
-            />
-
-            {/* Mesh grid overlay */}
-            <div className="absolute inset-0 opacity-[0.07]" style={{
-                backgroundImage: "url(\"data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%23fff' stroke-width='0.5'%3E%3Cpath d='M0 30h60M30 0v60'/%3E%3C/g%3E%3C/svg%3E\")",
-            }} />
-
-            {/* Glowing orbs */}
-            <div className="absolute -top-32 -right-32 w-[500px] h-[500px] bg-indigo-500/25 rounded-full blur-[120px] animate-pulse" />
-            <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-violet-600/20 rounded-full blur-[100px]" />
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-red-500/10 rounded-full blur-[80px]" />
+        <section className={embedded ? "" : "relative overflow-hidden rounded-2xl"}>
+            {/* Animated gradient background — only when standalone */}
+            {!embedded && (
+                <>
+                    <div
+                        className="absolute inset-0"
+                        style={{
+                            background: "linear-gradient(135deg, #0f172a 0%, #1e1b4b 25%, #312e81 50%, #1e1b4b 75%, #0f172a 100%)",
+                            backgroundSize: "400% 400%",
+                            animation: "gradientShift 12s ease infinite",
+                        }}
+                    />
+                    <div className="absolute inset-0 opacity-[0.07]" style={{
+                        backgroundImage: "url(\"data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%23fff' stroke-width='0.5'%3E%3Cpath d='M0 30h60M30 0v60'/%3E%3C/g%3E%3C/svg%3E\")",
+                    }} />
+                    <div className="absolute -top-32 -right-32 w-[500px] h-[500px] bg-indigo-500/25 rounded-full blur-[120px] animate-pulse" />
+                    <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-violet-600/20 rounded-full blur-[100px]" />
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-red-500/10 rounded-full blur-[80px]" />
+                </>
+            )}
 
             {/* Subtle maple leaf watermark */}
             <div className="absolute right-8 bottom-4 opacity-[0.04] text-[200px] leading-none pointer-events-none select-none">
@@ -163,14 +163,6 @@ export default function HeroBanner() {
                 </div>
             </div>
 
-            {/* CSS animation for gradient */}
-            <style jsx>{`
-                @keyframes gradientShift {
-                    0% { background-position: 0% 50%; }
-                    50% { background-position: 100% 50%; }
-                    100% { background-position: 0% 50%; }
-                }
-            `}</style>
         </section>
     )
 }
