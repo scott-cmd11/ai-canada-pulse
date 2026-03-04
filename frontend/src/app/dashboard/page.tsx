@@ -16,6 +16,7 @@ import HuggingFaceSection from "@/components/HuggingFaceSection"
 import JobMarketSection from "@/components/JobMarketSection"
 import AIAdoptionSection from "@/components/AIAdoptionSection"
 import SectionNav from "@/components/SectionNav"
+import ScrollToTop from "@/components/ScrollToTop"
 
 export default function DashboardPage() {
   return (
@@ -182,6 +183,8 @@ export default function DashboardPage() {
           </div>
         </div>
       </footer>
+
+      <ScrollToTop />
     </div>
   )
 }
