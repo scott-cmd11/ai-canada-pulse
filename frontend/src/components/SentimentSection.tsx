@@ -110,6 +110,9 @@ export default function SentimentSection() {
       <div className="section-header">
         <h2>Media Sentiment Analysis</h2>
       </div>
+      <p className="text-sm text-slate-600 mb-3 max-w-3xl leading-relaxed">
+        Measures the tone of Canadian AI news coverage by analyzing recent articles from RSS feeds. Each story is scored as Favorable, Neutral, or Critical. The aggregate tone indicates whether public discourse is optimistic (signaling confidence and investment momentum) or critical (highlighting concerns around regulation, job displacement, or ethics).
+      </p>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="saas-card p-6 md:p-8 flex flex-col justify-between">
