@@ -115,7 +115,7 @@ function ClusterCard({ cluster }: { cluster: ComputeCluster }) {
 
     return (
         <div
-            className={`p-4 rounded-lg border border-slate-200 ${cfg.bg}`}
+            className={`p-4 rounded-lg border border-slate-200 ${cfg.bg} min-h-[88px] flex flex-col`}
             title={cleanIncident}
         >
             <div className="flex items-center justify-between gap-2 mb-2">
@@ -128,10 +128,12 @@ function ClusterCard({ cluster }: { cluster: ComputeCluster }) {
                 </div>
             </div>
             <p className="text-xs text-slate-500">{cluster.location}</p>
-            {cleanIncident && (
-                <p className="text-[10px] text-amber-600 mt-2 leading-relaxed">
+            {cleanIncident ? (
+                <p className="text-[10px] text-amber-600 mt-auto pt-2 leading-relaxed line-clamp-1">
                     ⚠ {cleanIncident}
                 </p>
+            ) : (
+                <div className="mt-auto" />
             )}
         </div>
     )
