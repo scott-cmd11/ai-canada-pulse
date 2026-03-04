@@ -2,6 +2,9 @@ import { NextResponse } from "next/server"
 import { fetchAllStories, derivePulseFromStories } from "@/lib/rss-client"
 import { summarizeArticles, generateExecutiveBrief } from "@/lib/summarizer"
 
+export const dynamic = "force-dynamic"
+export const maxDuration = 30 // Allow 30s for AI enrichment
+
 export async function GET() {
   try {
     const stories = await fetchAllStories()
@@ -13,8 +16,17 @@ export async function GET() {
     try {
       console.log(`[api/stories] AI enrichment starting. HF_API_TOKEN set: ${!!process.env.HF_API_TOKEN}, stories count: ${stories.length}`)
 
-      // Per-article summaries
-      const articlesForAI = stories.map((s) => ({
+      // Only summarize top 10 articles to stay within function time limits
+      const top = stories.slice(0, 10)
+      const articlesForAI = top.map((s) => ({
+        headline: s.headline,
+        snippet: s.summary,
+        category: s.category,
+        source: s.sourceName || "Unknown",
+      }))
+
+      // Also pass all articles for the executive brief
+      const allArticlesForBrief = stories.map((s) => ({
         headline: s.headline,
         snippet: s.summary,
         category: s.category,
@@ -23,7 +35,7 @@ export async function GET() {
 
       const [summaryMap, brief] = await Promise.all([
         summarizeArticles(articlesForAI),
-        generateExecutiveBrief(articlesForAI),
+        generateExecutiveBrief(allArticlesForBrief),
       ])
 
       console.log(`[api/stories] AI results — summaryMap: ${summaryMap ? summaryMap.size + ' entries' : 'null'}, brief: ${brief ? brief.length + ' bullets' : 'null'}`)
@@ -47,7 +59,7 @@ export async function GET() {
       { stories, pulse, executiveBrief },
       {
         headers: {
-          "Cache-Control": "public, max-age=300, stale-while-revalidate=1500",
+          "Cache-Control": "public, max-age=120, stale-while-revalidate=300",
         },
       }
     )
