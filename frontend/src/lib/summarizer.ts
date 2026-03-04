@@ -1,16 +1,102 @@
 /**
- * AI Article Summarizer for AI Canada Pulse
+ * AI Summarizer for AI Canada Pulse
  * 
- * Uses HuggingFace Inference API (Qwen 2.5-7B via Together router)
- * to generate concise, analyst-grade summaries for news articles.
+ * Uses Google Gemini 2.0 Flash (free tier: 1,500 req/day)
+ * to generate concise, analyst-grade summaries.
  * 
- * Falls back gracefully to raw RSS snippets when the API is unavailable.
+ * Includes in-memory caching to minimize API calls across visitors.
+ * Falls back gracefully when API is unavailable.
  */
 
-const HF_API_TOKEN = process.env.HF_API_TOKEN ?? ""
-const HF_MODEL = "Qwen/Qwen2.5-7B-Instruct-Turbo"
-const HF_BASE_URL = "https://router.huggingface.co/together/v1"
-const TIMEOUT_MS = 20_000
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY ?? ""
+const GEMINI_MODEL = "gemini-2.0-flash"
+const GEMINI_BASE_URL = "https://generativelanguage.googleapis.com/v1beta/models"
+const TIMEOUT_MS = 15_000
+
+// ─── In-Memory Cache ────────────────────────────────────────────────────────
+// Caches results for 30 minutes to avoid redundant API calls from multiple visitors
+
+interface CacheEntry<T> {
+    data: T
+    expiresAt: number
+}
+
+const cache = new Map<string, CacheEntry<unknown>>()
+const CACHE_TTL_MS = 30 * 60 * 1000 // 30 minutes
+
+function getCached<T>(key: string): T | null {
+    const entry = cache.get(key)
+    if (!entry) return null
+    if (Date.now() > entry.expiresAt) {
+        cache.delete(key)
+        return null
+    }
+    return entry.data as T
+}
+
+function setCache<T>(key: string, data: T): void {
+    cache.set(key, { data, expiresAt: Date.now() + CACHE_TTL_MS })
+}
+
+// ─── Gemini API Helper ──────────────────────────────────────────────────────
+
+async function callGemini(systemPrompt: string, userPrompt: string): Promise<string | null> {
+    if (!GEMINI_API_KEY) {
+        console.warn("[summarizer] No GEMINI_API_KEY set")
+        return null
+    }
+
+    try {
+        const controller = new AbortController()
+        const timer = setTimeout(() => controller.abort(), TIMEOUT_MS)
+
+        const res = await fetch(
+            `${GEMINI_BASE_URL}/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}`,
+            {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    system_instruction: {
+                        parts: [{ text: systemPrompt }],
+                    },
+                    contents: [
+                        {
+                            role: "user",
+                            parts: [{ text: userPrompt }],
+                        },
+                    ],
+                    generationConfig: {
+                        temperature: 0.3,
+                        maxOutputTokens: 1024,
+                        responseMimeType: "application/json",
+                    },
+                }),
+                signal: controller.signal,
+            }
+        )
+
+        clearTimeout(timer)
+
+        if (!res.ok) {
+            const errText = await res.text().catch(() => "unknown")
+            console.warn(`[summarizer] Gemini API error ${res.status}: ${errText.slice(0, 200)}`)
+            return null
+        }
+
+        const data = await res.json()
+        const text = data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim()
+        return text || null
+    } catch (err) {
+        if (err instanceof DOMException && err.name === "AbortError") {
+            console.warn("[summarizer] Gemini request timed out")
+        } else {
+            console.warn("[summarizer] Gemini error:", err)
+        }
+        return null
+    }
+}
+
+// ─── Per-Article Summaries (batch) ──────────────────────────────────────────
 
 interface ArticleForSummary {
     headline: string
@@ -18,8 +104,6 @@ interface ArticleForSummary {
     category: string
     source: string
 }
-
-// ─── Per-Article Summaries (batch) ──────────────────────────────────────────
 
 /**
  * Generate concise 1-2 sentence summaries for a batch of articles.
@@ -29,7 +113,15 @@ interface ArticleForSummary {
 export async function summarizeArticles(
     articles: ArticleForSummary[]
 ): Promise<Map<string, string> | null> {
-    if (!HF_API_TOKEN || articles.length === 0) return null
+    if (!GEMINI_API_KEY || articles.length === 0) return null
+
+    // Check cache
+    const cacheKey = `articles:${articles.map((a) => a.headline).join("|").slice(0, 200)}`
+    const cached = getCached<Map<string, string>>(cacheKey)
+    if (cached) {
+        console.log("[summarizer] Using cached article summaries")
+        return cached
+    }
 
     // Process in batches of 10
     const results = new Map<string, string>()
@@ -44,6 +136,10 @@ export async function summarizeArticles(
         }
     }
 
+    if (results.size > 0) {
+        setCache(cacheKey, results)
+    }
+
     return results.size > 0 ? results : null
 }
 
@@ -56,64 +152,23 @@ async function summarizeBatch(
 
     const systemPrompt = `You are a senior intelligence analyst covering Canadian AI developments. For each headline below, write a 1-2 sentence analytical brief (30-50 words) explaining WHY the story matters and what the broader implications are for Canada's AI ecosystem. Draw on your knowledge of Canadian AI policy, industry, and institutions. Be specific and insightful — do NOT just rephrase the headline.
 
-Output ONLY a JSON array of strings, one per article, in the same order. Example: ["This signals growing federal investment in regional AI hubs beyond Toronto-Montreal. Atlantic Canada could become a testing ground for AI deployment in resource industries.", "Another brief here."]`
+Output ONLY a JSON array of strings, one per article, in the same order.`
 
     const userPrompt = `Write analytical briefs for these ${articles.length} headlines:\n\n${articleList}\n\nJSON array of ${articles.length} briefs:`
 
-    try {
-        const controller = new AbortController()
-        const timer = setTimeout(() => controller.abort(), TIMEOUT_MS)
+    const raw = await callGemini(systemPrompt, userPrompt)
+    if (!raw) return null
 
-        const res = await fetch(`${HF_BASE_URL}/chat/completions`, {
-            method: "POST",
-            headers: {
-                Authorization: `Bearer ${HF_API_TOKEN}`,
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-                model: HF_MODEL,
-                messages: [
-                    { role: "system", content: systemPrompt },
-                    { role: "user", content: userPrompt },
-                ],
-                max_tokens: 1024,
-                temperature: 0.3,
-            }),
-            signal: controller.signal,
-        })
+    const summaries = parseJsonArray(raw)
+    if (!summaries) return null
 
-        clearTimeout(timer)
-
-        if (!res.ok) {
-            console.warn(`[summarizer] HF API error ${res.status}`)
-            return null
+    const results = new Map<string, string>()
+    articles.forEach((a, i) => {
+        if (summaries[i]) {
+            results.set(a.headline, summaries[i])
         }
-
-        const data = await res.json() as {
-            choices?: { message?: { content?: string } }[]
-        }
-
-        const raw = data?.choices?.[0]?.message?.content?.trim()
-        if (!raw) return null
-
-        const summaries = parseJsonArray(raw)
-        if (!summaries) return null
-
-        const results = new Map<string, string>()
-        articles.forEach((a, i) => {
-            if (summaries[i]) {
-                results.set(a.headline, summaries[i])
-            }
-        })
-        return results
-    } catch (err) {
-        if (err instanceof DOMException && err.name === "AbortError") {
-            console.warn("[summarizer] Request timed out")
-        } else {
-            console.warn("[summarizer] Error:", err)
-        }
-        return null
-    }
+    })
+    return results
 }
 
 // ─── GitHub Repo Summaries ──────────────────────────────────────────────────
@@ -129,13 +184,18 @@ interface RepoForSummary {
 
 /**
  * Generate concise AI summaries for GitHub repos.
- * Uses repo name, description, README excerpt, and language to produce
- * a 1-2 sentence explanation of what the project does and its relevance.
  */
 export async function summarizeGitHubRepos(
     repos: RepoForSummary[]
 ): Promise<Map<string, string> | null> {
-    if (!HF_API_TOKEN || repos.length === 0) return null
+    if (!GEMINI_API_KEY || repos.length === 0) return null
+
+    const cacheKey = `github:${repos.map((r) => r.fullName).join("|")}`
+    const cached = getCached<Map<string, string>>(cacheKey)
+    if (cached) {
+        console.log("[summarizer] Using cached GitHub summaries")
+        return cached
+    }
 
     const repoList = repos
         .map((r, i) => {
@@ -154,68 +214,42 @@ Output ONLY a JSON array of strings, one per repo.`
 
     const userPrompt = `Summarize these ${repos.length} Canadian AI repositories:\n\n${repoList}\n\nJSON array of ${repos.length} summaries:`
 
-    try {
-        const controller = new AbortController()
-        const timer = setTimeout(() => controller.abort(), TIMEOUT_MS)
+    const raw = await callGemini(systemPrompt, userPrompt)
+    if (!raw) return null
 
-        const res = await fetch(`${HF_BASE_URL}/chat/completions`, {
-            method: "POST",
-            headers: {
-                Authorization: `Bearer ${HF_API_TOKEN}`,
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-                model: HF_MODEL,
-                messages: [
-                    { role: "system", content: systemPrompt },
-                    { role: "user", content: userPrompt },
-                ],
-                max_tokens: 1024,
-                temperature: 0.3,
-            }),
-            signal: controller.signal,
-        })
+    const summaries = parseJsonArray(raw)
+    if (!summaries) return null
 
-        clearTimeout(timer)
-
-        if (!res.ok) {
-            console.warn(`[summarizer] GitHub summary API error ${res.status}`)
-            return null
+    const results = new Map<string, string>()
+    repos.forEach((r, i) => {
+        if (summaries[i]) {
+            results.set(r.fullName, summaries[i])
         }
+    })
 
-        const data = await res.json() as {
-            choices?: { message?: { content?: string } }[]
-        }
-
-        const raw = data?.choices?.[0]?.message?.content?.trim()
-        if (!raw) return null
-
-        const summaries = parseJsonArray(raw)
-        if (!summaries) return null
-
-        const results = new Map<string, string>()
-        repos.forEach((r, i) => {
-            if (summaries[i]) {
-                results.set(r.fullName, summaries[i])
-            }
-        })
-        return results
-    } catch (err) {
-        console.warn("[summarizer] GitHub summary error:", err)
-        return null
+    if (results.size > 0) {
+        setCache(cacheKey, results)
     }
+
+    return results
 }
 
 // ─── arXiv Paper Summaries ──────────────────────────────────────────────────
 
 /**
- * Generate plain-language summaries for arXiv papers.
- * Takes titles and abstracts, returns accessible 1-2 sentence summaries.
+ * Generate plain-language summaries for research papers.
  */
 export async function summarizeArxivPapers(
     papers: { title: string; summary: string }[]
 ): Promise<Map<string, string> | null> {
-    if (!HF_API_TOKEN || papers.length === 0) return null
+    if (!GEMINI_API_KEY || papers.length === 0) return null
+
+    const cacheKey = `papers:${papers.map((p) => p.title).join("|").slice(0, 200)}`
+    const cached = getCached<Map<string, string>>(cacheKey)
+    if (cached) {
+        console.log("[summarizer] Using cached paper summaries")
+        return cached
+    }
 
     const paperList = papers
         .map((p, i) => `${i + 1}. "${p.title}"\n   Abstract: ${p.summary.slice(0, 250)}`)
@@ -225,68 +259,42 @@ export async function summarizeArxivPapers(
 
     const userPrompt = `Summarize each paper in plain language:\n\n${paperList}\n\nJSON array of ${papers.length} summaries:`
 
-    try {
-        const controller = new AbortController()
-        const timer = setTimeout(() => controller.abort(), TIMEOUT_MS)
+    const raw = await callGemini(systemPrompt, userPrompt)
+    if (!raw) return null
 
-        const res = await fetch(`${HF_BASE_URL}/chat/completions`, {
-            method: "POST",
-            headers: {
-                Authorization: `Bearer ${HF_API_TOKEN}`,
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-                model: HF_MODEL,
-                messages: [
-                    { role: "system", content: systemPrompt },
-                    { role: "user", content: userPrompt },
-                ],
-                max_tokens: 1024,
-                temperature: 0.3,
-            }),
-            signal: controller.signal,
-        })
+    const summaries = parseJsonArray(raw)
+    if (!summaries) return null
 
-        clearTimeout(timer)
-
-        if (!res.ok) {
-            console.warn(`[summarizer] arXiv summary API error ${res.status}`)
-            return null
+    const results = new Map<string, string>()
+    papers.forEach((p, i) => {
+        if (summaries[i]) {
+            results.set(p.title, summaries[i])
         }
+    })
 
-        const data = await res.json() as {
-            choices?: { message?: { content?: string } }[]
-        }
-
-        const raw = data?.choices?.[0]?.message?.content?.trim()
-        if (!raw) return null
-
-        const summaries = parseJsonArray(raw)
-        if (!summaries) return null
-
-        const results = new Map<string, string>()
-        papers.forEach((p, i) => {
-            if (summaries[i]) {
-                results.set(p.title, summaries[i])
-            }
-        })
-        return results
-    } catch (err) {
-        console.warn("[summarizer] arXiv summary error:", err)
-        return null
+    if (results.size > 0) {
+        setCache(cacheKey, results)
     }
+
+    return results
 }
 
 // ─── Executive Brief (thematic bullets) ────────────────────────────────────
 
 /**
  * Generate 3-5 thematic executive brief bullets from all current stories.
- * Returns null if API is unavailable.
  */
 export async function generateExecutiveBrief(
     articles: ArticleForSummary[]
 ): Promise<string[] | null> {
-    if (!HF_API_TOKEN || articles.length === 0) return null
+    if (!GEMINI_API_KEY || articles.length === 0) return null
+
+    const cacheKey = `brief:${articles.map((a) => a.headline).join("|").slice(0, 200)}`
+    const cached = getCached<string[]>(cacheKey)
+    if (cached) {
+        console.log("[summarizer] Using cached executive brief")
+        return cached
+    }
 
     const top = articles.slice(0, 20)
     const articleList = top
@@ -297,48 +305,15 @@ export async function generateExecutiveBrief(
 
     const userPrompt = `Based on these ${top.length} recent AI signals from Canada, write 3-5 executive summary bullets:\n\n${articleList}\n\nJSON array:`
 
-    try {
-        const controller = new AbortController()
-        const timer = setTimeout(() => controller.abort(), TIMEOUT_MS)
+    const raw = await callGemini(systemPrompt, userPrompt)
+    if (!raw) return null
 
-        const res = await fetch(`${HF_BASE_URL}/chat/completions`, {
-            method: "POST",
-            headers: {
-                Authorization: `Bearer ${HF_API_TOKEN}`,
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-                model: HF_MODEL,
-                messages: [
-                    { role: "system", content: systemPrompt },
-                    { role: "user", content: userPrompt },
-                ],
-                max_tokens: 512,
-                temperature: 0.4,
-            }),
-            signal: controller.signal,
-        })
+    const bullets = parseJsonArray(raw)
+    if (!bullets || bullets.length === 0) return null
 
-        clearTimeout(timer)
-
-        if (!res.ok) {
-            console.warn(`[summarizer] Executive brief API error ${res.status}`)
-            return null
-        }
-
-        const data = await res.json() as {
-            choices?: { message?: { content?: string } }[]
-        }
-
-        const raw = data?.choices?.[0]?.message?.content?.trim()
-        if (!raw) return null
-
-        const bullets = parseJsonArray(raw)
-        return bullets && bullets.length > 0 ? bullets.slice(0, 5) : null
-    } catch (err) {
-        console.warn("[summarizer] Executive brief error:", err)
-        return null
-    }
+    const result = bullets.slice(0, 5)
+    setCache(cacheKey, result)
+    return result
 }
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
