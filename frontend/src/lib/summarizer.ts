@@ -116,6 +116,96 @@ Output ONLY a JSON array of strings, one per article, in the same order. Example
     }
 }
 
+// ─── GitHub Repo Summaries ──────────────────────────────────────────────────
+
+interface RepoForSummary {
+    name: string
+    fullName: string
+    description: string
+    readmeExcerpt: string | null
+    language: string
+    stars: number
+}
+
+/**
+ * Generate concise AI summaries for GitHub repos.
+ * Uses repo name, description, README excerpt, and language to produce
+ * a 1-2 sentence explanation of what the project does and its relevance.
+ */
+export async function summarizeGitHubRepos(
+    repos: RepoForSummary[]
+): Promise<Map<string, string> | null> {
+    if (!HF_API_TOKEN || repos.length === 0) return null
+
+    const repoList = repos
+        .map((r, i) => {
+            const context = r.readmeExcerpt || r.description || "No description"
+            return `${i + 1}. "${r.fullName}" (${r.language}, ★${r.stars})\n   Context: ${context.slice(0, 200)}`
+        })
+        .join("\n\n")
+
+    const systemPrompt = `You are a technology analyst. For each GitHub repository below, write a clear 1-2 sentence summary (30-50 words) explaining:
+1. What the project does in plain language
+2. Why it matters for Canadian AI research or industry
+
+Be specific about the technology and its applications. Do NOT just repeat the repo name. If the context is thin, infer from the name and language.
+
+Output ONLY a JSON array of strings, one per repo.`
+
+    const userPrompt = `Summarize these ${repos.length} Canadian AI repositories:\n\n${repoList}\n\nJSON array of ${repos.length} summaries:`
+
+    try {
+        const controller = new AbortController()
+        const timer = setTimeout(() => controller.abort(), TIMEOUT_MS)
+
+        const res = await fetch(`${HF_BASE_URL}/chat/completions`, {
+            method: "POST",
+            headers: {
+                Authorization: `Bearer ${HF_API_TOKEN}`,
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                model: HF_MODEL,
+                messages: [
+                    { role: "system", content: systemPrompt },
+                    { role: "user", content: userPrompt },
+                ],
+                max_tokens: 1024,
+                temperature: 0.3,
+            }),
+            signal: controller.signal,
+        })
+
+        clearTimeout(timer)
+
+        if (!res.ok) {
+            console.warn(`[summarizer] GitHub summary API error ${res.status}`)
+            return null
+        }
+
+        const data = await res.json() as {
+            choices?: { message?: { content?: string } }[]
+        }
+
+        const raw = data?.choices?.[0]?.message?.content?.trim()
+        if (!raw) return null
+
+        const summaries = parseJsonArray(raw)
+        if (!summaries) return null
+
+        const results = new Map<string, string>()
+        repos.forEach((r, i) => {
+            if (summaries[i]) {
+                results.set(r.fullName, summaries[i])
+            }
+        })
+        return results
+    } catch (err) {
+        console.warn("[summarizer] GitHub summary error:", err)
+        return null
+    }
+}
+
 // ─── arXiv Paper Summaries ──────────────────────────────────────────────────
 
 /**

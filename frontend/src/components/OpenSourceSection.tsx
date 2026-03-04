@@ -62,10 +62,19 @@ export default function OpenSourceSection() {
                                         </div>
                                     </div>
 
-                                    {/* README-based summary (preferred) or fallback to description */}
-                                    <p className="text-sm text-slate-600 leading-relaxed line-clamp-2 mb-3">
-                                        {repo.readmeExcerpt || repo.description || "No description available."}
-                                    </p>
+                                    {/* AI summary (preferred), README excerpt, or description fallback */}
+                                    {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                                    {(repo as any).aiSummary ? (
+                                        <p className="text-sm text-slate-600 leading-relaxed line-clamp-2 mb-3">
+                                            <span className="text-indigo-500 font-bold mr-1">✦</span>
+                                            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                                            {(repo as any).aiSummary}
+                                        </p>
+                                    ) : (
+                                        <p className="text-sm text-slate-600 leading-relaxed line-clamp-2 mb-3">
+                                            {repo.readmeExcerpt || repo.description || "No description available."}
+                                        </p>
+                                    )}
 
                                     {/* Metadata row */}
                                     <div className="flex items-center gap-3 text-xs text-slate-400">
