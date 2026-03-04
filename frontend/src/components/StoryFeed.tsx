@@ -65,34 +65,50 @@ export default function StoryFeed() {
         ))}
       </div>
 
-      <div className="flex flex-col gap-4">
-        {visible.map((story) => (
-          <StoryCard key={story.id} story={story} />
-        ))}
+      {/* Fixed-height scrollable feed container */}
+      <div className="relative">
+        <div
+          className="overflow-y-auto overscroll-contain"
+          style={{ maxHeight: "600px", scrollbarWidth: "thin", scrollbarColor: "#cbd5e1 transparent" }}
+        >
+          <div className="flex flex-col gap-4 pb-4">
+            {visible.map((story) => (
+              <StoryCard key={story.id} story={story} />
+            ))}
+          </div>
+
+          {filtered.length > displayCount && (
+            <div className="pt-2 pb-4 flex justify-center">
+              <button
+                onClick={() => setDisplayCount((prev) => prev + PAGE_SIZE)}
+                className="px-6 py-2.5 text-sm font-semibold text-slate-700 bg-white border border-slate-300 rounded hover:bg-slate-50 transition-colors shadow-sm"
+              >
+                Load Additional Reports
+              </button>
+            </div>
+          )}
+
+          {loading && (
+            <div className="py-12 flex justify-center">
+              <p className="text-sm font-medium text-slate-500">Retrieving intelligence reports...</p>
+            </div>
+          )}
+
+          {!loading && filtered.length === 0 && (
+            <div className="py-12 flex justify-center">
+              <p className="text-sm font-medium text-slate-500">No reports matching current criteria.</p>
+            </div>
+          )}
+        </div>
+
+        {/* Bottom fade gradient to hint at scrollable content */}
+        {filtered.length > 3 && (
+          <div
+            className="pointer-events-none absolute bottom-0 left-0 right-0 h-10 bg-gradient-to-t from-white to-transparent rounded-b"
+            aria-hidden="true"
+          />
+        )}
       </div>
-
-      {filtered.length > displayCount && (
-        <div className="pt-4 flex justify-center">
-          <button
-            onClick={() => setDisplayCount((prev) => prev + PAGE_SIZE)}
-            className="px-6 py-2.5 text-sm font-semibold text-slate-700 bg-white border border-slate-300 rounded hover:bg-slate-50 transition-colors shadow-sm"
-          >
-            Load Additional Reports
-          </button>
-        </div>
-      )}
-
-      {loading && (
-        <div className="py-12 flex justify-center">
-          <p className="text-sm font-medium text-slate-500">Retrieving intelligence reports...</p>
-        </div>
-      )}
-
-      {!loading && filtered.length === 0 && (
-        <div className="py-12 flex justify-center">
-          <p className="text-sm font-medium text-slate-500">No reports matching current criteria.</p>
-        </div>
-      )}
     </div>
   )
 }

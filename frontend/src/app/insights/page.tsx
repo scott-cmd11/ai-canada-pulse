@@ -1,11 +1,13 @@
 import Link from "next/link"
 import Header from "@/components/Header"
-import JobMarketSection from "@/components/JobMarketSection"
-import HuggingFaceSection from "@/components/HuggingFaceSection"
-import AIAdoptionSection from "@/components/AIAdoptionSection"
-import TrendsInsightsSection from "@/components/TrendsInsightsSection"
+import ScrollReveal from "@/components/ScrollReveal"
+import ScrollToTop from "@/components/ScrollToTop"
+import GlobalNewsSection from "@/components/GlobalNewsSection"
+import GlobalTrendsSection from "@/components/GlobalTrendsSection"
+import GlobalResearchSection from "@/components/GlobalResearchSection"
+import PolicyLandscapeSection from "@/components/PolicyLandscapeSection"
 
-export default function InsightsPage() {
+export default function GlobalInsightsPage() {
     return (
         <div className="min-h-screen bg-slate-50 text-slate-900">
             <Header />
@@ -13,61 +15,61 @@ export default function InsightsPage() {
             <main className="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-8 flex flex-col gap-6">
 
                 {/* Page Header */}
-                <div>
-                    <div className="flex items-center gap-3 mb-2">
-                        <Link
-                            href="/dashboard"
-                            className="text-sm font-medium text-indigo-700 hover:text-indigo-900 hover:underline"
-                        >
-                            ← Dashboard
+                <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 via-emerald-950 to-slate-900 px-8 sm:px-12 py-10 sm:py-12">
+                    <div className="absolute -top-24 -right-24 w-96 h-96 bg-emerald-500/20 rounded-full blur-[100px]" />
+                    <div className="absolute -bottom-20 -left-20 w-72 h-72 bg-teal-500/15 rounded-full blur-[80px]" />
+                    <div className="absolute right-8 bottom-4 opacity-[0.04] text-[180px] leading-none pointer-events-none select-none">
+                        🌍
+                    </div>
+
+                    <div className="relative z-10">
+                        <Link href="/dashboard" className="text-sm font-medium text-emerald-300 hover:text-white hover:underline">
+                            ← Back to Dashboard
                         </Link>
-                    </div>
-                    <h1 className="text-3xl font-bold text-slate-900 tracking-tight">
-                        Deep Insights
-                    </h1>
-                    <p className="text-sm text-slate-500 mt-1">
-                        Live data from authoritative Canadian public sources.
-                    </p>
-                </div>
-
-                {/* ═══════════════════════════════════════════════ */}
-                {/* SECTION 1: Innovation Pipeline                 */}
-                {/* ═══════════════════════════════════════════════ */}
-                <div className="border-t border-slate-200 pt-6">
-                    <div className="flex items-center gap-2.5 mb-4">
-                        <span className="text-lg">🔬</span>
-                        <h2 className="text-lg font-bold text-slate-900">Innovation Pipeline</h2>
-                    </div>
-
-                    <HuggingFaceSection />
-                </div>
-
-                {/* ═══════════════════════════════════════════════ */}
-                {/* SECTION 2: Market & Adoption                   */}
-                {/* ═══════════════════════════════════════════════ */}
-                <div className="border-t border-slate-200 pt-6">
-                    <div className="flex items-center gap-2.5 mb-4">
-                        <span className="text-lg">📊</span>
-                        <h2 className="text-lg font-bold text-slate-900">Market &amp; Adoption</h2>
-                    </div>
-
-                    <div className="flex flex-col gap-6">
-                        <JobMarketSection />
-                        <AIAdoptionSection />
+                        <h1 className="text-3xl sm:text-4xl font-black text-white tracking-tight mt-4">
+                            Global AI Landscape
+                        </h1>
+                        <p className="text-base sm:text-lg text-emerald-200/70 leading-relaxed max-w-xl mt-2">
+                            How Canada compares to the world in AI research, adoption, and policy.
+                        </p>
                     </div>
                 </div>
 
-                {/* ═══════════════════════════════════════════════ */}
-                {/* SECTION 3: Regional Landscape                  */}
-                {/* ═══════════════════════════════════════════════ */}
-                <div className="border-t border-slate-200 pt-6">
-                    <div className="flex items-center gap-2.5 mb-4">
-                        <span className="text-lg">🗺️</span>
-                        <h2 className="text-lg font-bold text-slate-900">Regional Landscape</h2>
+                {/* Section 1: International News */}
+                <ScrollReveal>
+                    <div className="border-t border-slate-200 pt-5">
+                        <div className="flex items-center gap-2.5 mb-4">
+                            <span className="text-lg">🌍</span>
+                            <h2 className="text-lg font-bold text-slate-900">International AI News</h2>
+                        </div>
+                        <GlobalNewsSection />
                     </div>
+                </ScrollReveal>
 
-                    <TrendsInsightsSection />
-                </div>
+                {/* Section 2: Global Interest + Research side by side */}
+                <ScrollReveal>
+                    <div className="border-t border-slate-200 pt-5">
+                        <div className="flex items-center gap-2.5 mb-4">
+                            <span className="text-lg">📊</span>
+                            <h2 className="text-lg font-bold text-slate-900">Global Comparisons</h2>
+                        </div>
+                        <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 lg:gap-6">
+                            <GlobalTrendsSection />
+                            <GlobalResearchSection />
+                        </div>
+                    </div>
+                </ScrollReveal>
+
+                {/* Section 3: Policy Landscape */}
+                <ScrollReveal>
+                    <div className="border-t border-slate-200 pt-5">
+                        <div className="flex items-center gap-2.5 mb-4">
+                            <span className="text-lg">⚖️</span>
+                            <h2 className="text-lg font-bold text-slate-900">Regulatory Landscape</h2>
+                        </div>
+                        <PolicyLandscapeSection />
+                    </div>
+                </ScrollReveal>
 
             </main>
 
@@ -77,55 +79,21 @@ export default function InsightsPage() {
                     <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-slate-500">
                         <div>
                             <p className="font-semibold text-slate-700">AI Canada Pulse Platform</p>
-                            <p>v3.0 · Deep Insights</p>
-                            <p className="mt-1">
-                                Contact:{" "}
-                                <a href="mailto:scott.hazlitt@gmail.com" className="text-indigo-700 hover:underline">
-                                    scott.hazlitt@gmail.com
-                                </a>
-                                {" · "}
-                                <a href="https://www.linkedin.com/in/scott-hazlitt/" target="_blank" rel="noopener noreferrer" className="text-indigo-700 hover:underline">
-                                    LinkedIn
-                                </a>
-                            </p>
+                            <p>v3.0 · Global AI Landscape</p>
                         </div>
-                        <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-                            <span className="font-medium text-slate-600">Data Connections:</span>
-                            <div className="h-3 w-px bg-slate-300 hidden sm:block"></div>
-                            <span>Open Canada</span>
-                            <span>OpenParliament</span>
-                            <span>Indeed</span>
-                            <span>GitHub</span>
-                            <span>Hugging Face</span>
-                            <span>OpenAlex</span>
-                            <span>Google Trends</span>
-                            <span className="text-slate-300">•</span>
-                            <Link href="/dashboard" className="font-semibold text-indigo-700 hover:text-indigo-800 hover:underline">
-                                ← Back to Dashboard
+                        <div className="flex items-center gap-4">
+                            <Link href="/dashboard" className="font-semibold text-indigo-700 hover:underline">
+                                ← Dashboard
                             </Link>
-                        </div>
-                    </div>
-                    <div className="mt-6 pt-4 border-t border-slate-100 text-xs text-slate-400 leading-relaxed">
-                        <p>
-                            <strong className="text-slate-500">AI Disclaimer:</strong> This platform uses artificial intelligence models to generate article summaries, executive briefs, and sentiment analysis. AI-generated content is marked with a ✦ symbol and should not be treated as authoritative analysis. Market data is delayed and should not be used for trading decisions. Always verify critical information with primary sources.
-                        </p>
-                        <div className="mt-4 flex flex-wrap items-center gap-x-1.5 gap-y-1">
-                            <span className="font-semibold text-slate-500">Built with</span>
-                            <a href="https://docs.anthropic.com/en/docs/claude-code" target="_blank" rel="noopener noreferrer" className="hover:text-indigo-700 hover:underline">Claude Code</a>
-                            <span>·</span>
-                            <a href="https://github.com/google-gemini/gemini-cli" target="_blank" rel="noopener noreferrer" className="hover:text-indigo-700 hover:underline">Gemini CLI</a>
-                            <span>·</span>
-                            <a href="https://nextjs.org" target="_blank" rel="noopener noreferrer" className="hover:text-indigo-700 hover:underline">Next.js</a>
-                            <span>·</span>
-                            <a href="https://vercel.com" target="_blank" rel="noopener noreferrer" className="hover:text-indigo-700 hover:underline">Vercel</a>
-                            <span>·</span>
-                            <a href="https://tailwindcss.com" target="_blank" rel="noopener noreferrer" className="hover:text-indigo-700 hover:underline">Tailwind CSS</a>
-                            <span>·</span>
-                            <a href="https://echarts.apache.org" target="_blank" rel="noopener noreferrer" className="hover:text-indigo-700 hover:underline">ECharts</a>
+                            <Link href="/methodology" className="font-semibold text-indigo-700 hover:underline">
+                                Methodology
+                            </Link>
                         </div>
                     </div>
                 </div>
             </footer>
+
+            <ScrollToTop />
         </div>
     )
 }

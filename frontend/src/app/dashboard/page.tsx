@@ -157,6 +157,9 @@ export default function DashboardPage() {
                   LinkedIn
                 </a>
               </p>
+              <p className="mt-1 text-xs text-slate-400 italic">
+                This is a personal project created on personal time and resources. It does not represent the views of, and is not affiliated with, the Government of Canada or any government department.
+              </p>
             </div>
             <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
               <span className="font-medium text-slate-600">Data Connections:</span>

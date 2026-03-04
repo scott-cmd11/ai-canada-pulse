@@ -56,7 +56,7 @@ export default function Header() {
           </p>
           <div className="h-4 w-px bg-slate-300 hidden sm:block"></div>
           <Link href="/insights" className="text-sm hidden sm:block font-medium text-indigo-700 hover:text-indigo-900 hover:underline">
-            Insights
+            Global
           </Link>
         </div>
 
