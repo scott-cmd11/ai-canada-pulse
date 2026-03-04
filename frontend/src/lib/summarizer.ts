@@ -1,16 +1,19 @@
 /**
  * AI Summarizer for AI Canada Pulse
  * 
- * Uses Google Gemini 2.0 Flash (free tier: 1,500 req/day)
- * to generate concise, analyst-grade summaries.
- * 
+ * Dual-provider: tries Gemini 2.0 Flash first, falls back to HuggingFace.
  * Includes in-memory caching to minimize API calls across visitors.
- * Falls back gracefully when API is unavailable.
+ * Falls back gracefully when APIs are unavailable.
  */
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY ?? ""
 const GEMINI_MODEL = "gemini-2.0-flash"
 const GEMINI_BASE_URL = "https://generativelanguage.googleapis.com/v1beta/models"
+
+const HF_API_TOKEN = process.env.HF_API_TOKEN ?? ""
+const HF_MODEL = "Qwen/Qwen2.5-7B-Instruct-Turbo"
+const HF_BASE_URL = "https://router.huggingface.co/together/v1"
+
 const TIMEOUT_MS = 15_000
 
 // ─── In-Memory Cache ────────────────────────────────────────────────────────
@@ -38,14 +41,26 @@ function setCache<T>(key: string, data: T): void {
     cache.set(key, { data, expiresAt: Date.now() + CACHE_TTL_MS })
 }
 
-// ─── Gemini API Helper ──────────────────────────────────────────────────────
+// ─── AI Provider (Gemini → HuggingFace fallback) ────────────────────────────
 
-async function callGemini(systemPrompt: string, userPrompt: string): Promise<string | null> {
-    if (!GEMINI_API_KEY) {
-        console.warn("[summarizer] No GEMINI_API_KEY set")
-        return null
+async function callAI(systemPrompt: string, userPrompt: string): Promise<string | null> {
+    // Try Gemini first
+    if (GEMINI_API_KEY) {
+        const result = await callGemini(systemPrompt, userPrompt)
+        if (result) return result
+        console.log("[summarizer] Gemini failed, trying HuggingFace fallback...")
     }
 
+    // Fallback to HuggingFace
+    if (HF_API_TOKEN) {
+        return callHuggingFace(systemPrompt, userPrompt)
+    }
+
+    console.warn("[summarizer] No AI provider available (no GEMINI_API_KEY or HF_API_TOKEN)")
+    return null
+}
+
+async function callGemini(systemPrompt: string, userPrompt: string): Promise<string | null> {
     try {
         const controller = new AbortController()
         const timer = setTimeout(() => controller.abort(), TIMEOUT_MS)
@@ -96,6 +111,47 @@ async function callGemini(systemPrompt: string, userPrompt: string): Promise<str
     }
 }
 
+async function callHuggingFace(systemPrompt: string, userPrompt: string): Promise<string | null> {
+    try {
+        const controller = new AbortController()
+        const timer = setTimeout(() => controller.abort(), TIMEOUT_MS + 5000) // HF is slower
+
+        const res = await fetch(`${HF_BASE_URL}/chat/completions`, {
+            method: "POST",
+            headers: {
+                Authorization: `Bearer ${HF_API_TOKEN}`,
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                model: HF_MODEL,
+                messages: [
+                    { role: "system", content: systemPrompt },
+                    { role: "user", content: userPrompt },
+                ],
+                max_tokens: 1024,
+                temperature: 0.3,
+            }),
+            signal: controller.signal,
+        })
+
+        clearTimeout(timer)
+
+        if (!res.ok) {
+            console.warn(`[summarizer] HuggingFace API error ${res.status}`)
+            return null
+        }
+
+        const data = await res.json() as {
+            choices?: { message?: { content?: string } }[]
+        }
+
+        return data?.choices?.[0]?.message?.content?.trim() || null
+    } catch (err) {
+        console.warn("[summarizer] HuggingFace error:", err)
+        return null
+    }
+}
+
 // ─── Per-Article Summaries (batch) ──────────────────────────────────────────
 
 interface ArticleForSummary {
@@ -113,7 +169,7 @@ interface ArticleForSummary {
 export async function summarizeArticles(
     articles: ArticleForSummary[]
 ): Promise<Map<string, string> | null> {
-    if (!GEMINI_API_KEY || articles.length === 0) return null
+    if ((!GEMINI_API_KEY && !HF_API_TOKEN) || articles.length === 0) return null
 
     // Check cache
     const cacheKey = `articles:${articles.map((a) => a.headline).join("|").slice(0, 200)}`
@@ -156,7 +212,7 @@ Output ONLY a JSON array of strings, one per article, in the same order.`
 
     const userPrompt = `Write analytical briefs for these ${articles.length} headlines:\n\n${articleList}\n\nJSON array of ${articles.length} briefs:`
 
-    const raw = await callGemini(systemPrompt, userPrompt)
+    const raw = await callAI(systemPrompt, userPrompt)
     if (!raw) return null
 
     const summaries = parseJsonArray(raw)
@@ -188,7 +244,7 @@ interface RepoForSummary {
 export async function summarizeGitHubRepos(
     repos: RepoForSummary[]
 ): Promise<Map<string, string> | null> {
-    if (!GEMINI_API_KEY || repos.length === 0) return null
+    if ((!GEMINI_API_KEY && !HF_API_TOKEN) || repos.length === 0) return null
 
     const cacheKey = `github:${repos.map((r) => r.fullName).join("|")}`
     const cached = getCached<Map<string, string>>(cacheKey)
@@ -214,7 +270,7 @@ Output ONLY a JSON array of strings, one per repo.`
 
     const userPrompt = `Summarize these ${repos.length} Canadian AI repositories:\n\n${repoList}\n\nJSON array of ${repos.length} summaries:`
 
-    const raw = await callGemini(systemPrompt, userPrompt)
+    const raw = await callAI(systemPrompt, userPrompt)
     if (!raw) return null
 
     const summaries = parseJsonArray(raw)
@@ -242,7 +298,7 @@ Output ONLY a JSON array of strings, one per repo.`
 export async function summarizeArxivPapers(
     papers: { title: string; summary: string }[]
 ): Promise<Map<string, string> | null> {
-    if (!GEMINI_API_KEY || papers.length === 0) return null
+    if ((!GEMINI_API_KEY && !HF_API_TOKEN) || papers.length === 0) return null
 
     const cacheKey = `papers:${papers.map((p) => p.title).join("|").slice(0, 200)}`
     const cached = getCached<Map<string, string>>(cacheKey)
@@ -259,7 +315,7 @@ export async function summarizeArxivPapers(
 
     const userPrompt = `Summarize each paper in plain language:\n\n${paperList}\n\nJSON array of ${papers.length} summaries:`
 
-    const raw = await callGemini(systemPrompt, userPrompt)
+    const raw = await callAI(systemPrompt, userPrompt)
     if (!raw) return null
 
     const summaries = parseJsonArray(raw)
@@ -287,7 +343,7 @@ export async function summarizeArxivPapers(
 export async function generateExecutiveBrief(
     articles: ArticleForSummary[]
 ): Promise<string[] | null> {
-    if (!GEMINI_API_KEY || articles.length === 0) return null
+    if ((!GEMINI_API_KEY && !HF_API_TOKEN) || articles.length === 0) return null
 
     const cacheKey = `brief:${articles.map((a) => a.headline).join("|").slice(0, 200)}`
     const cached = getCached<string[]>(cacheKey)
@@ -305,7 +361,7 @@ export async function generateExecutiveBrief(
 
     const userPrompt = `Based on these ${top.length} recent AI signals from Canada, write 3-5 executive summary bullets:\n\n${articleList}\n\nJSON array:`
 
-    const raw = await callGemini(systemPrompt, userPrompt)
+    const raw = await callAI(systemPrompt, userPrompt)
     if (!raw) return null
 
     const bullets = parseJsonArray(raw)
