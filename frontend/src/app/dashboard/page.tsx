@@ -12,6 +12,9 @@ import ArxivSection from "@/components/ArxivSection"
 import ComputeStatusSection from "@/components/ComputeStatusSection"
 import TrendsInsightsSection from "@/components/TrendsInsightsSection"
 import LabFeedsSection from "@/components/LabFeedsSection"
+import HuggingFaceSection from "@/components/HuggingFaceSection"
+import JobMarketSection from "@/components/JobMarketSection"
+import AIAdoptionSection from "@/components/AIAdoptionSection"
 
 export default function DashboardPage() {
   return (
@@ -73,6 +76,15 @@ export default function DashboardPage() {
         {/* ── ROW 5: Compute Infrastructure ── */}
         <ComputeStatusSection />
 
+        {/* ── ROW 6: Market & Adoption ── */}
+        <div className="flex flex-col gap-4">
+          <JobMarketSection />
+          <AIAdoptionSection />
+        </div>
+
+        {/* ── ROW 7: Canadian AI Models ── */}
+        <HuggingFaceSection />
+
       </main>
 
       {/* Footer */}
@@ -100,10 +112,6 @@ export default function DashboardPage() {
               <span>Google Trends</span>
               <span>Yahoo Finance</span>
               <span>OpenAlex</span>
-              <span className="text-slate-300">•</span>
-              <Link href="/insights" className="font-semibold text-indigo-700 hover:text-indigo-800 hover:underline">
-                Deep Insights →
-              </Link>
               <span className="text-slate-300">•</span>
               <Link href="/methodology" className="font-semibold text-indigo-700 hover:text-indigo-800 hover:underline">
                 View all sources →
