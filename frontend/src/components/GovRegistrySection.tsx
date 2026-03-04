@@ -28,7 +28,9 @@ export default function GovRegistrySection() {
       .finally(() => setLoading(false))
   }, [])
 
-  const shown = systems.slice(0, 5)
+  const RISK_ORDER: Record<string, number> = { High: 0, Moderate: 1, Low: 2, Minimal: 3, Unclassified: 4 }
+  const sorted = [...systems].sort((a, b) => (RISK_ORDER[a.riskLevel] ?? 5) - (RISK_ORDER[b.riskLevel] ?? 5))
+  const shown = sorted.slice(0, 6)
   const remaining = systems.length - shown.length
 
   // Count systems by risk level
@@ -81,9 +83,9 @@ export default function GovRegistrySection() {
         </div>
       )}
 
-      {systems.length > 0 && (
+      {shown.length > 0 && (
         <div className="flex flex-col gap-2.5">
-          {systems.map((sys) => (
+          {shown.map((sys) => (
             <div key={sys.id} className="saas-card bg-white p-4">
 
               <div className="flex flex-col md:flex-row md:items-start justify-between gap-3">
@@ -135,14 +137,19 @@ export default function GovRegistrySection() {
 
       {/* Footer */}
       <div className="flex flex-wrap items-center justify-between mt-3 gap-2">
-        <a
-          href={REGISTRY_URL}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-xs font-semibold text-indigo-700 hover:text-indigo-800 hover:underline"
-        >
-          View Full Registry →
-        </a>
+        <div className="flex items-center gap-3">
+          {remaining > 0 && (
+            <span className="text-xs text-slate-500">+{remaining} more in registry</span>
+          )}
+          <a
+            href={REGISTRY_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-xs font-semibold text-indigo-700 hover:text-indigo-800 hover:underline"
+          >
+            View Full Registry →
+          </a>
+        </div>
         {fetchedAt && (
           <span className="text-[10px] text-slate-400 uppercase tracking-wider">
             Last updated: {fetchedAt}
