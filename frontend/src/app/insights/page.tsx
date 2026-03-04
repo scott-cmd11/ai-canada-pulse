@@ -3,7 +3,6 @@ import Header from "@/components/Header"
 import GovRegistrySection from "@/components/GovRegistrySection"
 import ParliamentSection from "@/components/ParliamentSection"
 import JobMarketSection from "@/components/JobMarketSection"
-import OpenSourceSection from "@/components/OpenSourceSection"
 import HuggingFaceSection from "@/components/HuggingFaceSection"
 import AIAdoptionSection from "@/components/AIAdoptionSection"
 import TrendsInsightsSection from "@/components/TrendsInsightsSection"
@@ -42,10 +41,7 @@ export default function InsightsPage() {
                         <h2 className="text-lg font-bold text-slate-900">Innovation Pipeline</h2>
                     </div>
 
-                    <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-                        <OpenSourceSection />
-                        <HuggingFaceSection />
-                    </div>
+                    <HuggingFaceSection />
                 </div>
 
                 {/* ═══════════════════════════════════════════════ */}
