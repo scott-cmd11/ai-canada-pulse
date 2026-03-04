@@ -47,12 +47,6 @@ export default function ComputeStatusSection() {
                 )}
             </div>
 
-            <p className="text-sm text-slate-600 mb-4 max-w-3xl leading-relaxed">
-                Live operational status of the Digital Research Alliance of Canada&apos;s high-performance computing (HPC) clusters.
-                These systems power Canada&apos;s national AI research infrastructure under the Pan-Canadian AI Compute Environment (PAICE),
-                providing GPU and CPU resources to researchers across the country.
-            </p>
-
             {loading && (
                 <div className="saas-card p-8 text-center">
                     <div className="animate-pulse text-sm text-slate-500">Checking compute cluster status...</div>
@@ -92,10 +86,6 @@ export default function ComputeStatusSection() {
                     )}
                 </>
             )}
-
-            <p className="mt-3 text-[11px] font-semibold uppercase tracking-wider text-slate-400 text-right">
-                Source: <a href="https://status.alliancecan.ca" target="_blank" rel="noopener noreferrer" className="hover:text-indigo-600 hover:underline">Digital Research Alliance of Canada</a> · {data?.isLive ? "Live" : "Fallback"}
-            </p>
         </section>
     )
 }

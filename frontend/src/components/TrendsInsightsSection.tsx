@@ -28,9 +28,6 @@ export default function TrendsInsightsSection() {
                     LIVE
                 </span>
             </div>
-            <p className="text-sm text-slate-600 mb-4 max-w-3xl leading-relaxed">
-                Google Trends data showing relative search interest for AI-related terms across Canadian provinces. Higher scores indicate where public curiosity and professional interest in artificial intelligence are strongest, helping identify emerging regional AI hubs.
-            </p>
 
             {/* Provincial Breakdown */}
             <div className="saas-card p-5">
@@ -77,10 +74,6 @@ export default function TrendsInsightsSection() {
                     Relative search interest (0–100). Higher values indicate greater search volume relative to total searches in that region.
                 </p>
             </div>
-
-            <p className="mt-3 text-[11px] font-semibold uppercase tracking-wider text-slate-400 text-right">
-                Source: <a href="https://trends.google.com/trends/explore?geo=CA&q=artificial%20intelligence" target="_blank" rel="noopener noreferrer" className="hover:text-indigo-600 hover:underline">Google Trends</a> · Regional breakdown · Updated every 6 hrs
-            </p>
         </section>
     )
 }

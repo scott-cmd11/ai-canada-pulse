@@ -112,9 +112,6 @@ export default function JobMarketSection() {
           </span>
         )}
       </div>
-      <p className="text-sm text-slate-600 mb-4 max-w-3xl leading-relaxed">
-        AI-related job postings across Canada, sourced from major job boards. Tracks total active positions, average salaries, demand by skill cluster, and geographic distribution to gauge where AI talent is needed most.
-      </p>
 
       {/* KPI Row — stacks on narrow viewports */}
       <div className="saas-card mb-6 grid grid-cols-1 sm:grid-cols-2 divide-y sm:divide-y-0 sm:divide-x divide-slate-200">
@@ -173,11 +170,6 @@ export default function JobMarketSection() {
           </div>
         </div>
       </div>
-
-      {/* Data source attribution */}
-      <p className="mt-3 text-[11px] font-semibold uppercase tracking-wider text-slate-400 text-right">
-        Source: <a href="https://ised-isde.canada.ca/site/ai-strategy/en" target="_blank" rel="noopener noreferrer" className="hover:text-indigo-600 hover:underline">ISED Canada</a> · <a href="https://www150.statcan.gc.ca" target="_blank" rel="noopener noreferrer" className="hover:text-indigo-600 hover:underline">Statistics Canada</a>{isFallback ? " · Estimates" : ""}
-      </p>
     </section>
   )
 }

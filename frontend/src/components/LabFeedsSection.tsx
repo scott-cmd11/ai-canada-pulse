@@ -41,9 +41,6 @@ export default function LabFeedsSection() {
             <div className="section-header">
                 <h2>Canadian AI Lab Updates</h2>
             </div>
-            <p className="text-sm text-slate-600 mb-4 max-w-3xl leading-relaxed">
-                Canada&apos;s four flagship AI institutes drive the country&apos;s research output and talent pipeline. These labs publish cutting-edge work in deep learning, reinforcement learning, AI safety, and applied AI — directly shaping Canada&apos;s position in the global AI landscape.
-            </p>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {LABS.map((lab) => (

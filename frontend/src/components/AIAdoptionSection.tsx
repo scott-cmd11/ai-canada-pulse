@@ -82,9 +82,6 @@ export default function AIAdoptionSection() {
                 </span>
             </div>
 
-            <p className="text-sm text-slate-600 mb-4 max-w-3xl leading-relaxed">
-                Statistics Canada survey data showing the percentage of Canadian businesses planning to adopt AI software within the next 12 months, broken down by industry sector. Highlights which parts of the economy are leading or lagging in AI integration.
-            </p>
 
             <div className="saas-card p-5">
                 <p className="text-xs text-slate-500 mb-1">
@@ -96,10 +93,6 @@ export default function AIAdoptionSection() {
                     opts={{ renderer: "svg" }}
                 />
             </div>
-
-            <p className="mt-3 text-[11px] font-semibold uppercase tracking-wider text-slate-400 text-right">
-                Source: <a href="https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3310100001" target="_blank" rel="noopener noreferrer" className="hover:text-indigo-600 hover:underline">Statistics Canada</a>, Canadian Survey on Business Conditions
-            </p>
         </section>
     )
 }

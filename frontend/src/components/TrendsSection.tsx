@@ -105,20 +105,14 @@ export default function TrendsSection() {
   return (
     <section>
       <div className="section-header"><h2>{sectionTitle}</h2></div>
-      <p className="text-sm text-slate-600 mb-4 max-w-3xl leading-relaxed">
-        Canadian search interest in major AI products since January 2022. The ChatGPT launch in November 2022 marks the inflection point for mainstream AI adoption in Canada.
-      </p>
       <div className="saas-card p-5 sm:p-6 lg:p-8 flex flex-col h-full border-t-4 border-t-indigo-700">
         <div className="w-full min-h-[300px]">
           <ReactECharts option={option} style={{ height: '300px', width: '100%' }} opts={{ renderer: "svg" }} />
         </div>
-        <div className="mt-4 pt-4 border-t border-slate-100 flex justify-between items-center text-xs font-medium text-slate-500">
+        <div className="mt-4 pt-4 border-t border-slate-100 text-xs font-medium text-slate-500">
           <p>
             Relative search interest (0–100), Jan 2022 → Present
           </p>
-          <span className="font-semibold uppercase tracking-wider text-slate-400">
-            Source: <a href="https://trends.google.com/trends/explore?geo=CA&q=artificial%20intelligence" target="_blank" rel="noopener noreferrer" className="hover:text-indigo-600 hover:underline">Google Trends</a> · Canada · Updated every 6 hrs
-          </span>
         </div>
       </div>
     </section>

@@ -26,10 +26,6 @@ export default function ArxivSection() {
                 )}
             </div>
 
-            <p className="text-sm text-slate-600 mb-4 max-w-3xl leading-relaxed">
-                Recent AI research from verified Canadian institutions. Each paper has at least one author affiliated with a Canadian university or lab, confirmed through OpenAlex institutional records — not keyword matching.
-            </p>
-
             {loading && (
                 <div className="saas-card p-8 text-center">
                     <div className="animate-pulse text-sm text-slate-500">Loading Canadian AI research...</div>
@@ -38,7 +34,7 @@ export default function ArxivSection() {
 
             {!loading && papers && papers.length > 0 && (
                 <div className="flex flex-col gap-3">
-                    {papers.slice(0, 6).map((paper, i) => (
+                    {papers.slice(0, 4).map((paper, i) => (
                         <PaperCard key={paper.id || i} paper={paper} />
                     ))}
                 </div>
@@ -49,11 +45,7 @@ export default function ArxivSection() {
                     <p className="text-sm text-slate-500">Unable to fetch research data at this time.</p>
                 </div>
             )}
-
-            <p className="mt-3 text-[11px] font-semibold uppercase tracking-wider text-slate-400 text-right">
-                Source: <a href="https://openalex.org" target="_blank" rel="noopener noreferrer" className="hover:text-indigo-600 hover:underline">OpenAlex API</a> · Verified Canadian affiliations · Updated every 6 hrs
-            </p>
-        </section>
+        </section >
     )
 }
 

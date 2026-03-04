@@ -33,10 +33,6 @@ export default function HuggingFaceSection() {
             <div className="section-header">
                 <h2>Canadian AI Models</h2>
             </div>
-            <p className="text-sm text-slate-600 mb-4 max-w-3xl leading-relaxed">
-                AI models published by leading Canadian research organizations on Hugging Face Hub.
-                Tracks model counts, total downloads, and top models from Cohere, Mila, and Vector Institute.
-            </p>
 
             {/* KPI Row */}
             <div className="grid grid-cols-2 gap-3 mb-4">
@@ -73,10 +69,6 @@ export default function HuggingFaceSection() {
                     </div>
                 ))}
             </div>
-
-            <p className="mt-3 text-[11px] font-semibold uppercase tracking-wider text-slate-400 text-right">
-                Source: <a href="https://huggingface.co" target="_blank" rel="noopener noreferrer" className="hover:text-indigo-600 hover:underline">Hugging Face Hub API</a> · Updated every 30 min
-            </p>
         </section>
     )
 }

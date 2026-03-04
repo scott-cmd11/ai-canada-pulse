@@ -173,9 +173,6 @@ export default function SentimentSection() {
           ))}
         </div>
       </div>
-      <p className="mt-3 text-[11px] font-semibold uppercase tracking-wider text-slate-400 text-right">
-        Source: Derived from RSS news feed · Updated every 30 min
-      </p>
     </section>
   )
 }
