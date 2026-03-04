@@ -14,7 +14,7 @@ export async function GET() {
     let executiveBrief: string[] | null = null
 
     try {
-      console.log(`[api/stories] AI enrichment starting. HF_API_TOKEN set: ${!!process.env.HF_API_TOKEN}, stories count: ${stories.length}`)
+      console.log(`[api/stories] AI enrichment starting. GEMINI_API_KEY: ${!!process.env.GEMINI_API_KEY}, HF_API_TOKEN: ${!!process.env.HF_API_TOKEN}, stories: ${stories.length}`)
 
       // Only summarize top 10 articles to stay within function time limits
       const top = stories.slice(0, 10)
@@ -33,12 +33,13 @@ export async function GET() {
         source: s.sourceName || "Unknown",
       }))
 
-      const [summaryMap, brief] = await Promise.all([
-        summarizeArticles(articlesForAI),
-        generateExecutiveBrief(allArticlesForBrief),
-      ])
+      // Run AI enrichment sequentially to avoid rate-limit collisions
+      // Article summaries first, then executive brief
+      const summaryMap = await summarizeArticles(articlesForAI)
+      console.log(`[api/stories] Article summaries: ${summaryMap ? summaryMap.size + ' entries' : 'null'}`)
 
-      console.log(`[api/stories] AI results — summaryMap: ${summaryMap ? summaryMap.size + ' entries' : 'null'}, brief: ${brief ? brief.length + ' bullets' : 'null'}`)
+      executiveBrief = await generateExecutiveBrief(allArticlesForBrief)
+      console.log(`[api/stories] Executive brief: ${executiveBrief ? executiveBrief.length + ' bullets' : 'null'}`)
 
       // Attach AI summaries to stories
       if (summaryMap) {
@@ -54,8 +55,6 @@ export async function GET() {
       } else {
         console.log(`[api/stories] summaryMap was null — no per-article summaries generated`)
       }
-
-      executiveBrief = brief
     } catch (aiErr) {
       console.warn("[api/stories] AI enrichment failed (non-fatal):", aiErr)
     }
