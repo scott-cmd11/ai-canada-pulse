@@ -79,7 +79,7 @@ export default function BriefingCard() {
               rel="noopener noreferrer"
               className="text-sm font-semibold text-indigo-700 hover:text-indigo-800 hover:underline"
             >
-              Analyze source &rarr;
+              Read article &rarr;
             </a>
           </>
         )}

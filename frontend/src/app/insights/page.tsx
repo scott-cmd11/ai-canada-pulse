@@ -77,7 +77,7 @@ export default function InsightsPage() {
                     <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-slate-500">
                         <div>
                             <p className="font-semibold text-slate-700">AI Canada Pulse Platform</p>
-                            <p>v3.0 — Deep Insights</p>
+                            <p>v3.0 · Deep Insights</p>
                             <p className="mt-1">
                                 Contact:{" "}
                                 <a href="mailto:scott.hazlitt@gmail.com" className="text-indigo-700 hover:underline">

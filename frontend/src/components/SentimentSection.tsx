@@ -24,7 +24,7 @@ export default function SentimentSection() {
           <h2>Media Sentiment Analysis</h2>
         </div>
         <div className="saas-card p-6">
-          <p className="text-sm font-medium text-slate-500">Analyzing global broadcast data...</p>
+          <p className="text-sm font-medium text-slate-500">Loading sentiment data...</p>
         </div>
       </section>
     )
@@ -37,7 +37,7 @@ export default function SentimentSection() {
           <h2>Media Sentiment Analysis</h2>
         </div>
         <div className="saas-card p-6">
-          <p className="text-sm font-medium text-slate-500">Insufficient sentiment data to build model.</p>
+          <p className="text-sm font-medium text-slate-500">Sentiment data currently unavailable.</p>
         </div>
       </section>
     )
