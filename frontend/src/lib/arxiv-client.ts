@@ -107,14 +107,16 @@ function parseArxivXml(xml: string): ArxivData {
         return { title, authors, affiliations, categories, published, summary, arxivUrl }
     })
 
-    // Strictly filter to only papers with verified Canadian affiliations
+    // Filter to papers with verified Canadian affiliations
+    // The arXiv API query already uses aff: to search for Canadian institutions,
+    // so papers returned are likely Canadian even without explicit affiliation tags
     const canadianPapers = allPapers.filter((paper) => {
-        // Check explicit affiliation tags
+        // If explicit affiliation tags exist, verify they match Canadian institutions
         if (paper.affiliations.length > 0) {
             return paper.affiliations.some(aff => AFFILIATION_REGEX.test(aff))
         }
-        // If no affiliation tags (common), skip paper — we can't verify it's Canadian
-        return false
+        // If no affiliation tags (common in arXiv API), trust the aff: query filter
+        return true
     })
 
     return { totalResults: canadianPapers.length, papers: canadianPapers.slice(0, 8), fetchedAt: new Date().toISOString() }
