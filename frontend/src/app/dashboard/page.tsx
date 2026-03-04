@@ -17,6 +17,7 @@ import JobMarketSection from "@/components/JobMarketSection"
 import AIAdoptionSection from "@/components/AIAdoptionSection"
 import SectionNav from "@/components/SectionNav"
 import ScrollToTop from "@/components/ScrollToTop"
+import ScrollReveal from "@/components/ScrollReveal"
 
 export default function DashboardPage() {
   return (
@@ -33,101 +34,109 @@ export default function DashboardPage() {
         {/* ═══════════════════════════════════════════════════════ */}
         {/* GROUP 1: Intelligence                                  */}
         {/* ═══════════════════════════════════════════════════════ */}
-        <div id="intelligence" className="border-t border-slate-200 pt-5">
-          <div className="flex items-center gap-2.5 mb-4">
-            <span className="text-lg">📋</span>
-            <h2 className="text-lg font-bold text-slate-900">Intelligence</h2>
-          </div>
-
-          <div className="flex flex-col gap-4">
-            {/* Briefing + Executive Brief */}
-            <div>
-              <div className="section-header">
-                <h2>Top Briefing</h2>
-              </div>
-              <BriefingCard />
+        <ScrollReveal>
+          <div id="intelligence" className="border-t border-slate-200 pt-5">
+            <div className="flex items-center gap-2.5 mb-4">
+              <span className="text-lg">📋</span>
+              <h2 className="text-lg font-bold text-slate-900">Intelligence</h2>
             </div>
-            <ExecutiveBriefSection />
 
-            {/* News Feed */}
-            <div>
-              <div className="section-header flex items-center justify-between">
-                <h2>Latest Developments</h2>
-                <span className="text-xs font-semibold text-indigo-700 bg-indigo-50 px-2.5 py-1 rounded-full border border-indigo-200">
-                  REAL-TIME
-                </span>
+            <div className="flex flex-col gap-4">
+              {/* Briefing + Executive Brief */}
+              <div>
+                <div className="section-header">
+                  <h2>Top Briefing</h2>
+                </div>
+                <BriefingCard />
               </div>
-              <StoryFeed />
+              <ExecutiveBriefSection />
+
+              {/* News Feed */}
+              <div>
+                <div className="section-header flex items-center justify-between">
+                  <h2>Latest Developments</h2>
+                  <span className="text-xs font-semibold text-indigo-700 bg-indigo-50 px-2.5 py-1 rounded-full border border-indigo-200">
+                    REAL-TIME
+                  </span>
+                </div>
+                <StoryFeed />
+              </div>
             </div>
           </div>
-        </div>
+        </ScrollReveal>
 
         {/* ═══════════════════════════════════════════════════════ */}
         {/* GROUP 2: Markets & Economy                             */}
         {/* ═══════════════════════════════════════════════════════ */}
-        <div id="markets" className="border-t border-slate-200 pt-5">
-          <div className="flex items-center gap-2.5 mb-4">
-            <span className="text-lg">📈</span>
-            <h2 className="text-lg font-bold text-slate-900">Markets &amp; Economy</h2>
-          </div>
-
-          <div className="flex flex-col gap-4">
-            {/* Sentiment + Stocks side by side */}
-            <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 lg:gap-6">
-              <SentimentSection />
-              <StocksSection />
+        <ScrollReveal>
+          <div id="markets" className="border-t border-slate-200 pt-5">
+            <div className="flex items-center gap-2.5 mb-4">
+              <span className="text-lg">📈</span>
+              <h2 className="text-lg font-bold text-slate-900">Markets &amp; Economy</h2>
             </div>
 
-            {/* Economic Indicators */}
-            <IndicatorsSection />
+            <div className="flex flex-col gap-4">
+              {/* Sentiment + Stocks side by side */}
+              <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 lg:gap-6">
+                <SentimentSection />
+                <StocksSection />
+              </div>
 
-            {/* Jobs + AI Adoption */}
-            <JobMarketSection />
-            <AIAdoptionSection />
+              {/* Economic Indicators */}
+              <IndicatorsSection />
+
+              {/* Jobs + AI Adoption */}
+              <JobMarketSection />
+              <AIAdoptionSection />
+            </div>
           </div>
-        </div>
+        </ScrollReveal>
 
         {/* ═══════════════════════════════════════════════════════ */}
         {/* GROUP 3: Research & Innovation                         */}
         {/* ═══════════════════════════════════════════════════════ */}
-        <div id="research" className="border-t border-slate-200 pt-5">
-          <div className="flex items-center gap-2.5 mb-4">
-            <span className="text-lg">🔬</span>
-            <h2 className="text-lg font-bold text-slate-900">Research &amp; Innovation</h2>
-          </div>
-
-          <div className="flex flex-col gap-4">
-            {/* ArXiv + HuggingFace side by side */}
-            <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 lg:gap-6">
-              <ArxivSection />
-              <HuggingFaceSection />
+        <ScrollReveal>
+          <div id="research" className="border-t border-slate-200 pt-5">
+            <div className="flex items-center gap-2.5 mb-4">
+              <span className="text-lg">🔬</span>
+              <h2 className="text-lg font-bold text-slate-900">Research &amp; Innovation</h2>
             </div>
 
-            {/* Lab Feeds */}
-            <LabFeedsSection />
+            <div className="flex flex-col gap-4">
+              {/* ArXiv + HuggingFace side by side */}
+              <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 lg:gap-6">
+                <ArxivSection />
+                <HuggingFaceSection />
+              </div>
+
+              {/* Lab Feeds */}
+              <LabFeedsSection />
+            </div>
           </div>
-        </div>
+        </ScrollReveal>
 
         {/* ═══════════════════════════════════════════════════════ */}
         {/* GROUP 4: Trends & Infrastructure                      */}
         {/* ═══════════════════════════════════════════════════════ */}
-        <div id="landscape" className="border-t border-slate-200 pt-5">
-          <div className="flex items-center gap-2.5 mb-4">
-            <span className="text-lg">🌐</span>
-            <h2 className="text-lg font-bold text-slate-900">Trends &amp; Infrastructure</h2>
-          </div>
-
-          <div className="flex flex-col gap-4">
-            {/* Google Trends + Provincial breakdown */}
-            <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 lg:gap-6">
-              <TrendsSection />
-              <TrendsInsightsSection />
+        <ScrollReveal>
+          <div id="landscape" className="border-t border-slate-200 pt-5">
+            <div className="flex items-center gap-2.5 mb-4">
+              <span className="text-lg">🌐</span>
+              <h2 className="text-lg font-bold text-slate-900">Trends &amp; Infrastructure</h2>
             </div>
 
-            {/* Compute Infrastructure */}
-            <ComputeStatusSection />
+            <div className="flex flex-col gap-4">
+              {/* Google Trends + Provincial breakdown */}
+              <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 lg:gap-6">
+                <TrendsSection />
+                <TrendsInsightsSection />
+              </div>
+
+              {/* Compute Infrastructure */}
+              <ComputeStatusSection />
+            </div>
           </div>
-        </div>
+        </ScrollReveal>
 
       </main>
 
