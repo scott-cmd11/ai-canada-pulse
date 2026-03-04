@@ -11,6 +11,7 @@ import StocksSection from "@/components/StocksSection"
 import ArxivSection from "@/components/ArxivSection"
 import ComputeStatusSection from "@/components/ComputeStatusSection"
 import TrendsInsightsSection from "@/components/TrendsInsightsSection"
+import LabFeedsSection from "@/components/LabFeedsSection"
 
 export default function DashboardPage() {
   return (
@@ -66,7 +67,10 @@ export default function DashboardPage() {
           <StocksSection />
         </div>
 
-        {/* ── ROW 4: Compute Infrastructure ── */}
+        {/* ── ROW 4: Lab Feeds ── */}
+        <LabFeedsSection />
+
+        {/* ── ROW 5: Compute Infrastructure ── */}
         <ComputeStatusSection />
 
       </main>
@@ -91,7 +95,7 @@ export default function DashboardPage() {
               <span>Stats Canada</span>
               <span>Google Trends</span>
               <span>Yahoo Finance</span>
-              <span>arXiv</span>
+              <span>OpenAlex</span>
               <span className="text-slate-300">•</span>
               <Link href="/insights" className="font-semibold text-indigo-700 hover:text-indigo-800 hover:underline">
                 Deep Insights →
