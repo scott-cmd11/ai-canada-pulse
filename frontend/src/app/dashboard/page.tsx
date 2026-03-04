@@ -15,6 +15,7 @@ import LabFeedsSection from "@/components/LabFeedsSection"
 import HuggingFaceSection from "@/components/HuggingFaceSection"
 import JobMarketSection from "@/components/JobMarketSection"
 import AIAdoptionSection from "@/components/AIAdoptionSection"
+import SectionNav from "@/components/SectionNav"
 
 export default function DashboardPage() {
   return (
@@ -25,8 +26,11 @@ export default function DashboardPage() {
 
         <HeroBanner />
 
+        {/* ── Section Navigation ── */}
+        <SectionNav />
+
         {/* ── Full-width Briefing ── */}
-        <div>
+        <div id="briefing">
           <div className="section-header">
             <h2>Top Briefing</h2>
           </div>
@@ -37,7 +41,7 @@ export default function DashboardPage() {
         <ExecutiveBriefSection />
 
         {/* ── ROW 1: Latest Developments | Sidebar (Adoption + Sentiment + Compute + Regional) ── */}
-        <div className="grid grid-cols-1 xl:grid-cols-12 gap-4 lg:gap-6 items-start">
+        <div id="news" className="grid grid-cols-1 xl:grid-cols-12 gap-4 lg:gap-6 items-start">
 
           <div className="xl:col-span-7 flex flex-col gap-4">
             <div>
@@ -62,10 +66,12 @@ export default function DashboardPage() {
         </div>
 
         {/* ── ROW 2: Economic Context (Full Width) ── */}
-        <IndicatorsSection />
+        <div id="economy">
+          <IndicatorsSection />
+        </div>
 
         {/* ── ROW 3: Research + Markets ── */}
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 lg:gap-6">
+        <div id="research" className="grid grid-cols-1 xl:grid-cols-2 gap-4 lg:gap-6">
           <ArxivSection />
           <StocksSection />
         </div>
@@ -74,16 +80,20 @@ export default function DashboardPage() {
         <LabFeedsSection />
 
         {/* ── ROW 5: Compute Infrastructure ── */}
-        <ComputeStatusSection />
+        <div id="infra">
+          <ComputeStatusSection />
+        </div>
 
         {/* ── ROW 6: Market & Adoption ── */}
-        <div className="flex flex-col gap-4">
+        <div id="jobs" className="flex flex-col gap-4">
           <JobMarketSection />
           <AIAdoptionSection />
         </div>
 
         {/* ── ROW 7: Canadian AI Models ── */}
-        <HuggingFaceSection />
+        <div id="models">
+          <HuggingFaceSection />
+        </div>
 
       </main>
 
