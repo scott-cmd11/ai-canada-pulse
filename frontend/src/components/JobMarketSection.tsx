@@ -69,17 +69,24 @@ export default function JobMarketSection() {
       {
         type: "bar" as const,
         data: [...data.topLocations].reverse().map((d) => d.count),
-        barWidth: 14,
         itemStyle: {
-          color: "#0284C7",
           borderRadius: [0, 4, 4, 0],
+          color: {
+            type: "linear" as const,
+            x: 0, y: 0, x2: 1, y2: 0,
+            colorStops: [
+              { offset: 0, color: "#6366F1" },
+              { offset: 1, color: "#818CF8" },
+            ],
+          },
         },
+        barWidth: "60%",
         label: {
           show: true,
           position: "right" as const,
           fontSize: 11,
           fontWeight: 600,
-          color: "#475569",
+          color: "#64748b",
         },
       },
     ],
@@ -105,6 +112,9 @@ export default function JobMarketSection() {
           </span>
         )}
       </div>
+      <p className="text-sm text-slate-600 mb-4 max-w-3xl leading-relaxed">
+        AI-related job postings across Canada, sourced from major job boards. Tracks total active positions, average salaries, demand by skill cluster, and geographic distribution to gauge where AI talent is needed most.
+      </p>
 
       {/* KPI Row — stacks on narrow viewports */}
       <div className="saas-card mb-6 grid grid-cols-1 sm:grid-cols-2 divide-y sm:divide-y-0 sm:divide-x divide-slate-200">

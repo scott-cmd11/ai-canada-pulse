@@ -43,6 +43,9 @@ export default function GovRegistrySection() {
           )}
         </h2>
       </div>
+      <p className="text-sm text-slate-600 mb-4 max-w-3xl leading-relaxed">
+        AI systems deployed by federal government departments, sourced from the Treasury Board Secretariat&apos;s public registry. Tracks each system&apos;s assessed risk level, helping monitor how the Government of Canada is adopting and governing AI in public services.
+      </p>
 
       {loading && (
         <div className="py-6">

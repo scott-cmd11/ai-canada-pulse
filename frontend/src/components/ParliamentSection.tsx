@@ -30,6 +30,9 @@ export default function ParliamentSection() {
       <div className="section-header">
         <h2>Parliamentary Records</h2>
       </div>
+      <p className="text-sm text-slate-600 mb-4 max-w-3xl leading-relaxed">
+        Recent mentions of artificial intelligence in House of Commons debates and committee proceedings, sourced from OpenParliament.ca. Tracks which MPs and parties are engaging with AI policy and the tone of their discourse.
+      </p>
 
       {loading && (
         <div className="py-8">
