@@ -52,7 +52,11 @@ export default function GovRegistrySection() {
         </h2>
       </div>
       <p className="text-sm text-slate-600 mb-4 max-w-3xl leading-relaxed">
-        AI systems deployed by federal government departments, sourced from the Treasury Board Secretariat&apos;s public registry. Tracks each system&apos;s assessed risk level, helping monitor how the Government of Canada is adopting and governing AI in public services.
+        AI systems deployed by federal departments, sourced from{" "}
+        <a href="https://open.canada.ca/data/en/dataset/fcbc0200-79ba-4fa4-94a6-00e32facea6b" target="_blank" rel="noopener noreferrer" className="text-indigo-700 hover:underline">Open Canada</a>.
+        Risk levels are assigned by each department using Canada&apos;s{" "}
+        <a href="https://www.canada.ca/en/government/system/digital-government/digital-government-innovations/responsible-use-ai/algorithmic-impact-assessment.html" target="_blank" rel="noopener noreferrer" className="text-indigo-700 hover:underline">Algorithmic Impact Assessment (AIA)</a>{" "}
+        framework — a mandatory tool that scores AI systems from Level I (minimal) to Level IV (high risk) based on potential impact on rights, health, and safety.
       </p>
 
       {loading && (
@@ -69,9 +73,9 @@ export default function GovRegistrySection() {
 
       {/* Risk Distribution */}
       {!loading && systems.length > 0 && (
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4">
-          {(["High", "Moderate", "Low", "Minimal"] as const).map((level) => {
-            const risk = RISK_MAP[level]
+        <div className="grid grid-cols-3 sm:grid-cols-5 gap-2 mb-4">
+          {(["High", "Moderate", "Low", "Minimal", "Unclassified"] as const).map((level) => {
+            const risk = RISK_MAP[level] || { classes: "bg-slate-50 text-slate-600 border-slate-200", label: "Not Specified" }
             const count = riskCounts[level] || 0
             return (
               <div key={level} className={`rounded-lg border px-3 py-2 text-center ${risk.classes}`}>
