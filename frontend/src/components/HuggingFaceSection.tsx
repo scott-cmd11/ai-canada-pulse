@@ -54,34 +54,22 @@ export default function HuggingFaceSection() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {data.orgs.filter(o => o.modelCount > 0).map((org) => (
                     <div key={org.orgSlug} className="saas-card p-5 border-l-4 border-l-amber-500">
-                        <div className="flex items-center justify-between mb-3">
-                            <h3 className="text-sm font-bold text-slate-900">{org.orgName}</h3>
+                        <div className="flex items-center justify-between mb-1">
+                            <a
+                                href={`https://huggingface.co/${org.orgSlug}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-sm font-bold text-slate-900 hover:text-indigo-700 hover:underline"
+                            >
+                                {org.orgName}
+                            </a>
                             <span className="text-xs font-semibold text-slate-500 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
                                 {org.modelCount} models
                             </span>
                         </div>
-
-                        <p className="text-xs text-slate-500 mb-3">
+                        <p className="text-xs text-slate-500">
                             {formatDownloads(org.totalDownloads)} downloads
                         </p>
-
-                        {org.topModels.length > 0 && (
-                            <div className="space-y-2">
-                                {org.topModels.map((m) => (
-                                    <div key={m.id} className="flex items-center justify-between text-xs">
-                                        <a
-                                            href={`https://huggingface.co/${m.id}`}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="text-indigo-700 hover:underline font-medium truncate max-w-[70%]"
-                                        >
-                                            {m.id}
-                                        </a>
-                                        <span className="text-slate-400 shrink-0 ml-2">{formatDownloads(m.downloads)}</span>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
                     </div>
                 ))}
             </div>
