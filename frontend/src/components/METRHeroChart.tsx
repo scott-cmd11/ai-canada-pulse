@@ -98,7 +98,7 @@ export default function METRHeroChart() {
             },
             xAxis: {
                 type: "value" as const,
-                min: 2022,
+                min: 2024,
                 max: 2026.5,
                 axisLine: { lineStyle: { color: "rgba(255,255,255,0.15)" } },
                 axisLabel: {
