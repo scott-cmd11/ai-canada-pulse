@@ -1,7 +1,8 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useCallback } from "react"
 import type { Story } from "@/lib/mock-data"
+import { usePolling } from "@/hooks/usePolling"
 
 function relativeTime(iso: string) {
   const diff = Math.floor((Date.now() - new Date(iso).getTime()) / 60000)
@@ -15,20 +16,17 @@ function relativeTime(iso: string) {
 }
 
 export default function BriefingCard() {
-  const [topStory, setTopStory] = useState<Story | null>(null)
-
-  useEffect(() => {
-    fetch("/api/v1/stories")
-      .then((res) => res.json())
-      .then((json) => {
-        if (json.stories && json.stories.length > 0) {
-          const top = (json.stories as Story[]).find((s) => s.isBriefingTop)
-          if (top) setTopStory(top)
-          else setTopStory(json.stories[0])
-        }
-      })
-      .catch((err) => console.warn("[BriefingCard] fetch failed:", err))
+  const transform = useCallback((json: Record<string, unknown>) => {
+    const stories = json.stories as Story[] | undefined
+    if (!stories || stories.length === 0) return null
+    const top = stories.find((s) => s.isBriefingTop)
+    return top || stories[0]
   }, [])
+
+  const { data: topStory } = usePolling<Story>("/api/v1/stories", {
+    intervalMs: 120_000,
+    transform,
+  })
 
   if (!topStory) return null
 

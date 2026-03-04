@@ -1,26 +1,23 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import type { Story } from "@/lib/mock-data"
+import { useCallback } from "react"
 import IntelligenceBrief from "./IntelligenceBrief"
+import { usePolling } from "@/hooks/usePolling"
 
 /**
  * Fetches executive brief from the stories API and renders the AI Intelligence Brief.
- * Designed to be inserted between Top Briefing and Latest Developments.
+ * Auto-refreshes every 2 minutes. Designed to sit between Top Briefing and Latest Developments.
  */
 export default function ExecutiveBriefSection() {
-    const [brief, setBrief] = useState<string[] | null>(null)
-
-    useEffect(() => {
-        fetch("/api/v1/stories")
-            .then((res) => res.json())
-            .then((json) => {
-                if (json.executiveBrief) {
-                    setBrief(json.executiveBrief)
-                }
-            })
-            .catch((err) => console.warn("[ExecutiveBrief] fetch failed:", err))
+    const transform = useCallback((json: Record<string, unknown>) => {
+        const brief = json.executiveBrief as string[] | undefined
+        return brief && brief.length > 0 ? brief : null
     }, [])
+
+    const { data: brief } = usePolling<string[]>("/api/v1/stories", {
+        intervalMs: 120_000,
+        transform,
+    })
 
     return <IntelligenceBrief brief={brief} />
 }

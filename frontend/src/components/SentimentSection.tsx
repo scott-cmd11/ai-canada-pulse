@@ -1,24 +1,21 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useCallback } from "react"
 import dynamic from "next/dynamic"
 import type { SentimentData } from "@/lib/gdelt-client"
+import { usePolling } from "@/hooks/usePolling"
 
 const ReactECharts = dynamic(() => import("echarts-for-react"), { ssr: false })
 
 export default function SentimentSection() {
-  const [data, setData] = useState<SentimentData | null>(null)
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    fetch("/api/v1/sentiment", { cache: "no-store" })
-      .then((res) => res.json())
-      .then((json) => {
-        if (json.data) setData(json.data)
-      })
-      .catch((err) => console.warn("[SentimentSection] fetch failed:", err))
-      .finally(() => setLoading(false))
+  const transform = useCallback((json: Record<string, unknown>) => {
+    return (json.data as SentimentData) || null
   }, [])
+
+  const { data, loading } = usePolling<SentimentData>("/api/v1/sentiment", {
+    intervalMs: 300_000, // 5 minutes
+    transform,
+  })
 
   if (loading) {
     return (

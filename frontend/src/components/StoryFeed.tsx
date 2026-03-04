@@ -1,8 +1,9 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useCallback } from "react"
 import type { Category, Story } from "@/lib/mock-data"
 import StoryCard from "./StoryCard"
+import { usePolling } from "@/hooks/usePolling"
 
 const ALL = "All Intelligence"
 
@@ -19,23 +20,19 @@ const PAGE_SIZE = 10
 
 export default function StoryFeed() {
   const [active, setActive] = useState<typeof ALL | Category>(ALL)
-  const [stories, setStories] = useState<Story[]>([])
-  const [loading, setLoading] = useState(true)
   const [displayCount, setDisplayCount] = useState(PAGE_SIZE)
 
-  useEffect(() => {
-    fetch("/api/v1/stories")
-      .then((res) => res.json())
-      .then((json) => {
-        if (json.stories && json.stories.length > 0) {
-          setStories(json.stories)
-        }
-      })
-      .catch((err) => console.warn("[StoryFeed] fetch failed:", err))
-      .finally(() => setLoading(false))
+  const transform = useCallback((json: Record<string, unknown>) => {
+    const stories = json.stories as Story[] | undefined
+    return stories && stories.length > 0 ? stories : null
   }, [])
 
-  const feedStories = stories.filter((s) => !s.isBriefingTop)
+  const { data: stories, loading } = usePolling<Story[]>("/api/v1/stories", {
+    intervalMs: 120_000, // 2 minutes
+    transform,
+  })
+
+  const feedStories = (stories ?? []).filter((s) => !s.isBriefingTop)
 
   const mapBackToValue = (cat: string) => {
     if (cat === "Markets & Startups" || cat === "Markets") return "Industry & Startups"
