@@ -42,6 +42,10 @@ export default function IntelligenceBrief({ brief }: Props) {
                     </li>
                 ))}
             </ul>
+
+            <p className="mt-4 pt-3 border-t border-indigo-100 text-[11px] text-slate-400 italic">
+                This brief is machine-generated and may contain inaccuracies. Always verify claims with primary sources.
+            </p>
         </div>
     )
 }

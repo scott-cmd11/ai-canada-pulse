@@ -19,17 +19,17 @@ const dataSources = [
                 details: "AI-generated thematic analysis is produced by sending current headline data to a large language model. The brief identifies patterns and trends across all current stories. Individual article summaries are also AI-generated.",
                 url: "https://huggingface.co",
             },
-        ],
-    },
-    {
-        group: "📈 Markets & Economy",
-        items: [
             {
                 section: "Media Sentiment",
                 source: "Derived from RSS news feed",
                 refresh: "Every 30 minutes",
                 details: "Sentiment is computed by analyzing the tone of current news headlines using keyword-based classification. Each story is scored as positive, neutral, or concerning and aggregated into an overall sentiment score.",
             },
+        ],
+    },
+    {
+        group: "📈 Markets & Economy",
+        items: [
             {
                 section: "Market Performance",
                 source: "Yahoo Finance",

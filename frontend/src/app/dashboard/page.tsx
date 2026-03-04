@@ -61,6 +61,9 @@ export default function DashboardPage() {
                 </div>
                 <StoryFeed />
               </div>
+
+              {/* Sentiment (derived from news feed) */}
+              <SentimentSection />
             </div>
           </div>
         </ScrollReveal>
@@ -76,11 +79,8 @@ export default function DashboardPage() {
             </div>
 
             <div className="flex flex-col gap-4">
-              {/* Sentiment + Stocks side by side */}
-              <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 lg:gap-6">
-                <SentimentSection />
-                <StocksSection />
-              </div>
+              {/* Stocks */}
+              <StocksSection />
 
               {/* Economic Indicators */}
               <IndicatorsSection />
