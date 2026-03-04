@@ -43,22 +43,11 @@ export default function DashboardPage() {
 
             <div className="flex flex-col gap-4">
               {/* Briefing + Executive Brief */}
-              <div>
-                <div className="section-header">
-                  <h2>Top Briefing</h2>
-                </div>
-                <BriefingCard />
-              </div>
+              <BriefingCard />
               <ExecutiveBriefSection />
 
               {/* News Feed */}
               <div>
-                <div className="section-header flex items-center justify-between">
-                  <h2>Latest Developments</h2>
-                  <span className="text-xs font-semibold text-indigo-700 bg-indigo-50 px-2.5 py-1 rounded-full border border-indigo-200">
-                    REAL-TIME
-                  </span>
-                </div>
                 <StoryFeed />
               </div>
 

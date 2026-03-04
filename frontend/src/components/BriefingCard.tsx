@@ -34,7 +34,7 @@ export default function BriefingCard() {
     <article className="saas-card bg-white p-6 sm:p-8 flex flex-col gap-4 border-l-4 border-l-indigo-600">
 
       {/* Dense Meta row */}
-      <div className="flex flex-wrap items-center gap-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
+      <div className="flex flex-wrap items-center gap-2 text-xs font-medium text-slate-400">
         <span className="text-indigo-700">
           {topStory.category}
         </span>
