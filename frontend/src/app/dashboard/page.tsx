@@ -13,6 +13,7 @@ import ComputeStatusSection from "@/components/ComputeStatusSection"
 import TrendsInsightsSection from "@/components/TrendsInsightsSection"
 import LabFeedsSection from "@/components/LabFeedsSection"
 import HuggingFaceSection from "@/components/HuggingFaceSection"
+import EpochAISection from "@/components/EpochAISection"
 import JobMarketSection from "@/components/JobMarketSection"
 import AIAdoptionSection from "@/components/AIAdoptionSection"
 import SectionNav from "@/components/SectionNav"
@@ -92,6 +93,9 @@ export default function DashboardPage() {
             </div>
 
             <div className="flex flex-col gap-4">
+              {/* Epoch AI — AI Progress Tracker */}
+              <EpochAISection />
+
               {/* ArXiv + HuggingFace side by side */}
               <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 lg:gap-6">
                 <ArxivSection />
@@ -157,6 +161,7 @@ export default function DashboardPage() {
               <span>Google Trends</span>
               <span>Yahoo Finance</span>
               <span>OpenAlex</span>
+              <span>Epoch AI</span>
               <span className="text-slate-300">•</span>
               <Link href="/methodology" className="font-semibold text-indigo-700 hover:text-indigo-800 hover:underline">
                 View all sources →
