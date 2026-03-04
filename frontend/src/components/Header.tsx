@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import type { PulseData } from "@/lib/mock-data"
+import LiveTicker from "./LiveTicker"
 
 const moodConfig = {
   green: { bg: "bg-green-50", text: "text-green-700", border: "border-green-200", dot: "bg-green-500", label: "Positive Outlook", tooltip: "Overall sentiment across news, markets, and policy signals is trending positive for Canada's AI ecosystem." },
@@ -38,6 +39,7 @@ export default function Header() {
 
   return (
     <header className="sticky top-0 z-50 bg-white border-b border-slate-200 shadow-sm">
+      <LiveTicker />
       <div className="w-full px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between">
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
