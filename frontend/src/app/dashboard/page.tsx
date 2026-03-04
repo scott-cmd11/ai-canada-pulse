@@ -87,6 +87,10 @@ export default function DashboardPage() {
                 <a href="mailto:scott.hazlitt@gmail.com" className="text-indigo-700 hover:underline">
                   scott.hazlitt@gmail.com
                 </a>
+                {" · "}
+                <a href="https://www.linkedin.com/in/scott-hazlitt/" target="_blank" rel="noopener noreferrer" className="text-indigo-700 hover:underline">
+                  LinkedIn
+                </a>
               </p>
             </div>
             <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
