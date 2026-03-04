@@ -1,7 +1,5 @@
 import Link from "next/link"
 import Header from "@/components/Header"
-import GovRegistrySection from "@/components/GovRegistrySection"
-import ParliamentSection from "@/components/ParliamentSection"
 import JobMarketSection from "@/components/JobMarketSection"
 import HuggingFaceSection from "@/components/HuggingFaceSection"
 import AIAdoptionSection from "@/components/AIAdoptionSection"
@@ -69,21 +67,6 @@ export default function InsightsPage() {
                     </div>
 
                     <TrendsInsightsSection />
-                </div>
-
-                {/* ═══════════════════════════════════════════════ */}
-                {/* SECTION 4: Policy & Governance                 */}
-                {/* ═══════════════════════════════════════════════ */}
-                <div className="border-t border-slate-200 pt-6">
-                    <div className="flex items-center gap-2.5 mb-4">
-                        <span className="text-lg">🏛️</span>
-                        <h2 className="text-lg font-bold text-slate-900">Policy &amp; Governance</h2>
-                    </div>
-
-                    <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-                        <GovRegistrySection />
-                        <ParliamentSection />
-                    </div>
                 </div>
 
             </main>
