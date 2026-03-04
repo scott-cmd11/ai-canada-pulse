@@ -28,10 +28,8 @@ export default function InsightsPage() {
                     <h1 className="text-3xl font-bold text-slate-900 tracking-tight">
                         Deep Insights
                     </h1>
-                    <p className="text-sm text-slate-600 mt-2 max-w-3xl leading-relaxed">
-                        Extended intelligence covering government policy, parliamentary discourse, labour markets,
-                        open-source activity, academic research, and AI adoption across Canada. All data is fetched
-                        live from authoritative public sources.
+                    <p className="text-sm text-slate-500 mt-1">
+                        Live data from authoritative Canadian public sources.
                     </p>
                 </div>
 
@@ -39,11 +37,10 @@ export default function InsightsPage() {
                 {/* SECTION 1: Innovation Pipeline                 */}
                 {/* ═══════════════════════════════════════════════ */}
                 <div className="border-t border-slate-200 pt-6">
-                    <div className="flex items-center gap-2.5 mb-1">
+                    <div className="flex items-center gap-2.5 mb-4">
                         <span className="text-lg">🔬</span>
                         <h2 className="text-lg font-bold text-slate-900">Innovation Pipeline</h2>
                     </div>
-                    <p className="text-sm text-slate-500 mb-5">What&apos;s being researched and built across Canadian institutions and the open-source community.</p>
 
                     <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
                         <OpenSourceSection />
@@ -55,11 +52,10 @@ export default function InsightsPage() {
                 {/* SECTION 2: Market & Adoption                   */}
                 {/* ═══════════════════════════════════════════════ */}
                 <div className="border-t border-slate-200 pt-6">
-                    <div className="flex items-center gap-2.5 mb-1">
+                    <div className="flex items-center gap-2.5 mb-4">
                         <span className="text-lg">📊</span>
                         <h2 className="text-lg font-bold text-slate-900">Market &amp; Adoption</h2>
                     </div>
-                    <p className="text-sm text-slate-500 mb-5">Where AI talent is in demand and which industries are adopting it fastest.</p>
 
                     <div className="flex flex-col gap-6">
                         <JobMarketSection />
@@ -71,11 +67,10 @@ export default function InsightsPage() {
                 {/* SECTION 3: Regional Landscape                  */}
                 {/* ═══════════════════════════════════════════════ */}
                 <div className="border-t border-slate-200 pt-6">
-                    <div className="flex items-center gap-2.5 mb-1">
+                    <div className="flex items-center gap-2.5 mb-4">
                         <span className="text-lg">🗺️</span>
                         <h2 className="text-lg font-bold text-slate-900">Regional Landscape</h2>
                     </div>
-                    <p className="text-sm text-slate-500 mb-5">How AI interest and search activity vary across Canadian provinces.</p>
 
                     <TrendsInsightsSection />
                 </div>
@@ -84,11 +79,10 @@ export default function InsightsPage() {
                 {/* SECTION 4: Policy & Governance                 */}
                 {/* ═══════════════════════════════════════════════ */}
                 <div className="border-t border-slate-200 pt-6">
-                    <div className="flex items-center gap-2.5 mb-1">
+                    <div className="flex items-center gap-2.5 mb-4">
                         <span className="text-lg">🏛️</span>
                         <h2 className="text-lg font-bold text-slate-900">Policy &amp; Governance</h2>
                     </div>
-                    <p className="text-sm text-slate-500 mb-5">How the federal government is deploying and regulating AI systems.</p>
 
                     <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
                         <GovRegistrySection />
