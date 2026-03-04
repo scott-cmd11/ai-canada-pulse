@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 import { fetchGlobalAINews } from "@/lib/global-client"
-import { summarizeArticles, generateExecutiveBrief } from "@/lib/summarizer"
+import { summarizeGlobalArticles, generateGlobalBrief } from "@/lib/summarizer"
 
 export const dynamic = "force-dynamic"
 export const maxDuration = 30
@@ -22,7 +22,7 @@ export async function GET() {
             }))
 
             // Generate per-article summaries
-            const summaryMap = await summarizeArticles(articlesForAI)
+            const summaryMap = await summarizeGlobalArticles(articlesForAI)
             if (summaryMap) {
                 for (const story of stories) {
                     const aiSummary = summaryMap.get(story.headline)
@@ -39,7 +39,7 @@ export async function GET() {
                 category: s.region,
                 source: s.sourceName,
             }))
-            executiveBrief = await generateExecutiveBrief(allArticles)
+            executiveBrief = await generateGlobalBrief(allArticles)
         } catch (aiErr) {
             console.warn("[api/global-news] AI enrichment failed (non-fatal):", aiErr)
         }

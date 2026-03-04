@@ -382,6 +382,96 @@ export async function generateExecutiveBrief(
     return result
 }
 
+// ─── Global Article Summaries (neutral, non-Canada-focused) ────────────────
+
+/**
+ * Generate neutral summaries for global AI articles (no Canada-specific framing).
+ */
+export async function summarizeGlobalArticles(
+    articles: ArticleForSummary[]
+): Promise<Map<string, string> | null> {
+    if ((!GEMINI_API_KEY && !HF_API_TOKEN) || articles.length === 0) return null
+
+    const cacheKey = `global-articles:${articles.map((a) => a.headline).join("|").slice(0, 200)}`
+    const cached = getCached<Map<string, string>>(cacheKey)
+    if (cached) {
+        console.log("[summarizer] Using cached global article summaries")
+        return cached
+    }
+
+    const articleList = articles
+        .map((a, i) => {
+            const snippetUseful = a.snippet && !a.headline.startsWith(a.snippet.split("  ")[0])
+            const context = snippetUseful ? `\n   Context: ${a.snippet.slice(0, 200)}` : ""
+            return `${i + 1}. "${a.headline}" [${a.category}] — ${a.source}${context}`
+        })
+        .join("\n")
+
+    const systemPrompt = `You are a senior technology analyst covering global AI developments. For each headline below, write a 2-3 sentence analytical brief (50-80 words) that:
+1. Explains the significance of the development in plain language
+2. Provides relevant context (e.g. related companies, policies, or industry trends)
+3. Notes the broader implications for the global AI landscape
+
+Be specific, insightful, and provide ORIGINAL ANALYSIS — never repeat or rephrase the headline. Some articles may have thin or missing context; use your knowledge to fill in the gaps.
+
+Output ONLY a JSON array of strings, one per article, in the same order.`
+
+    const userPrompt = `Write analytical briefs for these ${articles.length} global AI articles:\n\n${articleList}\n\nJSON array of ${articles.length} briefs:`
+
+    const raw = await callAI(systemPrompt, userPrompt)
+    if (!raw) return null
+
+    const summaries = parseJsonArray(raw)
+    if (!summaries) return null
+
+    const results = new Map<string, string>()
+    articles.forEach((a, i) => {
+        if (summaries[i]) {
+            results.set(a.headline, summaries[i])
+        }
+    })
+
+    if (results.size > 0) {
+        setCache(cacheKey, results)
+    }
+    return results.size > 0 ? results : null
+}
+
+/**
+ * Generate 3-5 thematic executive brief bullets about global AI trends.
+ */
+export async function generateGlobalBrief(
+    articles: ArticleForSummary[]
+): Promise<string[] | null> {
+    if ((!GEMINI_API_KEY && !HF_API_TOKEN) || articles.length === 0) return null
+
+    const cacheKey = `global-brief:${articles.map((a) => a.headline).join("|").slice(0, 200)}`
+    const cached = getCached<string[]>(cacheKey)
+    if (cached) {
+        console.log("[summarizer] Using cached global brief")
+        return cached
+    }
+
+    const top = articles.slice(0, 20)
+    const articleList = top
+        .map((a, i) => `${i + 1}. "${a.headline}" [${a.category}] — ${a.source}`)
+        .join("\n")
+
+    const systemPrompt = `You are an expert intelligence analyst producing an executive briefing about global AI developments. Write 3-5 thematic bullets that synthesize the key worldwide trends, not just list articles. Each bullet should identify a pattern, shift, or strategic implication in the global AI landscape. Be specific and analytical. Output ONLY a JSON array of strings.`
+
+    const userPrompt = `Based on these ${top.length} recent global AI signals, write 3-5 executive summary bullets:\n\n${articleList}\n\nJSON array:`
+
+    const raw = await callAI(systemPrompt, userPrompt)
+    if (!raw) return null
+
+    const bullets = parseJsonArray(raw)
+    if (!bullets || bullets.length === 0) return null
+
+    const result = bullets.slice(0, 5)
+    setCache(cacheKey, result)
+    return result
+}
+
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
 function parseJsonArray(raw: string): string[] | null {
