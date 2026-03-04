@@ -3,35 +3,21 @@
 import { useCallback, useMemo } from "react"
 import dynamic from "next/dynamic"
 import { usePolling } from "@/hooks/usePolling"
-import type { EpochModel, EpochStats } from "@/lib/epoch-client"
+import type { METRModel, METRStats } from "@/lib/epoch-client"
 
 const ReactECharts = dynamic(() => import("echarts-for-react"), { ssr: false })
 
-interface EpochData {
-    models: EpochModel[]
-    stats: EpochStats
+interface METRData {
+    models: METRModel[]
+    stats: METRStats
 }
 
-/** Format large FLOP values into readable strings like "2.1 × 10²⁵" */
-function formatFlop(flop: number): string {
-    if (flop <= 0) return "—"
-    const exp = Math.floor(Math.log10(flop))
-    const mantissa = flop / Math.pow(10, exp)
-    const superscripts = "⁰¹²³⁴⁵⁶⁷⁸⁹"
-    const expStr = String(exp)
-        .split("")
-        .map((d) => superscripts[parseInt(d)])
-        .join("")
-    return `${mantissa.toFixed(1)} × 10${expStr}`
-}
-
-/** Format parameter count into human-readable string */
-function formatParams(params: number | null): string {
-    if (!params) return "—"
-    if (params >= 1e12) return `${(params / 1e12).toFixed(1)}T`
-    if (params >= 1e9) return `${(params / 1e9).toFixed(1)}B`
-    if (params >= 1e6) return `${(params / 1e6).toFixed(0)}M`
-    return params.toLocaleString()
+/** Format hours into readable duration */
+function formatHours(hours: number): string {
+    if (hours < 1 / 60) return `${(hours * 3600).toFixed(0)}s`
+    if (hours < 1) return `${(hours * 60).toFixed(0)}m`
+    if (hours < 24) return `${hours.toFixed(1)}h`
+    return `${(hours / 24).toFixed(1)} days`
 }
 
 /** Format date string into human-readable format */
@@ -44,123 +30,108 @@ function formatDate(dateStr: string): string {
     }
 }
 
-// Domain colors for the chart
-const DOMAIN_COLORS: Record<string, string> = {
-    Language: "#6366F1",    // indigo
-    Vision: "#F59E0B",      // amber
-    Multimodal: "#8B5CF6",  // violet
-    Speech: "#10B981",      // emerald
-    Games: "#EF4444",       // red
-    Biology: "#06B6D4",     // cyan
-    Robotics: "#F97316",    // orange
-    Other: "#94A3B8",       // slate
+/** Convert date to decimal year */
+function toDecimalYear(dateStr: string): number | null {
+    const d = new Date(dateStr + "T00:00:00")
+    if (isNaN(d.getTime())) return null
+    const year = d.getFullYear()
+    if (year < 2018 || year > 2030) return null
+    const startOfYear = new Date(year, 0, 1).getTime()
+    const endOfYear = new Date(year + 1, 0, 1).getTime()
+    return year + (d.getTime() - startOfYear) / (endOfYear - startOfYear)
 }
 
-function getDomainColor(domain: string): string {
-    for (const [key, color] of Object.entries(DOMAIN_COLORS)) {
-        if (domain.toLowerCase().includes(key.toLowerCase())) return color
-    }
-    return DOMAIN_COLORS.Other
+// Model family colors
+function getModelColor(name: string): string {
+    if (name.includes("Claude")) return "#D97706"   // amber
+    if (name.includes("GPT") || name.includes("o1") || name.includes("o3") || name.includes("o4")) return "#6366F1" // indigo
+    if (name.includes("Gemini")) return "#10B981"    // emerald
+    if (name.includes("DeepSeek")) return "#EF4444"  // red
+    if (name.includes("Grok")) return "#8B5CF6"      // violet
+    if (name.includes("Qwen") || name.includes("Kimi")) return "#06B6D4" // cyan
+    if (name.includes("Davinci")) return "#6366F1"   // indigo (OpenAI family)
+    return "#94A3B8" // slate
 }
+
+function getModelFamily(name: string): string {
+    if (name.includes("Claude")) return "Anthropic"
+    if (name.includes("GPT") || name.includes("o1") || name.includes("o3") || name.includes("o4") || name.includes("Davinci")) return "OpenAI"
+    if (name.includes("Gemini")) return "Google"
+    if (name.includes("DeepSeek")) return "DeepSeek"
+    if (name.includes("Grok")) return "xAI"
+    if (name.includes("Qwen")) return "Alibaba"
+    if (name.includes("Kimi")) return "Moonshot"
+    return "Other"
+}
+
+// Task annotations for context (matching METR's original chart)
+const TASK_ANNOTATIONS = [
+    { hours: 1, label: "Fix bugs in small Python libraries" },
+    { hours: 4, label: "Train adversarially robust image model" },
+    { hours: 8, label: "Exploit a vulnerable Ethereum smart contract" },
+]
 
 export default function EpochAISection() {
     const transform = useCallback((json: Record<string, unknown>) => {
-        const models = json.models as EpochModel[] | undefined
-        const stats = json.stats as EpochStats | undefined
+        const models = json.models as METRModel[] | undefined
+        const stats = json.stats as METRStats | undefined
         if (!models || !stats || models.length === 0) return null
-        return { models, stats } as EpochData
+        return { models, stats } as METRData
     }, [])
 
-    const { data, loading } = usePolling<EpochData>("/api/v1/epoch-models", {
-        intervalMs: 1_800_000, // 30 minutes — data updates weekly
+    const { data, loading } = usePolling<METRData>("/api/v1/epoch-models", {
+        intervalMs: 1_800_000, // 30 minutes
         transform,
     })
 
     const chartOption = useMemo(() => {
         if (!data) return null
 
-        // Convert date to decimal year for value axis (e.g., 2023.5 for July 2023)
-        const toDecimalYear = (dateStr: string): number | null => {
-            const d = new Date(dateStr + "T00:00:00")
-            if (isNaN(d.getTime())) return null
-            const year = d.getFullYear()
-            if (year < 1990 || year > 2030) return null // filter garbage dates
-            const startOfYear = new Date(year, 0, 1).getTime()
-            const endOfYear = new Date(year + 1, 0, 1).getTime()
-            return year + (d.getTime() - startOfYear) / (endOfYear - startOfYear)
-        }
+        const validModels = data.models.filter((m) => toDecimalYear(m.releaseDate) !== null)
 
-        // Only include models from 2010+ with valid dates for a cleaner chart
-        const chartModels = data.models.filter((m) => {
-            const dy = toDecimalYear(m.date)
-            return dy !== null && dy >= 2010
+        // Y-axis max: round up to nearest nice number
+        const maxP50 = Math.max(...validModels.map((m) => m.p50CIHigh || m.p50Hours))
+        const yMax = Math.ceil(maxP50 / 2) * 2 // round up to even hours
+
+        // Only label SOTA models + select others to avoid clutter
+        const labelSet = new Set<string>()
+        // Always label the most recent few and the highest
+        const sorted = [...validModels].sort((a, b) => b.p50Hours - a.p50Hours)
+        sorted.slice(0, 3).forEach((m) => labelSet.add(m.name))
+        // Label a few landmark models
+        const landmarks = ["GPT-4", "GPT-4o", "o1", "o3", "GPT-5", "Claude 3.5 Sonnet", "Claude Opus 4.5", "Claude Opus 4.6"]
+        validModels.forEach((m) => {
+            if (landmarks.some((l) => m.name === l)) labelSet.add(m.name)
         })
 
-        // Group by domain for separate series
-        const domainGroups = new Map<string, EpochModel[]>()
-        for (const m of chartModels) {
-            const domain = m.domain.split(",")[0].trim()
-            const normalizedDomain = Object.keys(DOMAIN_COLORS).find((k) =>
-                domain.toLowerCase().includes(k.toLowerCase())
-            ) || "Other"
-            if (!domainGroups.has(normalizedDomain)) domainGroups.set(normalizedDomain, [])
-            domainGroups.get(normalizedDomain)!.push(m)
-        }
-
-        // Find top models to label — keep it sparse to avoid overlap
-        const labeledModels = new Set<string>()
-        const sortedByCompute = [...chartModels].sort((a, b) => b.trainingCompute - a.trainingCompute)
-        sortedByCompute.slice(0, 5).forEach((m) => labeledModels.add(m.name))
-        const landmarks = ["GPT-4", "GPT-3", "AlphaGo", "BERT", "AlexNet", "Gemini Ultra"]
-        chartModels.forEach((m) => {
-            if (landmarks.some((l) => m.name === l)) labeledModels.add(m.name)
-        })
-
-        const series = Array.from(domainGroups.entries()).map(([domain, models]) => ({
-            name: domain,
-            type: "scatter" as const,
-            data: models.map((m) => ({
-                value: [toDecimalYear(m.date), Math.log10(m.trainingCompute)],
-                model: m,
-            })),
-            symbolSize: (val: number[]) => {
-                const logVal = val[1]
-                return Math.max(4, Math.min(14, (logVal - 10) * 0.5))
-            },
+        // Build error bar data (custom rendering via markArea won't look right, use custom series)
+        const scatterData = validModels.map((m) => ({
+            value: [toDecimalYear(m.releaseDate)!, m.p50Hours],
+            model: m,
             itemStyle: {
-                color: getDomainColor(domain),
+                color: getModelColor(m.name),
                 borderColor: "#fff",
-                borderWidth: 1,
-                opacity: 0.85,
-            },
-            label: {
-                show: true,
-                formatter: (params: { data: { model: EpochModel } }) => {
-                    return labeledModels.has(params.data.model.name)
-                        ? params.data.model.name.length > 20
-                            ? params.data.model.name.slice(0, 18) + "…"
-                            : params.data.model.name
-                        : ""
-                },
-                position: "top" as const,
-                fontSize: 9,
-                fontWeight: 600,
-                color: "#334155",
-                distance: 6,
+                borderWidth: 1.5,
             },
         }))
 
+        // Error bar lines as a separate series (vertical lines for CI)
+        const errorBarData: Array<Array<[number, number]>> = validModels.map((m) => {
+            const x = toDecimalYear(m.releaseDate)!
+            return [[x, m.p50CILow], [x, m.p50CIHigh]]
+        })
+
         return {
             grid: {
-                left: 65,
-                right: 20,
+                left: 60,
+                right: 30,
                 top: 30,
-                bottom: 50,
+                bottom: 40,
             },
             xAxis: {
                 type: "value" as const,
-                min: 2010,
-                max: 2026,
+                min: 2019,
+                max: 2026.5,
                 axisLine: { lineStyle: { color: "#CBD5E1" } },
                 axisLabel: {
                     color: "#64748B",
@@ -172,19 +143,20 @@ export default function EpochAISection() {
             },
             yAxis: {
                 type: "value" as const,
-                name: "Training Compute (log₁₀ FLOP)",
+                name: "Task Duration (hours)",
                 nameTextStyle: {
                     color: "#64748B",
                     fontSize: 11,
                     fontWeight: 600,
-                    padding: [0, 0, 0, 0],
                 },
+                min: 0,
+                max: yMax,
                 axisLine: { lineStyle: { color: "#CBD5E1" } },
                 axisLabel: {
                     color: "#64748B",
                     fontSize: 11,
                     fontWeight: 500,
-                    formatter: (val: number) => `10^${val.toFixed(0)}`,
+                    formatter: (val: number) => `${val}h`,
                 },
                 splitLine: {
                     lineStyle: { color: "#F1F5F9", type: "dashed" as const },
@@ -197,43 +169,85 @@ export default function EpochAISection() {
                 borderWidth: 1,
                 padding: [10, 14],
                 textStyle: { color: "#334155", fontSize: 12 },
-                formatter: (params: { data: { model: EpochModel } }) => {
-                    const m = params.data.model
+                formatter: (params: { data: { model?: METRModel } }) => {
+                    const m = params.data?.model
+                    if (!m) return ""
                     return `<b style="color:#0F172A;font-size:13px">${m.name}</b><br/>
-            <span style="color:#64748B">${m.org}</span><br/>
-            <span style="color:#64748B">${formatDate(m.date)}</span><br/>
-            <b>Compute:</b> ${formatFlop(m.trainingCompute)}<br/>
-            ${m.parameters ? `<b>Parameters:</b> ${formatParams(m.parameters)}` : ""}`
+            <span style="color:#64748B">${getModelFamily(m.name)} · ${formatDate(m.releaseDate)}</span><br/>
+            <b>50% Time Horizon:</b> ${formatHours(m.p50Hours)}<br/>
+            <span style="color:#94A3B8;font-size:11px">CI: ${formatHours(m.p50CILow)} – ${formatHours(m.p50CIHigh)}</span><br/>
+            <b>80% Time Horizon:</b> ${formatHours(m.p80Hours)}<br/>
+            <b>Avg Score:</b> ${(m.avgScore * 100).toFixed(1)}%`
                 },
             },
-            legend: {
-                data: Array.from(domainGroups.keys()),
-                bottom: 0,
-                textStyle: { fontSize: 10, color: "#64748B", fontWeight: 600 },
-                itemWidth: 10,
-                itemHeight: 10,
-                itemGap: 14,
-            },
+            // Task annotation lines
+            series: [
+                // Error bars (CI)
+                ...errorBarData.map((segment, i) => ({
+                    type: "line" as const,
+                    data: segment,
+                    symbol: "none",
+                    lineStyle: {
+                        color: getModelColor(validModels[i].name),
+                        width: 1.5,
+                        opacity: 0.35,
+                    },
+                    silent: true,
+                    z: 1,
+                })),
+                // Main scatter points
+                {
+                    type: "scatter" as const,
+                    data: scatterData,
+                    symbolSize: 10,
+                    z: 10,
+                    label: {
+                        show: true,
+                        formatter: (params: { data: { model: METRModel } }) => {
+                            return labelSet.has(params.data.model.name) ? params.data.model.name : ""
+                        },
+                        position: "right" as const,
+                        fontSize: 9,
+                        fontWeight: 600,
+                        color: "#334155",
+                        distance: 8,
+                    },
+                    // Mark lines for task annotations
+                    markLine: {
+                        silent: true,
+                        symbol: "none",
+                        lineStyle: { color: "#E2E8F0", type: "dashed" as const, width: 1 },
+                        label: {
+                            position: "end" as const,
+                            fontSize: 9,
+                            color: "#94A3B8",
+                            formatter: (params: { name: string }) => params.name,
+                        },
+                        data: TASK_ANNOTATIONS.filter((a) => a.hours <= yMax).map((a) => ({
+                            yAxis: a.hours,
+                            name: a.label,
+                        })),
+                    },
+                },
+            ],
             animation: false,
-            series,
         }
     }, [data])
 
-    // Get the 5 most recent large-scale models for the table
-    const recentModels = useMemo(() => {
+    // Top models sorted by p50 for the table
+    const topModels = useMemo(() => {
         if (!data) return []
         return [...data.models]
-            .filter((m) => m.trainingCompute >= 1e22)
-            .sort((a, b) => b.date.localeCompare(a.date))
-            .slice(0, 5)
+            .sort((a, b) => b.p50Hours - a.p50Hours)
+            .slice(0, 6)
     }, [data])
 
     if (loading) {
         return (
             <section>
-                <h2 className="section-header">AI Progress Tracker</h2>
+                <h2 className="section-header">AI Capability Tracker</h2>
                 <div className="saas-card p-8 text-center">
-                    <div className="animate-pulse text-sm text-slate-500">Loading AI progress data from Epoch AI...</div>
+                    <div className="animate-pulse text-sm text-slate-500">Loading AI capability data from METR...</div>
                 </div>
             </section>
         )
@@ -242,9 +256,9 @@ export default function EpochAISection() {
     if (!data) {
         return (
             <section>
-                <h2 className="section-header">AI Progress Tracker</h2>
+                <h2 className="section-header">AI Capability Tracker</h2>
                 <div className="saas-card p-6 text-center">
-                    <p className="text-sm text-slate-500">AI progress data currently unavailable.</p>
+                    <p className="text-sm text-slate-500">AI capability data currently unavailable.</p>
                 </div>
             </section>
         )
@@ -255,59 +269,62 @@ export default function EpochAISection() {
     return (
         <section>
             <div className="flex items-center justify-between mb-1">
-                <h2 className="section-header">AI Progress Tracker</h2>
+                <h2 className="section-header">AI Capability Tracker</h2>
                 <a
-                    href="https://epoch.ai/data/ai-models"
+                    href="https://metr.org/time-horizons/"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-[10px] font-semibold text-indigo-600 hover:text-indigo-800 hover:underline uppercase tracking-wider"
                 >
-                    Epoch AI →
+                    METR.org →
                 </a>
             </div>
             <p className="text-sm text-slate-600 mb-4 max-w-3xl leading-relaxed">
-                Tracks the exponential growth of AI training compute over time. Training compute — measured in floating-point operations (FLOP) —
-                has been <strong>doubling every ~{stats.computeDoublingMonths} months</strong>, driving the rapid advancement of AI capabilities.
+                Measures how long a task (by human completion time) an AI agent can reliably complete.{" "}
+                The <strong>50% time horizon</strong> — the task duration at which a model succeeds half the time — has been{" "}
+                <strong>doubling every ~{Math.round(stats.doublingTimeDays / 30)} months</strong>.{" "}
                 Data from{" "}
-                <a href="https://epoch.ai/" target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:underline font-medium">
-                    Epoch AI
+                <a href="https://metr.org/time-horizons/" target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:underline font-medium">
+                    METR
                 </a>
-                's open dataset of {stats.totalModels.toLocaleString()} notable AI models.
+                's evaluations of {stats.totalModels} frontier AI models.
             </p>
 
             {/* Stat cards */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
                 <StatCard
-                    label="Notable Models Tracked"
-                    value={stats.totalModels.toLocaleString()}
-                    sublabel="Since 1950"
+                    label="Models Evaluated"
+                    value={stats.totalModels.toString()}
+                    sublabel="Frontier AI agents"
                     color="indigo"
                 />
                 <StatCard
-                    label="Models Released This Year"
-                    value={stats.modelsThisYear.toString()}
-                    sublabel={new Date().getFullYear().toString()}
+                    label="Highest Time Horizon"
+                    value={formatHours(stats.highestP50Hours)}
+                    sublabel="50% success threshold"
                     color="emerald"
                 />
                 <StatCard
-                    label="Compute Doubling Time"
-                    value={`~${stats.computeDoublingMonths} months`}
-                    sublabel="Exponential growth"
+                    label="Capability Doubling"
+                    value={`~${Math.round(stats.doublingTimeDays / 30)} months`}
+                    sublabel={`${stats.doublingTimeDays} days`}
                     color="violet"
                 />
                 <StatCard
-                    label="Largest Training Run"
-                    value={formatFlop(stats.largestComputeFlop)}
-                    sublabel="FLOP"
+                    label="Latest Evaluated"
+                    value={stats.latestModel?.name || "—"}
+                    sublabel={stats.latestModel ? formatDate(stats.latestModel.releaseDate) : ""}
                     color="amber"
                 />
             </div>
 
-            {/* Training compute chart */}
+            {/* Time horizon chart (linear scale) */}
             <div className="saas-card p-4 md:p-6 mb-4">
-                <p className="text-xs font-semibold tracking-wider uppercase text-slate-500 mb-3">
-                    Training Compute Over Time (Log Scale)
-                </p>
+                <div className="flex items-center justify-between mb-3">
+                    <p className="text-xs font-semibold tracking-wider uppercase text-slate-500">
+                        Task-Completion Time Horizons (50% Success, Linear Scale)
+                    </p>
+                </div>
                 <div className="w-full" style={{ height: 420 }}>
                     {chartOption && (
                         <ReactECharts
@@ -319,35 +336,41 @@ export default function EpochAISection() {
                 </div>
             </div>
 
-            {/* Recent frontier models table */}
-            {recentModels.length > 0 && (
+            {/* Top frontier models table */}
+            {topModels.length > 0 && (
                 <div className="saas-card overflow-hidden">
                     <div className="px-5 py-3 border-b border-slate-200 bg-slate-50/50">
                         <p className="text-[11px] font-bold text-slate-700 uppercase tracking-widest">
-                            Recent Frontier Models
+                            Top Frontier Models by Time Horizon
                         </p>
                     </div>
                     <div className="divide-y divide-slate-100">
-                        {recentModels.map((m, i) => (
-                            <div key={`${m.name}-${i}`} className="px-5 py-3 flex items-center justify-between gap-4">
-                                <div className="min-w-0">
-                                    <p className="text-sm font-bold text-slate-900 truncate">{m.name}</p>
-                                    <p className="text-xs text-slate-500">{m.org} · {formatDate(m.date)}</p>
+                        {topModels.map((m, i) => (
+                            <div key={`${m.id}-${i}`} className="px-5 py-3 flex items-center justify-between gap-4">
+                                <div className="min-w-0 flex items-center gap-3">
+                                    <span
+                                        className="w-2.5 h-2.5 rounded-full shrink-0"
+                                        style={{ backgroundColor: getModelColor(m.name) }}
+                                    />
+                                    <div>
+                                        <p className="text-sm font-bold text-slate-900 truncate">{m.name}</p>
+                                        <p className="text-xs text-slate-500">{getModelFamily(m.name)} · {formatDate(m.releaseDate)}</p>
+                                    </div>
                                 </div>
                                 <div className="flex items-center gap-3 shrink-0">
-                                    {m.parameters && (
-                                        <span className="text-[10px] font-semibold px-2 py-0.5 rounded bg-indigo-50 text-indigo-700 border border-indigo-200">
-                                            {formatParams(m.parameters)}
+                                    <div className="text-right">
+                                        <p className="text-sm font-bold text-slate-900">{formatHours(m.p50Hours)}</p>
+                                        <p className="text-[10px] text-slate-400">50% horizon</p>
+                                    </div>
+                                    <div className="text-right">
+                                        <p className="text-sm font-bold text-slate-700">{formatHours(m.p80Hours)}</p>
+                                        <p className="text-[10px] text-slate-400">80% horizon</p>
+                                    </div>
+                                    {m.isSota && (
+                                        <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200 uppercase">
+                                            SOTA
                                         </span>
                                     )}
-                                    <span className="text-[10px] font-semibold px-2 py-0.5 rounded bg-violet-50 text-violet-700 border border-violet-200">
-                                        {formatFlop(m.trainingCompute)}
-                                    </span>
-                                    <span
-                                        className="w-2 h-2 rounded-full shrink-0"
-                                        style={{ backgroundColor: getDomainColor(m.domain) }}
-                                        title={m.domain}
-                                    />
                                 </div>
                             </div>
                         ))}
@@ -355,10 +378,10 @@ export default function EpochAISection() {
                     <div className="px-5 py-2.5 border-t border-slate-100 bg-slate-50/30">
                         <p className="text-[10px] text-slate-400 italic">
                             Data:{" "}
-                            <a href="https://epoch.ai/data/ai-models" target="_blank" rel="noopener noreferrer" className="text-indigo-500 hover:underline">
-                                Epoch AI
+                            <a href="https://metr.org/time-horizons/" target="_blank" rel="noopener noreferrer" className="text-indigo-500 hover:underline">
+                                METR
                             </a>{" "}
-                            · CC-BY 4.0 License
+                            · Task-Completion Time Horizons v1.1
                         </p>
                     </div>
                 </div>

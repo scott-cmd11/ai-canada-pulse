@@ -161,7 +161,7 @@ export default function DashboardPage() {
               <span>Google Trends</span>
               <span>Yahoo Finance</span>
               <span>OpenAlex</span>
-              <span>Epoch AI</span>
+              <span>METR</span>
               <span className="text-slate-300">•</span>
               <Link href="/methodology" className="font-semibold text-indigo-700 hover:text-indigo-800 hover:underline">
                 View all sources →

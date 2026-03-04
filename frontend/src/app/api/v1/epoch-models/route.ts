@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server"
-import { fetchEpochModels } from "@/lib/epoch-client"
+import { fetchMETRTimeHorizons } from "@/lib/epoch-client"
 
 export const dynamic = "force-dynamic"
 export const revalidate = 0
 
 export async function GET() {
     try {
-        const result = await fetchEpochModels()
+        const result = await fetchMETRTimeHorizons()
 
         return NextResponse.json({
             models: result.models,
