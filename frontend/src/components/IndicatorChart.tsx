@@ -12,6 +12,7 @@ interface Props {
   color: string // Preserving the prop interface, but we will mostly use CSS variables now
   description: string
   sourceLabel?: string
+  sourceUrl?: string
 }
 
 function formatValue(value: number, unit: string): string {
@@ -38,7 +39,7 @@ function axisFormatter(unit: string): string | ((v: number) => string) {
   return `{value} ${unit}`
 }
 
-export default function IndicatorChart({ title, data, unit, description, sourceLabel }: Props) {
+export default function IndicatorChart({ title, data, unit, description, sourceLabel, sourceUrl }: Props) {
   if (data.length === 0) {
     return (
       <div className="saas-card p-5 border-t-4 border-t-indigo-700">
@@ -144,7 +145,9 @@ export default function IndicatorChart({ title, data, unit, description, sourceL
 
       {sourceLabel && (
         <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 mt-4 pt-4 border-t border-slate-100">
-          SOURCE: {sourceLabel}
+          SOURCE: {sourceUrl ? (
+            <a href={sourceUrl} target="_blank" rel="noopener noreferrer" className="hover:text-indigo-600 hover:underline">{sourceLabel}</a>
+          ) : sourceLabel}
         </p>
       )}
     </div>

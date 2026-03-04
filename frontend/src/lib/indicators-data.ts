@@ -12,6 +12,7 @@ export interface Indicator {
   frequency?: "monthly" | "quarterly" | "annual"
   source: string
   sourceLabel: string
+  sourceUrl?: string
   data: DataPoint[]
 }
 
@@ -28,6 +29,7 @@ export const indicators: Indicator[] = [
     frequency: "monthly",
     source: "statscan",
     sourceLabel: "Statistics Canada, Labour Force Survey",
+    sourceUrl: "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1410028703",
     data: [],
   },
   {
@@ -39,6 +41,7 @@ export const indicators: Indicator[] = [
     frequency: "monthly",
     source: "statscan",
     sourceLabel: "Statistics Canada, Labour Force Survey",
+    sourceUrl: "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1410028703",
     data: [],
   },
   {
@@ -50,6 +53,7 @@ export const indicators: Indicator[] = [
     frequency: "monthly",
     source: "statscan",
     sourceLabel: "Statistics Canada, Labour Force Survey",
+    sourceUrl: "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1410028703",
     data: [],
   },
   {
@@ -61,6 +65,7 @@ export const indicators: Indicator[] = [
     frequency: "monthly",
     source: "statscan",
     sourceLabel: "Statistics Canada, Labour Force Survey",
+    sourceUrl: "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1410028703",
     data: [],
   },
   {
@@ -72,6 +77,7 @@ export const indicators: Indicator[] = [
     frequency: "monthly",
     source: "statscan",
     sourceLabel: "Statistics Canada, Table 18-10-0004",
+    sourceUrl: "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1810000401",
     data: [],
   },
   {
@@ -83,6 +89,7 @@ export const indicators: Indicator[] = [
     frequency: "monthly",
     source: "statscan",
     sourceLabel: "Statistics Canada, Table 36-10-0434",
+    sourceUrl: "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3610043401",
     data: [],
   },
 ]

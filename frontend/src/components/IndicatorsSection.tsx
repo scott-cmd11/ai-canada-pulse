@@ -39,6 +39,7 @@ export default function IndicatorsSection() {
             color={"var(--accent-primary)"}
             description={ind.description}
             sourceLabel={ind.sourceLabel}
+            sourceUrl={ind.sourceUrl}
           />
         ))}
       </div>
