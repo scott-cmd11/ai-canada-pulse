@@ -93,6 +93,12 @@ export default function HeroBanner() {
                             10+ Live Data Sources
                         </span>
                     </div>
+                    <div className="flex items-center gap-1.5 px-3 py-1 rounded-md border border-amber-400/30 bg-amber-400/10">
+                        <span className="text-sm">🚧</span>
+                        <span className="text-[11px] font-semibold text-amber-300 uppercase tracking-wider">
+                            Work in Progress
+                        </span>
+                    </div>
                 </div>
             </div>
         </section>
