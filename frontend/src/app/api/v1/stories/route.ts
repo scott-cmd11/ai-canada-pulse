@@ -42,12 +42,17 @@ export async function GET() {
 
       // Attach AI summaries to stories
       if (summaryMap) {
+        let attached = 0
         for (const story of stories) {
           const aiSummary = summaryMap.get(story.headline)
           if (aiSummary) {
             story.aiSummary = aiSummary
+            attached++
           }
         }
+        console.log(`[api/stories] Attached ${attached}/${stories.length} AI summaries (map has ${summaryMap.size} keys)`)
+      } else {
+        console.log(`[api/stories] summaryMap was null — no per-article summaries generated`)
       }
 
       executiveBrief = brief

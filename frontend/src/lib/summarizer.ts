@@ -51,14 +51,14 @@ async function summarizeBatch(
     articles: ArticleForSummary[]
 ): Promise<Map<string, string> | null> {
     const articleList = articles
-        .map((a, i) => `${i + 1}. "${a.headline}" — ${a.source}\n   Context: ${a.snippet.slice(0, 150)}`)
+        .map((a, i) => `${i + 1}. "${a.headline}" [${a.category}] — ${a.source}`)
         .join("\n")
 
-    const systemPrompt = `You are a senior intelligence analyst. For each article below, write 2-3 concise sentences (40-60 words total) that capture the key takeaway and its significance for a Canadian AI policy audience. Be specific, factual, and analytical — avoid generic phrases like "This article discusses..."
+    const systemPrompt = `You are a senior intelligence analyst covering Canadian AI developments. For each headline below, write a 1-2 sentence analytical brief (30-50 words) explaining WHY the story matters and what the broader implications are for Canada's AI ecosystem. Draw on your knowledge of Canadian AI policy, industry, and institutions. Be specific and insightful — do NOT just rephrase the headline.
 
-Output ONLY a JSON array of strings, one per article, in the same order. Example: ["Two sentence summary here. Second sentence adds context.", "Another summary. With its second sentence."]`
+Output ONLY a JSON array of strings, one per article, in the same order. Example: ["This signals growing federal investment in regional AI hubs beyond Toronto-Montreal. Atlantic Canada could become a testing ground for AI deployment in resource industries.", "Another brief here."]`
 
-    const userPrompt = `Summarize each article in 2-3 sentences:\n\n${articleList}\n\nJSON array of ${articles.length} summaries:`
+    const userPrompt = `Write analytical briefs for these ${articles.length} headlines:\n\n${articleList}\n\nJSON array of ${articles.length} briefs:`
 
     try {
         const controller = new AbortController()
