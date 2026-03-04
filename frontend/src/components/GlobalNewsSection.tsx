@@ -62,8 +62,7 @@ export default function GlobalNewsSection() {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pb-4">
                             {stories.map((story, i) => {
                                 const colors = REGION_COLORS[story.region] || REGION_COLORS["Global"]
-                                // Hide summary if it just repeats the headline
-                                const hasUsefulSummary = story.summary &&
+                                const hasUsefulSummary = !story.aiSummary && story.summary &&
                                     !story.headline.startsWith(story.summary.split("  ")[0]) &&
                                     story.summary.length > 20
                                 return (
@@ -82,11 +81,16 @@ export default function GlobalNewsSection() {
                                                 {story.region}
                                             </span>
                                         </div>
-                                        {hasUsefulSummary && (
+                                        {story.aiSummary ? (
+                                            <p className="text-xs text-slate-600 leading-relaxed line-clamp-2">
+                                                <span className="text-indigo-500 text-[10px] mr-0.5">✦</span>
+                                                {story.aiSummary}
+                                            </p>
+                                        ) : hasUsefulSummary ? (
                                             <p className="text-xs text-slate-500 leading-relaxed line-clamp-2">
                                                 {story.summary}
                                             </p>
-                                        )}
+                                        ) : null}
                                         <div className="flex items-center gap-2 text-[11px] text-slate-500 mt-auto">
                                             <span className="font-medium">{story.sourceName}</span>
                                             <span className="text-slate-300">|</span>

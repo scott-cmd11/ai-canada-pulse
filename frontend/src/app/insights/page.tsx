@@ -3,6 +3,7 @@ import Header from "@/components/Header"
 import ScrollReveal from "@/components/ScrollReveal"
 import ScrollToTop from "@/components/ScrollToTop"
 import GlobalNewsSection from "@/components/GlobalNewsSection"
+import GlobalBriefSection from "@/components/GlobalBriefSection"
 import GlobalTrendsSection from "@/components/GlobalTrendsSection"
 import GlobalResearchSection from "@/components/GlobalResearchSection"
 import PolicyLandscapeSection from "@/components/PolicyLandscapeSection"
@@ -43,6 +44,7 @@ export default function GlobalInsightsPage() {
                             <h2 className="text-lg font-bold text-slate-900">International AI News</h2>
                         </div>
                         <GlobalNewsSection />
+                        <GlobalBriefSection />
                     </div>
                 </ScrollReveal>
 

@@ -19,6 +19,7 @@ export interface GlobalStory {
     sourceName: string
     region: string
     publishedAt: string
+    aiSummary?: string
 }
 
 export interface CountryInterest {
