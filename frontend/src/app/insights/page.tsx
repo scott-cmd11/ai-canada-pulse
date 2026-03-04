@@ -5,7 +5,6 @@ import ParliamentSection from "@/components/ParliamentSection"
 import JobMarketSection from "@/components/JobMarketSection"
 import OpenSourceSection from "@/components/OpenSourceSection"
 import HuggingFaceSection from "@/components/HuggingFaceSection"
-import ResearchSection from "@/components/ResearchSection"
 import AIAdoptionSection from "@/components/AIAdoptionSection"
 import TrendsInsightsSection from "@/components/TrendsInsightsSection"
 
@@ -46,12 +45,9 @@ export default function InsightsPage() {
                     </div>
                     <p className="text-sm text-slate-500 mb-5">What&apos;s being researched and built across Canadian institutions and the open-source community.</p>
 
-                    <div className="flex flex-col gap-6">
-                        <ResearchSection />
-                        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-                            <OpenSourceSection />
-                            <HuggingFaceSection />
-                        </div>
+                    <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+                        <OpenSourceSection />
+                        <HuggingFaceSection />
                     </div>
                 </div>
 
