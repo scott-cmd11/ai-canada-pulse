@@ -89,7 +89,7 @@ export default function LiveTicker() {
                     </a>
 
                     <span className="hidden sm:inline text-[10px] text-slate-500 shrink-0">
-                        — {story.sourceName}
+                        | {story.sourceName}
                     </span>
                 </div>
 

@@ -64,7 +64,7 @@ export default function ComputeStatusSection() {
 
                         {!data.isLive && (
                             <p className="text-[10px] text-amber-600 mt-3 italic">
-                                Status page unreachable — showing last known state
+                                Status page unreachable. Showing last known state
                             </p>
                         )}
                     </div>

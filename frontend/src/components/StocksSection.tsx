@@ -61,10 +61,6 @@ export default function StocksSection() {
         </h2>
       </div>
 
-      <p className="text-sm text-slate-600 mb-3 max-w-3xl leading-relaxed">
-        Tracks TSX-listed companies with significant AI revenue or capabilities — from enterprise AI platforms (OpenText, CGI, Kinaxis) to AI-native products (Coveo, Docebo, Shopify). Stock performance signals investor confidence in Canada&apos;s AI commercialization pipeline and helps gauge market sentiment toward the sector.
-      </p>
-
       <div className="saas-card mb-4 flex flex-col md:flex-row divide-y md:divide-y-0 md:divide-x divide-slate-200">
         <div className="p-4 sm:p-5 flex-1 flex flex-col justify-center">
           <p className="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">

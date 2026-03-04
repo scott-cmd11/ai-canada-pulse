@@ -2,7 +2,7 @@
 
 const LABS = [
     {
-        name: "Mila — Quebec AI Institute",
+        name: "Mila: Quebec AI Institute",
         description: "World-leading research lab in deep learning and reinforcement learning. Co-founded by Yoshua Bengio.",
         url: "https://mila.quebec/en/publications",
         location: "Montréal, QC",
@@ -18,7 +18,7 @@ const LABS = [
         iconColor: "text-emerald-600",
     },
     {
-        name: "CIFAR — Pan-Canadian AI Strategy",
+        name: "CIFAR: Pan-Canadian AI Strategy",
         description: "Funds Canada's National AI Strategy and supports fundamental research across AI safety, learning algorithms, and societal impact.",
         url: "https://cifar.ca/ai-society-publications/",
         location: "Toronto, ON (National)",
@@ -26,7 +26,7 @@ const LABS = [
         iconColor: "text-violet-600",
     },
     {
-        name: "Amii — Alberta Machine Intelligence Institute",
+        name: "Amii: Alberta Machine Intelligence Institute",
         description: "Alberta's AI institute advancing reinforcement learning and AI for scientific discovery. Home to Rich Sutton's research group.",
         url: "https://www.amii.ca/research/",
         location: "Edmonton, AB",

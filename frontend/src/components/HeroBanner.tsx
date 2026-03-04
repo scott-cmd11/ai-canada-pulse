@@ -94,7 +94,7 @@ export default function HeroBanner() {
                             </div>
                         </div>
                         <p className="text-base sm:text-lg text-indigo-200/70 leading-relaxed max-w-xl">
-                            Tracking Canada&apos;s AI ecosystem — market sentiment, research papers, economic indicators, compute infrastructure, and job market demand.
+                            Tracking Canada&apos;s AI ecosystem. Market sentiment, research papers, economic indicators, compute infrastructure, and job market demand.
                         </p>
                         <div className="flex items-center gap-4 mt-6">
                             <Link
