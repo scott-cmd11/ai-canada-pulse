@@ -43,8 +43,8 @@ export default function GlobalInsightsPage() {
                             <span className="text-lg">🌍</span>
                             <h2 className="text-lg font-bold text-slate-900">International AI News</h2>
                         </div>
-                        <GlobalNewsSection />
                         <GlobalBriefSection />
+                        <GlobalNewsSection />
                     </div>
                 </ScrollReveal>
 
