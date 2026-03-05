@@ -46,7 +46,7 @@ export async function GET() {
 
         return NextResponse.json(
             { stories, executiveBrief },
-            { headers: { "Cache-Control": "public, s-maxage=1800, stale-while-revalidate=3600" } }
+            { headers: { "Cache-Control": "public, s-maxage=900, stale-while-revalidate=1800" } }
         )
     } catch (err) {
         console.warn("[api/global-news] Failed:", err)

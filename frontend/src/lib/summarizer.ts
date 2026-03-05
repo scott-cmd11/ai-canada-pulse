@@ -13,7 +13,7 @@ const GEMINI_BASE_URL = "https://generativelanguage.googleapis.com/v1beta/models
 const TIMEOUT_MS = 25_000 // 25s to accommodate Gemini 2.5 thinking mode
 
 // ─── In-Memory Cache ────────────────────────────────────────────────────────
-// Caches results for 30 minutes to avoid redundant API calls from multiple visitors
+// Caches results for 15 minutes to avoid redundant API calls from multiple visitors
 
 interface CacheEntry<T> {
     data: T
@@ -21,7 +21,7 @@ interface CacheEntry<T> {
 }
 
 const cache = new Map<string, CacheEntry<unknown>>()
-const CACHE_TTL_MS = 30 * 60 * 1000 // 30 minutes
+const CACHE_TTL_MS = 15 * 60 * 1000 // 15 minutes
 
 function getCached<T>(key: string): T | null {
     const entry = cache.get(key)
