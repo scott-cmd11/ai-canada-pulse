@@ -170,19 +170,16 @@ async function summarizeBatch(
         })
         .join("\n")
 
-    const systemPrompt = `You are a senior intelligence analyst covering Canadian AI developments. For each headline below, write a 3-4 sentence analytical brief (80-120 words) that:
-1. Explains the significance of the development in plain language
-2. Provides relevant context (e.g. related policies, companies, or trends)
-3. Notes the broader implications for Canada's AI ecosystem
-4. Connects this development to the wider Canadian technology landscape
+    const systemPrompt = `You are a news editor summarizing articles about Canadian AI developments. For each headline below, write a concise 3-4 sentence factual summary (80-120 words) that:
+1. States what happened or was announced
+2. Names the key people, organizations, or institutions involved
+3. Provides relevant background context so a reader understands why this matters
 
-Draw on your deep knowledge of Canadian AI policy, industry players, research institutions, and global context. Be specific, insightful, and provide ORIGINAL ANALYSIS — never repeat or rephrase the headline. Some articles may have thin or missing context; use your knowledge to fill in the gaps.
-
-IMPORTANT: Do NOT cite specific bill numbers, legislation names, or policy frameworks by name (e.g. do not mention AIDA, Bill C-27, etc.) as your knowledge of their current status may be outdated. Instead, refer generally to "federal AI regulation efforts" or "proposed AI governance frameworks".
+Stick to the facts — do NOT editorialize, speculate, or offer opinions. Write in a neutral, informative tone like a news wire service. If the headline or context is thin, infer only the most likely factual interpretation. Do NOT cite specific bill numbers or legislation names as your knowledge may be outdated.
 
 Output ONLY a JSON array of strings, one per article, in the same order.`
 
-    const userPrompt = `Write analytical briefs for these ${articles.length} articles:\n\n${articleList}\n\nJSON array of ${articles.length} briefs:`
+    const userPrompt = `Write factual summaries for these ${articles.length} articles:\n\n${articleList}\n\nJSON array of ${articles.length} summaries:`
 
     const raw = await callAI(systemPrompt, userPrompt)
     if (!raw) {
@@ -399,19 +396,16 @@ async function summarizeGlobalBatch(
         })
         .join("\n")
 
-    const systemPrompt = `You are a senior technology analyst covering global AI developments. For each headline below, write a 3-4 sentence analytical brief (80-120 words) that:
-1. Explains the significance of the development in plain language
-2. Provides relevant context (e.g. related companies, policies, or industry trends)
-3. Notes the broader implications for the global AI landscape
-4. Connects this development to ongoing trends in AI research, regulation, or commercialization
+    const systemPrompt = `You are a news editor summarizing articles about global AI developments. For each headline below, write a concise 3-4 sentence factual summary (80-120 words) that:
+1. States what happened or was announced
+2. Names the key people, organizations, or institutions involved
+3. Provides relevant background context so a reader understands why this matters
 
-Be specific, insightful, and provide ORIGINAL ANALYSIS — never repeat or rephrase the headline. Some articles may have thin or missing context; use your knowledge to fill in the gaps.
-
-IMPORTANT: Do NOT cite specific bill numbers, legislation names, or regulatory frameworks by name as your knowledge of their current status may be outdated. Instead, refer generally to "regulatory efforts" or "proposed AI governance frameworks".
+Stick to the facts — do NOT editorialize, speculate, or offer opinions. Write in a neutral, informative tone like a news wire service. If the headline or context is thin, infer only the most likely factual interpretation. Do NOT cite specific bill numbers or legislation names as your knowledge may be outdated.
 
 Output ONLY a JSON array of strings, one per article, in the same order.`
 
-    const userPrompt = `Write analytical briefs for these ${articles.length} global AI articles:\n\n${articleList}\n\nJSON array of ${articles.length} briefs:`
+    const userPrompt = `Write factual summaries for these ${articles.length} global AI articles:\n\n${articleList}\n\nJSON array of ${articles.length} summaries:`
 
     const raw = await callAI(systemPrompt, userPrompt)
     if (!raw) {
