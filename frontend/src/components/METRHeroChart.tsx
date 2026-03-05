@@ -65,8 +65,8 @@ export default function METRHeroChart() {
         if (!data) return null
 
         const validModels = data.models.filter((m) => toDecimalYear(m.releaseDate) !== null)
-        const maxP50 = Math.max(...validModels.map((m) => m.p50CIHigh || m.p50Hours))
-        const yMax = Math.ceil(maxP50 + 1)
+        const maxP50 = Math.max(...validModels.map((m) => m.p50Hours))
+        const yMax = Math.ceil(maxP50) + 1 // Based on estimates, not CI bounds
 
         // Build SOTA scatter series (green)
         const sotaModels = validModels.filter((m) => m.isSota)
