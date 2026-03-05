@@ -10,7 +10,7 @@ const GEMINI_API_KEY = process.env.GEMINI_API_KEY ?? ""
 const GEMINI_MODEL = "gemini-2.5-flash"
 const GEMINI_BASE_URL = "https://generativelanguage.googleapis.com/v1beta/models"
 
-const TIMEOUT_MS = 15_000
+const TIMEOUT_MS = 25_000 // 25s to accommodate Gemini 2.5 thinking mode
 
 // ─── In-Memory Cache ────────────────────────────────────────────────────────
 // Caches results for 30 minutes to avoid redundant API calls from multiple visitors
@@ -69,7 +69,7 @@ async function callGemini(systemPrompt: string, userPrompt: string): Promise<str
                     ],
                     generationConfig: {
                         temperature: 0.3,
-                        maxOutputTokens: 2048,
+                        maxOutputTokens: 8192,
                         responseMimeType: "application/json",
                     },
                 }),
@@ -86,7 +86,19 @@ async function callGemini(systemPrompt: string, userPrompt: string): Promise<str
         }
 
         const data = await res.json()
-        const text = data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim()
+        // Gemini 2.5 thinking mode may put thinking in early parts and output in the last part
+        const parts = data?.candidates?.[0]?.content?.parts ?? []
+        // Find the last part that has text content (skip any thinking parts)
+        let text: string | null = null
+        for (let i = parts.length - 1; i >= 0; i--) {
+            if (parts[i]?.text?.trim()) {
+                text = parts[i].text.trim()
+                break
+            }
+        }
+        if (!text) {
+            console.warn("[summarizer] Gemini returned no text. Parts count:", parts.length, "finishReason:", data?.candidates?.[0]?.finishReason)
+        }
         return text || null
     } catch (err) {
         if (err instanceof DOMException && err.name === "AbortError") {
@@ -128,7 +140,7 @@ export async function summarizeArticles(
 
     // Process in batches of 10
     const results = new Map<string, string>()
-    const batches = chunk(articles, 10)
+    const batches = chunk(articles, 5)
 
     for (const batch of batches) {
         const batchResults = await summarizeBatch(batch)
@@ -158,10 +170,11 @@ async function summarizeBatch(
         })
         .join("\n")
 
-    const systemPrompt = `You are a senior intelligence analyst covering Canadian AI developments. For each headline below, write a 2-3 sentence analytical brief (50-80 words) that:
+    const systemPrompt = `You are a senior intelligence analyst covering Canadian AI developments. For each headline below, write a 3-4 sentence analytical brief (80-120 words) that:
 1. Explains the significance of the development in plain language
 2. Provides relevant context (e.g. related policies, companies, or trends)
 3. Notes the broader implications for Canada's AI ecosystem
+4. Connects this development to the wider Canadian technology landscape
 
 Draw on your deep knowledge of Canadian AI policy, industry players, research institutions, and global context. Be specific, insightful, and provide ORIGINAL ANALYSIS — never repeat or rephrase the headline. Some articles may have thin or missing context; use your knowledge to fill in the gaps.
 
@@ -170,10 +183,18 @@ Output ONLY a JSON array of strings, one per article, in the same order.`
     const userPrompt = `Write analytical briefs for these ${articles.length} articles:\n\n${articleList}\n\nJSON array of ${articles.length} briefs:`
 
     const raw = await callAI(systemPrompt, userPrompt)
-    if (!raw) return null
+    if (!raw) {
+        console.warn("[summarizer] summarizeBatch: callAI returned null")
+        return null
+    }
+    console.log(`[summarizer] summarizeBatch raw response (first 300): ${raw.slice(0, 300)}`)
 
     const summaries = parseJsonArray(raw)
-    if (!summaries) return null
+    if (!summaries) {
+        console.warn("[summarizer] summarizeBatch: parseJsonArray returned null for raw:", raw.slice(0, 200))
+        return null
+    }
+    console.log(`[summarizer] summarizeBatch: parsed ${summaries.length} summaries`)
 
     const results = new Map<string, string>()
     articles.forEach((a, i) => {
@@ -354,10 +375,11 @@ export async function summarizeGlobalArticles(
         })
         .join("\n")
 
-    const systemPrompt = `You are a senior technology analyst covering global AI developments. For each headline below, write a 2-3 sentence analytical brief (50-80 words) that:
+    const systemPrompt = `You are a senior technology analyst covering global AI developments. For each headline below, write a 3-4 sentence analytical brief (80-120 words) that:
 1. Explains the significance of the development in plain language
 2. Provides relevant context (e.g. related companies, policies, or industry trends)
 3. Notes the broader implications for the global AI landscape
+4. Connects this development to ongoing trends in AI research, regulation, or commercialization
 
 Be specific, insightful, and provide ORIGINAL ANALYSIS — never repeat or rephrase the headline. Some articles may have thin or missing context; use your knowledge to fill in the gaps.
 
@@ -431,11 +453,21 @@ function parseJsonArray(raw: string): string[] | null {
 
     try {
         const parsed = JSON.parse(cleaned)
-        if (Array.isArray(parsed) && parsed.every((s) => typeof s === "string")) {
-            return parsed
+        if (!Array.isArray(parsed)) {
+            console.warn("[summarizer] parseJsonArray: parsed value is not an array, type:", typeof parsed)
+            return null
         }
-        return null
-    } catch {
+        // Convert all elements to strings (Gemini 2.5 might return objects or other types)
+        return parsed.map((item) => {
+            if (typeof item === "string") return item
+            if (typeof item === "object" && item !== null) {
+                // Handle {summary: "..."} or {text: "..."} style objects
+                return item.summary || item.text || item.brief || item.content || JSON.stringify(item)
+            }
+            return String(item)
+        })
+    } catch (e) {
+        console.warn("[summarizer] parseJsonArray: JSON.parse failed:", (e as Error).message, "cleaned (first 200):", cleaned.slice(0, 200))
         return null
     }
 }
