@@ -82,12 +82,12 @@ export default function GlobalNewsSection() {
                                             </span>
                                         </div>
                                         {story.aiSummary ? (
-                                            <p className="text-xs text-slate-600 leading-relaxed line-clamp-2">
+                                            <p className="text-xs text-slate-600 leading-relaxed line-clamp-4">
                                                 <span className="text-indigo-500 text-[10px] mr-0.5">✦</span>
                                                 {story.aiSummary}
                                             </p>
                                         ) : hasUsefulSummary ? (
-                                            <p className="text-xs text-slate-500 leading-relaxed line-clamp-2">
+                                            <p className="text-xs text-slate-500 leading-relaxed line-clamp-4">
                                                 {story.summary}
                                             </p>
                                         ) : null}
