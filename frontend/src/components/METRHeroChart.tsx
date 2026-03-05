@@ -204,6 +204,25 @@ export default function METRHeroChart() {
                         color: "rgba(255,255,255,0.75)",
                         distance: 6,
                     },
+                    markLine: {
+                        silent: true,
+                        symbol: "none",
+                        lineStyle: {
+                            color: "rgba(255,255,255,0.12)",
+                            type: "dashed" as const,
+                            width: 1,
+                        },
+                        label: {
+                            position: "insideStartTop" as const,
+                            fontSize: 8,
+                            color: "rgba(255,255,255,0.35)",
+                            formatter: (params: { name: string }) => params.name,
+                        },
+                        data: TASK_ANNOTATIONS.filter((a) => a.hours <= yMax).map((a) => ({
+                            yAxis: a.hours,
+                            name: a.label,
+                        })),
+                    },
                 },
                 // Non-SOTA models (grey)
                 {
@@ -222,52 +241,10 @@ export default function METRHeroChart() {
                         distance: 6,
                     },
                 },
-            ],
-            // Task annotations as horizontal mark lines via graphic elements
-            graphic: TASK_ANNOTATIONS.filter((a) => a.hours <= yMax).map((a) => ({
-                type: "group" as const,
-                // positioned via convertToPixel in onChartReady — but we use markLine instead
-            })),
+            ] as any[],
             animation: false,
         }
     }, [data])
-
-    // Add task annotation markLines to the SOTA scatter series
-    const chartOptionWithAnnotations = useMemo(() => {
-        if (!chartOption || !data) return chartOption
-        const validModels = data.models.filter((m) => toDecimalYear(m.releaseDate) !== null)
-        const maxP50 = Math.max(...validModels.map((m) => m.p50CIHigh || m.p50Hours))
-        const yMax = Math.ceil(maxP50 + 1)
-
-        // Find the SOTA scatter series (second-to-last series) and add markLine
-        const seriesCopy = [...chartOption.series]
-        const sotaSeriesIdx = seriesCopy.length - 2 // SOTA scatter
-        if (sotaSeriesIdx >= 0) {
-            seriesCopy[sotaSeriesIdx] = {
-                ...seriesCopy[sotaSeriesIdx],
-                markLine: {
-                    silent: true,
-                    symbol: "none",
-                    lineStyle: {
-                        color: "rgba(255,255,255,0.12)",
-                        type: "dashed" as const,
-                        width: 1,
-                    },
-                    label: {
-                        position: "insideStartTop" as const,
-                        fontSize: 8,
-                        color: "rgba(255,255,255,0.35)",
-                        formatter: (params: { name: string }) => params.name,
-                    },
-                    data: TASK_ANNOTATIONS.filter((a) => a.hours <= yMax).map((a) => ({
-                        yAxis: a.hours,
-                        name: a.label,
-                    })),
-                },
-            }
-        }
-        return { ...chartOption, series: seriesCopy }
-    }, [chartOption, data])
 
     if (loading || !data) {
         return (
@@ -303,9 +280,9 @@ export default function METRHeroChart() {
 
             {/* Chart */}
             <div className="flex-1 min-h-0">
-                {chartOptionWithAnnotations && (
+                {chartOption && (
                     <ReactECharts
-                        option={chartOptionWithAnnotations}
+                        option={chartOption}
                         style={{ height: "100%", width: "100%" }}
                         opts={{ renderer: "svg" }}
                     />
