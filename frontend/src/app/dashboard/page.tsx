@@ -102,7 +102,9 @@ export default function DashboardPage() {
               </div>
 
               {/* Compute Infrastructure */}
-              <ComputeStatusSection />
+              <div className="mt-6">
+                <ComputeStatusSection />
+              </div>
             </div>
           </div>
         </ScrollReveal>
