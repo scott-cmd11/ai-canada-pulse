@@ -178,6 +178,8 @@ async function summarizeBatch(
 
 Draw on your deep knowledge of Canadian AI policy, industry players, research institutions, and global context. Be specific, insightful, and provide ORIGINAL ANALYSIS — never repeat or rephrase the headline. Some articles may have thin or missing context; use your knowledge to fill in the gaps.
 
+IMPORTANT: Do NOT cite specific bill numbers, legislation names, or policy frameworks by name (e.g. do not mention AIDA, Bill C-27, etc.) as your knowledge of their current status may be outdated. Instead, refer generally to "federal AI regulation efforts" or "proposed AI governance frameworks".
+
 Output ONLY a JSON array of strings, one per article, in the same order.`
 
     const userPrompt = `Write analytical briefs for these ${articles.length} articles:\n\n${articleList}\n\nJSON array of ${articles.length} briefs:`
@@ -335,7 +337,7 @@ export async function generateExecutiveBrief(
         .map((a, i) => `${i + 1}. "${a.headline}" [${a.category}] — ${a.source}`)
         .join("\n")
 
-    const systemPrompt = `You are an expert intelligence analyst producing an executive briefing about AI developments in Canada. Write 3-5 thematic bullets that synthesize the key trends, not just list articles. Each bullet should identify a pattern, shift, or strategic implication. Be specific and analytical. Output ONLY a JSON array of strings.`
+    const systemPrompt = `You are an expert intelligence analyst producing an executive briefing about AI developments in Canada. Write 3-5 thematic bullets that synthesize the key trends, not just list articles. Each bullet should identify a pattern, shift, or strategic implication. Be specific and analytical. Do NOT cite specific bill numbers or legislation names (e.g. AIDA, Bill C-27) as your knowledge of their status may be outdated — instead refer generally to "AI governance efforts" or "regulatory developments". Output ONLY a JSON array of strings.`
 
     const userPrompt = `Based on these ${top.length} recent AI signals from Canada, write 3-5 executive summary bullets:\n\n${articleList}\n\nJSON array:`
 
@@ -404,6 +406,8 @@ async function summarizeGlobalBatch(
 4. Connects this development to ongoing trends in AI research, regulation, or commercialization
 
 Be specific, insightful, and provide ORIGINAL ANALYSIS — never repeat or rephrase the headline. Some articles may have thin or missing context; use your knowledge to fill in the gaps.
+
+IMPORTANT: Do NOT cite specific bill numbers, legislation names, or regulatory frameworks by name as your knowledge of their current status may be outdated. Instead, refer generally to "regulatory efforts" or "proposed AI governance frameworks".
 
 Output ONLY a JSON array of strings, one per article, in the same order.`
 
