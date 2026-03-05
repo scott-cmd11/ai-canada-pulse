@@ -14,8 +14,7 @@ import TrendsInsightsSection from "@/components/TrendsInsightsSection"
 import LabFeedsSection from "@/components/LabFeedsSection"
 import HuggingFaceSection from "@/components/HuggingFaceSection"
 import METRHeroChart from "@/components/METRHeroChart"
-import JobMarketSection from "@/components/JobMarketSection"
-import AIAdoptionSection from "@/components/AIAdoptionSection"
+
 import SectionNav from "@/components/SectionNav"
 import ScrollToTop from "@/components/ScrollToTop"
 import ScrollReveal from "@/components/ScrollReveal"
@@ -64,7 +63,7 @@ export default function DashboardPage() {
         {/* ═══════════════════════════════════════════════════════ */}
         <ScrollReveal>
           <div id="intelligence" className="border-t border-slate-200 pt-5">
-            <div className="flex items-center gap-2.5 mb-4">
+            <div className="flex items-center gap-2.5 mb-4 cursor-help" title="AI-generated briefings, curated Canadian AI news, and media sentiment analysis">
               <span className="text-lg">📋</span>
               <h2 className="text-lg font-bold text-slate-900">Intelligence</h2>
             </div>
@@ -86,58 +85,11 @@ export default function DashboardPage() {
         </ScrollReveal>
 
         {/* ═══════════════════════════════════════════════════════ */}
-        {/* GROUP 2: Markets & Economy                             */}
-        {/* ═══════════════════════════════════════════════════════ */}
-        <ScrollReveal>
-          <div id="markets" className="border-t border-slate-200 pt-5">
-            <div className="flex items-center gap-2.5 mb-4">
-              <span className="text-lg">📈</span>
-              <h2 className="text-lg font-bold text-slate-900">Markets &amp; Economy</h2>
-            </div>
-
-            <div className="flex flex-col gap-4">
-              {/* Stocks */}
-              <StocksSection />
-
-              {/* Economic Indicators */}
-              <IndicatorsSection />
-
-              {/* Jobs + AI Adoption */}
-              <JobMarketSection />
-              <AIAdoptionSection />
-            </div>
-          </div>
-        </ScrollReveal>
-
-        {/* ═══════════════════════════════════════════════════════ */}
-        {/* GROUP 3: Research & Innovation                         */}
-        {/* ═══════════════════════════════════════════════════════ */}
-        <ScrollReveal>
-          <div id="research" className="border-t border-slate-200 pt-5">
-            <div className="flex items-center gap-2.5 mb-4">
-              <span className="text-lg">🔬</span>
-              <h2 className="text-lg font-bold text-slate-900">Research &amp; Innovation</h2>
-            </div>
-
-            <div className="flex flex-col gap-4">
-              {/* ArXiv + HuggingFace side by side */}
-              <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 lg:gap-6">
-                <ArxivSection />
-                <HuggingFaceSection />
-              </div>
-
-              {/* Lab Feeds */}
-              <LabFeedsSection />
-            </div>
-          </div>
-        </ScrollReveal>
-
-        {/* ═══════════════════════════════════════════════════════ */}
-        {/* GROUP 4: Trends & Infrastructure                      */}
+        {/* GROUP 2: Trends & Infrastructure                      */}
         {/* ═══════════════════════════════════════════════════════ */}
         <ScrollReveal>
           <div id="landscape" className="border-t border-slate-200 pt-5">
-            <div className="flex items-center gap-2.5 mb-4">
+            <div className="flex items-center gap-2.5 mb-4 cursor-help" title="Google Trends data for AI tools across Canada and national compute cluster status">
               <span className="text-lg">🌐</span>
               <h2 className="text-lg font-bold text-slate-900">Trends &amp; Infrastructure</h2>
             </div>
@@ -151,6 +103,50 @@ export default function DashboardPage() {
 
               {/* Compute Infrastructure */}
               <ComputeStatusSection />
+            </div>
+          </div>
+        </ScrollReveal>
+
+        {/* ═══════════════════════════════════════════════════════ */}
+        {/* GROUP 3: Markets & Economy                             */}
+        {/* ═══════════════════════════════════════════════════════ */}
+        <ScrollReveal>
+          <div id="markets" className="border-t border-slate-200 pt-5">
+            <div className="flex items-center gap-2.5 mb-4 cursor-help" title="Live stock performance of Canadian AI companies and key economic indicators from Statistics Canada">
+              <span className="text-lg">📈</span>
+              <h2 className="text-lg font-bold text-slate-900">Markets &amp; Economy</h2>
+            </div>
+
+            <div className="flex flex-col gap-4">
+              {/* Stocks */}
+              <StocksSection />
+
+              {/* Economic Indicators */}
+              <IndicatorsSection />
+
+            </div>
+          </div>
+        </ScrollReveal>
+
+        {/* ═══════════════════════════════════════════════════════ */}
+        {/* GROUP 4: Research & Innovation                         */}
+        {/* ═══════════════════════════════════════════════════════ */}
+        <ScrollReveal>
+          <div id="research" className="border-t border-slate-200 pt-5">
+            <div className="flex items-center gap-2.5 mb-4 cursor-help" title="Latest AI research papers from arXiv, trending models on Hugging Face, and updates from leading AI labs">
+              <span className="text-lg">🔬</span>
+              <h2 className="text-lg font-bold text-slate-900">Research &amp; Innovation</h2>
+            </div>
+
+            <div className="flex flex-col gap-4">
+              {/* ArXiv + HuggingFace side by side */}
+              <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 lg:gap-6">
+                <ArxivSection />
+                <HuggingFaceSection />
+              </div>
+
+              {/* Lab Feeds */}
+              <LabFeedsSection />
             </div>
           </div>
         </ScrollReveal>

@@ -14,7 +14,7 @@ export async function GET() {
     let executiveBrief: string[] | null = null
 
     try {
-      console.log(`[api/stories] AI enrichment starting. GEMINI_API_KEY: ${!!process.env.GEMINI_API_KEY}, HF_API_TOKEN: ${!!process.env.HF_API_TOKEN}, stories: ${stories.length}`)
+      console.log(`[api/stories] AI enrichment starting. GEMINI_API_KEY: ${!!process.env.GEMINI_API_KEY}, stories: ${stories.length}`)
 
       // Only summarize top 10 articles to stay within function time limits
       const top = stories.slice(0, 10)
