@@ -57,46 +57,53 @@ export default function GlobalNewsSection() {
                 <div className="relative">
                     <div
                         className="overflow-y-auto overscroll-contain"
-                        style={{ maxHeight: "520px", scrollbarWidth: "thin", scrollbarColor: "#cbd5e1 transparent" }}
+                        style={{ maxHeight: "640px", scrollbarWidth: "thin", scrollbarColor: "#cbd5e1 transparent" }}
                     >
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pb-4">
+                        <div className="flex flex-col gap-3 pb-4">
                             {stories.map((story, i) => {
                                 const colors = REGION_COLORS[story.region] || REGION_COLORS["Global"]
                                 const hasUsefulSummary = !story.aiSummary && story.summary &&
                                     !story.headline.startsWith(story.summary.split("  ")[0]) &&
                                     story.summary.length > 20
                                 return (
-                                    <a
+                                    <article
                                         key={i}
-                                        href={story.sourceUrl}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="saas-card p-4 hover:shadow-md transition-shadow group flex flex-col gap-2"
+                                        className="saas-card bg-white p-5 flex flex-col sm:flex-row gap-4"
                                     >
-                                        <div className="flex items-start justify-between gap-2">
-                                            <h3 className="text-sm font-bold text-slate-900 leading-snug group-hover:text-indigo-700 transition-colors line-clamp-2 flex-1">
-                                                {story.headline}
-                                            </h3>
-                                            <span className={`shrink-0 text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full border ${colors}`}>
+                                        <div className="flex sm:flex-col sm:w-32 shrink-0 gap-3 sm:gap-1.5 mt-0.5">
+                                            <span className="text-xs font-medium text-slate-500">
+                                                {timeAgo(story.publishedAt)}
+                                            </span>
+                                            <span className={`text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full border self-start ${colors}`}>
                                                 {story.region}
                                             </span>
                                         </div>
-                                        {story.aiSummary ? (
-                                            <p className="text-xs text-slate-600 leading-relaxed line-clamp-4">
-                                                <span className="text-indigo-500 text-[10px] mr-0.5">✦</span>
-                                                {story.aiSummary}
-                                            </p>
-                                        ) : hasUsefulSummary ? (
-                                            <p className="text-xs text-slate-500 leading-relaxed line-clamp-4">
-                                                {story.summary}
-                                            </p>
-                                        ) : null}
-                                        <div className="flex items-center gap-2 text-[11px] text-slate-500 mt-auto">
-                                            <span className="font-medium">{story.sourceName}</span>
-                                            <span className="text-slate-300">|</span>
-                                            <span>{timeAgo(story.publishedAt)}</span>
+
+                                        <div className="flex flex-col gap-2 flex-1 min-w-0">
+                                            <h3 className="text-base font-bold text-slate-900 leading-snug">
+                                                <a href={story.sourceUrl} target="_blank" rel="noopener noreferrer" className="hover:text-indigo-700 hover:underline transition-colors">
+                                                    {story.headline}
+                                                </a>
+                                            </h3>
+
+                                            {story.aiSummary ? (
+                                                <p className="text-sm text-slate-700 leading-relaxed mt-1">
+                                                    <span className="text-indigo-500 text-xs mr-1">✦</span>
+                                                    {story.aiSummary}
+                                                </p>
+                                            ) : hasUsefulSummary ? (
+                                                <p className="text-sm text-slate-600 leading-relaxed mt-1">
+                                                    {story.summary}
+                                                </p>
+                                            ) : null}
+
+                                            <div className="flex flex-wrap items-center gap-2 mt-2 text-xs font-medium text-slate-500">
+                                                {story.sourceName && <span>{story.sourceName}</span>}
+                                                {story.sourceName && <span className="text-slate-300">•</span>}
+                                                <a href={story.sourceUrl} target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:text-indigo-800">Read article →</a>
+                                            </div>
                                         </div>
-                                    </a>
+                                    </article>
                                 )
                             })}
                         </div>

@@ -170,12 +170,17 @@ async function summarizeBatch(
         })
         .join("\n")
 
-    const systemPrompt = `You are a news editor summarizing articles about Canadian AI developments. For each headline below, write a concise 3-4 sentence factual summary (80-120 words) that:
-1. States what happened or was announced
-2. Names the key people, organizations, or institutions involved
-3. Provides relevant background context so a reader understands why this matters
+    const systemPrompt = `You are a wire service reporter writing article summaries about Canadian AI developments. For each headline, write a strictly factual 2-3 sentence summary (40-70 words) that:
+1. States exactly what happened, was announced, or was reported
+2. Mentions people, organizations, or institutions ONLY if they appear in the provided headline or context
 
-Stick to the facts — do NOT editorialize, speculate, or offer opinions. Write in a neutral, informative tone like a news wire service. If the headline or context is thin, infer only the most likely factual interpretation. Do NOT cite specific bill numbers or legislation names as your knowledge may be outdated.
+Rules:
+- Do NOT invent, guess, or fill in names, titles, dates, or details not present in the headline or context — if a person is unnamed, refer to them by their role only
+- Report ONLY what is explicitly stated or directly evidenced — do NOT interpret, speculate, or explain significance
+- Do NOT use phrases like "aims to", "suggests", "highlights", "could", "is expected to", "raises questions", or "underscores"
+- Do NOT add editorial context about why something matters or what it means
+- If the headline/context is thin, keep the summary short rather than padding with interpretation
+- Do NOT cite specific bill numbers or legislation names as your knowledge may be outdated
 
 Output ONLY a JSON array of strings, one per article, in the same order.`
 
@@ -396,12 +401,17 @@ async function summarizeGlobalBatch(
         })
         .join("\n")
 
-    const systemPrompt = `You are a news editor summarizing articles about global AI developments. For each headline below, write a concise 3-4 sentence factual summary (80-120 words) that:
-1. States what happened or was announced
-2. Names the key people, organizations, or institutions involved
-3. Provides relevant background context so a reader understands why this matters
+    const systemPrompt = `You are a wire service reporter writing article summaries about global AI developments. For each headline, write a strictly factual 2-3 sentence summary (40-70 words) that:
+1. States exactly what happened, was announced, or was reported
+2. Mentions people, organizations, or institutions ONLY if they appear in the provided headline or context
 
-Stick to the facts — do NOT editorialize, speculate, or offer opinions. Write in a neutral, informative tone like a news wire service. If the headline or context is thin, infer only the most likely factual interpretation. Do NOT cite specific bill numbers or legislation names as your knowledge may be outdated.
+Rules:
+- Do NOT invent, guess, or fill in names, titles, dates, or details not present in the headline or context — if a person is unnamed, refer to them by their role only
+- Report ONLY what is explicitly stated or directly evidenced — do NOT interpret, speculate, or explain significance
+- Do NOT use phrases like "aims to", "suggests", "highlights", "could", "is expected to", "raises questions", or "underscores"
+- Do NOT add editorial context about why something matters or what it means
+- If the headline/context is thin, keep the summary short rather than padding with interpretation
+- Do NOT cite specific bill numbers or legislation names as your knowledge may be outdated
 
 Output ONLY a JSON array of strings, one per article, in the same order.`
 

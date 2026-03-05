@@ -1,5 +1,6 @@
 import Header from "@/components/Header"
 import Link from "next/link"
+import ScrollToTop from "@/components/ScrollToTop"
 
 const dataSources = [
     {
@@ -187,6 +188,7 @@ export default function MethodologyPage() {
                 </div>
 
             </main>
+            <ScrollToTop />
         </div>
     )
 }
