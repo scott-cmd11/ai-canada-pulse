@@ -367,6 +367,28 @@ export async function summarizeGlobalArticles(
         return cached
     }
 
+    // Process in batches of 5 to avoid JSON truncation
+    const results = new Map<string, string>()
+    const batches = chunk(articles, 5)
+
+    for (const batch of batches) {
+        const batchResults = await summarizeGlobalBatch(batch)
+        if (batchResults) {
+            Array.from(batchResults.entries()).forEach(([key, value]) => {
+                results.set(key, value)
+            })
+        }
+    }
+
+    if (results.size > 0) {
+        setCache(cacheKey, results)
+    }
+    return results.size > 0 ? results : null
+}
+
+async function summarizeGlobalBatch(
+    articles: ArticleForSummary[]
+): Promise<Map<string, string> | null> {
     const articleList = articles
         .map((a, i) => {
             const snippetUseful = a.snippet && !a.headline.startsWith(a.snippet.split("  ")[0])
@@ -388,10 +410,16 @@ Output ONLY a JSON array of strings, one per article, in the same order.`
     const userPrompt = `Write analytical briefs for these ${articles.length} global AI articles:\n\n${articleList}\n\nJSON array of ${articles.length} briefs:`
 
     const raw = await callAI(systemPrompt, userPrompt)
-    if (!raw) return null
+    if (!raw) {
+        console.warn("[summarizer] summarizeGlobalBatch: callAI returned null")
+        return null
+    }
 
     const summaries = parseJsonArray(raw)
-    if (!summaries) return null
+    if (!summaries) {
+        console.warn("[summarizer] summarizeGlobalBatch: parseJsonArray failed for raw:", raw.slice(0, 200))
+        return null
+    }
 
     const results = new Map<string, string>()
     articles.forEach((a, i) => {
@@ -399,11 +427,7 @@ Output ONLY a JSON array of strings, one per article, in the same order.`
             results.set(a.headline, summaries[i])
         }
     })
-
-    if (results.size > 0) {
-        setCache(cacheKey, results)
-    }
-    return results.size > 0 ? results : null
+    return results
 }
 
 /**
