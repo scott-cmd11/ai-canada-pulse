@@ -7,7 +7,7 @@
  */
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY ?? ""
-const GEMINI_MODEL = "gemini-2.0-flash"
+const GEMINI_MODEL = "gemini-2.5-flash"
 const GEMINI_BASE_URL = "https://generativelanguage.googleapis.com/v1beta/models"
 
 const TIMEOUT_MS = 15_000
