@@ -42,14 +42,14 @@ export default function Header() {
       <LiveTicker />
       <div className="w-full px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2">
+          <Link href="/dashboard" className="relative z-10 flex items-center gap-2 hover:opacity-80 transition-opacity cursor-pointer">
             <div className="w-6 h-6 bg-indigo-700 rounded text-white flex items-center justify-center font-bold text-xs">
               AI
             </div>
             <span className="text-base font-bold text-slate-900 tracking-tight">
               Canada Pulse
             </span>
-          </div>
+          </Link>
           <div className="h-4 w-px bg-slate-300 hidden sm:block"></div>
           <p className="text-sm hidden sm:block font-medium text-slate-500">
             Tracking AI in Canada
