@@ -105,7 +105,7 @@ export default function TrendsSection() {
   return (
     <section>
       <div className="section-header"><h2>{sectionTitle}</h2></div>
-      <div className="saas-card p-5 sm:p-6 lg:p-8 flex flex-col h-full border-t-4 border-t-indigo-700">
+      <div className="saas-card p-5 sm:p-6 lg:p-8 flex flex-col border-t-4 border-t-indigo-700">
         <div className="w-full min-h-[300px]">
           <ReactECharts option={option} style={{ height: '300px', width: '100%' }} opts={{ renderer: "svg" }} />
         </div>
