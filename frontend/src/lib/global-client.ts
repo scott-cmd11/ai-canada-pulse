@@ -39,6 +39,7 @@ export interface CountryResearch {
 // ─── Region detection from headlines ────────────────────────────────────────
 
 const REGION_PATTERNS: { pattern: RegExp; region: string }[] = [
+    { pattern: /\b(Canada|Canadian|Ottawa|Toronto|Montreal|Vancouver|Alberta|Ontario|Quebec)\b/i, region: "Canada" },
     { pattern: /\b(China|Chinese|Beijing|Baidu|Alibaba|Tencent|DeepSeek)\b/i, region: "China" },
     { pattern: /\b(EU|European|Brussels|Europe)\b/i, region: "EU" },
     { pattern: /\b(UK|British|London|Britain)\b/i, region: "UK" },
@@ -73,8 +74,9 @@ async function _fetchGlobalAINews(): Promise<GlobalStory[]> {
             "https://news.google.com/rss/search?q=artificial+intelligence&hl=en&gl=US&ceid=US:en"
         )
 
+        // Filter out Canadian stories — they belong on the main dashboard
         const stories: GlobalStory[] = (feed.items || [])
-            .slice(0, 12)
+            .slice(0, 15) // fetch extra to account for filtered Canadian articles
             .map((item) => {
                 const title = item.title || ""
                 const desc = item.contentSnippet || item.content || ""
@@ -92,6 +94,8 @@ async function _fetchGlobalAINews(): Promise<GlobalStory[]> {
                     publishedAt: item.isoDate || new Date().toISOString(),
                 }
             })
+            .filter((s) => s.region !== "Canada") // Exclude Canadian articles
+            .slice(0, 12)
 
         return stories
     } catch (err) {
@@ -103,7 +107,7 @@ async function _fetchGlobalAINews(): Promise<GlobalStory[]> {
 export const fetchGlobalAINews = unstable_cache(
     _fetchGlobalAINews,
     ["global-ai-news"],
-    { revalidate: 1800 } // 30 minutes
+    { revalidate: 900 } // 15 minutes
 )
 
 // ─── 2. Global AI Interest by Country ───────────────────────────────────────
