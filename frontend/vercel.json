@@ -1,8 +1,8 @@
 {
     "crons": [
         {
-            "path": "/api/v1/backfill/run",
-            "schedule": "0 0 * * *"
+            "path": "/api/v1/ai-refresh",
+            "schedule": "0 */6 * * *"
         }
     ]
 }
