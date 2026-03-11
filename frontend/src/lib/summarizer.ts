@@ -1,19 +1,20 @@
 /**
  * AI Summarizer for AI Canada Pulse
- * 
- * Uses Gemini 2.0 Flash for AI enrichment.
- * Includes in-memory caching to minimize API calls across visitors.
- * Falls back gracefully when API is unavailable.
+ *
+ * Uses OpenAI for AI enrichment with a cheap split:
+ * - gpt-5-nano for per-item summaries
+ * - gpt-5-mini for dashboard briefs
+ *
+ * Includes in-memory caching to minimize duplicate calls within a single runtime.
+ * Falls back gracefully when the API is unavailable.
  */
 
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY ?? ""
-const GEMINI_MODEL = "gemini-2.5-flash"
-const GEMINI_BASE_URL = "https://generativelanguage.googleapis.com/v1beta/models"
+const OPENAI_API_KEY = process.env.OPENAI_API_KEY ?? ""
+const OPENAI_BASE_URL = "https://api.openai.com/v1/chat/completions"
+const OPENAI_ARTICLE_MODEL = process.env.OPENAI_ARTICLE_MODEL ?? "gpt-5-nano"
+const OPENAI_BRIEF_MODEL = process.env.OPENAI_BRIEF_MODEL ?? "gpt-5-mini"
 
-const TIMEOUT_MS = 25_000 // 25s to accommodate Gemini 2.5 thinking mode
-
-// ─── In-Memory Cache ────────────────────────────────────────────────────────
-// Caches results for 15 minutes to avoid redundant API calls from multiple visitors
+const TIMEOUT_MS = 25_000
 
 interface CacheEntry<T> {
     data: T
@@ -21,7 +22,7 @@ interface CacheEntry<T> {
 }
 
 const cache = new Map<string, CacheEntry<unknown>>()
-const CACHE_TTL_MS = 15 * 60 * 1000 // 15 minutes
+const CACHE_TTL_MS = 15 * 60 * 1000
 
 function getCached<T>(key: string): T | null {
     const entry = cache.get(key)
@@ -37,81 +38,97 @@ function setCache<T>(key: string, data: T): void {
     cache.set(key, { data, expiresAt: Date.now() + CACHE_TTL_MS })
 }
 
-// ─── AI Provider (Gemini) ───────────────────────────────────────────────────
-
-async function callAI(systemPrompt: string, userPrompt: string): Promise<string | null> {
-    if (!GEMINI_API_KEY) {
-        console.warn("[summarizer] No GEMINI_API_KEY configured")
+async function callAI(
+    model: string,
+    systemPrompt: string,
+    userPrompt: string,
+    maxCompletionTokens = 1200
+): Promise<string | null> {
+    if (!OPENAI_API_KEY) {
+        console.warn("[summarizer] No OPENAI_API_KEY configured")
         return null
     }
-    return callGemini(systemPrompt, userPrompt)
-}
 
-async function callGemini(systemPrompt: string, userPrompt: string): Promise<string | null> {
     try {
         const controller = new AbortController()
         const timer = setTimeout(() => controller.abort(), TIMEOUT_MS)
 
-        const res = await fetch(
-            `${GEMINI_BASE_URL}/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}`,
-            {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    system_instruction: {
-                        parts: [{ text: systemPrompt }],
-                    },
-                    contents: [
-                        {
-                            role: "user",
-                            parts: [{ text: userPrompt }],
-                        },
-                    ],
-                    generationConfig: {
-                        temperature: 0.3,
-                        maxOutputTokens: 8192,
-                        responseMimeType: "application/json",
-                    },
-                }),
-                signal: controller.signal,
-            }
-        )
+        const requestBody: Record<string, unknown> = {
+            model,
+            messages: [
+                { role: "system", content: systemPrompt },
+                { role: "user", content: userPrompt },
+            ],
+            max_completion_tokens: maxCompletionTokens,
+        }
+
+        if (model.startsWith("gpt-5")) {
+            requestBody.reasoning_effort = "minimal"
+        }
+
+        const res = await fetch(OPENAI_BASE_URL, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${OPENAI_API_KEY}`,
+            },
+            body: JSON.stringify(requestBody),
+            signal: controller.signal,
+        })
 
         clearTimeout(timer)
 
         if (!res.ok) {
             const errText = await res.text().catch(() => "unknown")
-            console.warn(`[summarizer] Gemini API error ${res.status}: ${errText.slice(0, 200)}`)
+            console.warn(`[summarizer] OpenAI API error ${res.status}: ${errText.slice(0, 200)}`)
             return null
         }
 
         const data = await res.json()
-        // Gemini 2.5 thinking mode may put thinking in early parts and output in the last part
-        const parts = data?.candidates?.[0]?.content?.parts ?? []
-        // Find the last part that has text content (skip any thinking parts)
-        let text: string | null = null
-        for (let i = parts.length - 1; i >= 0; i--) {
-            if (parts[i]?.text?.trim()) {
-                text = parts[i].text.trim()
-                break
-            }
+        const content = data?.choices?.[0]?.message?.content
+        if (typeof content === "string" && content.trim()) {
+            return content.trim()
         }
-        if (!text) {
-            console.warn("[summarizer] Gemini returned no text. Parts count:", parts.length, "finishReason:", data?.candidates?.[0]?.finishReason)
+
+        if (Array.isArray(content)) {
+            const text = content
+                .map((part) => {
+                    if (typeof part === "string") return part
+                    if (typeof part?.text === "string") return part.text
+                    return ""
+                })
+                .join("")
+                .trim()
+            if (text) return text
         }
-        return text || null
+
+        const refusal = data?.choices?.[0]?.message?.refusal
+        if (typeof refusal === "string" && refusal.trim()) {
+            console.warn(`[summarizer] OpenAI refusal from ${model}: ${refusal.slice(0, 200)}`)
+            return null
+        }
+
+        console.warn(`[summarizer] OpenAI returned no text content for ${model}`)
+        return null
     } catch (err) {
         if (err instanceof DOMException && err.name === "AbortError") {
-            console.warn("[summarizer] Gemini request timed out")
+            console.warn("[summarizer] OpenAI request timed out")
         } else {
-            console.warn("[summarizer] Gemini error:", err)
+            console.warn("[summarizer] OpenAI error:", err)
         }
         return null
     }
 }
 
+async function callArticleSummaryModel(systemPrompt: string, userPrompt: string): Promise<string | null> {
+    const primary = await callAI(OPENAI_ARTICLE_MODEL, systemPrompt, userPrompt, 1200)
+    if (primary || OPENAI_ARTICLE_MODEL === OPENAI_BRIEF_MODEL) {
+        return primary
+    }
 
-// ─── Per-Article Summaries (batch) ──────────────────────────────────────────
+    console.warn(`[summarizer] Falling back to ${OPENAI_BRIEF_MODEL} for article summaries`)
+    return callAI(OPENAI_BRIEF_MODEL, systemPrompt, userPrompt, 1200)
+}
 
 interface ArticleForSummary {
     headline: string
@@ -120,17 +137,11 @@ interface ArticleForSummary {
     source: string
 }
 
-/**
- * Generate concise 1-2 sentence summaries for a batch of articles.
- * Returns a map of headline → AI summary.
- * Returns null if API is unavailable.
- */
 export async function summarizeArticles(
     articles: ArticleForSummary[]
 ): Promise<Map<string, string> | null> {
-    if (!GEMINI_API_KEY || articles.length === 0) return null
+    if (!OPENAI_API_KEY || articles.length === 0) return null
 
-    // Check cache
     const cacheKey = `articles:${articles.map((a) => a.headline).join("|").slice(0, 200)}`
     const cached = getCached<Map<string, string>>(cacheKey)
     if (cached) {
@@ -138,7 +149,6 @@ export async function summarizeArticles(
         return cached
     }
 
-    // Process in batches of 10
     const results = new Map<string, string>()
     const batches = chunk(articles, 5)
 
@@ -163,10 +173,9 @@ async function summarizeBatch(
 ): Promise<Map<string, string> | null> {
     const articleList = articles
         .map((a, i) => {
-            // Include snippet only if it adds real info beyond the headline
             const snippetUseful = a.snippet && !a.headline.startsWith(a.snippet.split("  ")[0])
             const context = snippetUseful ? `\n   Context: ${a.snippet.slice(0, 200)}` : ""
-            return `${i + 1}. "${a.headline}" [${a.category}] — ${a.source}${context}`
+            return `${i + 1}. "${a.headline}" [${a.category}] - ${a.source}${context}`
         })
         .join("\n")
 
@@ -175,30 +184,20 @@ async function summarizeBatch(
 2. Mentions people, organizations, or institutions ONLY if they appear in the provided headline or context
 
 Rules:
-- Do NOT invent, guess, or fill in names, titles, dates, or details not present in the headline or context — if a person is unnamed, refer to them by their role only
-- Report ONLY what is explicitly stated or directly evidenced — do NOT interpret, speculate, or explain significance
-- Do NOT use phrases like "aims to", "suggests", "highlights", "could", "is expected to", "raises questions", or "underscores"
-- Do NOT add editorial context about why something matters or what it means
-- If the headline/context is thin, keep the summary short rather than padding with interpretation
-- Do NOT cite specific bill numbers or legislation names as your knowledge may be outdated
+- Do NOT invent, guess, or fill in names, titles, dates, or details not present in the headline or context
+- Report ONLY what is explicitly stated or directly evidenced
+- Do NOT interpret significance or add editorial framing
+- If the headline/context is thin, keep the summary short rather than padding it
 
 Output ONLY a JSON array of strings, one per article, in the same order.`
 
     const userPrompt = `Write factual summaries for these ${articles.length} articles:\n\n${articleList}\n\nJSON array of ${articles.length} summaries:`
 
-    const raw = await callAI(systemPrompt, userPrompt)
-    if (!raw) {
-        console.warn("[summarizer] summarizeBatch: callAI returned null")
-        return null
-    }
-    console.log(`[summarizer] summarizeBatch raw response (first 300): ${raw.slice(0, 300)}`)
+    const raw = await callArticleSummaryModel(systemPrompt, userPrompt)
+    if (!raw) return null
 
     const summaries = parseJsonArray(raw)
-    if (!summaries) {
-        console.warn("[summarizer] summarizeBatch: parseJsonArray returned null for raw:", raw.slice(0, 200))
-        return null
-    }
-    console.log(`[summarizer] summarizeBatch: parsed ${summaries.length} summaries`)
+    if (!summaries) return null
 
     const results = new Map<string, string>()
     articles.forEach((a, i) => {
@@ -206,10 +205,9 @@ Output ONLY a JSON array of strings, one per article, in the same order.`
             results.set(a.headline, summaries[i])
         }
     })
+
     return results
 }
-
-// ─── GitHub Repo Summaries ──────────────────────────────────────────────────
 
 interface RepoForSummary {
     name: string
@@ -220,13 +218,10 @@ interface RepoForSummary {
     stars: number
 }
 
-/**
- * Generate concise AI summaries for GitHub repos.
- */
 export async function summarizeGitHubRepos(
     repos: RepoForSummary[]
 ): Promise<Map<string, string> | null> {
-    if (!GEMINI_API_KEY || repos.length === 0) return null
+    if (!OPENAI_API_KEY || repos.length === 0) return null
 
     const cacheKey = `github:${repos.map((r) => r.fullName).join("|")}`
     const cached = getCached<Map<string, string>>(cacheKey)
@@ -238,7 +233,7 @@ export async function summarizeGitHubRepos(
     const repoList = repos
         .map((r, i) => {
             const context = r.readmeExcerpt || r.description || "No description"
-            return `${i + 1}. "${r.fullName}" (${r.language}, ★${r.stars})\n   Context: ${context.slice(0, 200)}`
+            return `${i + 1}. "${r.fullName}" (${r.language}, ${r.stars} stars)\n   Context: ${context.slice(0, 200)}`
         })
         .join("\n\n")
 
@@ -246,13 +241,11 @@ export async function summarizeGitHubRepos(
 1. What the project does in plain language
 2. Why it matters for Canadian AI research or industry
 
-Be specific about the technology and its applications. Do NOT just repeat the repo name. If the context is thin, infer from the name and language.
-
-Output ONLY a JSON array of strings, one per repo.`
+Be specific about the technology and its applications. Output ONLY a JSON array of strings, one per repo.`
 
     const userPrompt = `Summarize these ${repos.length} Canadian AI repositories:\n\n${repoList}\n\nJSON array of ${repos.length} summaries:`
 
-    const raw = await callAI(systemPrompt, userPrompt)
+    const raw = await callArticleSummaryModel(systemPrompt, userPrompt)
     if (!raw) return null
 
     const summaries = parseJsonArray(raw)
@@ -272,15 +265,10 @@ Output ONLY a JSON array of strings, one per repo.`
     return results
 }
 
-// ─── arXiv Paper Summaries ──────────────────────────────────────────────────
-
-/**
- * Generate plain-language summaries for research papers.
- */
 export async function summarizeArxivPapers(
     papers: { title: string; summary: string }[]
 ): Promise<Map<string, string> | null> {
-    if (!GEMINI_API_KEY || papers.length === 0) return null
+    if (!OPENAI_API_KEY || papers.length === 0) return null
 
     const cacheKey = `papers:${papers.map((p) => p.title).join("|").slice(0, 200)}`
     const cached = getCached<Map<string, string>>(cacheKey)
@@ -293,11 +281,11 @@ export async function summarizeArxivPapers(
         .map((p, i) => `${i + 1}. "${p.title}"\n   Abstract: ${p.summary.slice(0, 250)}`)
         .join("\n\n")
 
-    const systemPrompt = `You are a science communicator. For each research paper, write a 1-2 sentence plain-language summary (30-50 words) that a non-technical reader can understand. Focus on: what problem it solves, the key finding or contribution, and why it matters. Avoid jargon. Output ONLY a JSON array of strings, one summary per paper.`
+    const systemPrompt = `You are a science communicator. For each research paper, write a 1-2 sentence plain-language summary (30-50 words) that a non-technical reader can understand. Focus on what problem it solves, the key finding or contribution, and why it matters. Avoid jargon. Output ONLY a JSON array of strings, one summary per paper.`
 
     const userPrompt = `Summarize each paper in plain language:\n\n${paperList}\n\nJSON array of ${papers.length} summaries:`
 
-    const raw = await callAI(systemPrompt, userPrompt)
+    const raw = await callArticleSummaryModel(systemPrompt, userPrompt)
     if (!raw) return null
 
     const summaries = parseJsonArray(raw)
@@ -317,15 +305,10 @@ export async function summarizeArxivPapers(
     return results
 }
 
-// ─── Executive Brief (thematic bullets) ────────────────────────────────────
-
-/**
- * Generate 3-5 thematic executive brief bullets from all current stories.
- */
 export async function generateExecutiveBrief(
     articles: ArticleForSummary[]
 ): Promise<string[] | null> {
-    if (!GEMINI_API_KEY || articles.length === 0) return null
+    if (!OPENAI_API_KEY || articles.length === 0) return null
 
     const cacheKey = `brief:${articles.map((a) => a.headline).join("|").slice(0, 200)}`
     const cached = getCached<string[]>(cacheKey)
@@ -336,14 +319,14 @@ export async function generateExecutiveBrief(
 
     const top = articles.slice(0, 20)
     const articleList = top
-        .map((a, i) => `${i + 1}. "${a.headline}" [${a.category}] — ${a.source}`)
+        .map((a, i) => `${i + 1}. "${a.headline}" [${a.category}] - ${a.source}`)
         .join("\n")
 
-    const systemPrompt = `You are an expert intelligence analyst producing an executive briefing about AI developments in Canada. Write 3-5 thematic bullets that synthesize the key trends, not just list articles. Each bullet should identify a pattern, shift, or strategic implication. Be specific and analytical. Do NOT cite specific bill numbers or legislation names (e.g. AIDA, Bill C-27) as your knowledge of their status may be outdated — instead refer generally to "AI governance efforts" or "regulatory developments". Output ONLY a JSON array of strings.`
+    const systemPrompt = `You are an expert intelligence analyst producing an executive briefing about AI developments in Canada. Write 3-5 thematic bullets that synthesize the key trends rather than listing articles. Each bullet should identify a pattern, shift, or strategic implication. Output ONLY a JSON array of strings.`
 
     const userPrompt = `Based on these ${top.length} recent AI signals from Canada, write 3-5 executive summary bullets:\n\n${articleList}\n\nJSON array:`
 
-    const raw = await callAI(systemPrompt, userPrompt)
+    const raw = await callAI(OPENAI_BRIEF_MODEL, systemPrompt, userPrompt, 1000)
     if (!raw) return null
 
     const bullets = parseJsonArray(raw)
@@ -354,15 +337,10 @@ export async function generateExecutiveBrief(
     return result
 }
 
-// ─── Global Article Summaries (neutral, non-Canada-focused) ────────────────
-
-/**
- * Generate neutral summaries for global AI articles (no Canada-specific framing).
- */
 export async function summarizeGlobalArticles(
     articles: ArticleForSummary[]
 ): Promise<Map<string, string> | null> {
-    if (!GEMINI_API_KEY || articles.length === 0) return null
+    if (!OPENAI_API_KEY || articles.length === 0) return null
 
     const cacheKey = `global-articles:${articles.map((a) => a.headline).join("|").slice(0, 200)}`
     const cached = getCached<Map<string, string>>(cacheKey)
@@ -371,7 +349,6 @@ export async function summarizeGlobalArticles(
         return cached
     }
 
-    // Process in batches of 5 to avoid JSON truncation
     const results = new Map<string, string>()
     const batches = chunk(articles, 5)
 
@@ -387,6 +364,7 @@ export async function summarizeGlobalArticles(
     if (results.size > 0) {
         setCache(cacheKey, results)
     }
+
     return results.size > 0 ? results : null
 }
 
@@ -397,7 +375,7 @@ async function summarizeGlobalBatch(
         .map((a, i) => {
             const snippetUseful = a.snippet && !a.headline.startsWith(a.snippet.split("  ")[0])
             const context = snippetUseful ? `\n   Context: ${a.snippet.slice(0, 200)}` : ""
-            return `${i + 1}. "${a.headline}" [${a.category}] — ${a.source}${context}`
+            return `${i + 1}. "${a.headline}" [${a.category}] - ${a.source}${context}`
         })
         .join("\n")
 
@@ -406,28 +384,20 @@ async function summarizeGlobalBatch(
 2. Mentions people, organizations, or institutions ONLY if they appear in the provided headline or context
 
 Rules:
-- Do NOT invent, guess, or fill in names, titles, dates, or details not present in the headline or context — if a person is unnamed, refer to them by their role only
-- Report ONLY what is explicitly stated or directly evidenced — do NOT interpret, speculate, or explain significance
-- Do NOT use phrases like "aims to", "suggests", "highlights", "could", "is expected to", "raises questions", or "underscores"
-- Do NOT add editorial context about why something matters or what it means
-- If the headline/context is thin, keep the summary short rather than padding with interpretation
-- Do NOT cite specific bill numbers or legislation names as your knowledge may be outdated
+- Do NOT invent, guess, or fill in names, titles, dates, or details not present in the headline or context
+- Report ONLY what is explicitly stated or directly evidenced
+- Do NOT interpret significance or add editorial framing
+- If the headline/context is thin, keep the summary short rather than padding it
 
 Output ONLY a JSON array of strings, one per article, in the same order.`
 
     const userPrompt = `Write factual summaries for these ${articles.length} global AI articles:\n\n${articleList}\n\nJSON array of ${articles.length} summaries:`
 
-    const raw = await callAI(systemPrompt, userPrompt)
-    if (!raw) {
-        console.warn("[summarizer] summarizeGlobalBatch: callAI returned null")
-        return null
-    }
+    const raw = await callArticleSummaryModel(systemPrompt, userPrompt)
+    if (!raw) return null
 
     const summaries = parseJsonArray(raw)
-    if (!summaries) {
-        console.warn("[summarizer] summarizeGlobalBatch: parseJsonArray failed for raw:", raw.slice(0, 200))
-        return null
-    }
+    if (!summaries) return null
 
     const results = new Map<string, string>()
     articles.forEach((a, i) => {
@@ -435,16 +405,14 @@ Output ONLY a JSON array of strings, one per article, in the same order.`
             results.set(a.headline, summaries[i])
         }
     })
+
     return results
 }
 
-/**
- * Generate 3-5 thematic executive brief bullets about global AI trends.
- */
 export async function generateGlobalBrief(
     articles: ArticleForSummary[]
 ): Promise<string[] | null> {
-    if (!GEMINI_API_KEY || articles.length === 0) return null
+    if (!OPENAI_API_KEY || articles.length === 0) return null
 
     const cacheKey = `global-brief:${articles.map((a) => a.headline).join("|").slice(0, 200)}`
     const cached = getCached<string[]>(cacheKey)
@@ -455,14 +423,14 @@ export async function generateGlobalBrief(
 
     const top = articles.slice(0, 20)
     const articleList = top
-        .map((a, i) => `${i + 1}. "${a.headline}" [${a.category}] — ${a.source}`)
+        .map((a, i) => `${i + 1}. "${a.headline}" [${a.category}] - ${a.source}`)
         .join("\n")
 
-    const systemPrompt = `You are an expert intelligence analyst producing an executive briefing about global AI developments. Write 3-5 thematic bullets that synthesize the key worldwide trends, not just list articles. Each bullet should identify a pattern, shift, or strategic implication in the global AI landscape. Be specific and analytical. Output ONLY a JSON array of strings.`
+    const systemPrompt = `You are an expert intelligence analyst producing an executive briefing about global AI developments. Write 3-5 thematic bullets that synthesize the main worldwide trends rather than listing articles. Each bullet should identify a pattern, shift, or strategic implication. Output ONLY a JSON array of strings.`
 
     const userPrompt = `Based on these ${top.length} recent global AI signals, write 3-5 executive summary bullets:\n\n${articleList}\n\nJSON array:`
 
-    const raw = await callAI(systemPrompt, userPrompt)
+    const raw = await callAI(OPENAI_BRIEF_MODEL, systemPrompt, userPrompt, 1000)
     if (!raw) return null
 
     const bullets = parseJsonArray(raw)
@@ -472,8 +440,6 @@ export async function generateGlobalBrief(
     setCache(cacheKey, result)
     return result
 }
-
-// ─── Helpers ────────────────────────────────────────────────────────────────
 
 function parseJsonArray(raw: string): string[] | null {
     let cleaned = raw.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/i, "")
@@ -486,20 +452,19 @@ function parseJsonArray(raw: string): string[] | null {
     try {
         const parsed = JSON.parse(cleaned)
         if (!Array.isArray(parsed)) {
-            console.warn("[summarizer] parseJsonArray: parsed value is not an array, type:", typeof parsed)
+            console.warn("[summarizer] parseJsonArray: parsed value is not an array")
             return null
         }
-        // Convert all elements to strings (Gemini 2.5 might return objects or other types)
+
         return parsed.map((item) => {
             if (typeof item === "string") return item
             if (typeof item === "object" && item !== null) {
-                // Handle {summary: "..."} or {text: "..."} style objects
                 return item.summary || item.text || item.brief || item.content || JSON.stringify(item)
             }
             return String(item)
         })
     } catch (e) {
-        console.warn("[summarizer] parseJsonArray: JSON.parse failed:", (e as Error).message, "cleaned (first 200):", cleaned.slice(0, 200))
+        console.warn("[summarizer] parseJsonArray: JSON.parse failed:", (e as Error).message)
         return null
     }
 }
