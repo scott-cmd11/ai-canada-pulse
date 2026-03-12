@@ -174,24 +174,23 @@ async function summarizeBatch(
     const articleList = articles
         .map((a, i) => {
             const snippetUseful = a.snippet && !a.headline.startsWith(a.snippet.split("  ")[0])
-            const context = snippetUseful ? `\n   Context: ${a.snippet.slice(0, 200)}` : ""
-            return `${i + 1}. "${a.headline}" [${a.category}] - ${a.source}${context}`
+            const context = snippetUseful ? a.snippet.slice(0, 220) : "No additional context provided"
+            return `${i + 1}. Headline: "${a.headline}"\n   Context: ${context}`
         })
-        .join("\n")
+        .join("\n\n")
 
-    const systemPrompt = `You are a wire service reporter writing article summaries about Canadian AI developments. For each headline, write a strictly factual 2-3 sentence summary (40-70 words) that:
-1. States exactly what happened, was announced, or was reported
-2. Mentions people, organizations, or institutions ONLY if they appear in the provided headline or context
+    const systemPrompt = `You are a wire reporter. For each item, write a clean factual summary in 1-2 sentences (22-50 words).
 
 Rules:
-- Do NOT invent, guess, or fill in names, titles, dates, or details not present in the headline or context
-- Report ONLY what is explicitly stated or directly evidenced
-- Do NOT interpret significance or add editorial framing
-- If the headline/context is thin, keep the summary short rather than padding it
+- Use only facts from the provided headline/context
+- Do NOT add interpretation, predictions, or implications
+- Do NOT mention feed taxonomy, categories, section labels, or metadata
+- Do NOT include phrases like "as reported by", "listed under", "categorized as", or "on Google News"
+- If context is thin, write one short sentence and stop
 
-Output ONLY a JSON array of strings, one per article, in the same order.`
+Output ONLY a JSON array of strings, one summary per item, in the same order.`
 
-    const userPrompt = `Write factual summaries for these ${articles.length} articles:\n\n${articleList}\n\nJSON array of ${articles.length} summaries:`
+    const userPrompt = `Write concise factual summaries for these ${articles.length} Canada AI items:\n\n${articleList}\n\nJSON array of ${articles.length} summaries:`
 
     const raw = await callArticleSummaryModel(systemPrompt, userPrompt)
     if (!raw) return null
@@ -374,24 +373,23 @@ async function summarizeGlobalBatch(
     const articleList = articles
         .map((a, i) => {
             const snippetUseful = a.snippet && !a.headline.startsWith(a.snippet.split("  ")[0])
-            const context = snippetUseful ? `\n   Context: ${a.snippet.slice(0, 200)}` : ""
-            return `${i + 1}. "${a.headline}" [${a.category}] - ${a.source}${context}`
+            const context = snippetUseful ? a.snippet.slice(0, 220) : "No additional context provided"
+            return `${i + 1}. Headline: "${a.headline}"\n   Context: ${context}`
         })
-        .join("\n")
+        .join("\n\n")
 
-    const systemPrompt = `You are a wire service reporter writing article summaries about global AI developments. For each headline, write a strictly factual 2-3 sentence summary (40-70 words) that:
-1. States exactly what happened, was announced, or was reported
-2. Mentions people, organizations, or institutions ONLY if they appear in the provided headline or context
+    const systemPrompt = `You are a wire reporter. For each item, write a clean factual summary in 1-2 sentences (22-50 words).
 
 Rules:
-- Do NOT invent, guess, or fill in names, titles, dates, or details not present in the headline or context
-- Report ONLY what is explicitly stated or directly evidenced
-- Do NOT interpret significance or add editorial framing
-- If the headline/context is thin, keep the summary short rather than padding it
+- Use only facts from the provided headline/context
+- Do NOT add interpretation, predictions, or implications
+- Do NOT mention feed taxonomy, categories, section labels, or metadata
+- Do NOT include phrases like "as reported by", "listed under", "categorized as", or "on Google News"
+- If context is thin, write one short sentence and stop
 
-Output ONLY a JSON array of strings, one per article, in the same order.`
+Output ONLY a JSON array of strings, one summary per item, in the same order.`
 
-    const userPrompt = `Write factual summaries for these ${articles.length} global AI articles:\n\n${articleList}\n\nJSON array of ${articles.length} summaries:`
+    const userPrompt = `Write concise factual summaries for these ${articles.length} global AI items:\n\n${articleList}\n\nJSON array of ${articles.length} summaries:`
 
     const raw = await callArticleSummaryModel(systemPrompt, userPrompt)
     if (!raw) return null
@@ -476,3 +474,5 @@ function chunk<T>(arr: T[], size: number): T[][] {
     }
     return chunks
 }
+
+
