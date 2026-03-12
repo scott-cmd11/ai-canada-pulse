@@ -179,18 +179,18 @@ async function summarizeBatch(
         })
         .join("\n\n")
 
-    const systemPrompt = `You are a wire reporter. For each item, write a clean factual summary in 1-2 sentences (22-50 words).
+    const systemPrompt = `You are a wire reporter. For each item, write a clean factual summary in 2-3 sentences (45-90 words).
 
 Rules:
 - Use only facts from the provided headline/context
 - Do NOT add interpretation, predictions, or implications
 - Do NOT mention feed taxonomy, categories, section labels, or metadata
 - Do NOT include phrases like "as reported by", "listed under", "categorized as", or "on Google News"
-- If context is thin, write one short sentence and stop
+- If context is thin, still produce exactly 2 sentences using only available facts
 
 Output ONLY a JSON array of strings, one summary per item, in the same order.`
 
-    const userPrompt = `Write concise factual summaries for these ${articles.length} Canada AI items:\n\n${articleList}\n\nJSON array of ${articles.length} summaries:`
+    const userPrompt = `Write factual 2-3 sentence summaries for these ${articles.length} Canada AI items:\n\n${articleList}\n\nJSON array of ${articles.length} summaries:`
 
     const raw = await callArticleSummaryModel(systemPrompt, userPrompt)
     if (!raw) return null
@@ -378,18 +378,18 @@ async function summarizeGlobalBatch(
         })
         .join("\n\n")
 
-    const systemPrompt = `You are a wire reporter. For each item, write a clean factual summary in 1-2 sentences (22-50 words).
+    const systemPrompt = `You are a wire reporter. For each item, write a clean factual summary in 2-3 sentences (45-90 words).
 
 Rules:
 - Use only facts from the provided headline/context
 - Do NOT add interpretation, predictions, or implications
 - Do NOT mention feed taxonomy, categories, section labels, or metadata
 - Do NOT include phrases like "as reported by", "listed under", "categorized as", or "on Google News"
-- If context is thin, write one short sentence and stop
+- If context is thin, still produce exactly 2 sentences using only available facts
 
 Output ONLY a JSON array of strings, one summary per item, in the same order.`
 
-    const userPrompt = `Write concise factual summaries for these ${articles.length} global AI items:\n\n${articleList}\n\nJSON array of ${articles.length} summaries:`
+    const userPrompt = `Write factual 2-3 sentence summaries for these ${articles.length} global AI items:\n\n${articleList}\n\nJSON array of ${articles.length} summaries:`
 
     const raw = await callArticleSummaryModel(systemPrompt, userPrompt)
     if (!raw) return null
@@ -474,5 +474,6 @@ function chunk<T>(arr: T[], size: number): T[][] {
     }
     return chunks
 }
+
 
 
