@@ -140,6 +140,23 @@ const METADATA_PHRASES = [
     "under policy",
 ]
 
+const GENERIC_OPENERS = [
+    "the article",
+    "the report",
+    "the story",
+    "the item",
+    "this article",
+    "this report",
+    "this story",
+]
+
+const HEADLINE_STOPWORDS = new Set([
+    "the", "a", "an", "and", "or", "of", "to", "in", "on", "for", "with", "from", "by",
+    "as", "at", "is", "are", "was", "were", "be", "been", "being", "it", "its", "their",
+    "his", "her", "that", "this", "these", "those", "after", "over", "under", "into",
+    "new", "canada", "canadian", "global", "ai",
+])
+
 function sentenceCount(text: string): number {
     return (text.match(/[.!?](\s|$)/g) || []).length
 }
@@ -157,7 +174,24 @@ function hasMetadataLeak(text: string): boolean {
     return METADATA_PHRASES.some((phrase) => lower.includes(phrase))
 }
 
-function isStrongArticleSummary(text: string): boolean {
+function hasGenericTone(text: string): boolean {
+    const lower = text.toLowerCase()
+    return GENERIC_OPENERS.some((opener) => lower.startsWith(opener))
+}
+
+function includesHeadlineKeyword(summary: string, headline: string): boolean {
+    const normalizedSummary = summary.toLowerCase()
+    const keywords = headline
+        .toLowerCase()
+        .replace(/[^a-z0-9\s]/g, " ")
+        .split(/\s+/)
+        .filter((token) => token.length >= 5 && !HEADLINE_STOPWORDS.has(token))
+
+    if (keywords.length === 0) return true
+    return keywords.some((keyword) => normalizedSummary.includes(keyword))
+}
+
+function isStrongArticleSummary(text: string, headline?: string): boolean {
     const normalized = normalizeSummary(text)
     if (!normalized) return false
     const sentences = sentenceCount(normalized)
@@ -165,6 +199,8 @@ function isStrongArticleSummary(text: string): boolean {
     if (sentences < 3 || sentences > 4) return false
     if (words < 55 || words > 150) return false
     if (hasMetadataLeak(normalized)) return false
+    if (hasGenericTone(normalized)) return false
+    if (headline && !includesHeadlineKeyword(normalized, headline)) return false
     return true
 }
 
@@ -174,7 +210,7 @@ async function ensureArticleSummaryQuality(
     scope: "Canada" | "Global"
 ): Promise<string | null> {
     const normalizedCandidate = normalizeSummary(candidate)
-    if (isStrongArticleSummary(normalizedCandidate)) {
+    if (isStrongArticleSummary(normalizedCandidate, article.headline)) {
         return normalizedCandidate
     }
 
@@ -189,6 +225,13 @@ Requirements:
 - Use only facts in headline/context
 - No interpretation or predictions
 - Do not mention feed/source metadata (forbidden: "as reported by", "listed under", "categorized as", "on Google News")
+- Avoid generic framing like "The article/report/story says..."
+- Include concrete entities from the headline/context (organization, location, program, or person when present)
+- Sentence flow:
+  1) What happened and who is involved
+  2) What changed / what action was taken
+  3) Immediate consequence or context from the source
+  4) Optional extra factual detail
 
 Output only the summary text.`
 
@@ -197,7 +240,7 @@ Output only the summary text.`
     const revisedRaw = await callAI(OPENAI_BRIEF_MODEL, systemPrompt, userPrompt, 380)
     const revised = normalizeSummary(revisedRaw)
 
-    if (isStrongArticleSummary(revised)) {
+    if (isStrongArticleSummary(revised, article.headline)) {
         return revised
     }
 
@@ -263,6 +306,8 @@ Rules:
 - Do NOT add interpretation, predictions, or implications
 - Do NOT mention feed taxonomy, categories, section labels, or metadata
 - Do NOT include phrases like "as reported by", "listed under", "categorized as", or "on Google News"
+- Do NOT start with "The article", "The report", "The story", or "This article"
+- Include concrete entities from the headline/context (organization, location, program, or person when present)
 - If context is thin, still produce exactly 3 sentences using only available facts
 
 Output ONLY a JSON array of strings, one summary per item, in the same order.`
@@ -464,6 +509,8 @@ Rules:
 - Do NOT add interpretation, predictions, or implications
 - Do NOT mention feed taxonomy, categories, section labels, or metadata
 - Do NOT include phrases like "as reported by", "listed under", "categorized as", or "on Google News"
+- Do NOT start with "The article", "The report", "The story", or "This article"
+- Include concrete entities from the headline/context (organization, location, program, or person when present)
 - If context is thin, still produce exactly 3 sentences using only available facts
 
 Output ONLY a JSON array of strings, one summary per item, in the same order.`
