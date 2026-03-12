@@ -1,4 +1,4 @@
-﻿/**
+/**
  * AI Summarizer for AI Canada Pulse
  *
  * Uses OpenAI for AI enrichment with a cheap split:
@@ -148,7 +148,7 @@ function normalizeSummary(text: string | null | undefined): string {
     if (!text) return ""
     return text
         .replace(/\s+/g, " ")
-        .replace(/^[-*•\s]+/, "")
+        .replace(/^[-*\s]+/, "")
         .trim()
 }
 
@@ -162,8 +162,8 @@ function isStrongArticleSummary(text: string): boolean {
     if (!normalized) return false
     const sentences = sentenceCount(normalized)
     const words = normalized.split(/\s+/).filter(Boolean).length
-    if (sentences < 2 || sentences > 3) return false
-    if (words < 35 || words > 110) return false
+    if (sentences < 3 || sentences > 4) return false
+    if (words < 55 || words > 150) return false
     if (hasMetadataLeak(normalized)) return false
     return true
 }
@@ -184,8 +184,8 @@ async function ensureArticleSummaryQuality(
     const systemPrompt = `You are a wire reporter. Write one factual summary for a single ${scope} AI news item.
 
 Requirements:
-- Exactly 2 to 3 sentences
-- 45 to 90 words total
+- Exactly 3 to 4 sentences
+- 60 to 140 words total
 - Use only facts in headline/context
 - No interpretation or predictions
 - Do not mention feed/source metadata (forbidden: "as reported by", "listed under", "categorized as", "on Google News")
@@ -256,18 +256,18 @@ async function summarizeBatch(
         })
         .join("\n\n")
 
-    const systemPrompt = `You are a wire reporter. For each item, write a clean factual summary in 2-3 sentences (45-90 words).
+    const systemPrompt = `You are a wire reporter. For each item, write a clean factual summary in 3-4 sentences (60-140 words).
 
 Rules:
 - Use only facts from the provided headline/context
 - Do NOT add interpretation, predictions, or implications
 - Do NOT mention feed taxonomy, categories, section labels, or metadata
 - Do NOT include phrases like "as reported by", "listed under", "categorized as", or "on Google News"
-- If context is thin, still produce exactly 2 sentences using only available facts
+- If context is thin, still produce exactly 3 sentences using only available facts
 
 Output ONLY a JSON array of strings, one summary per item, in the same order.`
 
-    const userPrompt = `Write factual 2-3 sentence summaries for these ${articles.length} Canada AI items:\n\n${articleList}\n\nJSON array of ${articles.length} summaries:`
+    const userPrompt = `Write factual 3-4 sentence summaries for these ${articles.length} Canada AI items:\n\n${articleList}\n\nJSON array of ${articles.length} summaries:`
 
     const raw = await callArticleSummaryModel(systemPrompt, userPrompt)
     if (!raw) return null
@@ -457,18 +457,18 @@ async function summarizeGlobalBatch(
         })
         .join("\n\n")
 
-    const systemPrompt = `You are a wire reporter. For each item, write a clean factual summary in 2-3 sentences (45-90 words).
+    const systemPrompt = `You are a wire reporter. For each item, write a clean factual summary in 3-4 sentences (60-140 words).
 
 Rules:
 - Use only facts from the provided headline/context
 - Do NOT add interpretation, predictions, or implications
 - Do NOT mention feed taxonomy, categories, section labels, or metadata
 - Do NOT include phrases like "as reported by", "listed under", "categorized as", or "on Google News"
-- If context is thin, still produce exactly 2 sentences using only available facts
+- If context is thin, still produce exactly 3 sentences using only available facts
 
 Output ONLY a JSON array of strings, one summary per item, in the same order.`
 
-    const userPrompt = `Write factual 2-3 sentence summaries for these ${articles.length} global AI items:\n\n${articleList}\n\nJSON array of ${articles.length} summaries:`
+    const userPrompt = `Write factual 3-4 sentence summaries for these ${articles.length} global AI items:\n\n${articleList}\n\nJSON array of ${articles.length} summaries:`
 
     const raw = await callArticleSummaryModel(systemPrompt, userPrompt)
     if (!raw) return null
@@ -555,10 +555,3 @@ function chunk<T>(arr: T[], size: number): T[][] {
     }
     return chunks
 }
-
-
-
-
-
-
-
