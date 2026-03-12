@@ -1,4 +1,4 @@
-/**
+﻿/**
  * AI Summarizer for AI Canada Pulse
  *
  * Uses OpenAI for AI enrichment with a cheap split:
@@ -130,6 +130,83 @@ async function callArticleSummaryModel(systemPrompt: string, userPrompt: string)
     return callAI(OPENAI_BRIEF_MODEL, systemPrompt, userPrompt, 1200)
 }
 
+
+const METADATA_PHRASES = [
+    "as reported by",
+    "listed under",
+    "categorized as",
+    "on google news",
+    "under industry",
+    "under policy",
+]
+
+function sentenceCount(text: string): number {
+    return (text.match(/[.!?](\s|$)/g) || []).length
+}
+
+function normalizeSummary(text: string | null | undefined): string {
+    if (!text) return ""
+    return text
+        .replace(/\s+/g, " ")
+        .replace(/^[-*•\s]+/, "")
+        .trim()
+}
+
+function hasMetadataLeak(text: string): boolean {
+    const lower = text.toLowerCase()
+    return METADATA_PHRASES.some((phrase) => lower.includes(phrase))
+}
+
+function isStrongArticleSummary(text: string): boolean {
+    const normalized = normalizeSummary(text)
+    if (!normalized) return false
+    const sentences = sentenceCount(normalized)
+    const words = normalized.split(/\s+/).filter(Boolean).length
+    if (sentences < 2 || sentences > 3) return false
+    if (words < 35 || words > 110) return false
+    if (hasMetadataLeak(normalized)) return false
+    return true
+}
+
+async function ensureArticleSummaryQuality(
+    candidate: string | null | undefined,
+    article: ArticleForSummary,
+    scope: "Canada" | "Global"
+): Promise<string | null> {
+    const normalizedCandidate = normalizeSummary(candidate)
+    if (isStrongArticleSummary(normalizedCandidate)) {
+        return normalizedCandidate
+    }
+
+    const snippetUseful = article.snippet && !article.headline.startsWith(article.snippet.split("  ")[0])
+    const context = snippetUseful ? article.snippet.slice(0, 260) : "No additional context provided"
+
+    const systemPrompt = `You are a wire reporter. Write one factual summary for a single ${scope} AI news item.
+
+Requirements:
+- Exactly 2 to 3 sentences
+- 45 to 90 words total
+- Use only facts in headline/context
+- No interpretation or predictions
+- Do not mention feed/source metadata (forbidden: "as reported by", "listed under", "categorized as", "on Google News")
+
+Output only the summary text.`
+
+    const userPrompt = `Headline: "${article.headline}"\nContext: ${context}\n\nWrite the summary now.`
+
+    const revisedRaw = await callAI(OPENAI_BRIEF_MODEL, systemPrompt, userPrompt, 380)
+    const revised = normalizeSummary(revisedRaw)
+
+    if (isStrongArticleSummary(revised)) {
+        return revised
+    }
+
+    if (normalizedCandidate) {
+        return normalizedCandidate
+    }
+
+    return revised || null
+}
 interface ArticleForSummary {
     headline: string
     snippet: string
@@ -199,11 +276,13 @@ Output ONLY a JSON array of strings, one summary per item, in the same order.`
     if (!summaries) return null
 
     const results = new Map<string, string>()
-    articles.forEach((a, i) => {
-        if (summaries[i]) {
-            results.set(a.headline, summaries[i])
+    for (let i = 0; i < articles.length; i++) {
+        const article = articles[i]
+        const enriched = await ensureArticleSummaryQuality(summaries[i], article, "Canada")
+        if (enriched) {
+            results.set(article.headline, enriched)
         }
-    })
+    }
 
     return results
 }
@@ -398,11 +477,13 @@ Output ONLY a JSON array of strings, one summary per item, in the same order.`
     if (!summaries) return null
 
     const results = new Map<string, string>()
-    articles.forEach((a, i) => {
-        if (summaries[i]) {
-            results.set(a.headline, summaries[i])
+    for (let i = 0; i < articles.length; i++) {
+        const article = articles[i]
+        const enriched = await ensureArticleSummaryQuality(summaries[i], article, "Global")
+        if (enriched) {
+            results.set(article.headline, enriched)
         }
-    })
+    }
 
     return results
 }
@@ -474,6 +555,10 @@ function chunk<T>(arr: T[], size: number): T[][] {
     }
     return chunks
 }
+
+
+
+
 
 
 
