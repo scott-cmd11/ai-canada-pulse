@@ -197,6 +197,62 @@ function hasBlandCliches(text: string): boolean {
     return BLAND_PHRASES.some((phrase) => lower.includes(phrase))
 }
 
+function normalizeBriefBullet(text: string | null | undefined): string {
+    if (!text) return ""
+    return text
+        .replace(/\s+/g, " ")
+        .replace(/^[-*\d.)\s]+/, "")
+        .trim()
+}
+
+function isStrongExecutiveBriefBullet(text: string): boolean {
+    const normalized = normalizeBriefBullet(text)
+    if (!normalized) return false
+
+    const sentences = sentenceCount(normalized)
+    const words = normalized.split(/\s+/).filter(Boolean).length
+
+    if (sentences !== 1) return false
+    if (words < 10 || words > 28) return false
+    if (hasMetadataLeak(normalized)) return false
+    if (hasGenericTone(normalized)) return false
+    if (hasBlandCliches(normalized)) return false
+
+    return true
+}
+
+async function ensureExecutiveBriefBulletQuality(
+    candidate: string | null | undefined,
+    articleList: string
+): Promise<string | null> {
+    const normalizedCandidate = normalizeBriefBullet(candidate)
+    if (isStrongExecutiveBriefBullet(normalizedCandidate)) {
+        return normalizedCandidate
+    }
+
+    const systemPrompt = `You are an expert intelligence analyst producing a Canada AI executive brief.
+
+Requirements:
+- Write exactly 1 sentence
+- 10 to 28 words
+- State a pattern, shift, or implication across the signal set
+- Do not recap articles one by one
+- Do not use filler framing like "The article/report/story"
+- Do not mention feed metadata or source taxonomy
+- Use crisp, plain language optimized for quick scanning
+
+Output only the sentence.`
+
+    const userPrompt = `Current Canada AI signals:\n${articleList}\n\nRewrite this bullet as one short high-signal sentence:\n"${normalizedCandidate || "No valid bullet provided."}"`
+
+    const revised = normalizeBriefBullet(await callAI(OPENAI_BRIEF_MODEL, systemPrompt, userPrompt, 160))
+    if (isStrongExecutiveBriefBullet(revised)) {
+        return revised
+    }
+
+    return normalizedCandidate || revised || null
+}
+
 function includesHeadlineKeyword(summary: string, headline: string): boolean {
     const normalizedSummary = summary.toLowerCase()
     const keywords = headline
@@ -467,118 +523,23 @@ export async function generateExecutiveBrief(
         .map((a, i) => `${i + 1}. "${a.headline}" [${a.category}] - ${a.source}`)
         .join("\n")
 
-    const systemPrompt = `You are an expert intelligence analyst producing an executive briefing about AI developments in Canada. Write 3-5 thematic bullets that synthesize the key trends rather than listing articles. Each bullet should identify a pattern, shift, or strategic implication. Output ONLY a JSON array of strings.`
+    const systemPrompt = `You are an expert intelligence analyst producing an executive briefing about AI developments in Canada.
 
-    const userPrompt = `Based on these ${top.length} recent AI signals from Canada, write 3-5 executive summary bullets:\n\n${articleList}\n\nJSON array:`
-
-    const raw = await callAI(OPENAI_BRIEF_MODEL, systemPrompt, userPrompt, 1000)
-    if (!raw) return null
-
-    const bullets = parseJsonArray(raw)
-    if (!bullets || bullets.length === 0) return null
-
-    const result = bullets.slice(0, 5)
-    setCache(cacheKey, result)
-    return result
-}
-
-export async function summarizeGlobalArticles(
-    articles: ArticleForSummary[]
-): Promise<Map<string, string> | null> {
-    if (!OPENAI_API_KEY || articles.length === 0) return null
-
-    const cacheKey = `global-articles:${articles.map((a) => a.headline).join("|").slice(0, 200)}`
-    const cached = getCached<Map<string, string>>(cacheKey)
-    if (cached) {
-        console.log("[summarizer] Using cached global article summaries")
-        return cached
-    }
-
-    const results = new Map<string, string>()
-    const batches = chunk(articles, 5)
-
-    for (const batch of batches) {
-        const batchResults = await summarizeGlobalBatch(batch)
-        if (batchResults) {
-            Array.from(batchResults.entries()).forEach(([key, value]) => {
-                results.set(key, value)
-            })
-        }
-    }
-
-    if (results.size > 0) {
-        setCache(cacheKey, results)
-    }
-
-    return results.size > 0 ? results : null
-}
-
-async function summarizeGlobalBatch(
-    articles: ArticleForSummary[]
-): Promise<Map<string, string> | null> {
-    const articleList = articles
-        .map((a, i) => {
-            const snippetUseful = a.snippet && !a.headline.startsWith(a.snippet.split("  ")[0])
-            const context = snippetUseful ? a.snippet.slice(0, 220) : "No additional context provided"
-            return `${i + 1}. Headline: "${a.headline}"\n   Context: ${context}`
-        })
-        .join("\n\n")
-
-    const systemPrompt = `You are a wire reporter. For each item, write a clean factual summary in 3-4 sentences (60-140 words).
+Write 3-5 bullets optimized for fast dashboard scanning.
 
 Rules:
-- Use only facts from the provided headline/context
-- Do NOT add interpretation, predictions, or implications
-- Do NOT mention feed taxonomy, categories, section labels, or metadata
-- Do NOT include phrases like "as reported by", "listed under", "categorized as", or "on Google News"
-- Do NOT start with "The article", "The report", "The story", or "This article"
-- Do NOT use bland filler phrasing: "discusses", "highlights", "focuses on", "addresses", "raises questions"
-- Include concrete entities from the headline/context (organization, location, program, or person when present)
-- Use strong concrete verbs (approved, launched, halted, funded, sued, expanded, opened, mandated, published) where factual
-- If context is thin, still produce exactly 3 sentences using only available facts
+- Each bullet must be exactly 1 sentence
+- Each bullet should be 10-28 words
+- Each bullet must identify a pattern, shift, or strategic implication across the signal set
+- Do not list articles one by one
+- Do not add subordinate follow-up sentences
+- Do not start with generic filler like "The article", "The report", or "This story"
+- Do not mention source metadata, feed labels, or categories
+- Use concrete, direct language
 
-Output ONLY a JSON array of strings, one summary per item, in the same order.`
+Output ONLY a JSON array of strings.`
 
-    const userPrompt = `Write factual 3-4 sentence summaries for these ${articles.length} global AI items:\n\n${articleList}\n\nJSON array of ${articles.length} summaries:`
-
-    const raw = await callArticleSummaryModel(systemPrompt, userPrompt)
-    if (!raw) return null
-
-    const summaries = parseJsonArray(raw)
-    if (!summaries) return null
-
-    const results = new Map<string, string>()
-    for (let i = 0; i < articles.length; i++) {
-        const article = articles[i]
-        const enriched = await ensureArticleSummaryQuality(summaries[i], article, "Global")
-        if (enriched) {
-            results.set(article.headline, enriched)
-        }
-    }
-
-    return results
-}
-
-export async function generateGlobalBrief(
-    articles: ArticleForSummary[]
-): Promise<string[] | null> {
-    if (!OPENAI_API_KEY || articles.length === 0) return null
-
-    const cacheKey = `global-brief:${articles.map((a) => a.headline).join("|").slice(0, 200)}`
-    const cached = getCached<string[]>(cacheKey)
-    if (cached) {
-        console.log("[summarizer] Using cached global brief")
-        return cached
-    }
-
-    const top = articles.slice(0, 20)
-    const articleList = top
-        .map((a, i) => `${i + 1}. "${a.headline}" [${a.category}] - ${a.source}`)
-        .join("\n")
-
-    const systemPrompt = `You are an expert intelligence analyst producing an executive briefing about global AI developments. Write 3-5 thematic bullets that synthesize the main worldwide trends rather than listing articles. Each bullet should identify a pattern, shift, or strategic implication. Output ONLY a JSON array of strings.`
-
-    const userPrompt = `Based on these ${top.length} recent global AI signals, write 3-5 executive summary bullets:\n\n${articleList}\n\nJSON array:`
+    const userPrompt = `Based on these ${top.length} recent AI signals from Canada, write 3-5 one-sentence executive summary bullets:\n\n${articleList}\n\nJSON array:`
 
     const raw = await callAI(OPENAI_BRIEF_MODEL, systemPrompt, userPrompt, 1000)
     if (!raw) return null
@@ -586,7 +547,16 @@ export async function generateGlobalBrief(
     const bullets = parseJsonArray(raw)
     if (!bullets || bullets.length === 0) return null
 
-    const result = bullets.slice(0, 5)
+    const result: string[] = []
+    for (const bullet of bullets.slice(0, 5)) {
+        const enriched = await ensureExecutiveBriefBulletQuality(bullet, articleList)
+        if (enriched) {
+            result.push(enriched)
+        }
+    }
+
+    if (result.length === 0) return null
+
     setCache(cacheKey, result)
     return result
 }

@@ -1,7 +1,7 @@
 import { kv } from "@vercel/kv"
 import { createClient } from "redis"
 
-export type DashboardEnrichmentKind = "canada" | "global"
+export type DashboardEnrichmentKind = "canada"
 
 export interface DashboardEnrichmentPayload {
     summaries: Record<string, string>
@@ -11,7 +11,6 @@ export interface DashboardEnrichmentPayload {
 
 interface DashboardEnrichmentBundle {
     canada: DashboardEnrichmentPayload | null
-    global: DashboardEnrichmentPayload | null
     generatedAt: string
 }
 
@@ -112,4 +111,3 @@ export async function writeDashboardEnrichmentBundle(
 
     localBundleCache.set(BUNDLE_KEY, bundle)
 }
-

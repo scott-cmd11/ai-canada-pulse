@@ -80,13 +80,6 @@ export default function Header() {
             )}
 
             <Link
-              href="/insights"
-              className="rounded-full border border-slate-200 bg-white/80 px-3.5 py-2 text-xs font-semibold text-slate-600 shadow-sm hover:border-indigo-200 hover:text-indigo-700"
-            >
-              Global Context
-            </Link>
-
-            <Link
               href="/methodology"
               className="rounded-full border border-slate-200 bg-white/80 px-3.5 py-2 text-xs font-semibold text-slate-600 shadow-sm hover:border-indigo-200 hover:text-indigo-700"
             >

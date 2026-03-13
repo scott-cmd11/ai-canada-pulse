@@ -9,7 +9,7 @@ const methodologyBands = [
     type: "Live fetched data",
     refresh: "Fetched on demand from the METR / Epoch route",
     summary:
-      "The dashboard hero pairs Canada-focused monitoring with a frontier model capability benchmark. It is used as context for the pace of the global race rather than as a Canada metric.",
+      "The dashboard hero pairs Canada-focused monitoring with a frontier model capability benchmark. It is used as context for rapid capability change, not as a Canada scorecard.",
     sources: [
       { label: "METR / Epoch model capability data", href: "https://epoch.ai" },
     ],
@@ -33,27 +33,12 @@ const methodologyBands = [
     ],
   },
   {
-    eyebrow: "Global context layer",
-    title: "Compact benchmark band for global AI pace",
-    type: "Live fetched data + AI-generated brief",
-    refresh: "Global news API cached for 15 minutes with stale-while-revalidate fallback",
-    summary:
-      "The dashboard keeps Canada as the primary lens, but the global context band pulls from the global news route to show the frontier capability, policy, and model moves shaping Canadian urgency. Only a compact slice of this broader global context appears on /dashboard.",
-    bullets: [
-      "The band displays a short cached global brief plus a source mix from the current global story set.",
-      "The broader world coverage lives off-dashboard; /dashboard only uses this compact context layer.",
-    ],
-    sources: [
-      { label: "Global AI news route", href: "/insights" },
-    ],
-  },
-  {
     eyebrow: "Canada capacity layer",
     title: "Adoption, regional interest, compute, and research infrastructure",
     type: "Mixed: live fetched data + curated static references",
     refresh: "Trends fetched on demand; regional trends every 6 hours; compute status every 5 minutes; lab links curated",
     summary:
-      "This layer is designed to answer whether Canada is building practical AI capacity rather than just generating headlines. It combines public interest signals, national compute status, and links to the country?s flagship lab ecosystems.",
+      "This layer is designed to answer whether Canada is building practical AI capacity rather than just generating headlines. It combines public interest signals, national compute status, and links to flagship lab ecosystems.",
     bullets: [
       "AI tool adoption uses Google Trends data for tools tracked on the dashboard, with fallback data if live fetch fails.",
       "Regional interest compares provinces using normalized Google Trends relative-interest values.",
@@ -91,7 +76,7 @@ const pipelineCards = [
   {
     title: "What is live fetched",
     text:
-      "RSS stories, global news, stocks, indicators, Google Trends inputs, and compute status are fetched from public sources or source routes at the cadences implemented in the app. These are the raw or near-raw inputs the dashboard builds on.",
+      "RSS stories, stocks, indicators, Google Trends inputs, and compute status are fetched from public sources or source routes at the cadences implemented in the app. These are the raw or near-raw inputs the dashboard builds on.",
   },
   {
     title: "What is derived",
@@ -101,7 +86,7 @@ const pipelineCards = [
   {
     title: "What is AI-generated",
     text:
-      "Per-article summaries and the Canada/global executive briefs are generated with OpenAI models. Article summaries use gpt-5-nano. Executive and global briefs use gpt-5-mini.",
+      "Per-article summaries and the executive brief are generated with OpenAI models. Article summaries use gpt-5-nano. The Canada executive brief uses gpt-5-mini.",
   },
   {
     title: "What is curated",
@@ -119,7 +104,6 @@ const limits = [
 
 const cadenceRows = [
   { label: "Canada story aggregation", value: "Server cache revalidates every 30 minutes" },
-  { label: "Global context news route", value: "15-minute cache with stale-while-revalidate fallback" },
   { label: "Compute status", value: "5-minute revalidation" },
   { label: "Regional trends", value: "6-hour revalidation" },
   { label: "Stocks route", value: "30-minute cache" },
@@ -174,15 +158,10 @@ function SectionCard({
       {sources && sources.length > 0 && (
         <div className="mt-5 flex flex-wrap gap-2 border-t border-slate-100 pt-4">
           {sources.map((source) => {
-            const internal = source.href.startsWith("/")
             const classes =
               "rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-700 transition-colors hover:border-slate-300 hover:text-slate-900"
 
-            return internal ? (
-              <Link key={source.label} href={source.href} className={classes}>
-                {source.label}
-              </Link>
-            ) : (
+            return (
               <a key={source.label} href={source.href} target="_blank" rel="noopener noreferrer" className={classes}>
                 {source.label}
               </a>
@@ -214,13 +193,13 @@ export default function MethodologyPage() {
               How the live Canada dashboard is built
             </h1>
             <p className="mt-4 max-w-3xl text-base leading-relaxed text-slate-600 sm:text-lg">
-              AI Canada Pulse is a Canada-first monitoring product for the AI acceleration race. The live dashboard blends public data feeds, deterministic classification, cached AI-generated summaries, and curated institutional references. This page documents the current product as it exists today, not older dashboard versions or secondary legacy modules.
+              AI Canada Pulse is a Canada-first monitoring product focused on domestic AI signals. The live dashboard blends public data feeds, deterministic classification, cached AI-generated summaries, and curated institutional references.
             </p>
 
             <div className="mt-6 grid gap-3 sm:grid-cols-3">
               <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
                 <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">Automated</p>
-                <p className="mt-2 text-sm leading-relaxed text-slate-700">Story aggregation, global context, trends, compute, indicators, stocks, sentiment derivation, and cached AI summaries/briefs.</p>
+                <p className="mt-2 text-sm leading-relaxed text-slate-700">Story aggregation, trends, compute, indicators, stocks, sentiment derivation, and cached AI summaries or briefs.</p>
               </div>
               <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
                 <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">Curated</p>
@@ -239,7 +218,7 @@ export default function MethodologyPage() {
             <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">Current dashboard bands</p>
             <h2 className="mt-1 text-2xl font-bold text-slate-900">What each live section is actually using</h2>
             <p className="mt-2 max-w-3xl text-sm leading-relaxed text-slate-600">
-              The methodology below mirrors the current /dashboard structure: frontier benchmark, Canada signals, global context, capacity evidence, and market or macro impact.
+              The methodology below mirrors the current /dashboard structure: frontier benchmark, Canada signals, Canada capacity, and market or macro impact.
             </p>
           </div>
 
@@ -255,7 +234,7 @@ export default function MethodologyPage() {
             <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-indigo-600">AI generation and caching</p>
             <h2 className="mt-1 text-2xl font-bold text-slate-900">How summaries are produced now</h2>
             <p className="mt-3 text-sm leading-relaxed text-slate-600">
-              The live product no longer generates summaries on normal user requests. Instead, AI enrichment is precomputed on a schedule and attached from cache when the public story routes are served.
+              The live product does not generate summaries on normal user requests. AI enrichment is precomputed on a schedule and attached from cache when the public story routes are served.
             </p>
 
             <div className="mt-5 grid gap-3 sm:grid-cols-2">
@@ -269,7 +248,7 @@ export default function MethodologyPage() {
 
             <div className="mt-5 rounded-2xl border border-indigo-100 bg-indigo-50 p-4 text-sm leading-relaxed text-slate-700">
               <p>
-                Canada article summaries target all dashboard-visible Canada stories up to the current feed cap of <strong>20</strong>. Article summaries use <strong>gpt-5-nano</strong>. Canada and global executive briefs use <strong>gpt-5-mini</strong>.
+                Canada article summaries target all dashboard-visible Canada stories up to the current feed cap of <strong>20</strong>. Article summaries use <strong>gpt-5-nano</strong>. The executive brief uses <strong>gpt-5-mini</strong>.
               </p>
               <p className="mt-3">
                 Persistent enrichment storage uses <strong>Vercel KV</strong> when configured, falls back to <strong>Redis via REDIS_URL</strong> when available, and uses an in-memory fallback in local or degraded environments.
@@ -309,7 +288,7 @@ export default function MethodologyPage() {
             <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-indigo-600">Current scope</p>
             <h2 className="mt-1 text-2xl font-bold text-slate-900">What this page intentionally does not cover</h2>
             <p className="mt-3 text-sm leading-relaxed text-slate-600">
-              This methodology page is scoped to the current live Canada dashboard and its compact global context band. It does not attempt to document every internal route, older dashboard experiments, or secondary data modules that are present in the repository but not part of the primary user experience.
+              This methodology page is scoped to the current live Canada dashboard. It does not attempt to document every internal route, older dashboard experiments, or secondary data modules that are present in the repository but not part of the primary user experience.
             </p>
             <div className="mt-5 rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm leading-relaxed text-slate-600">
               <p>

@@ -68,7 +68,8 @@ export default function HeroBanner({ embedded = false }: { embedded?: boolean })
           <div
             className="absolute inset-0 opacity-[0.07]"
             style={{
-              backgroundImage: "url(\"data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%23fff' stroke-width='0.5'%3E%3Cpath d='M0 30h60M30 0v60'/%3E%3C/g%3E%3C/svg%3E\")",
+              backgroundImage:
+                "url(\"data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%23fff' stroke-width='0.5'%3E%3Cpath d='M0 30h60M30 0v60'/%3E%3C/g%3E%3C/svg%3E\")",
             }}
           />
           <div className="absolute -top-32 -right-32 h-[500px] w-[500px] rounded-full bg-indigo-500/25 blur-[120px] animate-pulse" />
@@ -93,13 +94,13 @@ export default function HeroBanner({ embedded = false }: { embedded?: boolean })
                   Canada Pulse
                 </h1>
                 <p className="mt-1 text-xs font-semibold uppercase tracking-[0.2em] text-indigo-300 sm:text-sm">
-                  Canada in the AI acceleration race
+                  Canada AI monitoring
                 </p>
               </div>
             </div>
 
             <p className="max-w-xl text-base leading-relaxed text-indigo-100/80 sm:text-lg">
-              A Canada-first monitoring view of the global AI race. Track the frontier pace, the domestic signals that matter, and the evidence that capacity, markets, and institutions are moving faster.
+              A Canada-first monitoring view of domestic AI signals. Track the developments that matter, the institutions building capacity, and the market evidence showing where AI momentum is visible now.
             </p>
 
             <div className="mt-6 flex flex-wrap items-center gap-4">
@@ -108,12 +109,6 @@ export default function HeroBanner({ embedded = false }: { embedded?: boolean })
                 className="rounded-lg border border-indigo-400/30 bg-indigo-600/50 px-5 py-2.5 text-sm font-semibold text-white backdrop-blur-sm transition-all hover:border-indigo-400 hover:bg-indigo-600"
               >
                 View sources
-              </Link>
-              <Link
-                href="/insights"
-                className="text-sm font-semibold text-indigo-200 transition-colors hover:text-white hover:underline"
-              >
-                Open global context
               </Link>
               {pulse && <span className="text-xs text-indigo-300/70">Updated {relativeTime(pulse.updatedAt)}</span>}
             </div>

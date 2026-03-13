@@ -11,7 +11,6 @@ import ComputeStatusSection from "@/components/ComputeStatusSection"
 import TrendsInsightsSection from "@/components/TrendsInsightsSection"
 import LabFeedsSection from "@/components/LabFeedsSection"
 import METRHeroChart from "@/components/METRHeroChart"
-import GlobalContextBand from "@/components/GlobalContextBand"
 import SectionNav from "@/components/SectionNav"
 import ScrollToTop from "@/components/ScrollToTop"
 import ScrollReveal from "@/components/ScrollReveal"
@@ -45,7 +44,8 @@ export default function DashboardPage() {
           <div
             className="absolute inset-0 opacity-[0.07]"
             style={{
-              backgroundImage: "url(\"data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%23fff' stroke-width='0.5'%3E%3Cpath d='M0 30h60M30 0v60'/%3E%3C/g%3E%3C/svg%3E\")",
+              backgroundImage:
+                "url(\"data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%23fff' stroke-width='0.5'%3E%3Cpath d='M0 30h60M30 0v60'/%3E%3C/g%3E%3C/svg%3E\")",
             }}
           />
           <div className="absolute -top-32 -right-32 h-[500px] w-[500px] rounded-full bg-indigo-500/25 blur-[120px] animate-pulse" />
@@ -68,7 +68,6 @@ export default function DashboardPage() {
         </div>
 
         <SectionNav />
-        <GlobalContextBand />
 
         <ScrollReveal>
           <section id="acceleration" className="rounded-2xl border border-slate-200 bg-white/60 p-5 sm:p-6">

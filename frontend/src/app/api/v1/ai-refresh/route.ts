@@ -28,10 +28,6 @@ export async function GET(request: NextRequest) {
             canadaSummaryTarget: bundle.counts.canadaSummaryTarget,
             canadaVisibleStories: bundle.counts.canadaVisibleStories,
             canadaBriefCount: bundle.canada?.executiveBrief?.length ?? 0,
-            globalSummaries: Object.keys(bundle.global?.summaries ?? {}).length,
-            globalSummaryTarget: bundle.counts.globalSummaryTarget,
-            globalVisibleStories: bundle.counts.globalVisibleStories,
-            globalBriefCount: bundle.global?.executiveBrief?.length ?? 0,
         })
     } catch (err) {
         console.warn("[api/ai-refresh] Refresh failed:", err)
