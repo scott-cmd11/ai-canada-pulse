@@ -5,12 +5,6 @@ import Link from "next/link"
 import type { PulseData } from "@/lib/mock-data"
 import LiveTicker from "./LiveTicker"
 
-const moodConfig = {
-  green: { tone: "text-emerald-200", dot: "bg-emerald-400", label: "Positive Outlook" },
-  amber: { tone: "text-amber-200", dot: "bg-amber-400", label: "Neutral / Cautious" },
-  red: { tone: "text-rose-200", dot: "bg-rose-400", label: "Negative Watch" },
-}
-
 function relativeTime(iso: string) {
   const diff = Math.floor((Date.now() - new Date(iso).getTime()) / 60000)
   if (diff < 1) return "Just updated"
@@ -36,8 +30,6 @@ export default function Header() {
       })
       .catch(() => {})
   }, [])
-
-  const config = pulse ? moodConfig[pulse.mood] : null
 
   return (
     <header className="sticky top-0 z-50 border-b border-white/50 bg-white/70 shadow-[0_10px_30px_rgba(15,23,42,0.06)] backdrop-blur-xl">
@@ -71,14 +63,6 @@ export default function Header() {
           </div>
 
           <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-            {config && (
-              <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-950 px-3 py-1.5 text-xs font-semibold text-white shadow-sm">
-                <span className={`h-2 w-2 rounded-full ${config.dot}`}></span>
-                <span className={config.tone}>{config.label}</span>
-                {pulse && <span className="text-slate-400">| {relativeTime(pulse.updatedAt)}</span>}
-              </div>
-            )}
-
             <Link
               href="/methodology"
               className="rounded-full border border-slate-200 bg-white/80 px-3.5 py-2 text-xs font-semibold text-slate-600 shadow-sm hover:border-indigo-200 hover:text-indigo-700"

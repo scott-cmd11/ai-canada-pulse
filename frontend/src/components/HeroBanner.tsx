@@ -4,12 +4,6 @@ import { useState, useEffect } from "react"
 import Link from "next/link"
 import type { PulseData } from "@/lib/mock-data"
 
-const moodConfig = {
-  green: { bg: "bg-emerald-400/20", border: "border-emerald-400/30", text: "text-emerald-100", label: "Positive Outlook", dot: "bg-emerald-400" },
-  amber: { bg: "bg-amber-400/20", border: "border-amber-400/30", text: "text-amber-100", label: "Neutral / Cautious", dot: "bg-amber-400" },
-  red: { bg: "bg-red-400/20", border: "border-red-400/30", text: "text-red-100", label: "Negative Watch", dot: "bg-red-400" },
-}
-
 function relativeTime(iso: string) {
   const diff = Math.floor((Date.now() - new Date(iso).getTime()) / 60000)
   if (diff < 1) return "Just now"
@@ -50,8 +44,6 @@ export default function HeroBanner({ embedded = false }: { embedded?: boolean })
       })
       .catch(() => {})
   }, [])
-
-  const config = pulse ? moodConfig[pulse.mood] : null
 
   return (
     <section className={embedded ? "" : "relative overflow-hidden rounded-2xl"}>
@@ -114,17 +106,7 @@ export default function HeroBanner({ embedded = false }: { embedded?: boolean })
             </div>
           </div>
 
-          <div className="flex flex-col items-start gap-4 lg:items-end">
-            {config && (
-              <div className={`flex items-center gap-2.5 rounded-xl border px-5 py-2.5 backdrop-blur-sm ${config.bg} ${config.border}`}>
-                <span className="relative flex h-3 w-3">
-                  <span className={`absolute inline-flex h-full w-full animate-ping rounded-full ${config.dot} opacity-50`}></span>
-                  <span className={`relative inline-flex h-3 w-3 rounded-full ${config.dot}`}></span>
-                </span>
-                <span className={`text-sm font-bold ${config.text}`}>{config.label}</span>
-              </div>
-            )}
-
+          <div className="flex flex-col items-start gap-2 lg:items-end lg:justify-center">
             <div className="flex items-center gap-6">
               <div className="text-center">
                 <p className="text-2xl font-black text-white">

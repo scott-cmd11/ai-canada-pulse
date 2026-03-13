@@ -58,8 +58,9 @@ export default function DashboardPage() {
             <div className="relative z-10 border-t border-white/5 bg-white/0 p-5 lg:border-l lg:border-t-0 lg:p-6">
               <div className="mb-3 flex items-center justify-between">
                 <div>
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-indigo-200">Frontier pace benchmark</p>
-                  <h2 className="mt-1 text-lg font-bold text-white">Capability trend reference</h2>
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-indigo-200">Capability benchmark</p>
+                  <h2 className="mt-1 text-lg font-bold text-white">Why the pace of AI capability matters now</h2>
+                  <p className="mt-2 max-w-md text-sm leading-relaxed text-indigo-100/65">A condensed METR benchmark anchors the dashboard with the clearest external evidence that frontier models are advancing fast enough to reshape the Canadian signal environment.</p>
                 </div>
               </div>
               <METRHeroChart />
