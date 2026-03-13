@@ -150,6 +150,19 @@ const GENERIC_OPENERS = [
     "this story",
 ]
 
+const BLAND_PHRASES = [
+    "the article discusses",
+    "the report discusses",
+    "the story discusses",
+    "the article highlights",
+    "the report highlights",
+    "the story highlights",
+    "focuses on",
+    "addresses",
+    "raises questions",
+    "underscores the importance",
+]
+
 const HEADLINE_STOPWORDS = new Set([
     "the", "a", "an", "and", "or", "of", "to", "in", "on", "for", "with", "from", "by",
     "as", "at", "is", "are", "was", "were", "be", "been", "being", "it", "its", "their",
@@ -179,6 +192,11 @@ function hasGenericTone(text: string): boolean {
     return GENERIC_OPENERS.some((opener) => lower.startsWith(opener))
 }
 
+function hasBlandCliches(text: string): boolean {
+    const lower = text.toLowerCase()
+    return BLAND_PHRASES.some((phrase) => lower.includes(phrase))
+}
+
 function includesHeadlineKeyword(summary: string, headline: string): boolean {
     const normalizedSummary = summary.toLowerCase()
     const keywords = headline
@@ -200,6 +218,7 @@ function isStrongArticleSummary(text: string, headline?: string): boolean {
     if (words < 55 || words > 150) return false
     if (hasMetadataLeak(normalized)) return false
     if (hasGenericTone(normalized)) return false
+    if (hasBlandCliches(normalized)) return false
     if (headline && !includesHeadlineKeyword(normalized, headline)) return false
     return true
 }
@@ -226,11 +245,12 @@ Requirements:
 - No interpretation or predictions
 - Do not mention feed/source metadata (forbidden: "as reported by", "listed under", "categorized as", "on Google News")
 - Avoid generic framing like "The article/report/story says..."
+- Avoid bland filler phrasing: "discusses", "highlights", "focuses on", "addresses", "raises questions", "underscores the importance"
 - Include concrete entities from the headline/context (organization, location, program, or person when present)
 - Sentence flow:
-  1) What happened and who is involved
+  1) Lead with the most consequential concrete development and who is involved
   2) What changed / what action was taken
-  3) Immediate consequence or context from the source
+  3) Immediate consequence (policy, procurement, deployment, funding, compliance, litigation, hiring, or release) when available
   4) Optional extra factual detail
 
 Output only the summary text.`
@@ -307,7 +327,9 @@ Rules:
 - Do NOT mention feed taxonomy, categories, section labels, or metadata
 - Do NOT include phrases like "as reported by", "listed under", "categorized as", or "on Google News"
 - Do NOT start with "The article", "The report", "The story", or "This article"
+- Do NOT use bland filler phrasing: "discusses", "highlights", "focuses on", "addresses", "raises questions"
 - Include concrete entities from the headline/context (organization, location, program, or person when present)
+- Use strong concrete verbs (approved, launched, halted, funded, sued, expanded, opened, mandated, published) where factual
 - If context is thin, still produce exactly 3 sentences using only available facts
 
 Output ONLY a JSON array of strings, one summary per item, in the same order.`
@@ -510,7 +532,9 @@ Rules:
 - Do NOT mention feed taxonomy, categories, section labels, or metadata
 - Do NOT include phrases like "as reported by", "listed under", "categorized as", or "on Google News"
 - Do NOT start with "The article", "The report", "The story", or "This article"
+- Do NOT use bland filler phrasing: "discusses", "highlights", "focuses on", "addresses", "raises questions"
 - Include concrete entities from the headline/context (organization, location, program, or person when present)
+- Use strong concrete verbs (approved, launched, halted, funded, sued, expanded, opened, mandated, published) where factual
 - If context is thin, still produce exactly 3 sentences using only available facts
 
 Output ONLY a JSON array of strings, one summary per item, in the same order.`
