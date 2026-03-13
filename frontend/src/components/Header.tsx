@@ -6,9 +6,9 @@ import type { PulseData } from "@/lib/mock-data"
 import LiveTicker from "./LiveTicker"
 
 const moodConfig = {
-  green: { bg: "bg-green-50", text: "text-green-700", border: "border-green-200", dot: "bg-green-500", label: "Positive Outlook", tooltip: "Overall sentiment across news, markets, and policy signals is trending positive for Canada's AI ecosystem." },
-  amber: { bg: "bg-amber-50", text: "text-amber-700", border: "border-amber-200", dot: "bg-amber-500", label: "Neutral/Cautious", tooltip: "Mixed signals across news sentiment, market performance, and policy activity. No strong positive or negative trend detected." },
-  red: { bg: "bg-red-50", text: "text-red-700", border: "border-red-200", dot: "bg-red-500", label: "Negative Watch", tooltip: "Negative sentiment detected across multiple indicators including news coverage, market shifts, or policy concerns." },
+  green: { tone: "text-emerald-200", dot: "bg-emerald-400", label: "Positive Outlook" },
+  amber: { tone: "text-amber-200", dot: "bg-amber-400", label: "Neutral / Cautious" },
+  red: { tone: "text-rose-200", dot: "bg-rose-400", label: "Negative Watch" },
 }
 
 function relativeTime(iso: string) {
@@ -31,39 +31,68 @@ export default function Header() {
   useEffect(() => {
     fetch("/api/v1/stories")
       .then((r) => r.json())
-      .then((j) => { if (j.pulse) setPulse(j.pulse) })
-      .catch(() => { })
+      .then((j) => {
+        if (j.pulse) setPulse(j.pulse)
+      })
+      .catch(() => {})
   }, [])
 
   const config = pulse ? moodConfig[pulse.mood] : null
 
   return (
-    <header className="sticky top-0 z-50 bg-white border-b border-slate-200 shadow-sm">
-      <LiveTicker />
-      <div className="w-full px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Link href="/dashboard" className="relative z-10 flex items-center gap-2 hover:opacity-80 transition-opacity cursor-pointer">
-            <div className="w-6 h-6 bg-indigo-700 rounded text-white flex items-center justify-center font-bold text-xs">
-              AI
-            </div>
-            <span className="text-base font-bold text-slate-900 tracking-tight">
-              Canada Pulse
-            </span>
-          </Link>
-          <div className="h-4 w-px bg-slate-300 hidden sm:block"></div>
-          <p className="text-sm hidden sm:block font-medium text-slate-500">
-            Tracking AI in Canada
-          </p>
-          <div className="h-4 w-px bg-slate-300 hidden sm:block"></div>
-          <Link href="/insights" className="text-sm hidden sm:block font-medium text-indigo-700 hover:text-indigo-900 hover:underline">
-            Global
-          </Link>
-        </div>
+    <header className="sticky top-0 z-50 border-b border-white/50 bg-white/70 shadow-[0_10px_30px_rgba(15,23,42,0.06)] backdrop-blur-xl">
+      <div className="border-b border-slate-200/70">
+        <LiveTicker />
+      </div>
 
-        <div className="flex items-center gap-3 text-sm font-medium">
-          <Link href="/methodology" className="text-xs text-slate-400 hover:text-indigo-700 hidden sm:block">
-            Sources &amp; Methodology
-          </Link>
+      <div className="w-full px-4 py-3 sm:px-6 lg:px-8">
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+          <div className="flex items-center gap-4">
+            <Link href="/dashboard" className="group relative z-10 flex items-center gap-3">
+              <div className="flex h-9 w-9 items-center justify-center rounded-2xl border border-indigo-400/20 bg-gradient-to-br from-indigo-600 to-violet-600 text-sm font-black text-white shadow-[0_8px_30px_rgba(79,70,229,0.35)]">
+                AI
+              </div>
+              <div>
+                <span className="block text-lg font-bold tracking-tight text-slate-950 group-hover:text-indigo-700">
+                  Canada Pulse
+                </span>
+                <span className="block text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">
+                  Editorial intelligence monitor
+                </span>
+              </div>
+            </Link>
+
+            <div className="hidden h-8 w-px bg-slate-200 lg:block"></div>
+
+            <div className="hidden lg:flex lg:flex-col">
+              <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">Today</span>
+              <span className="text-sm font-medium text-slate-600">{today}</span>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+            {config && (
+              <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-950 px-3 py-1.5 text-xs font-semibold text-white shadow-sm">
+                <span className={`h-2 w-2 rounded-full ${config.dot}`}></span>
+                <span className={config.tone}>{config.label}</span>
+                {pulse && <span className="text-slate-400">| {relativeTime(pulse.updatedAt)}</span>}
+              </div>
+            )}
+
+            <Link
+              href="/insights"
+              className="rounded-full border border-slate-200 bg-white/80 px-3.5 py-2 text-xs font-semibold text-slate-600 shadow-sm hover:border-indigo-200 hover:text-indigo-700"
+            >
+              Global Context
+            </Link>
+
+            <Link
+              href="/methodology"
+              className="rounded-full border border-slate-200 bg-white/80 px-3.5 py-2 text-xs font-semibold text-slate-600 shadow-sm hover:border-indigo-200 hover:text-indigo-700"
+            >
+              Sources
+            </Link>
+          </div>
         </div>
       </div>
     </header>

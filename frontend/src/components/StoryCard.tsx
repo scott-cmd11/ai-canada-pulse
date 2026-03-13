@@ -16,49 +16,52 @@ interface Props {
 }
 
 export default function StoryCard({ story }: Props) {
+  const categoryLabel = story.category === "Industry & Startups"
+    ? "Markets"
+    : story.category === "Policy & Regulation"
+      ? "Policy"
+      : story.category === "Global AI Race"
+        ? "Geopolitics"
+        : story.category
+
   return (
-    <article
-      className="saas-card bg-white p-5 flex flex-col sm:flex-row gap-4"
-    >
-      {/* Removed fixed width w-[150px] constraint to prevent layout breakages */}
-      <div className="flex sm:flex-col sm:w-32 shrink-0 gap-3 sm:gap-1.5 mt-0.5">
-        <span className="text-xs font-medium text-slate-500">
+    <article className="saas-card flex flex-col gap-4 bg-white/92 p-5 sm:flex-row sm:gap-5">
+      <div className="mt-0.5 flex shrink-0 gap-3 sm:w-32 sm:flex-col sm:gap-2">
+        <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-400">
           {relativeTime(story.publishedAt)}
         </span>
-        <span className="text-xs font-semibold px-2 py-0.5 rounded bg-indigo-50 text-indigo-700 border border-indigo-100 self-start">
-          {story.category === "Industry & Startups" ? "Markets" :
-            story.category === "Policy & Regulation" ? "Policy" :
-              story.category === "Global AI Race" ? "Geopolitics" :
-                story.category}
+        <span className="self-start rounded-full border border-indigo-100 bg-indigo-50 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-indigo-700">
+          {categoryLabel}
         </span>
       </div>
 
-      <div className="flex flex-col gap-2 flex-1 min-w-0">
-        <h3 className="text-base font-bold text-slate-900 leading-snug">
-          {story.sourceUrl ? (
-            <a href={story.sourceUrl} target="_blank" rel="noopener noreferrer" className="hover:text-indigo-700 hover:underline">
-              {story.headline}
-            </a>
-          ) : (
-            story.headline
-          )}
-        </h3>
+      <div className="min-w-0 flex-1">
+        <div className="space-y-2.5">
+          <h3 className="text-lg font-semibold leading-snug text-slate-950">
+            {story.sourceUrl ? (
+              <a href={story.sourceUrl} target="_blank" rel="noopener noreferrer" className="hover:text-indigo-700 hover:underline">
+                {story.headline}
+              </a>
+            ) : (
+              story.headline
+            )}
+          </h3>
 
-        {/* Prefer AI summary when available, fall back to raw RSS snippet */}
-        {story.aiSummary ? (
-          <p className="text-sm text-slate-700 leading-relaxed mt-1">
-            <span className="text-indigo-500 text-xs mr-1">✦</span>
-            {story.aiSummary}
-          </p>
-        ) : story.summary && !story.headline.startsWith(story.summary.split("  ")[0]) ? (
-          <p className="text-sm text-slate-600 leading-relaxed mt-1">
-            {story.summary}
-          </p>
-        ) : null}
+          {story.aiSummary ? (
+            <p className="text-sm leading-7 text-slate-700">
+              <span className="mr-1 text-xs text-indigo-500">*</span>
+              {story.aiSummary}
+            </p>
+          ) : story.summary && !story.headline.startsWith(story.summary.split("  ")[0]) ? (
+            <p className="text-sm leading-7 text-slate-600">
+              {story.summary}
+            </p>
+          ) : null}
+        </div>
 
-        <div className="flex flex-wrap items-center gap-2 mt-2 text-xs font-medium text-slate-500">
+        <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-slate-100 pt-3 text-[11px] font-medium uppercase tracking-[0.12em] text-slate-400">
           {story.sourceName && <span>{story.sourceName}</span>}
-          {story.sourceName && <span className="text-slate-300">•</span>}
+          {story.sourceName && <span>|</span>}
           <span>{story.region}</span>
         </div>
       </div>

@@ -31,57 +31,46 @@ export default function BriefingCard() {
   if (!topStory) return null
 
   return (
-    <article className="saas-card bg-white p-6 sm:p-8 flex flex-col gap-4 border-l-4 border-l-indigo-600">
-
-      {/* Dense Meta row */}
-      <div className="flex flex-wrap items-center gap-2 text-xs font-medium text-slate-400">
-        <span className="text-indigo-700">
-          {topStory.category}
+    <article className="saas-card flex flex-col gap-5 border-l-[3px] border-l-indigo-600 bg-white/95 p-6 sm:p-8">
+      <div className="flex flex-wrap items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-400">
+        <span className="rounded-full bg-indigo-50 px-2.5 py-1 text-indigo-700">
+          Lead signal
         </span>
-        <span className="text-slate-300">•</span>
-        {topStory.sourceName && (
-          <>
-            <span className="text-slate-700">{topStory.sourceName}</span>
-            <span className="text-slate-300">•</span>
-          </>
-        )}
-        <span>{topStory.region}</span>
+        <span>{topStory.category}</span>
+        {topStory.sourceName && <span>| {topStory.sourceName}</span>}
+        <span>| {topStory.region}</span>
       </div>
 
-      {/* Fluid Headline */}
-      <h3 className="text-xl sm:text-2xl font-bold text-slate-900 leading-tight">
-        {topStory.headline}
-      </h3>
+      <div className="space-y-3">
+        <h3 className="max-w-3xl text-2xl font-semibold leading-tight text-slate-950 sm:text-[2rem]">
+          {topStory.headline}
+        </h3>
 
-      {/* Readable Summary — prefer AI summary */}
-      {topStory.aiSummary ? (
-        <p className="text-sm sm:text-base text-slate-700 leading-relaxed">
-          <span className="text-indigo-500 text-xs mr-1">✦</span>
-          {topStory.aiSummary}
-        </p>
-      ) : (
-        <p className="text-sm sm:text-base text-slate-600 leading-relaxed">
-          {topStory.summary}
-        </p>
-      )}
+        {topStory.aiSummary ? (
+          <p className="max-w-3xl text-sm leading-7 text-slate-700 sm:text-[15px]">
+            <span className="mr-1 text-xs text-indigo-500">*</span>
+            {topStory.aiSummary}
+          </p>
+        ) : (
+          <p className="max-w-3xl text-sm leading-7 text-slate-600 sm:text-[15px]">
+            {topStory.summary}
+          </p>
+        )}
+      </div>
 
-      {/* Footer */}
-      <div className="flex items-center gap-4 mt-2">
-        <p className="text-sm font-medium text-slate-500">
+      <div className="flex flex-wrap items-center gap-4 border-t border-slate-100 pt-4">
+        <p className="text-xs font-medium uppercase tracking-[0.14em] text-slate-400">
           {relativeTime(topStory.publishedAt)}
         </p>
         {topStory.sourceUrl && (
-          <>
-            <div className="w-px h-3 bg-slate-300"></div>
-            <a
-              href={topStory.sourceUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-sm font-semibold text-indigo-700 hover:text-indigo-800 hover:underline"
-            >
-              Read article &rarr;
-            </a>
-          </>
+          <a
+            href={topStory.sourceUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-sm font-semibold text-indigo-700 hover:text-indigo-800 hover:underline"
+          >
+            Read primary source
+          </a>
         )}
       </div>
     </article>
