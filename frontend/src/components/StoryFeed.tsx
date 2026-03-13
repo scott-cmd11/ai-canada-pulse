@@ -1,22 +1,20 @@
 "use client"
 
+import Link from "next/link"
 import { useState, useCallback } from "react"
 import type { Category, Story } from "@/lib/mock-data"
 import StoryCard from "./StoryCard"
 import { usePolling } from "@/hooks/usePolling"
 
-const ALL = "All Intelligence"
+const ALL = "All Signals"
+const PAGE_SIZE = 4
 
 const CATEGORIES: { value: typeof ALL | Category; label: string }[] = [
-  { value: "All Intelligence", label: "All Intelligence" },
-  { value: "Research", label: "Research" },
+  { value: ALL, label: "All" },
   { value: "Policy & Regulation", label: "Policy" },
   { value: "Industry & Startups", label: "Markets" },
-  { value: "Talent & Education", label: "Talent" },
-  { value: "Global AI Race", label: "Geopolitics" },
+  { value: "Research", label: "Research" },
 ]
-
-const PAGE_SIZE = 10
 
 export default function StoryFeed() {
   const [active, setActive] = useState<typeof ALL | Category>(ALL)
@@ -28,87 +26,95 @@ export default function StoryFeed() {
   }, [])
 
   const { data: stories, loading } = usePolling<Story[]>("/api/v1/stories", {
-    intervalMs: 120_000, // 2 minutes
+    intervalMs: 120000,
     transform,
   })
 
-  const feedStories = (stories ?? []).filter((s) => !s.isBriefingTop)
-
-  const mapBackToValue = (cat: string) => {
-    if (cat === "Markets & Startups" || cat === "Markets") return "Industry & Startups"
-    if (cat === "Geopolitics") return "Global AI Race"
-    if (cat === "Policy") return "Policy & Regulation"
-    return cat
-  }
+  const feedStories = (stories ?? []).filter((story) => !story.isBriefingTop)
 
   const filtered = active === ALL
     ? feedStories
-    : feedStories.filter((s) => s.category === active || s.category === mapBackToValue(active))
+    : feedStories.filter((story) => story.category === active)
 
   const visible = filtered.slice(0, displayCount)
 
   return (
-    <div className="flex flex-col gap-6">
-      {/* Category tabs - Scrollable logic without clipping text */}
-      <div className="flex gap-6 overflow-x-auto border-b border-slate-200" style={{ scrollbarWidth: "none" }}>
-        {CATEGORIES.map((cat) => (
+    <section className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6">
+      <div className="flex flex-col gap-4 border-b border-slate-100 pb-4 lg:flex-row lg:items-end lg:justify-between">
+        <div>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">
+            Curated Canada stream
+          </p>
+          <h3 className="mt-1 text-xl font-bold text-slate-900">Signals worth scanning now</h3>
+          <p className="mt-2 max-w-2xl text-sm leading-relaxed text-slate-600">
+            A narrower Canada feed focused on the items most relevant to acceleration, capacity building, and institutional impact.
+          </p>
+        </div>
+        <Link href="/methodology" className="text-sm font-semibold text-indigo-700 hover:text-indigo-800 hover:underline">
+          Source methodology
+        </Link>
+      </div>
+
+      <div className="mt-4 flex flex-wrap gap-2">
+        {CATEGORIES.map((category) => (
           <button
-            key={cat.value}
-            onClick={() => { setActive(cat.value); setDisplayCount(PAGE_SIZE) }}
+            key={category.value}
+            onClick={() => {
+              setActive(category.value)
+              setDisplayCount(PAGE_SIZE)
+            }}
             className={[
-              "py-3 text-sm font-medium whitespace-nowrap flex-shrink-0 cursor-pointer",
-              active === cat.value ? "tab-active" : "tab-inactive",
+              "rounded-full border px-3 py-1.5 text-xs font-semibold transition-colors",
+              active === category.value
+                ? "border-indigo-200 bg-indigo-50 text-indigo-700"
+                : "border-slate-200 bg-white text-slate-500 hover:border-slate-300 hover:text-slate-700",
             ].join(" ")}
           >
-            {cat.label}
+            {category.label}
           </button>
         ))}
       </div>
 
-      {/* Fixed-height scrollable feed container */}
-      <div className="relative">
-        <div
-          className="overflow-y-auto overscroll-contain"
-          style={{ maxHeight: "600px", scrollbarWidth: "thin", scrollbarColor: "#cbd5e1 transparent" }}
-        >
-          <div className="flex flex-col gap-4 pb-4">
-            {visible.map((story) => (
-              <StoryCard key={story.id} story={story} />
-            ))}
-          </div>
+      <div className="mt-4 flex flex-col gap-4">
+        {visible.map((story) => (
+          <StoryCard key={story.id} story={story} />
+        ))}
+      </div>
 
-          {filtered.length > displayCount && (
-            <div className="pt-2 pb-4 flex justify-center">
-              <button
-                onClick={() => setDisplayCount((prev) => prev + PAGE_SIZE)}
-                className="px-6 py-2.5 text-sm font-semibold text-slate-700 bg-white border border-slate-300 rounded hover:bg-slate-50 transition-colors shadow-sm"
-              >
-                Load Additional Reports
-              </button>
-            </div>
-          )}
+      {loading && (
+        <div className="py-8 text-center">
+          <p className="text-sm font-medium text-slate-500">Retrieving Canada signals...</p>
+        </div>
+      )}
 
-          {loading && (
-            <div className="py-12 flex justify-center">
-              <p className="text-sm font-medium text-slate-500">Retrieving intelligence reports...</p>
-            </div>
-          )}
+      {!loading && filtered.length === 0 && (
+        <div className="py-8 text-center">
+          <p className="text-sm font-medium text-slate-500">No signals in this view right now.</p>
+        </div>
+      )}
 
-          {!loading && filtered.length === 0 && (
-            <div className="py-12 flex justify-center">
-              <p className="text-sm font-medium text-slate-500">No reports matching current criteria.</p>
-            </div>
+      {!loading && filtered.length > PAGE_SIZE && (
+        <div className="mt-5 flex items-center justify-between border-t border-slate-100 pt-4">
+          <p className="text-xs text-slate-500">
+            Showing {visible.length} of {filtered.length} signals
+          </p>
+          {filtered.length > displayCount ? (
+            <button
+              onClick={() => setDisplayCount((prev) => prev + PAGE_SIZE)}
+              className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50"
+            >
+              Show more signals
+            </button>
+          ) : (
+            <button
+              onClick={() => setDisplayCount(PAGE_SIZE)}
+              className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50"
+            >
+              Collapse
+            </button>
           )}
         </div>
-
-        {/* Bottom fade gradient to hint at scrollable content */}
-        {filtered.length > 3 && (
-          <div
-            className="pointer-events-none absolute bottom-0 left-0 right-0 h-10 bg-gradient-to-t from-white to-transparent rounded-b"
-            aria-hidden="true"
-          />
-        )}
-      </div>
-    </div>
+      )}
+    </section>
   )
 }

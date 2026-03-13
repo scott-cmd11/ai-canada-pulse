@@ -1,4 +1,3 @@
-import Link from "next/link"
 import Header from "@/components/Header"
 import HeroBanner from "@/components/HeroBanner"
 import BriefingCard from "@/components/BriefingCard"
@@ -8,27 +7,33 @@ import TrendsSection from "@/components/TrendsSection"
 import StoryFeed from "@/components/StoryFeed"
 import SentimentSection from "@/components/SentimentSection"
 import StocksSection from "@/components/StocksSection"
-import ArxivSection from "@/components/ArxivSection"
 import ComputeStatusSection from "@/components/ComputeStatusSection"
 import TrendsInsightsSection from "@/components/TrendsInsightsSection"
 import LabFeedsSection from "@/components/LabFeedsSection"
-import HuggingFaceSection from "@/components/HuggingFaceSection"
 import METRHeroChart from "@/components/METRHeroChart"
-
+import GlobalContextBand from "@/components/GlobalContextBand"
 import SectionNav from "@/components/SectionNav"
 import ScrollToTop from "@/components/ScrollToTop"
 import ScrollReveal from "@/components/ScrollReveal"
+import DashboardFooter from "@/components/DashboardFooter"
+
+function SectionTitle({ eyebrow, title, description }: { eyebrow: string; title: string; description: string }) {
+  return (
+    <div className="mb-4 sm:mb-5">
+      <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">{eyebrow}</p>
+      <h2 className="mt-1 text-2xl font-bold text-slate-900">{title}</h2>
+      <p className="mt-2 max-w-3xl text-sm leading-relaxed text-slate-600">{description}</p>
+    </div>
+  )
+}
 
 export default function DashboardPage() {
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900">
       <Header />
 
-      <main className="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-4 lg:py-6 flex flex-col gap-4">
-
-        {/* ── Hero + METR Chart side by side ── */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-0 rounded-2xl overflow-hidden relative">
-          {/* Shared animated gradient background */}
+      <main className="mx-auto flex w-full max-w-[1480px] flex-col gap-6 px-4 py-4 sm:px-6 lg:px-8 lg:py-6">
+        <div className="relative overflow-hidden rounded-2xl">
           <div
             className="absolute inset-0"
             style={{
@@ -37,181 +42,94 @@ export default function DashboardPage() {
               animation: "gradientShift 12s ease infinite",
             }}
           />
-          <div className="absolute inset-0 opacity-[0.07]" style={{
-            backgroundImage: "url(\"data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%23fff' stroke-width='0.5'%3E%3Cpath d='M0 30h60M30 0v60'/%3E%3C/g%3E%3C/svg%3E\")",
-          }} />
-          <div className="absolute -top-32 -right-32 w-[500px] h-[500px] bg-indigo-500/25 rounded-full blur-[120px] animate-pulse" />
-          <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-violet-600/20 rounded-full blur-[100px]" />
+          <div
+            className="absolute inset-0 opacity-[0.07]"
+            style={{
+              backgroundImage: "url(\"data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%23fff' stroke-width='0.5'%3E%3Cpath d='M0 30h60M30 0v60'/%3E%3C/g%3E%3C/svg%3E\")",
+            }}
+          />
+          <div className="absolute -top-32 -right-32 h-[500px] w-[500px] rounded-full bg-indigo-500/25 blur-[120px] animate-pulse" />
+          <div className="absolute -bottom-24 -left-24 h-96 w-96 rounded-full bg-violet-600/20 blur-[100px]" />
 
-          {/* Left: Hero content */}
-          <div className="relative z-10">
-            <HeroBanner embedded />
-          </div>
-
-          {/* Right: METR Chart */}
-          <div className="relative z-10 p-6 lg:p-8 border-l border-white/5">
-            <METRHeroChart />
+          <div className="grid grid-cols-1 overflow-hidden rounded-2xl lg:grid-cols-[1.15fr_0.85fr]">
+            <div className="relative z-10">
+              <HeroBanner embedded />
+            </div>
+            <div className="relative z-10 border-t border-white/5 bg-white/0 p-5 lg:border-l lg:border-t-0 lg:p-6">
+              <div className="mb-3 flex items-center justify-between">
+                <div>
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-indigo-200">Frontier pace benchmark</p>
+                  <h2 className="mt-1 text-lg font-bold text-white">Capability trend reference</h2>
+                </div>
+              </div>
+              <METRHeroChart />
+            </div>
           </div>
         </div>
 
-
-        {/* ── Section Navigation ── */}
         <SectionNav />
+        <GlobalContextBand />
 
-        {/* ═══════════════════════════════════════════════════════ */}
-        {/* GROUP 1: Intelligence                                  */}
-        {/* ═══════════════════════════════════════════════════════ */}
         <ScrollReveal>
-          <div id="intelligence" className="border-t border-slate-200 pt-5">
-            <div className="flex items-center gap-2.5 mb-4 cursor-help" title="AI-generated briefings, curated Canadian AI news, and media sentiment analysis">
-              <span className="text-lg">📋</span>
-              <h2 className="text-lg font-bold text-slate-900">Intelligence</h2>
-            </div>
+          <section id="acceleration" className="rounded-2xl border border-slate-200 bg-white/60 p-5 sm:p-6">
+            <SectionTitle
+              eyebrow="Acceleration Signals"
+              title="The shortest path to the Canadian story"
+              description="Start with the highest-priority Canada development, then move to the machine-assisted synthesis and the curated signal stream beneath it."
+            />
 
-            <div className="flex flex-col gap-4">
-              {/* Briefing + Executive Brief */}
+            <div className="grid gap-4 xl:grid-cols-[1.05fr_0.95fr]">
               <BriefingCard />
               <ExecutiveBriefSection />
-
-              {/* News Feed */}
-              <div>
-                <StoryFeed />
-              </div>
-
-              {/* Sentiment (derived from news feed) */}
-              <SentimentSection />
             </div>
-          </div>
+
+            <div className="mt-4">
+              <StoryFeed />
+            </div>
+          </section>
         </ScrollReveal>
 
-        {/* ═══════════════════════════════════════════════════════ */}
-        {/* GROUP 2: Trends & Infrastructure                      */}
-        {/* ═══════════════════════════════════════════════════════ */}
         <ScrollReveal>
-          <div id="landscape" className="border-t border-slate-200 pt-5">
-            <div className="flex items-center gap-2.5 mb-4 cursor-help" title="Google Trends data for AI tools across Canada and national compute cluster status">
-              <span className="text-lg">🌐</span>
-              <h2 className="text-lg font-bold text-slate-900">Trends &amp; Infrastructure</h2>
+          <section id="capacity" className="rounded-2xl border border-slate-200 bg-white/60 p-5 sm:p-6">
+            <SectionTitle
+              eyebrow="Canada Capacity"
+              title="Evidence that the ecosystem is building"
+              description="These modules answer whether Canada is adding capability through adoption, compute availability, and lab activity rather than just generating headlines."
+            />
+
+            <div className="grid gap-4 xl:grid-cols-2">
+              <TrendsSection />
+              <TrendsInsightsSection />
             </div>
 
-            <div className="flex flex-col gap-4">
-              {/* Google Trends + Provincial breakdown */}
-              <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 lg:gap-6">
-                <TrendsSection />
-                <TrendsInsightsSection />
-              </div>
-
-              {/* Compute Infrastructure */}
-              <div className="mt-6">
-                <ComputeStatusSection />
-              </div>
-            </div>
-          </div>
-        </ScrollReveal>
-
-        {/* ═══════════════════════════════════════════════════════ */}
-        {/* GROUP 3: Markets & Economy                             */}
-        {/* ═══════════════════════════════════════════════════════ */}
-        <ScrollReveal>
-          <div id="markets" className="border-t border-slate-200 pt-5">
-            <div className="flex items-center gap-2.5 mb-4 cursor-help" title="Live stock performance of Canadian AI companies and key economic indicators from Statistics Canada">
-              <span className="text-lg">📈</span>
-              <h2 className="text-lg font-bold text-slate-900">Markets &amp; Economy</h2>
-            </div>
-
-            <div className="flex flex-col gap-4">
-              {/* Stocks */}
-              <StocksSection />
-
-              {/* Economic Indicators */}
-              <IndicatorsSection />
-
-            </div>
-          </div>
-        </ScrollReveal>
-
-        {/* ═══════════════════════════════════════════════════════ */}
-        {/* GROUP 4: Research & Innovation                         */}
-        {/* ═══════════════════════════════════════════════════════ */}
-        <ScrollReveal>
-          <div id="research" className="border-t border-slate-200 pt-5">
-            <div className="flex items-center gap-2.5 mb-4 cursor-help" title="Latest AI research papers from arXiv, trending models on Hugging Face, and updates from leading AI labs">
-              <span className="text-lg">🔬</span>
-              <h2 className="text-lg font-bold text-slate-900">Research &amp; Innovation</h2>
-            </div>
-
-            <div className="flex flex-col gap-4">
-              {/* ArXiv + HuggingFace side by side */}
-              <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 lg:gap-6">
-                <ArxivSection />
-                <HuggingFaceSection />
-              </div>
-
-              {/* Lab Feeds */}
+            <div className="mt-4 grid gap-4 xl:grid-cols-[0.95fr_1.05fr]">
+              <ComputeStatusSection />
               <LabFeedsSection />
             </div>
-          </div>
+          </section>
         </ScrollReveal>
 
+        <ScrollReveal>
+          <section id="impact" className="rounded-2xl border border-slate-200 bg-white/60 p-5 sm:p-6">
+            <SectionTitle
+              eyebrow="Market And Policy Impact"
+              title="Where acceleration is already visible"
+              description="Focus on the areas where Canadian AI momentum is already showing up in market tone, public-company exposure, and economic indicators."
+            />
+
+            <div className="grid gap-4 xl:grid-cols-[0.9fr_1.1fr]">
+              <SentimentSection />
+              <StocksSection />
+            </div>
+
+            <div className="mt-4">
+              <IndicatorsSection />
+            </div>
+          </section>
+        </ScrollReveal>
       </main>
 
-      {/* Footer */}
-      <footer className="mt-6 border-t border-slate-200 bg-white">
-        <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-slate-500">
-            <div>
-              <p className="font-semibold text-slate-700">AI Canada Pulse Platform</p>
-              <p>v3.0 · Dynamic AI Data Architecture · <span className="text-amber-600 font-semibold">🚧 Work in Progress</span></p>
-              <p className="mt-1">
-                Contact:{" "}
-                <a href="mailto:scott.hazlitt@gmail.com" className="text-indigo-700 hover:underline">
-                  scott.hazlitt@gmail.com
-                </a>
-                {" · "}
-                <a href="https://www.linkedin.com/in/scott-hazlitt/" target="_blank" rel="noopener noreferrer" className="text-indigo-700 hover:underline">
-                  LinkedIn
-                </a>
-              </p>
-              <p className="mt-1 text-xs text-slate-400 italic">
-                This is a personal project created on personal time and resources. It does not represent the views of, and is not affiliated with, the Government of Canada or any government department.
-              </p>
-            </div>
-            <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-              <span className="font-medium text-slate-600">Data Connections:</span>
-              <div className="h-3 w-px bg-slate-300 hidden sm:block"></div>
-              <span>Stats Canada</span>
-              <span>Google Trends</span>
-              <span>Yahoo Finance</span>
-              <span>OpenAlex</span>
-              <span>METR</span>
-              <span className="text-slate-300">•</span>
-              <Link href="/methodology" className="font-semibold text-indigo-700 hover:text-indigo-800 hover:underline">
-                View all sources →
-              </Link>
-            </div>
-          </div>
-          <div className="mt-6 pt-4 border-t border-slate-100 text-xs text-slate-400 leading-relaxed">
-            <p>
-              <strong className="text-slate-500">AI Disclaimer:</strong> This platform uses artificial intelligence models to generate article summaries, executive briefs, and sentiment analysis. AI-generated content is marked with a ✦ symbol and should not be treated as authoritative analysis. Market data is delayed and should not be used for trading decisions. Always verify critical information with primary sources.
-            </p>
-            <div className="mt-4 flex flex-wrap items-center gap-x-1.5 gap-y-1">
-              <span className="font-semibold text-slate-500">Built with</span>
-              <a href="https://docs.anthropic.com/en/docs/claude-code" target="_blank" rel="noopener noreferrer" className="hover:text-indigo-700 hover:underline">Claude Code</a>
-              <span>·</span>
-              <a href="https://github.com/google-gemini/gemini-cli" target="_blank" rel="noopener noreferrer" className="hover:text-indigo-700 hover:underline">Gemini CLI</a>
-              <span>·</span>
-              <a href="https://nextjs.org" target="_blank" rel="noopener noreferrer" className="hover:text-indigo-700 hover:underline">Next.js</a>
-              <span>·</span>
-              <a href="https://vercel.com" target="_blank" rel="noopener noreferrer" className="hover:text-indigo-700 hover:underline">Vercel</a>
-              <span>·</span>
-              <a href="https://tailwindcss.com" target="_blank" rel="noopener noreferrer" className="hover:text-indigo-700 hover:underline">Tailwind CSS</a>
-              <span>·</span>
-              <a href="https://echarts.apache.org" target="_blank" rel="noopener noreferrer" className="hover:text-indigo-700 hover:underline">ECharts</a>
-            </div>
-          </div>
-        </div>
-      </footer>
-
+      <DashboardFooter />
       <ScrollToTop />
     </div>
   )
