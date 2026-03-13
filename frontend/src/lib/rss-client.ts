@@ -11,6 +11,8 @@ interface FeedConfig {
   aiOnly: boolean
 }
 
+export const CANADA_DASHBOARD_STORY_LIMIT = 20
+
 const FEED_REGISTRY: FeedConfig[] = [
   {
     url: "https://news.google.com/rss/search?q=artificial+intelligence+Canada&hl=en-CA&gl=CA&ceid=CA:en",
@@ -189,8 +191,8 @@ async function _fetchAllStories(): Promise<Story[]> {
     (a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime()
   )
 
-  // Limit to 20 most recent stories
-  allStories = allStories.slice(0, 20)
+  // Limit to the story count surfaced by the Canada dashboard/feed.
+  allStories = allStories.slice(0, CANADA_DASHBOARD_STORY_LIMIT)
 
   // Mark the most recent story as the briefing top
   if (allStories.length > 0) {

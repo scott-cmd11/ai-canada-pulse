@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server"
-import { fetchAllStories } from "@/lib/rss-client"
+import { CANADA_DASHBOARD_STORY_LIMIT, fetchAllStories } from "@/lib/rss-client"
 
 // Derive sentiment analysis from our already-working RSS story feed
 // instead of relying on the frequently-unavailable GDELT API.
@@ -52,7 +52,7 @@ export async function GET() {
       .map(([source, count]) => ({ source, count }))
 
     const data = {
-      articles: stories.slice(0, 20).map((s) => ({
+      articles: stories.slice(0, CANADA_DASHBOARD_STORY_LIMIT).map((s) => ({
         url: s.sourceUrl || "",
         title: s.headline,
         source: s.sourceName || "",

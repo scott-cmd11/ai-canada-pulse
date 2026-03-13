@@ -25,8 +25,12 @@ export async function GET(request: NextRequest) {
             ok: true,
             generatedAt: bundle.generatedAt,
             canadaSummaries: Object.keys(bundle.canada?.summaries ?? {}).length,
+            canadaSummaryTarget: bundle.counts.canadaSummaryTarget,
+            canadaVisibleStories: bundle.counts.canadaVisibleStories,
             canadaBriefCount: bundle.canada?.executiveBrief?.length ?? 0,
             globalSummaries: Object.keys(bundle.global?.summaries ?? {}).length,
+            globalSummaryTarget: bundle.counts.globalSummaryTarget,
+            globalVisibleStories: bundle.counts.globalVisibleStories,
             globalBriefCount: bundle.global?.executiveBrief?.length ?? 0,
         })
     } catch (err) {
