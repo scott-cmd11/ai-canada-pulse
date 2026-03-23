@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import Link from "next/link"
 import type { PulseData } from "@/lib/mock-data"
 import LiveTicker from "./LiveTicker"
+import ThemeToggle from "./ThemeToggle"
 
 function relativeTime(iso: string) {
   const diff = Math.floor((Date.now() - new Date(iso).getTime()) / 60000)
@@ -32,7 +33,7 @@ export default function Header() {
   }, [])
 
   return (
-    <header className="sticky top-0 z-50 border-b border-white/50 bg-white/70 shadow-[0_10px_30px_rgba(15,23,42,0.06)] backdrop-blur-xl">
+    <header className="sticky top-0 z-50 shadow-[0_10px_30px_rgba(15,23,42,0.06)] backdrop-blur-xl" style={{ borderBottom: "1px solid var(--header-border)", background: "var(--header-bg)" }}>
       <div className="border-b border-slate-200/70">
         <LiveTicker />
       </div>
@@ -63,9 +64,11 @@ export default function Header() {
           </div>
 
           <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+            <ThemeToggle />
             <Link
               href="/methodology"
-              className="rounded-full border border-slate-200 bg-white/80 px-3.5 py-2 text-xs font-semibold text-slate-600 shadow-sm hover:border-indigo-200 hover:text-indigo-700"
+              className="rounded-full border px-3.5 py-2 text-xs font-semibold shadow-sm"
+              style={{ borderColor: "var(--border-strong)", color: "var(--text-secondary)", background: "var(--surface-primary)" }}
             >
               Sources
             </Link>

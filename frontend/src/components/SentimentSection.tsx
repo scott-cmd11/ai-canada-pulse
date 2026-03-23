@@ -4,6 +4,7 @@ import { useCallback } from "react"
 import dynamic from "next/dynamic"
 import type { SentimentData } from "@/lib/gdelt-client"
 import { usePolling } from "@/hooks/usePolling"
+import { useChartTheme } from "@/hooks/useChartTheme"
 
 const ReactECharts = dynamic(() => import("echarts-for-react"), { ssr: false })
 
@@ -16,6 +17,7 @@ export default function SentimentSection() {
     intervalMs: 300_000, // 5 minutes
     transform,
   })
+  const ct = useChartTheme()
 
   if (loading) {
     return (
@@ -59,12 +61,6 @@ export default function SentimentSection() {
     negative: "text-red-600"
   }
 
-  const hexMap = {
-    positive: "#16A34A",
-    neutral: "#94A3B8",
-    negative: "#DC2626"
-  }
-
   const sentimentExecutiveLabel = labelMap[sentimentLabel as keyof typeof labelMap] || "Neutral"
   const sentimentColorClass = colorMap[sentimentLabel as keyof typeof colorMap] || colorMap.neutral
 
@@ -75,32 +71,32 @@ export default function SentimentSection() {
         radius: ["60%", "80%"],
         center: ["50%", "50%"],
         data: [
-          { value: toneDistribution.positive, name: "Favorable", itemStyle: { color: hexMap.positive } },
-          { value: toneDistribution.neutral, name: "Neutral", itemStyle: { color: hexMap.neutral } },
-          { value: toneDistribution.negative, name: "Critical", itemStyle: { color: hexMap.negative } },
+          { value: toneDistribution.positive, name: "Favorable", itemStyle: { color: ct.positive } },
+          { value: toneDistribution.neutral, name: "Neutral", itemStyle: { color: ct.neutral } },
+          { value: toneDistribution.negative, name: "Critical", itemStyle: { color: ct.negative } },
         ],
         label: {
           show: true,
           formatter: "{b}\n{d}%",
           fontSize: 12,
           fontWeight: 600,
-          color: "#475569", // slate-600
+          color: ct.textSecondary,
           lineHeight: 16
         },
         labelLine: {
-          lineStyle: { color: "#CBD5E1" } // slate-300
+          lineStyle: { color: ct.axisLine }
         }
       },
     ],
     tooltip: {
       trigger: "item" as const,
-      backgroundColor: "#FFFFFF",
-      borderColor: "#E2E8F0",
+      backgroundColor: ct.tooltipBg,
+      borderColor: ct.tooltipBorder,
       borderWidth: 1,
       padding: [8, 12],
-      textStyle: { color: "#334155", fontSize: 13 },
+      textStyle: { color: ct.tooltipText, fontSize: 13 },
       formatter: (p: { name: string; value: number; percent: number }) =>
-        `${p.name}<br/><b style="color: #0F172A; font-size: 14px;">${p.value} volume</b>`,
+        `${p.name}<br/><b style="color: ${ct.tooltipValue}; font-size: 14px;">${p.value} volume</b>`,
     },
     animation: false
   }
@@ -132,9 +128,9 @@ export default function SentimentSection() {
             <div className="flex h-3 w-full rounded overflow-hidden bg-slate-100">
               {total > 0 && (
                 <>
-                  <div style={{ background: hexMap.positive, width: `${(toneDistribution.positive / total) * 100}%` }} />
-                  <div style={{ background: hexMap.neutral, width: `${(toneDistribution.neutral / total) * 100}%` }} />
-                  <div style={{ background: hexMap.negative, width: `${(toneDistribution.negative / total) * 100}%` }} />
+                  <div style={{ background: ct.positive, width: `${(toneDistribution.positive / total) * 100}%` }} />
+                  <div style={{ background: ct.neutral, width: `${(toneDistribution.neutral / total) * 100}%` }} />
+                  <div style={{ background: ct.negative, width: `${(toneDistribution.negative / total) * 100}%` }} />
                 </>
               )}
             </div>

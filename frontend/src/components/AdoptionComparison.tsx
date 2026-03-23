@@ -2,22 +2,25 @@
 
 import dynamic from "next/dynamic"
 import { privateSectorAdoption, overallComparison } from "@/lib/adoption-data"
+import { useChartTheme } from "@/hooks/useChartTheme"
 
 const ReactECharts = dynamic(() => import("echarts-for-react"), { ssr: false })
 
 export default function AdoptionComparison() {
+  const ct = useChartTheme()
+
   const industryOption = {
     grid: { top: 12, right: 35, bottom: 12, left: 4, containLabel: true },
     xAxis: {
       type: "value" as const,
-      axisLabel: { fontSize: 11, color: "#64748B", formatter: "{value}%" }, // slate-500
-      splitLine: { lineStyle: { color: "#F1F5F9" } }, // slate-100
+      axisLabel: { fontSize: 11, color: ct.textMuted, formatter: "{value}%" },
+      splitLine: { lineStyle: { color: ct.splitLine } },
       max: 40,
     },
     yAxis: {
       type: "category" as const,
       data: [...privateSectorAdoption].reverse().map((d) => d.sector),
-      axisLabel: { fontSize: 12, fontWeight: 500, color: "#334155", width: 140, overflow: "truncate" as const }, // slate-700
+      axisLabel: { fontSize: 12, fontWeight: 500, color: ct.textSecondary, width: 140, overflow: "truncate" as const },
       axisLine: { show: false },
       axisTick: { show: false },
     },
@@ -27,7 +30,7 @@ export default function AdoptionComparison() {
         data: [...privateSectorAdoption].reverse().map((d) => d.percentage),
         barWidth: 16,
         itemStyle: {
-          color: "#4338CA", // indigo-700
+          color: ct.accent,
           borderRadius: [0, 4, 4, 0],
         },
         label: {
@@ -36,21 +39,21 @@ export default function AdoptionComparison() {
           formatter: "{c}%",
           fontSize: 11,
           fontWeight: 600,
-          color: "#475569", // slate-600
+          color: ct.textSecondary,
         },
       },
     ],
     tooltip: {
       trigger: "axis" as const,
-      axisPointer: { type: "shadow" as const, shadowStyle: { color: "rgba(241, 245, 249, 0.5)" } },
-      backgroundColor: "#FFFFFF",
-      borderColor: "#E2E8F0",
+      axisPointer: { type: "shadow" as const, shadowStyle: { color: ct.splitLine } },
+      backgroundColor: ct.tooltipBg,
+      borderColor: ct.tooltipBorder,
       borderWidth: 1,
       padding: [8, 12],
-      textStyle: { color: "#334155", fontSize: 13 },
+      textStyle: { color: ct.tooltipText, fontSize: 13 },
       formatter: (params: Array<{ name: string; value: number }>) => {
         const p = params[0]
-        return `${p.name}<br/><b style="color: #0F172A; font-size: 14px;">${p.value}%</b> deployed`
+        return `${p.name}<br/><b style="color: ${ct.tooltipValue}; font-size: 14px;">${p.value}%</b> deployed`
       },
     },
     animation: false

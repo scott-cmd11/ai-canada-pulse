@@ -3,12 +3,14 @@
 import { useState, useEffect } from "react"
 import dynamic from "next/dynamic"
 import type { JobMarketData } from "@/lib/jobs-client"
+import { useChartTheme } from "@/hooks/useChartTheme"
 
 const ReactECharts = dynamic(() => import("echarts-for-react"), { ssr: false })
 
 export default function JobMarketSection() {
   const [data, setData] = useState<JobMarketData | null>(null)
   const [loading, setLoading] = useState(true)
+  const ct = useChartTheme()
 
   useEffect(() => {
     fetch("/api/v1/jobs")
@@ -55,13 +57,13 @@ export default function JobMarketSection() {
     grid: { top: 12, right: 40, bottom: 12, left: 4, containLabel: true },
     xAxis: {
       type: "value" as const,
-      axisLabel: { fontSize: 11, color: "#64748B" },
-      splitLine: { lineStyle: { color: "#F1F5F9" } },
+      axisLabel: { fontSize: 11, color: ct.textMuted },
+      splitLine: { lineStyle: { color: ct.splitLine } },
     },
     yAxis: {
       type: "category" as const,
       data: [...data.topLocations].reverse().map((d) => d.location),
-      axisLabel: { fontSize: 11, fontWeight: 500, color: "#334155", width: 100, overflow: "break" as const },
+      axisLabel: { fontSize: 11, fontWeight: 500, color: ct.textSecondary, width: 100, overflow: "break" as const },
       axisLine: { show: false },
       axisTick: { show: false },
     },
@@ -75,8 +77,8 @@ export default function JobMarketSection() {
             type: "linear" as const,
             x: 0, y: 0, x2: 1, y2: 0,
             colorStops: [
-              { offset: 0, color: "#6366F1" },
-              { offset: 1, color: "#818CF8" },
+              { offset: 0, color: ct.accent },
+              { offset: 1, color: ct.accentDim.startsWith("rgba") ? ct.accent : ct.accentDim },
             ],
           },
         },
@@ -86,18 +88,18 @@ export default function JobMarketSection() {
           position: "right" as const,
           fontSize: 11,
           fontWeight: 600,
-          color: "#64748b",
+          color: ct.textMuted,
         },
       },
     ],
     tooltip: {
       trigger: "axis" as const,
-      axisPointer: { type: "shadow" as const, shadowStyle: { color: "rgba(241, 245, 249, 0.5)" } },
-      backgroundColor: "#FFFFFF",
-      borderColor: "#E2E8F0",
+      axisPointer: { type: "shadow" as const, shadowStyle: { color: ct.splitLine } },
+      backgroundColor: ct.tooltipBg,
+      borderColor: ct.tooltipBorder,
       borderWidth: 1,
       padding: [8, 12],
-      textStyle: { color: "#334155", fontSize: 13 },
+      textStyle: { color: ct.tooltipText, fontSize: 13 },
     },
     animation: false
   }

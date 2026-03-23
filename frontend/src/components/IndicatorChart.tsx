@@ -2,6 +2,7 @@
 
 import dynamic from "next/dynamic"
 import type { DataPoint } from "@/lib/indicators-data"
+import { useChartTheme } from "@/hooks/useChartTheme"
 
 const ReactECharts = dynamic(() => import("echarts-for-react"), { ssr: false })
 
@@ -40,6 +41,7 @@ function axisFormatter(unit: string): string | ((v: number) => string) {
 }
 
 export default function IndicatorChart({ title, data, unit, description, sourceLabel, sourceUrl }: Props) {
+  const ct = useChartTheme()
   if (data.length === 0) {
     return (
       <div className="saas-card p-5 border-t-4 border-t-indigo-700">
@@ -62,13 +64,13 @@ export default function IndicatorChart({ title, data, unit, description, sourceL
     : (delta >= 0 ? `+${delta.toFixed(1)}` : delta.toFixed(1))
 
   const option = {
-    grid: { top: 16, right: 16, bottom: 24, left: 40 }, // Tighter grid
+    grid: { top: 16, right: 16, bottom: 24, left: 40 },
     xAxis: {
       type: "category" as const,
       data: dates,
       axisLabel: {
         fontSize: 11,
-        color: "#64748B",
+        color: ct.textMuted,
         interval: 11,
         formatter: (v: string) => {
           const [y, m] = v.split("-")
@@ -80,28 +82,25 @@ export default function IndicatorChart({ title, data, unit, description, sourceL
     },
     yAxis: {
       type: "value" as const,
-      axisLabel: { fontSize: 11, color: "#64748B", formatter: axisFormatter(unit) },
-      splitLine: { lineStyle: { color: "#F1F5F9" } }, /* slate-100 */
+      axisLabel: { fontSize: 11, color: ct.textMuted, formatter: axisFormatter(unit) },
+      splitLine: { lineStyle: { color: ct.splitLine } },
     },
     series: [
       {
         type: "line" as const,
         data: values,
-        smooth: false, // Solid, hard lines for B2B intelligence
+        smooth: false,
         symbol: "circle",
         symbolSize: 4,
         showSymbol: false,
-        lineStyle: {
-          width: 2,
-          color: "#4338CA", // Indigo 700
-        },
-        itemStyle: { color: "#4338CA" },
+        lineStyle: { width: 2, color: ct.accent },
+        itemStyle: { color: ct.accent },
         areaStyle: {
           color: {
             type: "linear" as const,
             x: 0, y: 0, x2: 0, y2: 1,
             colorStops: [
-              { offset: 0, color: "rgba(67, 56, 202, 0.15)" },
+              { offset: 0, color: ct.accentDim },
               { offset: 1, color: "rgba(67, 56, 202, 0.0)" },
             ],
           },
@@ -110,14 +109,14 @@ export default function IndicatorChart({ title, data, unit, description, sourceL
     ],
     tooltip: {
       trigger: "axis" as const,
-      backgroundColor: "#FFFFFF",
-      borderColor: "#E2E8F0", // Slate 200
+      backgroundColor: ct.tooltipBg,
+      borderColor: ct.tooltipBorder,
       borderWidth: 1,
       padding: [8, 12],
-      textStyle: { color: "#334155", fontSize: 12 }, /* Slate 700 */
+      textStyle: { color: ct.tooltipText, fontSize: 12 },
       formatter: (params: Array<{ name: string; value: number }>) => {
         const p = params[0]
-        return `${p.name}<br/><b style="color: #0F172A; font-size: 14px;">${formatValue(p.value, unit)}</b>`
+        return `${p.name}<br/><b style="color: ${ct.tooltipValue}; font-size: 14px;">${formatValue(p.value, unit)}</b>`
       },
     },
     animation: false,

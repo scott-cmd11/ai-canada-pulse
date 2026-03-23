@@ -3,12 +3,14 @@
 import { useState, useEffect } from "react"
 import dynamic from "next/dynamic"
 import type { TrendsData } from "@/lib/trends-client"
+import { useChartTheme } from "@/hooks/useChartTheme"
 
 const ReactECharts = dynamic(() => import("echarts-for-react"), { ssr: false })
 
 export default function TrendsSection() {
   const [data, setData] = useState<TrendsData | null>(null)
   const [loading, setLoading] = useState(true)
+  const ct = useChartTheme()
 
   useEffect(() => {
     fetch("/api/v1/trends")
@@ -53,7 +55,7 @@ export default function TrendsSection() {
       show: true,
       top: 0,
       left: 0,
-      textStyle: { color: "#475569", fontSize: 13, fontWeight: 500 },
+      textStyle: { color: ct.textSecondary, fontSize: 13, fontWeight: 500 },
       itemWidth: 16,
       itemHeight: 4,
       icon: "roundRect"
@@ -63,20 +65,20 @@ export default function TrendsSection() {
       data: data.dates,
       axisLabel: {
         fontSize: 11,
-        color: "#64748B",
+        color: ct.textMuted,
         interval: Math.floor(data.dates.length / 8),
         formatter: (v: string) => {
           const [y, m] = v.split("-")
           return `${m}/${y.slice(2)}`
         },
       },
-      axisLine: { lineStyle: { color: "#CBD5E1" } },
+      axisLine: { lineStyle: { color: ct.axisLine } },
       axisTick: { show: false },
     },
     yAxis: {
       type: "value" as const,
-      axisLabel: { fontSize: 11, color: "#64748B" },
-      splitLine: { lineStyle: { color: "#F1F5F9" } },
+      axisLabel: { fontSize: 11, color: ct.textMuted },
+      splitLine: { lineStyle: { color: ct.splitLine } },
       max: 100,
     },
     series: data.series.map((s, idx) => ({
@@ -93,11 +95,11 @@ export default function TrendsSection() {
     })),
     tooltip: {
       trigger: "axis" as const,
-      backgroundColor: "#FFFFFF",
-      borderColor: "#E2E8F0",
+      backgroundColor: ct.tooltipBg,
+      borderColor: ct.tooltipBorder,
       borderWidth: 1,
       padding: [8, 12],
-      textStyle: { color: "#334155", fontSize: 13 },
+      textStyle: { color: ct.tooltipText, fontSize: 13 },
     },
     animation: false,
   }
