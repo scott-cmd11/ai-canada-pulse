@@ -2,18 +2,12 @@
 
 import { useState, useEffect } from "react"
 import type { PulseData } from "@/lib/mock-data"
+import { relativeTime } from "@/lib/relative-time"
 
 const moodConfig = {
   green: { bg: "bg-green-50", text: "text-green-700", border: "border-green-200", label: "Positive Outlook" },
   amber: { bg: "bg-amber-50", text: "text-amber-700", border: "border-amber-200", label: "Neutral/Cautious" },
   red: { bg: "bg-red-50", text: "text-red-700", border: "border-red-200", label: "Negative Watch" },
-}
-
-function relativeTime(iso: string) {
-  const diff = Math.floor((Date.now() - new Date(iso).getTime()) / 60000)
-  if (diff < 1) return "Just updated"
-  if (diff < 60) return `Updated ${diff}m ago`
-  return `Updated ${Math.floor(diff / 60)}h ago`
 }
 
 export default function HeroSection() {

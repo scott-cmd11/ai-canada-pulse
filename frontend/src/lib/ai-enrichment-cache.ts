@@ -92,7 +92,7 @@ export async function writeDashboardEnrichmentBundle(
 ): Promise<void> {
     if (hasKvConfig()) {
         try {
-            await kv.set(BUNDLE_KEY, bundle)
+            await kv.set(BUNDLE_KEY, bundle, { ex: 86400 }) // 24h TTL
         } catch (err) {
             console.warn("[ai-enrichment-cache] Failed to write Vercel KV bundle:", err)
             throw err

@@ -15,6 +15,7 @@ import SectionNav from "@/components/SectionNav"
 import ScrollToTop from "@/components/ScrollToTop"
 import ScrollReveal from "@/components/ScrollReveal"
 import DashboardFooter from "@/components/DashboardFooter"
+import { StoriesProvider } from "@/hooks/useStories"
 
 function SectionTitle({ eyebrow, title, description }: { eyebrow: string; title: string; description: string }) {
   return (
@@ -28,6 +29,7 @@ function SectionTitle({ eyebrow, title, description }: { eyebrow: string; title:
 
 export default function DashboardPage() {
   return (
+    <StoriesProvider>
     <div className="min-h-screen bg-slate-50 text-slate-900">
       <Header />
 
@@ -70,24 +72,22 @@ export default function DashboardPage() {
 
         <SectionNav />
 
-        <ScrollReveal>
-          <section id="acceleration" className="rounded-2xl border border-slate-200 bg-white/60 p-5 sm:p-6">
-            <SectionTitle
-              eyebrow="Acceleration Signals"
-              title="The shortest path to the Canadian story"
-              description="Start with the highest-priority Canada development, then move to the machine-assisted synthesis and the curated signal stream beneath it."
-            />
+        <section id="acceleration" className="rounded-2xl border border-slate-200 bg-white/60 p-5 sm:p-6">
+          <SectionTitle
+            eyebrow="Acceleration Signals"
+            title="The shortest path to the Canadian story"
+            description="Start with the highest-priority Canada development, then move to the machine-assisted synthesis and the curated signal stream beneath it."
+          />
 
-            <div className="grid gap-4 xl:grid-cols-[1.05fr_0.95fr]">
-              <BriefingCard />
-              <ExecutiveBriefSection />
-            </div>
+          <div className="grid gap-4 xl:grid-cols-[1.05fr_0.95fr]">
+            <BriefingCard />
+            <ExecutiveBriefSection />
+          </div>
 
-            <div className="mt-4">
-              <StoryFeed />
-            </div>
-          </section>
-        </ScrollReveal>
+          <div className="mt-4">
+            <StoryFeed />
+          </div>
+        </section>
 
         <ScrollReveal>
           <section id="capacity" className="rounded-2xl border border-slate-200 bg-white/60 p-5 sm:p-6">
@@ -132,5 +132,6 @@ export default function DashboardPage() {
       <DashboardFooter />
       <ScrollToTop />
     </div>
+    </StoriesProvider>
   )
 }

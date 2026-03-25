@@ -2,14 +2,8 @@
 
 import { useState, useEffect } from "react"
 import Link from "next/link"
-import type { PulseData } from "@/lib/mock-data"
-
-function relativeTime(iso: string) {
-  const diff = Math.floor((Date.now() - new Date(iso).getTime()) / 60000)
-  if (diff < 1) return "Just now"
-  if (diff < 60) return `${diff}m ago`
-  return `${Math.floor(diff / 60)}h ago`
-}
+import { relativeTime } from "@/lib/relative-time"
+import { useStories } from "@/hooks/useStories"
 
 function AnimatedNumber({ value, suffix = "" }: { value: number; suffix?: string }) {
   const [display, setDisplay] = useState(0)
@@ -34,16 +28,7 @@ function AnimatedNumber({ value, suffix = "" }: { value: number; suffix?: string
 }
 
 export default function HeroBanner({ embedded = false }: { embedded?: boolean }) {
-  const [pulse, setPulse] = useState<PulseData | null>(null)
-
-  useEffect(() => {
-    fetch("/api/v1/stories")
-      .then((r) => r.json())
-      .then((j) => {
-        if (j.pulse) setPulse(j.pulse)
-      })
-      .catch(() => {})
-  }, [])
+  const { pulse } = useStories()
 
   return (
     <section className={embedded ? "" : "relative overflow-hidden rounded-2xl"}>

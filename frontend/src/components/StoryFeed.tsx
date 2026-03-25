@@ -1,10 +1,10 @@
 "use client"
 
 import Link from "next/link"
-import { useState, useCallback } from "react"
-import type { Category, Story } from "@/lib/mock-data"
+import { useState } from "react"
+import type { Category } from "@/lib/mock-data"
 import StoryCard from "./StoryCard"
-import { usePolling } from "@/hooks/usePolling"
+import { useStories } from "@/hooks/useStories"
 
 const ALL = "All Signals"
 const PAGE_SIZE = 4
@@ -20,17 +20,9 @@ export default function StoryFeed() {
   const [active, setActive] = useState<typeof ALL | Category>(ALL)
   const [displayCount, setDisplayCount] = useState(PAGE_SIZE)
 
-  const transform = useCallback((json: Record<string, unknown>) => {
-    const stories = json.stories as Story[] | undefined
-    return stories && stories.length > 0 ? stories : null
-  }, [])
+  const { stories, loading } = useStories()
 
-  const { data: stories, loading } = usePolling<Story[]>("/api/v1/stories", {
-    intervalMs: 120000,
-    transform,
-  })
-
-  const feedStories = (stories ?? []).filter((story) => !story.isBriefingTop)
+  const feedStories = stories.filter((story) => !story.isBriefingTop)
 
   const filtered = active === ALL
     ? feedStories

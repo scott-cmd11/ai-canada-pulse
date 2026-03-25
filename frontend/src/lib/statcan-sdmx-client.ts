@@ -1,10 +1,20 @@
 /**
- * Statistics Canada SDMX Client
- * Fetches AI adoption rates by industry from the Canadian Survey on Business Conditions.
- * PID 3310100001 — anticipated AI adoption by NAICS sector.
+ * Statistics Canada Adoption Data Client
+ * Returns AI adoption rates by industry from the Canadian Survey on Business Conditions.
+ * Source: Statistics Canada, Table 33-10-0001 (Q2 2025 release).
+ *
+ * NOTE: This data is curated from the Stats Canada publication — not fetched live.
+ * The download endpoint (CSV/ZIP) is not parseable client-side and Stats Canada's
+ * WDS JSON API requires server-side access to avoid CORS restrictions.
+ *
+ * TODO: If live data is needed, move this fetch to a Next.js API route at
+ *       /api/v1/adoption and call the WDS endpoint:
+ *       https://www150.statcan.gc.ca/t1/tbl1/en/dtl/getDataFromCubePidCoordAndLatestNPeriods/3310100001/{coord}/4
+ *       You will need the specific MEMBERS/coordinates for AI adoption by NAICS sector.
+ *
+ * Refresh schedule: Stats Canada 33-10-0001 releases quarterly.
+ * Last curated: Q2 2025 (verified March 2026).
  */
-
-const TIMEOUT_MS = 15_000
 
 export interface IndustryAdoption {
     industry: string
@@ -20,51 +30,25 @@ export interface StatCanAdoptionData {
 }
 
 export async function fetchStatCanAdoption(): Promise<StatCanAdoptionData> {
-    try {
-        const controller = new AbortController()
-        const timer = setTimeout(() => controller.abort(), TIMEOUT_MS)
-
-        // Try the WDS JSON endpoint for PID 3310100001
-        const res = await fetch(
-            "https://www150.statcan.gc.ca/t1/tbl1/en/dtl!downloadTbl/en/CSV/3310100001-eng.zip",
-            {
-                headers: { "User-Agent": "AICanadaPulse/1.0" },
-                signal: controller.signal,
-            }
-        )
-        clearTimeout(timer)
-
-        // StatCan CSV endpoints are complex — use curated data from the survey
-        if (!res.ok) {
-            return getResearchBasedAdoption()
-        }
-
-        return getResearchBasedAdoption()
-    } catch {
-        return getResearchBasedAdoption()
-    }
+    return getCuratedAdoptionData()
 }
 
 /**
  * Curated AI adoption data from Statistics Canada's
- * Canadian Survey on Business Conditions (Table 33-10-0001).
- * These figures represent the % of businesses planning to adopt
- * "Software using artificial intelligence" in the next 12 months.
+ * Canadian Survey on Business Conditions (Table 33-10-0001, Q2 2025).
+ * Figures represent the % of businesses in each sector that adopted AI.
+ * Source: Statistics Canada, "Artificial intelligence and Canadian businesses" (11-621-m).
  */
-function getResearchBasedAdoption(): StatCanAdoptionData {
+function getCuratedAdoptionData(): StatCanAdoptionData {
     const industries: IndustryAdoption[] = [
-        { industry: "Information & Cultural", adoptionRate: 37.8 },
-        { industry: "Professional & Scientific", adoptionRate: 37.7 },
-        { industry: "Finance & Insurance", adoptionRate: 27.4 },
-        { industry: "Utilities", adoptionRate: 22.1 },
-        { industry: "Mining & Energy", adoptionRate: 18.6 },
-        { industry: "Wholesale Trade", adoptionRate: 15.3 },
-        { industry: "Manufacturing", adoptionRate: 14.8 },
-        { industry: "Health Care", adoptionRate: 12.9 },
-        { industry: "Transportation", adoptionRate: 10.4 },
-        { industry: "Retail Trade", adoptionRate: 9.7 },
-        { industry: "Construction", adoptionRate: 7.2 },
-        { industry: "Agriculture", adoptionRate: 3.2 },
+        { industry: "Information & Cultural", adoptionRate: 35.6 },
+        { industry: "Professional & Scientific", adoptionRate: 31.7 },
+        { industry: "Finance & Insurance", adoptionRate: 30.6 },
+        { industry: "Wholesale Trade", adoptionRate: 17.8 },
+        { industry: "Manufacturing", adoptionRate: 15.2 },
+        { industry: "Retail Trade", adoptionRate: 8.4 },
+        { industry: "Transportation", adoptionRate: 7.1 },
+        { industry: "Health Care", adoptionRate: 5.8 },
     ]
 
     const averageRate = industries.reduce((sum, i) => sum + i.adoptionRate, 0) / industries.length
@@ -72,7 +56,7 @@ function getResearchBasedAdoption(): StatCanAdoptionData {
     return {
         industries,
         averageRate: Math.round(averageRate * 10) / 10,
-        surveyPeriod: "Q3 2024",
+        surveyPeriod: "Q2 2025",
         fetchedAt: new Date().toISOString(),
         isLive: false,
     }

@@ -5,8 +5,9 @@ import dynamic from "next/dynamic"
 import type { SentimentData } from "@/lib/gdelt-client"
 import { usePolling } from "@/hooks/usePolling"
 import { useChartTheme } from "@/hooks/useChartTheme"
+import echarts from "@/lib/echarts-custom"
 
-const ReactECharts = dynamic(() => import("echarts-for-react"), { ssr: false })
+const ReactECharts = dynamic(() => import("echarts-for-react/lib/core"), { ssr: false })
 
 export default function SentimentSection() {
   const transform = useCallback((json: Record<string, unknown>) => {
@@ -64,7 +65,12 @@ export default function SentimentSection() {
   const sentimentExecutiveLabel = labelMap[sentimentLabel as keyof typeof labelMap] || "Neutral"
   const sentimentColorClass = colorMap[sentimentLabel as keyof typeof colorMap] || colorMap.neutral
 
-  const pieOption = {
+  const pieOption: Record<string, unknown> = {
+    aria: {
+      enabled: true,
+      decal: { show: true },
+      label: { description: "Pie chart showing media sentiment distribution across favorable, neutral, and critical coverage of Canadian AI news." },
+    },
     series: [
       {
         type: "pie" as const,
@@ -149,7 +155,7 @@ export default function SentimentSection() {
             Distribution
           </p>
           <div className="flex-1 w-full min-h-[250px]">
-            <ReactECharts option={pieOption} style={{ height: '100%', width: '100%' }} opts={{ renderer: "svg" }} />
+            <ReactECharts echarts={echarts} option={pieOption} style={{ height: '100%', width: '100%' }} />
           </div>
         </div>
       </div>

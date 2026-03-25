@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
+import { timingSafeEqual } from "crypto"
 import { refreshDashboardEnrichmentBundle } from "@/lib/dashboard-enrichment"
 
 export const dynamic = "force-dynamic"
@@ -11,7 +12,9 @@ function isAuthorized(request: NextRequest): boolean {
     }
 
     const authHeader = request.headers.get("authorization")
-    return authHeader === `Bearer ${cronSecret}`
+    const expected = `Bearer ${cronSecret}`
+    if (!authHeader || authHeader.length !== expected.length) return false
+    return timingSafeEqual(Buffer.from(authHeader), Buffer.from(expected))
 }
 
 export async function GET(request: NextRequest) {

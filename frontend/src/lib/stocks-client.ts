@@ -54,6 +54,7 @@ export async function fetchCanadianAIStocks(): Promise<StocksData | null> {
         headers: {
           "User-Agent": "AICanadaPulse/1.0",
         },
+        signal: AbortSignal.timeout(15_000),
       }
     )
 
@@ -108,6 +109,7 @@ async function fetchViaQuoteEndpoint(): Promise<StocksData | null> {
       `https://query2.finance.yahoo.com/v7/finance/quote?symbols=${symbols}`,
       {
         headers: { "User-Agent": "AICanadaPulse/1.0" },
+        signal: AbortSignal.timeout(15_000),
       }
     )
 

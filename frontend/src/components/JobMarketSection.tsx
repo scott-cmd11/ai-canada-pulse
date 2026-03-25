@@ -4,8 +4,9 @@ import { useState, useEffect } from "react"
 import dynamic from "next/dynamic"
 import type { JobMarketData } from "@/lib/jobs-client"
 import { useChartTheme } from "@/hooks/useChartTheme"
+import echarts from "@/lib/echarts-custom"
 
-const ReactECharts = dynamic(() => import("echarts-for-react"), { ssr: false })
+const ReactECharts = dynamic(() => import("echarts-for-react/lib/core"), { ssr: false })
 
 export default function JobMarketSection() {
   const [data, setData] = useState<JobMarketData | null>(null)
@@ -165,9 +166,9 @@ export default function JobMarketSection() {
           </p>
           <div className="flex-1 min-h-[250px] w-full">
             <ReactECharts
+              echarts={echarts}
               option={locationOption}
               style={{ height: '280px', width: '100%' }}
-              opts={{ renderer: "svg" }}
             />
           </div>
         </div>

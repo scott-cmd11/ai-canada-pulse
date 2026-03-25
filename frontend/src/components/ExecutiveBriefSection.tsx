@@ -1,47 +1,23 @@
 "use client"
 
-import { useCallback } from "react"
+import { useMemo } from "react"
 import IntelligenceBrief from "./IntelligenceBrief"
-import { usePolling } from "@/hooks/usePolling"
-import type { Story } from "@/lib/mock-data"
+import { useStories } from "@/hooks/useStories"
 
-interface BriefData {
-    brief: string[]
-    sources: { name: string; count: number }[]
-}
-
-/**
- * Fetches executive brief from the stories API and renders the AI Intelligence Brief.
- * Also extracts source names from the stories used to generate it.
- */
 export default function ExecutiveBriefSection() {
-    const transform = useCallback((json: Record<string, unknown>) => {
-        const brief = json.executiveBrief as string[] | undefined
-        const stories = json.stories as Story[] | undefined
+    const { stories, executiveBrief } = useStories()
 
-        if (!brief || brief.length === 0) return null
-
-        // Count stories by source name
+    const sources = useMemo(() => {
         const sourceCounts = new Map<string, number>()
-        if (stories) {
-            for (const s of stories) {
-                const name = s.sourceName || "Unknown"
-                sourceCounts.set(name, (sourceCounts.get(name) || 0) + 1)
-            }
+        for (const s of stories) {
+            const name = s.sourceName || "Unknown"
+            sourceCounts.set(name, (sourceCounts.get(name) || 0) + 1)
         }
-
-        const sources = Array.from(sourceCounts.entries())
+        return Array.from(sourceCounts.entries())
             .map(([name, count]) => ({ name, count }))
             .sort((a, b) => b.count - a.count)
-            .slice(0, 5) // Show top 5 sources
+            .slice(0, 5)
+    }, [stories])
 
-        return { brief, sources }
-    }, [])
-
-    const { data } = usePolling<BriefData>("/api/v1/stories", {
-        intervalMs: 120_000,
-        transform,
-    })
-
-    return <IntelligenceBrief brief={data?.brief ?? null} sources={data?.sources ?? []} />
+    return <IntelligenceBrief brief={executiveBrief.length > 0 ? executiveBrief : null} sources={sources} />
 }

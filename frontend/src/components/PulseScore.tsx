@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import type { PulseData } from "@/lib/mock-data"
+import { relativeTime } from "@/lib/relative-time"
 
 const moodConfig = {
   green: {
@@ -19,14 +20,6 @@ const moodConfig = {
     label: "Negative",
     borderClass: "border-l-red-500",
   },
-}
-
-function relativeTime(iso: string) {
-  const diff = Math.floor((Date.now() - new Date(iso).getTime()) / 60000)
-  if (diff < 1) return "just now"
-  if (diff === 1) return "1 minute ago"
-  if (diff < 60) return `${diff} minutes ago`
-  return `${Math.floor(diff / 60)} hours ago`
 }
 
 export default function PulseScore() {

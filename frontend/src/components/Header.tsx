@@ -1,20 +1,13 @@
 "use client"
 
-import { useState, useEffect } from "react"
 import Link from "next/link"
-import type { PulseData } from "@/lib/mock-data"
 import LiveTicker from "./LiveTicker"
 import ThemeToggle from "./ThemeToggle"
-
-function relativeTime(iso: string) {
-  const diff = Math.floor((Date.now() - new Date(iso).getTime()) / 60000)
-  if (diff < 1) return "Just updated"
-  if (diff < 60) return `${diff}m ago`
-  return `${Math.floor(diff / 60)}h ago`
-}
+import { relativeTime } from "@/lib/relative-time"
+import { useStories } from "@/hooks/useStories"
 
 export default function Header() {
-  const [pulse, setPulse] = useState<PulseData | null>(null)
+  const { pulse } = useStories()
 
   const today = new Date().toLocaleDateString("en-CA", {
     weekday: "short",
@@ -22,15 +15,6 @@ export default function Header() {
     month: "short",
     day: "numeric",
   })
-
-  useEffect(() => {
-    fetch("/api/v1/stories")
-      .then((r) => r.json())
-      .then((j) => {
-        if (j.pulse) setPulse(j.pulse)
-      })
-      .catch(() => {})
-  }, [])
 
   return (
     <header className="sticky top-0 z-50 shadow-[0_10px_30px_rgba(15,23,42,0.06)] backdrop-blur-xl" style={{ borderBottom: "1px solid var(--header-border)", background: "var(--header-bg)" }}>

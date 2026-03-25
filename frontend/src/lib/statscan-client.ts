@@ -39,6 +39,7 @@ async function fetchVector(vectorId: number, latestN: number): Promise<DataPoint
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify([{ vectorId, latestN }]),
+      signal: AbortSignal.timeout(15_000),
     })
 
     if (!res.ok) return null

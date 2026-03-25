@@ -3,8 +3,9 @@
 import { useState, useEffect } from "react"
 import dynamic from "next/dynamic"
 import type { OecdData } from "@/lib/oecd-client"
+import echarts from "@/lib/echarts-custom"
 
-const ReactECharts = dynamic(() => import("echarts-for-react"), { ssr: false })
+const ReactECharts = dynamic(() => import("echarts-for-react/lib/core"), { ssr: false })
 
 export default function OecdSection() {
     const [data, setData] = useState<OecdData | null>(null)
@@ -86,9 +87,9 @@ export default function OecdSection() {
                         AI Publications by Country
                     </p>
                     <ReactECharts
+                        echarts={echarts}
                         option={chartOption}
                         style={{ height: "350px", width: "100%" }}
-                        opts={{ renderer: "svg" }}
                     />
                 </div>
 

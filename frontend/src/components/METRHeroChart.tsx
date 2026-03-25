@@ -4,8 +4,9 @@ import { useCallback, useMemo } from "react"
 import dynamic from "next/dynamic"
 import { usePolling } from "@/hooks/usePolling"
 import type { METRModel, METRStats } from "@/lib/epoch-client"
+import echarts from "@/lib/echarts-custom"
 
-const ReactECharts = dynamic(() => import("echarts-for-react"), { ssr: false })
+const ReactECharts = dynamic(() => import("echarts-for-react/lib/core"), { ssr: false })
 
 interface METRData {
   models: METRModel[]
@@ -42,7 +43,7 @@ function buildLabelSet(models: METRModel[]): Set<string> {
   const byHorizon = [...models].sort((a, b) => b.p50Hours - a.p50Hours)
   const latestSota = byDate.filter((model) => model.isSota).slice(-4)
   const highest = byHorizon.slice(0, 2)
-  const landmarks = ["GPT-5", "GPT-5.2", "Claude Opus 4.5", "Claude Opus 4.6"]
+  const landmarks = ["GPT-5", "GPT-5.1 Codex Max", "GPT-5.2", "GPT-5.3 Codex", "Claude Opus 4.5", "Claude Opus 4.6"]
 
   return new Set([
     ...latestSota.map((model) => model.name),
@@ -95,6 +96,8 @@ export default function METRHeroChart() {
       (a, b) => toDecimalYear(a.releaseDate)! - toDecimalYear(b.releaseDate)!
     )
 
+    const xMax = new Date().getFullYear() + 0.75
+
     if (sotaSorted.length >= 2) {
       const first = sotaSorted[0]
       const last = sotaSorted[sotaSorted.length - 1]
@@ -104,7 +107,7 @@ export default function METRHeroChart() {
       const y1 = Math.max(last.p50Hours, 0.01)
       const k = Math.log(y1 / y0) / Math.max(x1 - x0, 0.01)
 
-      for (let x = 2024; x <= 2026.5; x += 0.04) {
+      for (let x = 2024; x <= xMax; x += 0.04) {
         const y = y0 * Math.exp(k * (x - x0))
         if (y <= yMax * 1.15) trendLineData.push([x, y])
       }
@@ -126,6 +129,11 @@ export default function METRHeroChart() {
     })
 
     return {
+      aria: {
+        enabled: true,
+        decal: { show: true },
+        label: { description: "Scatter chart showing frontier AI model capability progression over time, measured by task-completion time horizons from METR benchmarks." },
+      },
       animation: false,
       grid: {
         left: 40,
@@ -136,7 +144,7 @@ export default function METRHeroChart() {
       xAxis: {
         type: "value" as const,
         min: 2024,
-        max: 2026.5,
+        max: xMax,
         axisLine: { lineStyle: { color: "rgba(255,255,255,0.1)" } },
         axisTick: { show: false },
         axisLabel: {
@@ -281,9 +289,9 @@ export default function METRHeroChart() {
       <div className="min-h-0 flex-1 rounded-2xl border border-white/8 bg-slate-950/20 p-2 sm:p-3">
         {chartOption && (
           <ReactECharts
+            echarts={echarts}
             option={chartOption}
             style={{ height: "260px", width: "100%" }}
-            opts={{ renderer: "svg" }}
           />
         )}
       </div>

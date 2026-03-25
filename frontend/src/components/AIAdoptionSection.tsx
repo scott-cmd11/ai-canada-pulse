@@ -3,8 +3,9 @@
 import { useState, useEffect } from "react"
 import dynamic from "next/dynamic"
 import type { StatCanAdoptionData } from "@/lib/statcan-sdmx-client"
+import echarts from "@/lib/echarts-custom"
 
-const ReactECharts = dynamic(() => import("echarts-for-react"), { ssr: false })
+const ReactECharts = dynamic(() => import("echarts-for-react/lib/core"), { ssr: false })
 
 export default function AIAdoptionSection() {
     const [data, setData] = useState<StatCanAdoptionData | null>(null)
@@ -88,9 +89,9 @@ export default function AIAdoptionSection() {
                     % of businesses planning to adopt AI software in next 12 months ({data.surveyPeriod})
                 </p>
                 <ReactECharts
+                    echarts={echarts}
                     option={chartOption}
                     style={{ height: "400px", width: "100%" }}
-                    opts={{ renderer: "svg" }}
                 />
             </div>
         </section>

@@ -4,8 +4,9 @@ import { useCallback, useMemo } from "react"
 import dynamic from "next/dynamic"
 import { usePolling } from "@/hooks/usePolling"
 import type { METRModel, METRStats } from "@/lib/epoch-client"
+import echarts from "@/lib/echarts-custom"
 
-const ReactECharts = dynamic(() => import("echarts-for-react"), { ssr: false })
+const ReactECharts = dynamic(() => import("echarts-for-react/lib/core"), { ssr: false })
 
 interface METRData {
     models: METRModel[]
@@ -88,6 +89,7 @@ export default function EpochAISection() {
         if (!data) return null
 
         const validModels = data.models.filter((m) => toDecimalYear(m.releaseDate) !== null)
+        const xMax = new Date().getFullYear() + 0.75
 
         // Y-axis max: round up to nearest nice number
         const maxP50 = Math.max(...validModels.map((m) => m.p50CIHigh || m.p50Hours))
@@ -99,7 +101,7 @@ export default function EpochAISection() {
         const sorted = [...validModels].sort((a, b) => b.p50Hours - a.p50Hours)
         sorted.slice(0, 3).forEach((m) => labelSet.add(m.name))
         // Label a few landmark models
-        const landmarks = ["GPT-4", "GPT-4o", "o1", "o3", "GPT-5", "Claude 3.5 Sonnet", "Claude Opus 4.5", "Claude Opus 4.6"]
+        const landmarks = ["GPT-4", "GPT-4o", "o1", "o3", "GPT-5", "GPT-5.1 Codex Max", "GPT-5.2", "GPT-5.3 Codex", "Claude 3.5 Sonnet", "Claude Opus 4.5", "Claude Opus 4.6"]
         validModels.forEach((m) => {
             if (landmarks.some((l) => m.name === l)) labelSet.add(m.name)
         })
@@ -122,6 +124,11 @@ export default function EpochAISection() {
         })
 
         return {
+            aria: {
+                enabled: true,
+                decal: { show: true },
+                label: { description: "Chart showing AI model task-completion time horizons over time, with confidence intervals and task difficulty annotations." },
+            },
             grid: {
                 left: 60,
                 right: 30,
@@ -131,7 +138,7 @@ export default function EpochAISection() {
             xAxis: {
                 type: "value" as const,
                 min: 2019,
-                max: 2026.5,
+                max: xMax,
                 axisLine: { lineStyle: { color: "#CBD5E1" } },
                 axisLabel: {
                     color: "#64748B",
@@ -328,9 +335,9 @@ export default function EpochAISection() {
                 <div className="w-full" style={{ height: 420 }}>
                     {chartOption && (
                         <ReactECharts
+                            echarts={echarts}
                             option={chartOption}
                             style={{ height: "100%", width: "100%" }}
-                            opts={{ renderer: "svg" }}
                         />
                     )}
                 </div>

@@ -181,7 +181,7 @@ export default function MethodologyPage() {
       <main className="mx-auto w-full max-w-[1100px] px-4 py-10 sm:px-6 lg:px-8 lg:py-12">
         <div className="mb-8">
           <Link href="/dashboard" className="text-sm font-semibold text-indigo-700 hover:text-indigo-800 hover:underline">
-            ? Back to Dashboard
+            ← Back to Dashboard
           </Link>
         </div>
 
@@ -292,7 +292,7 @@ export default function MethodologyPage() {
             </p>
             <div className="mt-5 rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm leading-relaxed text-slate-600">
               <p>
-                If a source or module is not visibly shaping today?s <Link href="/dashboard" className="font-semibold text-indigo-700 hover:underline">dashboard</Link>, it is not treated here as a core live product input.
+                If a source or module is not visibly shaping today's <Link href="/dashboard" className="font-semibold text-indigo-700 hover:underline">dashboard</Link>, it is not treated here as a core live product input.
               </p>
             </div>
           </div>

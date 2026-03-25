@@ -3,8 +3,9 @@
 import dynamic from "next/dynamic"
 import type { DataPoint } from "@/lib/indicators-data"
 import { useChartTheme } from "@/hooks/useChartTheme"
+import echarts from "@/lib/echarts-custom"
 
-const ReactECharts = dynamic(() => import("echarts-for-react"), { ssr: false })
+const ReactECharts = dynamic(() => import("echarts-for-react/lib/core"), { ssr: false })
 
 interface Props {
   title: string
@@ -63,7 +64,12 @@ export default function IndicatorChart({ title, data, unit, description, sourceL
     ? (delta >= 0 ? "+" : "") + formatValue(Math.abs(delta), unit)
     : (delta >= 0 ? `+${delta.toFixed(1)}` : delta.toFixed(1))
 
-  const option = {
+  const option: Record<string, unknown> = {
+    aria: {
+      enabled: true,
+      decal: { show: true },
+      label: { description: `Area chart showing ${title} over time. ${description}` },
+    },
     grid: { top: 16, right: 16, bottom: 24, left: 40 },
     xAxis: {
       type: "category" as const,
@@ -139,7 +145,7 @@ export default function IndicatorChart({ title, data, unit, description, sourceL
 
       {/* Use min-h instead of fixed height so it can flex in grid */}
       <div className="min-h-[220px] w-full mt-auto">
-        <ReactECharts option={option} style={{ height: '100%', width: '100%' }} opts={{ renderer: "svg" }} />
+        <ReactECharts echarts={echarts} option={option} style={{ height: '100%', width: '100%' }} />
       </div>
 
       {sourceLabel && (

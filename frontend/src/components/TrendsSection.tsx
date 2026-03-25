@@ -4,8 +4,9 @@ import { useState, useEffect } from "react"
 import dynamic from "next/dynamic"
 import type { TrendsData } from "@/lib/trends-client"
 import { useChartTheme } from "@/hooks/useChartTheme"
+import echarts from "@/lib/echarts-custom"
 
-const ReactECharts = dynamic(() => import("echarts-for-react"), { ssr: false })
+const ReactECharts = dynamic(() => import("echarts-for-react/lib/core"), { ssr: false })
 
 export default function TrendsSection() {
   const [data, setData] = useState<TrendsData | null>(null)
@@ -49,7 +50,12 @@ export default function TrendsSection() {
   // Distinct, visually separated colors for each AI tool
   const lineColors = ["#4338CA", "#0EA5E9", "#F59E0B", "#10B981"]
 
-  const option = {
+  const option: Record<string, unknown> = {
+    aria: {
+      enabled: true,
+      decal: { show: true },
+      label: { description: "Line chart showing Google Trends search interest for AI tools in Canada over time, including ChatGPT, GitHub Copilot, Claude, and Midjourney." },
+    },
     grid: { top: 40, right: 16, bottom: 24, left: 40 },
     legend: {
       show: true,
@@ -109,7 +115,7 @@ export default function TrendsSection() {
       <div className="section-header"><h2>{sectionTitle}</h2></div>
       <div className="saas-card p-5 sm:p-6 lg:p-8 flex flex-col border-t-4 border-t-indigo-700">
         <div className="w-full min-h-[300px]">
-          <ReactECharts option={option} style={{ height: '300px', width: '100%' }} opts={{ renderer: "svg" }} />
+          <ReactECharts echarts={echarts} option={option} style={{ height: '300px', width: '100%' }} />
         </div>
         <div className="mt-4 pt-4 border-t border-slate-100 text-xs font-medium text-slate-500">
           <p>

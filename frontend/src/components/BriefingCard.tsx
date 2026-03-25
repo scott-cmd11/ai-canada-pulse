@@ -1,33 +1,13 @@
 "use client"
 
-import { useCallback } from "react"
 import type { Story } from "@/lib/mock-data"
-import { usePolling } from "@/hooks/usePolling"
-
-function relativeTime(iso: string) {
-  const diff = Math.floor((Date.now() - new Date(iso).getTime()) / 60000)
-  if (diff < 1) return "Just updated"
-  if (diff === 1) return "1m ago"
-  if (diff < 60) return `${diff}m ago`
-  const h = Math.floor(diff / 60)
-  if (h < 24) return h === 1 ? "1h ago" : `${h}h ago`
-  const d = Math.floor(h / 24)
-  return d === 1 ? "1d ago" : `${d}d ago`
-}
+import { useStories } from "@/hooks/useStories"
+import { relativeTime } from "@/lib/relative-time"
 
 export default function BriefingCard() {
-  const transform = useCallback((json: Record<string, unknown>) => {
-    const stories = json.stories as Story[] | undefined
-    if (!stories || stories.length === 0) return null
-    const top = stories.find((s) => s.isBriefingTop)
-    return top || stories[0]
-  }, [])
+  const { stories } = useStories()
 
-  const { data: topStory } = usePolling<Story>("/api/v1/stories", {
-    intervalMs: 120_000,
-    transform,
-  })
-
+  const topStory: Story | undefined = stories.find((s) => s.isBriefingTop) || stories[0]
   if (!topStory) return null
 
   return (

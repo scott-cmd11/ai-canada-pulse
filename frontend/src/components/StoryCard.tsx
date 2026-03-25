@@ -1,15 +1,5 @@
 import type { Story } from "@/lib/mock-data"
-
-function relativeTime(iso: string) {
-  const diff = Math.floor((Date.now() - new Date(iso).getTime()) / 60000)
-  if (diff < 1) return "Just updated"
-  if (diff === 1) return "1 min ago"
-  if (diff < 60) return `${diff} min ago`
-  const h = Math.floor(diff / 60)
-  if (h < 24) return h === 1 ? "1 hr ago" : `${h} hrs ago`
-  const d = Math.floor(h / 24)
-  return d === 1 ? "1 day ago" : `${d} days ago`
-}
+import { relativeTime } from "@/lib/relative-time"
 
 interface Props {
   story: Story

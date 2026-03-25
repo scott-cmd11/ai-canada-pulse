@@ -112,6 +112,7 @@ async function _fetchCanadianAIResearch(): Promise<ResearchResult> {
       headers: {
         "User-Agent": "AICanadaPulse/1.0 (mailto:contact@aicanadapulse.ca)",
       },
+      signal: AbortSignal.timeout(15_000),
     })
 
     if (!res.ok) return { papers: [], fetchedAt: new Date().toISOString() }

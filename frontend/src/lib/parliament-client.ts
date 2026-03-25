@@ -37,6 +37,7 @@ export async function fetchParliamentAIMentions(): Promise<ParliamentData> {
     // Step 1: Get recent debate dates
     const debatesRes = await fetch(`${OPENPARL_BASE}/debates/?format=json&limit=10`, {
       headers: { "Accept": "application/json", "User-Agent": "AICanadaPulse/1.0" },
+      signal: AbortSignal.timeout(10_000),
     })
     if (!debatesRes.ok) return cache?.data ?? { mentions: [], totalCount: 0 }
 
@@ -51,6 +52,7 @@ export async function fetchParliamentAIMentions(): Promise<ParliamentData> {
       const speechesUrl = `${OPENPARL_BASE}/speeches/?document=${encodeURIComponent(debate.url)}&format=json&limit=100`
       const speechesRes = await fetch(speechesUrl, {
         headers: { "Accept": "application/json", "User-Agent": "AICanadaPulse/1.0" },
+        signal: AbortSignal.timeout(8_000),
       })
       if (!speechesRes.ok) continue
 

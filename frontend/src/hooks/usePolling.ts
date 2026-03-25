@@ -23,7 +23,8 @@ export function usePolling<T>(
     const doFetch = useCallback(async (isInitial = false) => {
         try {
             if (isInitial) setLoading(true)
-            const res = await fetch(url, { cache: "no-store" })
+            const res = await fetch(url)
+            if (!res.ok) throw new Error(`HTTP ${res.status}`)
             const json = await res.json()
             if (!mountedRef.current) return
 
