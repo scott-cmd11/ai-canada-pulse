@@ -9,7 +9,7 @@ import StocksSection from "@/components/StocksSection"
 import ComputeStatusSection from "@/components/ComputeStatusSection"
 import TrendsInsightsSection from "@/components/TrendsInsightsSection"
 import LabFeedsSection from "@/components/LabFeedsSection"
-import ProvinceMapSection from "@/components/ProvinceMapSection"
+import ProvinceIndexSection from "@/components/ProvinceIndexSection"
 import SectionNav from "@/components/SectionNav"
 import ScrollToTop from "@/components/ScrollToTop"
 import ScrollReveal from "@/components/ScrollReveal"
@@ -33,8 +33,8 @@ export default function DashboardPage() {
       <Header />
 
       <main className="mx-auto flex w-full max-w-[1480px] flex-col gap-6 px-4 py-4 sm:px-6 lg:px-8 lg:py-6">
-        <section id="provinces" style={{ background: 'var(--bg-page)' }}>
-          <ProvinceMapSection />
+        <section id="provinces" className="saas-card rounded-2xl overflow-hidden">
+          <ProvinceIndexSection />
         </section>
 
         <SectionNav />
