@@ -1,10 +1,11 @@
 "use client"
 
 import Link from "next/link"
-import { useState } from "react"
-import type { Category } from "@/lib/mock-data"
+import { useState, useCallback } from "react"
+import type { Category, Story } from "@/lib/mock-data"
 import StoryCard from "./StoryCard"
 import { useStories } from "@/hooks/useStories"
+import { usePolling } from "@/hooks/usePolling"
 
 const ALL = "All Signals"
 const PAGE_SIZE = 4
@@ -16,11 +17,33 @@ const CATEGORIES: { value: typeof ALL | Category; label: string }[] = [
   { value: "Research", label: "Research" },
 ]
 
-export default function StoryFeed() {
+interface StoryFeedProps {
+  region?: string
+}
+
+export default function StoryFeed({ region }: StoryFeedProps = {}) {
   const [active, setActive] = useState<typeof ALL | Category>(ALL)
   const [displayCount, setDisplayCount] = useState(PAGE_SIZE)
 
-  const { stories, loading } = useStories()
+  // Shared national context — used when no region prop is provided
+  const sharedCtx = useStories()
+
+  // Region-filtered polling — only active when region prop is provided.
+  // usePolling is called unconditionally (rules of hooks), but the result is
+  // only used when region is truthy.
+  const regionUrl = region
+    ? `/api/v1/stories?region=${encodeURIComponent(region)}`
+    : "/api/v1/stories"
+  const regionTransform = useCallback((json: Record<string, unknown>) => {
+    return (json.stories as Story[] | undefined) ?? []
+  }, [])
+  const regionResult = usePolling<Story[]>(regionUrl, {
+    intervalMs: 120_000,
+    transform: regionTransform,
+  })
+
+  const stories = region ? (regionResult.data ?? []) : sharedCtx.stories
+  const loading = region ? regionResult.loading : sharedCtx.loading
 
   const feedStories = stories.filter((story) => !story.isBriefingTop)
 

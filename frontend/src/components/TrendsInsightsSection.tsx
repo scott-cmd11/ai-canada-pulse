@@ -3,7 +3,11 @@
 import { useState, useEffect } from "react"
 import type { ProvinceInterest } from "@/lib/trends-regional-client"
 
-export default function TrendsInsightsSection() {
+interface TrendsInsightsSectionProps {
+    highlightProvince?: string // Province code to visually highlight, e.g. "ON"
+}
+
+export default function TrendsInsightsSection({ highlightProvince }: TrendsInsightsSectionProps = {}) {
     const [provinces, setProvinces] = useState<ProvinceInterest[]>([])
     const [loading, setLoading] = useState(true)
 
@@ -41,12 +45,20 @@ export default function TrendsInsightsSection() {
                     <div className="flex flex-col gap-2">
                         {filtered.map((p, i) => {
                             const pct = (p.value / maxValue) * 100
-                            const gradient = i % 2 === 0
-                                ? "from-violet-500 to-indigo-600"
-                                : "from-sky-500 to-indigo-500"
+                            const isHighlighted = highlightProvince
+                                ? p.code === highlightProvince
+                                : false
+                            const gradient = isHighlighted
+                                ? "from-amber-400 to-orange-500"
+                                : i % 2 === 0
+                                    ? "from-violet-500 to-indigo-600"
+                                    : "from-sky-500 to-indigo-500"
                             return (
-                                <div key={p.code} className="flex items-center gap-3">
-                                    <span className="text-xs font-medium text-slate-700 w-[180px] shrink-0 truncate">
+                                <div
+                                    key={p.code}
+                                    className={`flex items-center gap-3 rounded-lg px-1 py-0.5 transition-colors ${isHighlighted ? "bg-amber-50" : ""}`}
+                                >
+                                    <span className={`text-xs w-[180px] shrink-0 truncate ${isHighlighted ? "font-bold text-amber-800" : "font-medium text-slate-700"}`}>
                                         {p.name}
                                     </span>
                                     <div className="flex-1 h-5 bg-slate-100 rounded-full overflow-hidden">
@@ -55,7 +67,7 @@ export default function TrendsInsightsSection() {
                                             style={{ width: `${pct}%` }}
                                         />
                                     </div>
-                                    <span className="text-xs font-bold text-slate-600 w-[32px] text-right">
+                                    <span className={`text-xs font-bold w-[32px] text-right ${isHighlighted ? "text-amber-700" : "text-slate-600"}`}>
                                         {p.value}
                                     </span>
                                 </div>

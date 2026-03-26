@@ -4,16 +4,33 @@ import { useState, useCallback } from "react"
 import type { ResearchPaper } from "@/lib/research-client"
 import { usePolling } from "@/hooks/usePolling"
 
-export default function ArxivSection() {
+interface ArxivSectionProps {
+    // When provided, only display papers whose institutions list contains at least
+    // one entry matching (case-insensitive substring) any name in this filter.
+    institutionFilter?: string[]
+}
+
+export default function ArxivSection({ institutionFilter }: ArxivSectionProps = {}) {
     const transform = useCallback((json: Record<string, unknown>) => {
         const papers = json.papers as ResearchPaper[] | undefined
         return papers && papers.length > 0 ? papers : null
     }, [])
 
-    const { data: papers, loading } = usePolling<ResearchPaper[]>("/api/v1/research", {
+    const { data: rawPapers, loading } = usePolling<ResearchPaper[]>("/api/v1/research", {
         intervalMs: 600_000, // 10 minutes — research data changes slowly
         transform,
     })
+
+    // Apply institution filter when provided
+    const papers = rawPapers && institutionFilter && institutionFilter.length > 0
+        ? rawPapers.filter((paper) =>
+            paper.institutions.some((inst) =>
+                institutionFilter.some((f) =>
+                    inst.toLowerCase().includes(f.toLowerCase())
+                )
+            )
+        )
+        : rawPapers
 
     return (
         <section>

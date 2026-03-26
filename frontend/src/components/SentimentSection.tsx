@@ -9,12 +9,20 @@ import echarts from "@/lib/echarts-custom"
 
 const ReactECharts = dynamic(() => import("echarts-for-react/lib/core"), { ssr: false })
 
-export default function SentimentSection() {
+interface SentimentSectionProps {
+  region?: string
+}
+
+export default function SentimentSection({ region }: SentimentSectionProps = {}) {
   const transform = useCallback((json: Record<string, unknown>) => {
     return (json.data as SentimentData) || null
   }, [])
 
-  const { data, loading } = usePolling<SentimentData>("/api/v1/sentiment", {
+  const sentimentUrl = region
+    ? `/api/v1/sentiment?region=${encodeURIComponent(region)}`
+    : "/api/v1/sentiment"
+
+  const { data, loading } = usePolling<SentimentData>(sentimentUrl, {
     intervalMs: 300_000, // 5 minutes
     transform,
   })

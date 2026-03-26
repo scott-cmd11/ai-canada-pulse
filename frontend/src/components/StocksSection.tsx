@@ -3,19 +3,26 @@
 import { useState, useEffect } from "react"
 import type { StocksData, StockQuote } from "@/lib/stocks-client"
 
-export default function StocksSection() {
+interface StocksSectionProps {
+  region?: string
+}
+
+export default function StocksSection({ region }: StocksSectionProps = {}) {
   const [data, setData] = useState<StocksData | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetch("/api/v1/stocks")
+    const url = region
+      ? `/api/v1/stocks?region=${encodeURIComponent(region)}`
+      : "/api/v1/stocks"
+    fetch(url)
       .then((res) => res.json())
       .then((json) => {
         if (json.data) setData(json.data)
       })
       .catch((err) => console.warn("[StocksSection] fetch failed:", err))
       .finally(() => setLoading(false))
-  }, [])
+  }, [region])
 
   if (loading) {
     return (
