@@ -26,7 +26,7 @@ export default function Header() {
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex items-center gap-4">
             <Link href="/dashboard" className="group relative z-10 flex items-center gap-3">
-              <div className="flex h-9 w-9 items-center justify-center rounded-2xl border border-indigo-400/20 bg-gradient-to-br from-indigo-600 to-violet-600 text-sm font-black text-white shadow-[0_8px_30px_rgba(79,70,229,0.35)]">
+              <div className="flex h-9 w-9 items-center justify-center rounded-2xl border border-indigo-400/20 bg-gradient-to-br from-orange-700 to-amber-600 text-sm font-black text-white shadow-[0_8px_30px_rgba(194,65,12,0.3)]">
                 AI
               </div>
               <div>
@@ -49,6 +49,13 @@ export default function Header() {
 
           <div className="flex flex-wrap items-center gap-2 sm:gap-3">
             <ThemeToggle />
+            <Link
+              href="/dashboard#provinces"
+              className="rounded-full border px-3.5 py-2 text-xs font-semibold shadow-sm"
+              style={{ borderColor: "var(--border-strong)", color: "var(--text-secondary)", background: "var(--surface-primary)" }}
+            >
+              Provinces
+            </Link>
             <Link
               href="/methodology"
               className="rounded-full border px-3.5 py-2 text-xs font-semibold shadow-sm"
