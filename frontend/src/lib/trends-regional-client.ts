@@ -55,3 +55,8 @@ export const fetchRegionalInterest = unstable_cache(
     ["google-trends-regional-ai"],
     { revalidate: 21600 } // 6 hours
 )
+
+export function getProvinceInterest(data: TrendsRegionalData, provinceCode: string): ProvinceInterest | null {
+    const target = provinceCode.toUpperCase()
+    return data.provinces.find(p => p.code.toUpperCase() === target) ?? null
+}

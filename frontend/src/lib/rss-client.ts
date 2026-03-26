@@ -208,6 +208,13 @@ export const fetchAllStories = unstable_cache(
   { revalidate: 1800 } // 30 minutes
 )
 
+// ─── Public: filter stories by region display name ──────────────────────────
+
+export function filterStoriesByRegion(stories: Story[], regionName: string): Story[] {
+  const target = regionName.toLowerCase();
+  return stories.filter(s => s.region.toLowerCase() === target);
+}
+
 // ─── Public: derive PulseScore from story sentiment distribution ────────────
 
 export function derivePulseFromStories(stories: Story[]): PulseData {

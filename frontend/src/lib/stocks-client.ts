@@ -29,16 +29,16 @@ let cache: CacheEntry | null = null
 
 // Canadian companies heavily investing in AI
 const CANADIAN_AI_TICKERS = [
-  { symbol: "SHOP.TO", name: "Shopify" },
-  { symbol: "KXS.TO", name: "Kinaxis" },
-  { symbol: "CVO.TO", name: "Coveo Solutions" },
-  { symbol: "OTEX.TO", name: "OpenText" },
-  { symbol: "GIB-A.TO", name: "CGI Group" },
-  { symbol: "BB.TO", name: "BlackBerry" },
-  { symbol: "DCBO.TO", name: "Docebo" },
-  { symbol: "LSPD.TO", name: "Lightspeed Commerce" },
-  { symbol: "THNK.V", name: "Think Research" },
-  { symbol: "MNDM.TO", name: "Mandalay Resources" },
+  { symbol: "SHOP.TO", name: "Shopify", provinceHQ: "ontario" },
+  { symbol: "KXS.TO", name: "Kinaxis", provinceHQ: "ontario" },
+  { symbol: "CVO.TO", name: "Coveo Solutions", provinceHQ: "quebec" },
+  { symbol: "OTEX.TO", name: "OpenText", provinceHQ: "ontario" },
+  { symbol: "GIB-A.TO", name: "CGI Group", provinceHQ: "quebec" },
+  { symbol: "BB.TO", name: "BlackBerry", provinceHQ: "ontario" },
+  { symbol: "DCBO.TO", name: "Docebo", provinceHQ: "ontario" },
+  { symbol: "LSPD.TO", name: "Lightspeed Commerce", provinceHQ: "quebec" },
+  { symbol: "THNK.V", name: "Think Research", provinceHQ: "ontario" },
+  { symbol: "MNDM.TO", name: "Mandalay Resources", provinceHQ: "ontario" },
 ]
 
 export async function fetchCanadianAIStocks(): Promise<StocksData | null> {
@@ -142,4 +142,12 @@ async function fetchViaQuoteEndpoint(): Promise<StocksData | null> {
     console.warn("[stocks-client] Quote endpoint failed:", err)
     return cache?.data ?? null
   }
+}
+
+export function filterStocksByProvince(data: StocksData, province: string): StocksData {
+  const filtered = data.quotes.filter(q => {
+    const ticker = CANADIAN_AI_TICKERS.find(t => t.symbol === q.symbol);
+    return ticker?.provinceHQ === province;
+  });
+  return { quotes: filtered, fetchedAt: data.fetchedAt };
 }
