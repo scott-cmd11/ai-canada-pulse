@@ -1,9 +1,14 @@
 import { NextResponse } from "next/server"
 import { fetchAIJobMarket } from "@/lib/jobs-client"
+import { getProvinceBySlug } from "@/lib/provinces-config"
 
-export async function GET() {
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url)
+  const regionSlug = searchParams.get('region')
+  const province = regionSlug ? (getProvinceBySlug(regionSlug)?.name ?? regionSlug) : undefined
+
   try {
-    const data = await fetchAIJobMarket()
+    const data = await fetchAIJobMarket(province)
 
     return NextResponse.json(
       { data },
