@@ -51,61 +51,35 @@ export default async function ProvincePage({
     .map((i) => i.name)
     .join(' · ');
 
-  const divider = (
-    <hr
-      style={{
-        border: 'none',
-        borderTop: '1px solid var(--border-subtle)',
-        maxWidth: '1080px',
-        margin: '0 auto',
-      }}
-    />
-  );
-
   return (
-    <div>
+    <div style={{ background: 'var(--bg-page)', color: 'var(--text-primary)' }}>
       <Header />
 
       {/* Breadcrumb */}
-      <nav
-        style={{
-          fontSize: '13px',
-          color: 'var(--text-muted)',
-          maxWidth: '1080px',
-          margin: '0 auto',
-          padding: '16px 40px',
-        }}
-      >
-        <a
-          href="/dashboard"
-          style={{
-            color: 'var(--accent-primary)',
-            textDecoration: 'none',
-            fontWeight: 500,
-          }}
-        >
+      <nav className="mx-auto max-w-[1080px] px-4 py-4 text-[13px] sm:px-6 lg:px-10" style={{ color: 'var(--text-muted)' }}>
+        <a href="/dashboard" className="font-medium hover:underline" style={{ color: 'var(--accent-primary)' }}>
           Dashboard
         </a>
-        <span style={{ margin: '0 8px', color: 'var(--text-muted)' }}>/</span>
+        <span className="mx-2" style={{ color: 'var(--text-muted)' }}>/</span>
         <span style={{ color: 'var(--accent-primary)' }}>Provinces</span>
-        <span style={{ margin: '0 8px', color: 'var(--text-muted)' }}>/</span>
-        <span style={{ color: 'var(--text-primary)', fontWeight: 500 }}>
+        <span className="mx-2" style={{ color: 'var(--text-muted)' }}>/</span>
+        <span className="font-medium" style={{ color: 'var(--text-primary)' }}>
           {province.name}
         </span>
       </nav>
 
       {/* Hero */}
-      <div style={{ maxWidth: '1080px', margin: '0 auto', padding: '0 40px' }}>
+      <div className="mx-auto max-w-[1080px] px-4 sm:px-6 lg:px-10">
         <ProvinceHero
           province={province}
           heroStat={{ value: '—', unit: 'AI positions', change: 'Loading...' }}
         />
       </div>
 
-      {divider}
+      <hr className="mx-auto max-w-[1080px] border-0" style={{ borderTop: '1px solid var(--border-subtle)' }} />
 
       {/* Stats ribbon */}
-      <div style={{ maxWidth: '1080px', margin: '0 auto', padding: '0 40px' }}>
+      <div className="mx-auto max-w-[1080px] px-4 sm:px-6 lg:px-10">
         <ProvinceStatsRibbon
           stats={[
             {
@@ -130,28 +104,28 @@ export default async function ProvincePage({
         />
       </div>
 
-      {divider}
+      <hr className="mx-auto max-w-[1080px] border-0" style={{ borderTop: '1px solid var(--border-subtle)' }} />
 
       {/* Institutions */}
       {province.institutions.length > 0 && (
-        <div style={{ maxWidth: '1080px', margin: '0 auto', padding: '32px 40px' }}>
+        <div className="mx-auto max-w-[1080px] px-4 py-8 sm:px-6 lg:px-10">
           <ProvinceInstitutions institutions={province.institutions} />
         </div>
       )}
 
-      {divider}
+      {province.institutions.length > 0 && (
+        <hr className="mx-auto max-w-[1080px] border-0" style={{ borderTop: '1px solid var(--border-subtle)' }} />
+      )}
 
       {/* Stories */}
       {province.sections.stories && (
-        <section style={{ maxWidth: '1080px', margin: '0 auto', padding: '40px' }}>
+        <section className="mx-auto max-w-[1080px] px-4 py-8 sm:px-6 sm:py-10 lg:px-10">
           <h2
+            className="mb-4 text-2xl font-semibold"
             style={{
               fontFamily: 'var(--font-display)',
-              fontSize: '24px',
-              fontWeight: 600,
               color: 'var(--text-primary)',
               letterSpacing: '-0.3px',
-              marginBottom: '16px',
             }}
           >
             What&apos;s happening in {province.name}
@@ -162,36 +136,28 @@ export default async function ProvincePage({
 
       {/* Trends */}
       {province.sections.trends && (
-        <section
-          style={{ maxWidth: '1080px', margin: '0 auto', padding: '8px 40px 40px' }}
-        >
+        <section className="mx-auto max-w-[1080px] px-4 pb-8 sm:px-6 sm:pb-10 lg:px-10">
           <TrendsInsightsSection highlightProvince={province.abbreviation} />
         </section>
       )}
 
       {/* Jobs */}
       {province.sections.jobs && (
-        <section
-          style={{ maxWidth: '1080px', margin: '0 auto', padding: '8px 40px 40px' }}
-        >
+        <section className="mx-auto max-w-[1080px] px-4 pb-8 sm:px-6 sm:pb-10 lg:px-10">
           <JobMarketSection region={province.slug} />
         </section>
       )}
 
       {/* Stocks */}
       {province.sections.stocks && (
-        <section
-          style={{ maxWidth: '1080px', margin: '0 auto', padding: '8px 40px 40px' }}
-        >
+        <section className="mx-auto max-w-[1080px] px-4 pb-8 sm:px-6 sm:pb-10 lg:px-10">
           <StocksSection region={province.slug} />
         </section>
       )}
 
       {/* Research */}
       {province.sections.research && (
-        <section
-          style={{ maxWidth: '1080px', margin: '0 auto', padding: '8px 40px 40px' }}
-        >
+        <section className="mx-auto max-w-[1080px] px-4 pb-8 sm:px-6 sm:pb-10 lg:px-10">
           <ArxivSection
             institutionFilter={province.institutions.map((i) => i.name)}
           />
@@ -200,37 +166,24 @@ export default async function ProvincePage({
 
       {/* Parliament */}
       {province.sections.parliament && (
-        <section
-          style={{ maxWidth: '1080px', margin: '0 auto', padding: '8px 40px 40px' }}
-        >
+        <section className="mx-auto max-w-[1080px] px-4 pb-8 sm:px-6 sm:pb-10 lg:px-10">
           <ParliamentSection />
         </section>
       )}
 
       {/* Footer nav */}
       <footer
-        style={{
-          maxWidth: '1080px',
-          margin: '0 auto',
-          padding: '40px',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          borderTop: '1px solid var(--border-subtle)',
-        }}
+        className="mx-auto flex max-w-[1080px] flex-col gap-3 px-4 py-8 sm:flex-row sm:items-center sm:justify-between sm:px-6 sm:py-10 lg:px-10"
+        style={{ borderTop: '1px solid var(--border-subtle)' }}
       >
         <a
           href="/dashboard"
-          style={{
-            color: 'var(--accent-primary)',
-            textDecoration: 'none',
-            fontWeight: 600,
-            fontSize: '14px',
-          }}
+          className="text-sm font-semibold hover:underline"
+          style={{ color: 'var(--accent-primary)' }}
         >
           ← National dashboard
         </a>
-        <div style={{ fontSize: '13px', color: 'var(--text-muted)' }}>
+        <div className="text-[13px]" style={{ color: 'var(--text-muted)' }}>
           Also explore:{' '}
           {province.neighborSlugs.map((ns, i) => {
             const neighbor = getProvinceBySlug(ns);
@@ -239,11 +192,8 @@ export default async function ProvincePage({
                 {i > 0 && ' · '}
                 <a
                   href={`/provinces/${ns}`}
-                  style={{
-                    color: 'var(--accent-primary)',
-                    textDecoration: 'none',
-                    fontWeight: 500,
-                  }}
+                  className="font-medium hover:underline"
+                  style={{ color: 'var(--accent-primary)' }}
                 >
                   {neighbor.name}
                 </a>
