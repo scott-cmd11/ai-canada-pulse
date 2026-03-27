@@ -20,7 +20,7 @@ export default function HuggingFaceSection() {
             <section>
                 <div className="section-header"><h2>Canadian AI Models</h2></div>
                 <div className="saas-card p-8 text-center">
-                    <div className="animate-pulse text-sm text-slate-500">Loading Hugging Face data...</div>
+                    <div className="animate-pulse text-sm" style={{ color: 'var(--text-muted)' }}>Loading Hugging Face data...</div>
                 </div>
             </section>
         )
@@ -37,12 +37,12 @@ export default function HuggingFaceSection() {
             {/* KPI Row */}
             <div className="grid grid-cols-2 gap-3 mb-4">
                 <div className="saas-card p-4 text-center">
-                    <p className="text-2xl font-bold text-slate-900">{data.totalModels.toLocaleString()}</p>
-                    <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 mt-1">Total Models</p>
+                    <p className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>{data.totalModels.toLocaleString()}</p>
+                    <p className="text-[11px] font-semibold uppercase tracking-wider mt-1" style={{ color: 'var(--text-muted)' }}>Total Models</p>
                 </div>
                 <div className="saas-card p-4 text-center">
-                    <p className="text-2xl font-bold text-slate-900">{formatDownloads(data.totalDownloads)}</p>
-                    <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 mt-1">Total Downloads</p>
+                    <p className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>{formatDownloads(data.totalDownloads)}</p>
+                    <p className="text-[11px] font-semibold uppercase tracking-wider mt-1" style={{ color: 'var(--text-muted)' }}>Total Downloads</p>
                 </div>
             </div>
 
@@ -55,15 +55,18 @@ export default function HuggingFaceSection() {
                                 href={`https://huggingface.co/${org.orgSlug}`}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="text-sm font-bold text-slate-900 hover:text-indigo-700 hover:underline"
+                                className="text-sm font-bold hover:underline"
+                                style={{ color: 'var(--text-primary)' }}
+                                onMouseEnter={e => (e.currentTarget.style.color = 'var(--accent-primary)')}
+                                onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-primary)')}
                             >
                                 {org.orgName}
                             </a>
-                            <span className="text-xs font-semibold text-slate-500 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
+                            <span className="text-xs font-semibold px-2 py-0.5 rounded border" style={{ color: 'var(--text-muted)', backgroundColor: 'var(--surface-secondary)', borderColor: 'var(--border-subtle)' }}>
                                 {org.modelCount} models
                             </span>
                         </div>
-                        <p className="text-xs text-slate-500">
+                        <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
                             {formatDownloads(org.totalDownloads)} downloads
                         </p>
                     </div>

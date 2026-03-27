@@ -45,7 +45,7 @@ export default function ArxivSection({ institutionFilter }: ArxivSectionProps = 
 
             {loading && (
                 <div className="saas-card p-8 text-center">
-                    <div className="animate-pulse text-sm text-slate-500">Loading Canadian AI research...</div>
+                    <div className="animate-pulse text-sm" style={{ color: 'var(--text-muted)' }}>Loading Canadian AI research...</div>
                 </div>
             )}
 
@@ -59,7 +59,7 @@ export default function ArxivSection({ institutionFilter }: ArxivSectionProps = 
 
             {!loading && (!papers || papers.length === 0) && (
                 <div className="saas-card p-6 text-center">
-                    <p className="text-sm text-slate-500">Unable to fetch research data at this time.</p>
+                    <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Unable to fetch research data at this time.</p>
                 </div>
             )}
         </section >
@@ -70,31 +70,34 @@ function PaperCard({ paper }: { paper: ResearchPaper }) {
     const url = paper.openAccessUrl || paper.doiUrl || "#"
 
     return (
-        <article className="saas-card bg-white p-4 border-l-4 border-l-purple-600">
+        <article className="saas-card p-4 border-l-4 border-l-purple-600">
             <a
                 href={url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-sm font-bold text-slate-900 hover:text-indigo-700 hover:underline leading-snug block mb-2"
+                className="text-sm font-bold hover:underline leading-snug block mb-2"
+                style={{ color: 'var(--text-primary)' }}
+                onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--accent-primary)')}
+                onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--text-primary)')}
             >
                 {paper.title}
             </a>
 
             {paper.summary && (
-                <p className="text-xs text-slate-600 mb-2 leading-relaxed line-clamp-2">
+                <p className="text-xs mb-2 leading-relaxed line-clamp-2" style={{ color: 'var(--text-secondary)' }}>
                     {paper.summary}
                 </p>
             )}
 
-            <div className="flex flex-wrap items-center gap-2 text-[11px] text-slate-500">
+            <div className="flex flex-wrap items-center gap-2 text-[11px]" style={{ color: 'var(--text-muted)' }}>
                 <span className="font-medium">
                     {paper.authors.slice(0, 3).join(", ")}{paper.authors.length > 3 ? " et al." : ""}
                 </span>
-                <span className="text-slate-300">•</span>
+                <span style={{ color: 'var(--border-subtle)' }}>•</span>
                 <span>{paper.publicationDate}</span>
                 {paper.citationCount > 0 && (
                     <>
-                        <span className="text-slate-300">•</span>
+                        <span style={{ color: 'var(--border-subtle)' }}>•</span>
                         <span className="font-semibold text-amber-700">{paper.citationCount.toLocaleString()} citations</span>
                     </>
                 )}
@@ -103,7 +106,7 @@ function PaperCard({ paper }: { paper: ResearchPaper }) {
             {/* Institution + journal badges */}
             <div className="flex flex-wrap items-center gap-1.5 mt-2">
                 {paper.institutions.slice(0, 2).map((inst) => (
-                    <span key={inst} className="text-[10px] uppercase tracking-wider font-semibold px-1.5 py-0.5 rounded bg-indigo-50 text-indigo-700 border border-indigo-200">
+                    <span key={inst} className="text-[10px] uppercase tracking-wider font-semibold px-1.5 py-0.5 rounded border" style={{ backgroundColor: 'color-mix(in srgb, var(--accent-primary) 8%, transparent)', color: 'var(--accent-primary)', borderColor: 'color-mix(in srgb, var(--accent-primary) 20%, transparent)' }}>
                         {inst}
                     </span>
                 ))}

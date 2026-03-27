@@ -30,34 +30,34 @@ export default function ParliamentSection() {
       <div className="section-header">
         <h2>Parliamentary Records</h2>
       </div>
-      <p className="text-sm text-slate-600 mb-4 max-w-3xl leading-relaxed">
+      <p className="text-sm mb-4 max-w-3xl leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
         Recent mentions of artificial intelligence in House of Commons debates and committee proceedings, sourced from OpenParliament.ca. Tracks which MPs and parties are engaging with AI policy and the tone of their discourse.
       </p>
 
       {loading && (
         <div className="py-8">
-          <p className="text-sm font-medium text-slate-500">Scanning Hansard database...</p>
+          <p className="text-sm font-medium" style={{ color: 'var(--text-muted)' }}>Scanning Hansard database...</p>
         </div>
       )}
 
       {!loading && (!data || data.mentions.length === 0) && (
         <div className="py-8">
-          <p className="text-sm font-medium text-slate-500">No recent parliamentary activity logged.</p>
+          <p className="text-sm font-medium" style={{ color: 'var(--text-muted)' }}>No recent parliamentary activity logged.</p>
         </div>
       )}
 
       {/* Remove hidden overflow that was clipping text, let the table flow */}
       {data && data.mentions.length > 0 && (
-        <div className="saas-card bg-white overflow-x-auto">
+        <div className="saas-card overflow-x-auto" style={{ backgroundColor: 'var(--surface-primary)' }}>
           <table className="w-full text-left border-collapse min-w-[600px]">
-            <thead className="bg-slate-50 border-b border-slate-200">
+            <thead className="border-b" style={{ backgroundColor: 'var(--surface-secondary)', borderColor: 'var(--border-subtle)' }}>
               <tr>
-                <th className="py-3 px-4 md:px-6 text-xs font-semibold tracking-wider uppercase text-slate-500 w-[110px]">Date</th>
-                <th className="py-3 px-4 md:px-6 text-xs font-semibold tracking-wider uppercase text-slate-500 min-w-[140px]">Member</th>
-                <th className="py-3 px-4 md:px-6 text-xs font-semibold tracking-wider uppercase text-slate-500">Excerpt</th>
+                <th className="py-3 px-4 md:px-6 text-xs font-semibold tracking-wider uppercase w-[110px]" style={{ color: 'var(--text-muted)' }}>Date</th>
+                <th className="py-3 px-4 md:px-6 text-xs font-semibold tracking-wider uppercase min-w-[140px]" style={{ color: 'var(--text-muted)' }}>Member</th>
+                <th className="py-3 px-4 md:px-6 text-xs font-semibold tracking-wider uppercase" style={{ color: 'var(--text-muted)' }}>Excerpt</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="divide-y" style={{ borderColor: 'var(--border-subtle)' }}>
               {data.mentions.map((m, i) => (
                 <MentionRow key={`${m.url}-${i}`} mention={m} />
               ))}
@@ -66,29 +66,37 @@ export default function ParliamentSection() {
         </div>
       )}
 
-      <p className="mt-3 text-[11px] font-semibold uppercase tracking-wider text-slate-400 text-right">
-        Source: <a href="https://openparliament.ca" target="_blank" rel="noopener noreferrer" className="hover:text-indigo-600 hover:underline">OpenParliament.ca</a>
+      <p className="mt-3 text-[11px] font-semibold uppercase tracking-wider text-right" style={{ color: 'var(--text-muted)' }}>
+        Source: <a href="https://openparliament.ca" target="_blank" rel="noopener noreferrer" className="hover:underline" style={{ color: 'var(--text-muted)' }} onMouseEnter={e => (e.currentTarget.style.color = 'var(--accent-primary)')} onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-muted)')}>OpenParliament.ca</a>
       </p>
     </section>
   )
 }
 
 function MentionRow({ mention }: { mention: ParliamentMention }) {
-  const badgeClass = PARTY_BADGES[mention.party || ""] || "bg-slate-50 text-slate-600 border-slate-200"
+  const knownBadgeClass = PARTY_BADGES[mention.party || ""]
+  const badgeClass = knownBadgeClass || ""
+  const badgeStyle = !knownBadgeClass ? {
+    backgroundColor: 'var(--surface-secondary)',
+    color: 'var(--text-secondary)',
+    borderColor: 'var(--border-subtle)',
+  } : undefined
 
   return (
-    <tr className="hover:bg-slate-50 transition-colors align-top">
-      <td className="py-4 px-4 md:px-6 text-sm font-medium text-slate-500 whitespace-nowrap">
+    <tr className="transition-colors align-top" style={{ ['--hover-bg' as string]: 'var(--surface-secondary)' }}
+      onMouseEnter={e => (e.currentTarget.style.backgroundColor = 'var(--surface-secondary)')}
+      onMouseLeave={e => (e.currentTarget.style.backgroundColor = '')}>
+      <td className="py-4 px-4 md:px-6 text-sm font-medium whitespace-nowrap" style={{ color: 'var(--text-muted)' }}>
         {mention.date}
       </td>
 
       <td className="py-4 px-4 md:px-6">
         <div className="flex flex-col items-start gap-1.5">
-          <span className="text-sm font-bold text-slate-900">
+          <span className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>
             {mention.speaker}
           </span>
           {mention.party && (
-            <span className={`px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wider rounded border ${badgeClass}`}>
+            <span className={`px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wider rounded border ${badgeClass}`} style={badgeStyle}>
               {mention.party}
             </span>
           )}
@@ -98,13 +106,14 @@ function MentionRow({ mention }: { mention: ParliamentMention }) {
       <td className="py-4 px-4 md:px-6 text-sm leading-relaxed max-w-[500px]">
         {mention.excerpt && (
           /* Eradicate line-clamp to prevent truncation bugs entirely */
-          <p className="text-slate-700 italic border-l-2 border-slate-200 pl-3 mb-2">"{mention.excerpt}"</p>
+          <p className="italic border-l-2 pl-3 mb-2" style={{ color: 'var(--text-secondary)', borderColor: 'var(--border-subtle)' }}>"{mention.excerpt}"</p>
         )}
         <a
           href={mention.url}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-xs font-bold uppercase tracking-wider text-indigo-700 hover:text-indigo-900"
+          className="text-xs font-bold uppercase tracking-wider hover:underline"
+          style={{ color: 'var(--accent-primary)' }}
         >
           View Transcript &rarr;
         </a>

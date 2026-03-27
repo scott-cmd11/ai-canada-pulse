@@ -39,13 +39,13 @@ export default function ResearchSection() {
 
       {loading && (
         <div className="py-8">
-          <p className="text-sm font-medium text-slate-500">Querying academic indices...</p>
+          <p className="text-sm font-medium" style={{ color: 'var(--text-muted)' }}>Querying academic indices...</p>
         </div>
       )}
 
       {!loading && papers.length === 0 && (
         <div className="py-8">
-          <p className="text-sm font-medium text-slate-500">No high-impact research identified for current period.</p>
+          <p className="text-sm font-medium" style={{ color: 'var(--text-muted)' }}>No high-impact research identified for current period.</p>
         </div>
       )}
 
@@ -59,12 +59,12 @@ export default function ResearchSection() {
 
       <div className="mt-3 flex justify-between items-center">
         {lastUpdated && (
-          <p className="text-[11px] text-slate-400">
+          <p className="text-[11px]" style={{ color: 'var(--text-muted)' }}>
             Last updated: {lastUpdated}
           </p>
         )}
-        <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 text-right ml-auto">
-          Source: <a href="https://openalex.org" target="_blank" rel="noopener noreferrer" className="hover:text-indigo-600 hover:underline">OpenAlex API</a>
+        <p className="text-[11px] font-semibold uppercase tracking-wider text-right ml-auto" style={{ color: 'var(--text-muted)' }}>
+          Source: <a href="https://openalex.org" target="_blank" rel="noopener noreferrer" className="hover:underline" style={{ color: 'var(--text-muted)' }} onMouseEnter={e => (e.currentTarget.style.color = 'var(--accent-primary)')} onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-muted)')}>OpenAlex API</a>
         </p>
       </div>
     </section>
@@ -75,13 +75,14 @@ function PaperCard({ paper }: { paper: ResearchPaper }) {
   const link = paper.openAccessUrl || paper.doiUrl
 
   return (
-    <article className="saas-card bg-white p-5 border-l-4 border-l-sky-600 flex flex-col">
+    <article className="saas-card p-5 border-l-4 border-l-sky-600 flex flex-col" style={{ backgroundColor: 'var(--surface-primary)' }}>
       {paper.concepts.length > 0 && (
         <div className="flex flex-wrap gap-1.5 mb-3">
           {paper.concepts.slice(0, 3).map((c) => (
             <span
               key={c}
-              className="text-[11px] uppercase tracking-wider font-semibold px-2 py-0.5 rounded bg-slate-100 text-slate-600"
+              className="text-[11px] uppercase tracking-wider font-semibold px-2 py-0.5 rounded"
+              style={{ backgroundColor: 'var(--surface-secondary)', color: 'var(--text-secondary)' }}
             >
               {c}
             </span>
@@ -89,13 +90,16 @@ function PaperCard({ paper }: { paper: ResearchPaper }) {
         </div>
       )}
 
-      <h3 className="text-base font-bold text-slate-900 leading-snug mb-2">
+      <h3 className="text-base font-bold leading-snug mb-2" style={{ color: 'var(--text-primary)' }}>
         {link ? (
           <a
             href={link}
             target="_blank"
             rel="noopener noreferrer"
-            className="hover:text-indigo-700 hover:underline"
+            className="hover:underline"
+            style={{ color: 'var(--text-primary)' }}
+            onMouseEnter={e => (e.currentTarget.style.color = 'var(--accent-primary)')}
+            onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-primary)')}
           >
             {paper.title}
           </a>
@@ -104,32 +108,32 @@ function PaperCard({ paper }: { paper: ResearchPaper }) {
         )}
       </h3>
 
-      <div className="text-sm text-slate-600 leading-relaxed mb-2">
+      <div className="text-sm leading-relaxed mb-2" style={{ color: 'var(--text-secondary)' }}>
         {paper.authors.join(", ")}
         {paper.authors.length >= 5 && " et al."}
       </div>
 
-      <p className="text-sm text-slate-500 leading-relaxed mb-4 line-clamp-2">
+      <p className="text-sm leading-relaxed mb-4 line-clamp-2" style={{ color: 'var(--text-muted)' }}>
         {paper.summary || "No summary available."}
       </p>
 
-      <div className="flex flex-wrap items-center gap-x-3 gap-y-2 mt-auto text-xs font-medium text-slate-500">
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-2 mt-auto text-xs font-medium" style={{ color: 'var(--text-muted)' }}>
         {paper.institutions[0] && (
           <span className="truncate max-w-[250px]" title={paper.institutions.join(" / ")}>
             {paper.institutions[0]}
           </span>
         )}
-        <span className="text-slate-300 hidden sm:block">•</span>
+        <span className="hidden sm:block" style={{ color: 'var(--border-subtle)' }}>•</span>
         {paper.journal && <span className="truncate max-w-[200px]">{paper.journal}</span>}
-        <span className="text-slate-300 hidden sm:block">•</span>
+        <span className="hidden sm:block" style={{ color: 'var(--border-subtle)' }}>•</span>
         {paper.publicationDate && (
           <>
             <span>{paper.publicationDate}</span>
-            <span className="text-slate-300 hidden sm:block">•</span>
+            <span className="hidden sm:block" style={{ color: 'var(--border-subtle)' }}>•</span>
           </>
         )}
-        <span className="font-semibold text-slate-700 flex items-center gap-1">
-          <svg className="w-3.5 h-3.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <span className="font-semibold flex items-center gap-1" style={{ color: 'var(--text-secondary)' }}>
+          <svg className="w-3.5 h-3.5" style={{ color: 'var(--text-muted)' }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
           </svg>
           {paper.citationCount.toLocaleString()} Citations

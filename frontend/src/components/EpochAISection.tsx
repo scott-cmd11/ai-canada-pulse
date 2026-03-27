@@ -254,7 +254,7 @@ export default function EpochAISection() {
             <section>
                 <h2 className="section-header">AI Capability Tracker</h2>
                 <div className="saas-card p-8 text-center">
-                    <div className="animate-pulse text-sm text-slate-500">Loading AI capability data from METR...</div>
+                    <div className="animate-pulse text-sm" style={{ color: 'var(--text-muted)' }}>Loading AI capability data from METR...</div>
                 </div>
             </section>
         )
@@ -265,7 +265,7 @@ export default function EpochAISection() {
             <section>
                 <h2 className="section-header">AI Capability Tracker</h2>
                 <div className="saas-card p-6 text-center">
-                    <p className="text-sm text-slate-500">AI capability data currently unavailable.</p>
+                    <p className="text-sm" style={{ color: 'var(--text-muted)' }}>AI capability data currently unavailable.</p>
                 </div>
             </section>
         )
@@ -281,17 +281,18 @@ export default function EpochAISection() {
                     href="https://metr.org/time-horizons/"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-[10px] font-semibold text-indigo-600 hover:text-indigo-800 hover:underline uppercase tracking-wider"
+                    className="text-[10px] font-semibold hover:underline uppercase tracking-wider"
+                    style={{ color: 'var(--accent-primary)' }}
                 >
                     METR.org →
                 </a>
             </div>
-            <p className="text-sm text-slate-600 mb-4 max-w-3xl leading-relaxed">
+            <p className="text-sm mb-4 max-w-3xl leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
                 Measures how long a task (by human completion time) an AI agent can reliably complete.{" "}
                 The <strong>50% time horizon</strong> — the task duration at which a model succeeds half the time — has been{" "}
                 <strong>doubling every ~{Math.round(stats.doublingTimeDays / 30)} months</strong>.{" "}
                 Data from{" "}
-                <a href="https://metr.org/time-horizons/" target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:underline font-medium">
+                <a href="https://metr.org/time-horizons/" target="_blank" rel="noopener noreferrer" className="hover:underline font-medium" style={{ color: 'var(--accent-primary)' }}>
                     METR
                 </a>
                 's evaluations of {stats.totalModels} frontier AI models.
@@ -328,7 +329,7 @@ export default function EpochAISection() {
             {/* Time horizon chart (linear scale) */}
             <div className="saas-card p-4 md:p-6 mb-4">
                 <div className="flex items-center justify-between mb-3">
-                    <p className="text-xs font-semibold tracking-wider uppercase text-slate-500">
+                    <p className="text-xs font-semibold tracking-wider uppercase" style={{ color: 'var(--text-muted)' }}>
                         Task-Completion Time Horizons (50% Success, Linear Scale)
                     </p>
                 </div>
@@ -346,12 +347,12 @@ export default function EpochAISection() {
             {/* Top frontier models table */}
             {topModels.length > 0 && (
                 <div className="saas-card overflow-hidden">
-                    <div className="px-5 py-3 border-b border-slate-200 bg-slate-50/50">
-                        <p className="text-[11px] font-bold text-slate-700 uppercase tracking-widest">
+                    <div className="px-5 py-3 border-b" style={{ borderColor: 'var(--border-subtle)', backgroundColor: 'color-mix(in srgb, var(--surface-secondary) 50%, transparent)' }}>
+                        <p className="text-[11px] font-bold uppercase tracking-widest" style={{ color: 'var(--text-secondary)' }}>
                             Top Frontier Models by Time Horizon
                         </p>
                     </div>
-                    <div className="divide-y divide-slate-100">
+                    <div className="divide-y" style={{ borderColor: 'var(--border-subtle)' }}>
                         {topModels.map((m, i) => (
                             <div key={`${m.id}-${i}`} className="px-5 py-3 flex items-center justify-between gap-4">
                                 <div className="min-w-0 flex items-center gap-3">
@@ -360,18 +361,18 @@ export default function EpochAISection() {
                                         style={{ backgroundColor: getModelColor(m.name) }}
                                     />
                                     <div>
-                                        <p className="text-sm font-bold text-slate-900 truncate">{m.name}</p>
-                                        <p className="text-xs text-slate-500">{getModelFamily(m.name)} · {formatDate(m.releaseDate)}</p>
+                                        <p className="text-sm font-bold truncate" style={{ color: 'var(--text-primary)' }}>{m.name}</p>
+                                        <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{getModelFamily(m.name)} · {formatDate(m.releaseDate)}</p>
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-3 shrink-0">
                                     <div className="text-right">
-                                        <p className="text-sm font-bold text-slate-900">{formatHours(m.p50Hours)}</p>
-                                        <p className="text-[10px] text-slate-400">50% horizon</p>
+                                        <p className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>{formatHours(m.p50Hours)}</p>
+                                        <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>50% horizon</p>
                                     </div>
                                     <div className="text-right">
-                                        <p className="text-sm font-bold text-slate-700">{formatHours(m.p80Hours)}</p>
-                                        <p className="text-[10px] text-slate-400">80% horizon</p>
+                                        <p className="text-sm font-bold" style={{ color: 'var(--text-secondary)' }}>{formatHours(m.p80Hours)}</p>
+                                        <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>80% horizon</p>
                                     </div>
                                     {m.isSota && (
                                         <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200 uppercase">
@@ -382,10 +383,10 @@ export default function EpochAISection() {
                             </div>
                         ))}
                     </div>
-                    <div className="px-5 py-2.5 border-t border-slate-100 bg-slate-50/30">
-                        <p className="text-[10px] text-slate-400 italic">
+                    <div className="px-5 py-2.5 border-t" style={{ borderColor: 'var(--border-subtle)', backgroundColor: 'color-mix(in srgb, var(--surface-secondary) 30%, transparent)' }}>
+                        <p className="text-[10px] italic" style={{ color: 'var(--text-muted)' }}>
                             Data:{" "}
-                            <a href="https://metr.org/time-horizons/" target="_blank" rel="noopener noreferrer" className="text-indigo-500 hover:underline">
+                            <a href="https://metr.org/time-horizons/" target="_blank" rel="noopener noreferrer" className="hover:underline" style={{ color: 'var(--accent-primary)' }}>
                                 METR
                             </a>{" "}
                             · Task-Completion Time Horizons v1.1
@@ -417,13 +418,13 @@ function StatCard({
 
     return (
         <div className={`saas-card p-4 border ${colorMap[color]}`}>
-            <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 mb-1.5">
+            <p className="text-[10px] font-semibold uppercase tracking-wider mb-1.5" style={{ color: 'var(--text-muted)' }}>
                 {label}
             </p>
             <p className={`text-lg sm:text-xl font-bold tracking-tight leading-tight ${colorMap[color].split(" ")[0]}`}>
                 {value}
             </p>
-            <p className="text-[10px] text-slate-400 mt-1">{sublabel}</p>
+            <p className="text-[10px] mt-1" style={{ color: 'var(--text-muted)' }}>{sublabel}</p>
         </div>
     )
 }

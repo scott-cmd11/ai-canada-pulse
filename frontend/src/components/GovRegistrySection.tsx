@@ -45,29 +45,29 @@ export default function GovRegistrySection() {
         <h2 className="flex justify-between items-baseline">
           <span>Federal AI Registry</span>
           {!loading && systems.length > 0 && (
-            <span className="text-sm font-medium text-slate-500">
+            <span className="text-sm font-medium" style={{ color: 'var(--text-muted)' }}>
               {systems.length} deployments tracked
             </span>
           )}
         </h2>
       </div>
-      <p className="text-sm text-slate-600 mb-4 max-w-3xl leading-relaxed">
+      <p className="text-sm mb-4 max-w-3xl leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
         AI systems deployed by federal departments, sourced from{" "}
-        <a href="https://open.canada.ca/data/en/dataset/fcbc0200-79ba-4fa4-94a6-00e32facea6b" target="_blank" rel="noopener noreferrer" className="text-indigo-700 hover:underline">Open Canada</a>.
+        <a href="https://open.canada.ca/data/en/dataset/fcbc0200-79ba-4fa4-94a6-00e32facea6b" target="_blank" rel="noopener noreferrer" className="hover:underline" style={{ color: 'var(--accent-primary)' }}>Open Canada</a>.
         Risk levels are assigned by each department using Canada&apos;s{" "}
-        <a href="https://www.canada.ca/en/government/system/digital-government/digital-government-innovations/responsible-use-ai/algorithmic-impact-assessment.html" target="_blank" rel="noopener noreferrer" className="text-indigo-700 hover:underline">Algorithmic Impact Assessment (AIA)</a>{" "}
+        <a href="https://www.canada.ca/en/government/system/digital-government/digital-government-innovations/responsible-use-ai/algorithmic-impact-assessment.html" target="_blank" rel="noopener noreferrer" className="hover:underline" style={{ color: 'var(--accent-primary)' }}>Algorithmic Impact Assessment (AIA)</a>{" "}
         framework — a mandatory tool that scores AI systems from Level I (minimal) to Level IV (high risk) based on potential impact on rights, health, and safety.
       </p>
 
       {loading && (
         <div className="py-6">
-          <p className="text-sm font-medium text-slate-500">Synchronizing with TBS database...</p>
+          <p className="text-sm font-medium" style={{ color: 'var(--text-muted)' }}>Synchronizing with TBS database...</p>
         </div>
       )}
 
       {!loading && systems.length === 0 && (
         <div className="py-6">
-          <p className="text-sm font-medium text-slate-500">Failed to retrieve registry definitions.</p>
+          <p className="text-sm font-medium" style={{ color: 'var(--text-muted)' }}>Failed to retrieve registry definitions.</p>
         </div>
       )}
 
@@ -90,27 +90,30 @@ export default function GovRegistrySection() {
       {shown.length > 0 && (
         <div className="flex flex-col gap-2.5">
           {shown.map((sys) => (
-            <div key={sys.id} className="saas-card bg-white p-4">
+            <div key={sys.id} className="saas-card p-4">
 
               <div className="flex flex-col md:flex-row md:items-start justify-between gap-3">
                 <div className="flex-1 min-w-0">
-                  <div className="flex flex-wrap items-center gap-2 mb-1 text-xs font-semibold text-slate-500 uppercase tracking-wide">
-                    <span className="text-slate-700">{sys.department}</span>
+                  <div className="flex flex-wrap items-center gap-2 mb-1 text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--text-muted)' }}>
+                    <span style={{ color: 'var(--text-secondary)' }}>{sys.department}</span>
                     {sys.datePublished && (
                       <>
-                        <span className="text-slate-300">•</span>
+                        <span style={{ color: 'var(--border-subtle)' }}>•</span>
                         <span>{sys.datePublished}</span>
                       </>
                     )}
                   </div>
 
-                  <h3 className="text-sm font-bold text-slate-900 leading-snug">
+                  <h3 className="text-sm font-bold leading-snug" style={{ color: 'var(--text-primary)' }}>
                     {sys.url ? (
                       <a
                         href={sys.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="hover:text-indigo-700 hover:underline"
+                        className="hover:underline"
+                        style={{ color: 'var(--text-primary)' }}
+                        onMouseEnter={e => (e.currentTarget.style.color = 'var(--accent-primary)')}
+                        onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-primary)')}
                       >
                         {sys.title}
                       </a>
@@ -120,7 +123,7 @@ export default function GovRegistrySection() {
                   </h3>
 
                   {sys.description && (
-                    <p className="text-xs text-slate-500 mt-1 leading-relaxed line-clamp-2">
+                    <p className="text-xs mt-1 leading-relaxed line-clamp-2" style={{ color: 'var(--text-muted)' }}>
                       {sys.description}
                     </p>
                   )}
@@ -143,26 +146,27 @@ export default function GovRegistrySection() {
       <div className="flex flex-wrap items-center justify-between mt-3 gap-2">
         <div className="flex items-center gap-3">
           {remaining > 0 && (
-            <span className="text-xs text-slate-500">+{remaining} more in registry</span>
+            <span className="text-xs" style={{ color: 'var(--text-muted)' }}>+{remaining} more in registry</span>
           )}
           <a
             href={REGISTRY_URL}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-xs font-semibold text-indigo-700 hover:text-indigo-800 hover:underline"
+            className="text-xs font-semibold hover:underline"
+            style={{ color: 'var(--accent-primary)' }}
           >
             View Full Registry →
           </a>
         </div>
         {fetchedAt && (
-          <span className="text-[10px] text-slate-400 uppercase tracking-wider">
+          <span className="text-[10px] uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>
             Last updated: {fetchedAt}
           </span>
         )}
       </div>
 
-      <p className="mt-2 text-[11px] font-semibold uppercase tracking-wider text-slate-400 text-right">
-        Source: <a href="https://open.canada.ca/data/en/dataset/fcbc0200-79ba-4fa4-94a6-00e32facea6b" target="_blank" rel="noopener noreferrer" className="hover:text-indigo-600 hover:underline">Open Canada</a> · Federal AI Registry
+      <p className="mt-2 text-[11px] font-semibold uppercase tracking-wider text-right" style={{ color: 'var(--text-muted)' }}>
+        Source: <a href="https://open.canada.ca/data/en/dataset/fcbc0200-79ba-4fa4-94a6-00e32facea6b" target="_blank" rel="noopener noreferrer" className="hover:underline" style={{ color: 'var(--text-muted)' }}>Open Canada</a> · Federal AI Registry
       </p>
     </section>
   )

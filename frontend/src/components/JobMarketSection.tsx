@@ -37,7 +37,7 @@ export default function JobMarketSection({ region }: JobMarketSectionProps = {})
           <h2>Labour Demand</h2>
         </div>
         <div className="saas-card p-6">
-          <p className="text-sm font-medium text-slate-500">Analyzing national labour patterns...</p>
+          <p className="text-sm font-medium" style={{ color: 'var(--text-muted)' }}>Analyzing national labour patterns...</p>
         </div>
       </section>
     )
@@ -50,7 +50,7 @@ export default function JobMarketSection({ region }: JobMarketSectionProps = {})
           <h2>Labour Demand</h2>
         </div>
         <div className="saas-card p-6">
-          <p className="text-sm font-medium text-slate-500">
+          <p className="text-sm font-medium" style={{ color: 'var(--text-muted)' }}>
             Labour data currently unavailable.
           </p>
         </div>
@@ -124,23 +124,23 @@ export default function JobMarketSection({ region }: JobMarketSectionProps = {})
       </div>
 
       {/* KPI Row — stacks on narrow viewports */}
-      <div className="saas-card mb-6 grid grid-cols-1 sm:grid-cols-2 divide-y sm:divide-y-0 sm:divide-x divide-slate-200">
-        <div className="p-5 flex flex-col justify-center">
-          <p className="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">
+      <div className="saas-card mb-6 grid grid-cols-1 sm:grid-cols-2">
+        <div className="p-5 flex flex-col justify-center border-b sm:border-b-0 sm:border-r" style={{ borderColor: 'var(--border-subtle)' }}>
+          <p className="text-xs font-semibold uppercase tracking-wider mb-1" style={{ color: 'var(--text-muted)' }}>
             Active Postings
           </p>
-          <p className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 leading-none">
+          <p className="text-2xl sm:text-3xl font-bold tracking-tight leading-none" style={{ color: 'var(--text-primary)' }}>
             {data.totalAIJobs.toLocaleString()}
           </p>
         </div>
 
         {data.averageSalary && (
           <div className="p-5 flex flex-col justify-center">
-            <p className="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">
+            <p className="text-xs font-semibold uppercase tracking-wider mb-1" style={{ color: 'var(--text-muted)' }}>
               Avg. Base Salary
             </p>
-            <p className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 leading-none">
-              ${Math.round(data.averageSalary / 1000)}k <span className="text-sm font-medium text-slate-400">CAD</span>
+            <p className="text-2xl sm:text-3xl font-bold tracking-tight leading-none" style={{ color: 'var(--text-primary)' }}>
+              ${Math.round(data.averageSalary / 1000)}k <span className="text-sm font-medium" style={{ color: 'var(--text-muted)' }}>CAD</span>
             </p>
           </div>
         )}
@@ -151,14 +151,14 @@ export default function JobMarketSection({ region }: JobMarketSectionProps = {})
 
         {/* Role Cluster list */}
         <div className="saas-card p-5 lg:col-span-2 border-t-4 border-t-sky-700">
-          <p className="text-sm font-bold text-slate-900 border-b border-slate-100 pb-3 mb-4">
+          <p className="text-sm font-bold pb-3 mb-4 border-b" style={{ color: 'var(--text-primary)', borderColor: 'var(--border-subtle)' }}>
             Demand by Role Cluster
           </p>
           <div className="space-y-3">
             {data.searchTerms.map((t) => (
               <div key={t.term} className="flex justify-between items-center gap-3 text-sm">
-                <span className="font-medium text-slate-600 min-w-0">{t.term}</span>
-                <span className="font-bold text-slate-900 bg-slate-50 px-2.5 py-0.5 rounded border border-slate-100 shrink-0 tabular-nums">
+                <span className="font-medium min-w-0" style={{ color: 'var(--text-secondary)' }}>{t.term}</span>
+                <span className="font-bold px-2.5 py-0.5 rounded border shrink-0 tabular-nums" style={{ color: 'var(--text-primary)', backgroundColor: 'var(--surface-secondary)', borderColor: 'var(--border-subtle)' }}>
                   {t.count.toLocaleString()}
                 </span>
               </div>
@@ -168,7 +168,7 @@ export default function JobMarketSection({ region }: JobMarketSectionProps = {})
 
         {/* Regional Distribution chart */}
         <div className="saas-card p-5 lg:col-span-3 flex flex-col">
-          <p className="text-sm font-bold text-slate-900 mb-4">
+          <p className="text-sm font-bold mb-4" style={{ color: 'var(--text-primary)' }}>
             Regional Distribution
           </p>
           <div className="flex-1 min-h-[250px] w-full">

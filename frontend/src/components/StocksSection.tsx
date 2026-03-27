@@ -31,7 +31,7 @@ export default function StocksSection({ region }: StocksSectionProps = {}) {
           <h2>Market Performance</h2>
         </div>
         <div className="saas-card p-6">
-          <p className="text-sm font-medium text-slate-500">Retrieving TSX market data...</p>
+          <p className="text-sm font-medium" style={{ color: 'var(--text-muted)' }}>Retrieving TSX market data...</p>
         </div>
       </section>
     )
@@ -44,7 +44,7 @@ export default function StocksSection({ region }: StocksSectionProps = {}) {
           <h2>Market Performance</h2>
         </div>
         <div className="saas-card p-6">
-          <p className="text-sm font-medium text-slate-500">Market data feed currently unavailable.</p>
+          <p className="text-sm font-medium" style={{ color: 'var(--text-muted)' }}>Market data feed currently unavailable.</p>
         </div>
       </section>
     )
@@ -61,20 +61,20 @@ export default function StocksSection({ region }: StocksSectionProps = {}) {
         <h2 className="flex flex-wrap items-center justify-between gap-2">
           <span>Market Performance</span>
           {data.fetchedAt && (
-            <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 bg-slate-100 px-2 py-0.5 rounded">
+            <span className="text-xs font-semibold uppercase tracking-wider px-2 py-0.5 rounded" style={{ color: 'var(--text-muted)', backgroundColor: 'var(--surface-secondary)' }}>
               As of {new Date(data.fetchedAt).toLocaleTimeString()}
             </span>
           )}
         </h2>
       </div>
 
-      <div className="saas-card mb-4 flex flex-col md:flex-row divide-y md:divide-y-0 md:divide-x divide-slate-200">
-        <div className="p-4 sm:p-5 flex-1 flex flex-col justify-center">
-          <p className="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">
+      <div className="saas-card mb-4 flex flex-col md:flex-row">
+        <div className="p-4 sm:p-5 flex-1 flex flex-col justify-center border-b md:border-b-0 md:border-r" style={{ borderColor: 'var(--border-subtle)' }}>
+          <p className="text-xs font-semibold uppercase tracking-wider mb-1" style={{ color: 'var(--text-muted)' }}>
             AI Index Average
           </p>
           <div className="flex items-baseline gap-2">
-            <p className="text-2xl font-bold text-slate-900 tracking-tight">
+            <p className="text-2xl font-bold tracking-tight" style={{ color: 'var(--text-primary)' }}>
               {avgChange >= 0 ? "+" : ""}{avgChange.toFixed(2)}%
             </p>
             <span className={`text-sm font-bold ${avgChange >= 0 ? 'text-green-600' : 'text-red-600'}`}>
@@ -85,11 +85,11 @@ export default function StocksSection({ region }: StocksSectionProps = {}) {
 
         <div className="p-4 sm:p-5 flex-1 flex flex-col justify-center gap-2">
           <div className="flex justify-between items-center text-sm font-medium">
-            <span className="text-slate-600">Advancing Issues</span>
+            <span style={{ color: 'var(--text-secondary)' }}>Advancing Issues</span>
             <span className="text-green-600 font-bold bg-green-50 px-2 rounded-full">{gainers}</span>
           </div>
           <div className="flex justify-between items-center text-sm font-medium">
-            <span className="text-slate-600">Declining Issues</span>
+            <span style={{ color: 'var(--text-secondary)' }}>Declining Issues</span>
             <span className="text-red-600 font-bold bg-red-50 px-2 rounded-full">{losers}</span>
           </div>
         </div>
@@ -97,15 +97,15 @@ export default function StocksSection({ region }: StocksSectionProps = {}) {
 
       <div className="saas-card overflow-x-auto">
         <table className="w-full text-left border-collapse min-w-[500px]">
-          <thead className="bg-slate-50 border-b border-slate-200">
+          <thead className="border-b" style={{ backgroundColor: 'var(--surface-secondary)', borderColor: 'var(--border-subtle)' }}>
             <tr>
-              <th className="py-3 px-4 sm:px-5 text-xs font-semibold tracking-wider uppercase text-slate-500">Ticker</th>
-              <th className="py-3 px-4 sm:px-5 text-xs font-semibold tracking-wider uppercase text-slate-500">Company</th>
-              <th className="py-3 px-4 sm:px-5 text-xs font-semibold tracking-wider uppercase text-slate-500 text-right">Price</th>
-              <th className="py-3 px-4 sm:px-5 text-xs font-semibold tracking-wider uppercase text-slate-500 text-right">Change</th>
+              <th className="py-3 px-4 sm:px-5 text-xs font-semibold tracking-wider uppercase" style={{ color: 'var(--text-muted)' }}>Ticker</th>
+              <th className="py-3 px-4 sm:px-5 text-xs font-semibold tracking-wider uppercase" style={{ color: 'var(--text-muted)' }}>Company</th>
+              <th className="py-3 px-4 sm:px-5 text-xs font-semibold tracking-wider uppercase text-right" style={{ color: 'var(--text-muted)' }}>Price</th>
+              <th className="py-3 px-4 sm:px-5 text-xs font-semibold tracking-wider uppercase text-right" style={{ color: 'var(--text-muted)' }}>Change</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100">
+          <tbody>
             {data.quotes.map((q) => (
               <StockRow key={q.symbol} quote={q} />
             ))}
@@ -121,14 +121,17 @@ function StockRow({ quote }: { quote: StockQuote }) {
   const colorClass = isUp ? "text-green-600" : "text-red-600"
 
   return (
-    <tr className="hover:bg-slate-50 transition-colors">
-      <td className="py-3 px-4 sm:px-5 text-sm font-bold text-slate-900">
+    <tr className="transition-colors border-b last:border-b-0" style={{ borderColor: 'var(--border-subtle)' }}
+      onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--surface-secondary)')}
+      onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
+    >
+      <td className="py-3 px-4 sm:px-5 text-sm font-bold" style={{ color: 'var(--text-primary)' }}>
         {quote.symbol.replace(".TO", "").replace(".V", "")}
       </td>
-      <td className="py-3 px-4 sm:px-5 text-sm font-medium text-slate-600 whitespace-normal">
+      <td className="py-3 px-4 sm:px-5 text-sm font-medium whitespace-normal" style={{ color: 'var(--text-secondary)' }}>
         {quote.name}
       </td>
-      <td className="py-3 px-4 sm:px-5 text-sm font-bold text-slate-900 text-right w-[100px]">
+      <td className="py-3 px-4 sm:px-5 text-sm font-bold text-right w-[100px]" style={{ color: 'var(--text-primary)' }}>
         ${quote.price.toFixed(2)}
       </td>
       <td className={`py-3 px-4 sm:px-5 text-sm font-bold text-right w-[100px] ${colorClass}`}>
