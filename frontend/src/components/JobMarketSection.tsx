@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import dynamic from "next/dynamic"
 import type { JobMarketData } from "@/lib/jobs-client"
 import { useChartTheme } from "@/hooks/useChartTheme"
+import SourceAttribution from '@/components/SourceAttribution'
 import echarts from "@/lib/echarts-custom"
 
 const ReactECharts = dynamic(() => import("echarts-for-react/lib/core"), { ssr: false })
@@ -180,6 +181,7 @@ export default function JobMarketSection({ region }: JobMarketSectionProps = {})
           </div>
         </div>
       </div>
+      <SourceAttribution sourceId="jobs" />
     </section>
   )
 }

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import type { GitHubData } from "@/lib/github-client"
+import SourceAttribution from '@/components/SourceAttribution'
 
 export default function OpenSourceSection() {
     const [gh, setGh] = useState<GitHubData | null>(null)
@@ -100,9 +101,7 @@ export default function OpenSourceSection() {
                         </div>
                     )}
 
-                    <p className="mt-3 text-[11px] font-semibold uppercase tracking-wider text-right" style={{ color: 'var(--text-muted)' }}>
-                        Source: <a href="https://github.com" target="_blank" rel="noopener noreferrer" className="hover:underline" style={{ color: 'var(--text-muted)' }} onMouseEnter={e => (e.currentTarget.style.color = 'var(--accent-primary)')} onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-muted)')}>GitHub Search API</a> · Updated every 6 hrs
-                    </p>
+                    <SourceAttribution sourceId="github" />
                 </>
             )}
         </section>

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import type { GovAISystem } from "@/lib/gov-ai-registry-client"
+import SourceAttribution from '@/components/SourceAttribution'
 
 const RISK_MAP: Record<string, { classes: string; label: string }> = {
   High: { classes: "bg-red-50 text-red-700 border-red-200", label: "High Risk" },
@@ -165,9 +166,7 @@ export default function GovRegistrySection() {
         )}
       </div>
 
-      <p className="mt-2 text-[11px] font-semibold uppercase tracking-wider text-right" style={{ color: 'var(--text-muted)' }}>
-        Source: <a href="https://open.canada.ca/data/en/dataset/fcbc0200-79ba-4fa4-94a6-00e32facea6b" target="_blank" rel="noopener noreferrer" className="hover:underline" style={{ color: 'var(--text-muted)' }}>Open Canada</a> · Federal AI Registry
-      </p>
+      <SourceAttribution sourceId="gov-ai-registry" />
     </section>
   )
 }

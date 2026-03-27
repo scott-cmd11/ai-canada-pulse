@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import type { ResearchPaper } from "@/lib/research-client"
+import SourceAttribution from '@/components/SourceAttribution'
 
 export default function ResearchSection() {
   const [papers, setPapers] = useState<ResearchPaper[]>([])
@@ -57,16 +58,7 @@ export default function ResearchSection() {
         </div>
       )}
 
-      <div className="mt-3 flex justify-between items-center">
-        {lastUpdated && (
-          <p className="text-[11px]" style={{ color: 'var(--text-muted)' }}>
-            Last updated: {lastUpdated}
-          </p>
-        )}
-        <p className="text-[11px] font-semibold uppercase tracking-wider text-right ml-auto" style={{ color: 'var(--text-muted)' }}>
-          Source: <a href="https://openalex.org" target="_blank" rel="noopener noreferrer" className="hover:underline" style={{ color: 'var(--text-muted)' }} onMouseEnter={e => (e.currentTarget.style.color = 'var(--accent-primary)')} onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-muted)')}>OpenAlex API</a>
-        </p>
-      </div>
+      <SourceAttribution sourceId="openalex" lastUpdated={lastUpdated} />
     </section>
   )
 }

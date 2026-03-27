@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import type { StocksData, StockQuote } from "@/lib/stocks-client"
+import SourceAttribution from '@/components/SourceAttribution'
 
 interface StocksSectionProps {
   region?: string
@@ -112,6 +113,7 @@ export default function StocksSection({ region }: StocksSectionProps = {}) {
           </tbody>
         </table>
       </div>
+      <SourceAttribution sourceId="stocks" />
     </section>
   )
 }

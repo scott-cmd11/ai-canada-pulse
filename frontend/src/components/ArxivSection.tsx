@@ -3,6 +3,7 @@
 import { useState, useCallback } from "react"
 import type { ResearchPaper } from "@/lib/research-client"
 import { usePolling } from "@/hooks/usePolling"
+import SourceAttribution from '@/components/SourceAttribution'
 
 interface ArxivSectionProps {
     // When provided, only display papers whose institutions list contains at least
@@ -16,7 +17,7 @@ export default function ArxivSection({ institutionFilter }: ArxivSectionProps = 
         return papers && papers.length > 0 ? papers : null
     }, [])
 
-    const { data: rawPapers, loading } = usePolling<ResearchPaper[]>("/api/v1/research", {
+    const { data: rawPapers, loading, lastUpdated } = usePolling<ResearchPaper[]>("/api/v1/research", {
         intervalMs: 600_000, // 10 minutes — research data changes slowly
         transform,
     })
@@ -62,6 +63,7 @@ export default function ArxivSection({ institutionFilter }: ArxivSectionProps = 
                     <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Unable to fetch research data at this time.</p>
                 </div>
             )}
+            <SourceAttribution sourceId="arxiv" lastUpdated={lastUpdated} />
         </section >
     )
 }

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import type { HuggingFaceData } from "@/lib/huggingface-client"
+import SourceAttribution from '@/components/SourceAttribution'
 
 export default function HuggingFaceSection() {
     const [data, setData] = useState<HuggingFaceData | null>(null)
@@ -72,6 +73,7 @@ export default function HuggingFaceSection() {
                     </div>
                 ))}
             </div>
+            <SourceAttribution sourceId="huggingface" />
         </section>
     )
 }

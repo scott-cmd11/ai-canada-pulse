@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import type { ParliamentMention, ParliamentData } from "@/lib/parliament-client"
+import SourceAttribution from '@/components/SourceAttribution'
 
 const PARTY_BADGES: Record<string, string> = {
   Liberal: "bg-red-50 text-red-700 border-red-200",
@@ -66,9 +67,7 @@ export default function ParliamentSection() {
         </div>
       )}
 
-      <p className="mt-3 text-[11px] font-semibold uppercase tracking-wider text-right" style={{ color: 'var(--text-muted)' }}>
-        Source: <a href="https://openparliament.ca" target="_blank" rel="noopener noreferrer" className="hover:underline" style={{ color: 'var(--text-muted)' }} onMouseEnter={e => (e.currentTarget.style.color = 'var(--accent-primary)')} onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-muted)')}>OpenParliament.ca</a>
-      </p>
+      <SourceAttribution sourceId="openparliament" />
     </section>
   )
 }

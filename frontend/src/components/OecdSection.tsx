@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import dynamic from "next/dynamic"
 import type { OecdData } from "@/lib/oecd-client"
+import SourceAttribution from '@/components/SourceAttribution'
 import echarts from "@/lib/echarts-custom"
 
 const ReactECharts = dynamic(() => import("echarts-for-react/lib/core"), { ssr: false })
@@ -129,9 +130,7 @@ export default function OecdSection() {
                 </div>
             </div>
 
-            <p className="mt-3 text-[11px] font-semibold uppercase tracking-wider text-right" style={{ color: 'var(--text-muted)' }}>
-                Source: <a href="https://oecd.ai" target="_blank" rel="noopener noreferrer" className="hover:underline" style={{ color: 'var(--text-muted)' }}>OECD AI Policy Observatory</a>
-            </p>
+            <SourceAttribution sourceId="oecd" />
         </section>
     )
 }

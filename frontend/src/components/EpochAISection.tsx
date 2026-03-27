@@ -3,6 +3,7 @@
 import { useCallback, useMemo } from "react"
 import dynamic from "next/dynamic"
 import { usePolling } from "@/hooks/usePolling"
+import SourceAttribution from '@/components/SourceAttribution'
 import type { METRModel, METRStats } from "@/lib/epoch-client"
 import echarts from "@/lib/echarts-custom"
 
@@ -80,7 +81,7 @@ export default function EpochAISection() {
         return { models, stats } as METRData
     }, [])
 
-    const { data, loading } = usePolling<METRData>("/api/v1/epoch-models", {
+    const { data, loading, lastUpdated } = usePolling<METRData>("/api/v1/epoch-models", {
         intervalMs: 1_800_000, // 30 minutes
         transform,
     })
@@ -394,6 +395,7 @@ export default function EpochAISection() {
                     </div>
                 </div>
             )}
+            <SourceAttribution sourceId="epoch-ai" lastUpdated={lastUpdated} />
         </section>
     )
 }
