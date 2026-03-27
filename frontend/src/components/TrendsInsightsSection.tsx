@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import type { ProvinceInterest } from "@/lib/trends-regional-client"
 import SourceAttribution from '@/components/SourceAttribution'
+import { SkeletonTable } from '@/components/Skeleton'
 
 interface TrendsInsightsSectionProps {
     highlightProvince?: string // Province code to visually highlight, e.g. "ON"
@@ -41,9 +42,7 @@ export default function TrendsInsightsSection({ highlightProvince }: TrendsInsig
             {/* Provincial Breakdown */}
             <div className="saas-card p-5">
                 {loading && (
-                    <div className="py-8 text-center">
-                        <div className="animate-pulse text-sm" style={{ color: 'var(--text-muted)' }}>Loading regional data...</div>
-                    </div>
+                    <SkeletonTable rows={6} />
                 )}
 
                 {!loading && filtered.length > 0 && (

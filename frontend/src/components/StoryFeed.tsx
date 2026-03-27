@@ -3,6 +3,7 @@
 import Link from "next/link"
 import SourceAttribution from '@/components/SourceAttribution'
 import ScopeLabel from '@/components/ScopeLabel'
+import { SkeletonStoryFeed } from '@/components/Skeleton'
 import { useState, useCallback } from "react"
 import type { Category, Story } from "@/lib/mock-data"
 import StoryCard from "./StoryCard"
@@ -114,9 +115,9 @@ export default function StoryFeed({ region }: StoryFeedProps = {}) {
         ))}
       </div>
 
-      {loading && (
-        <div className="py-8 text-center">
-          <p className="text-sm font-medium" style={{ color: 'var(--text-muted)' }}>Retrieving Canada signals...</p>
+      {loading && visible.length === 0 && (
+        <div className="mt-4">
+          <SkeletonStoryFeed count={3} />
         </div>
       )}
 

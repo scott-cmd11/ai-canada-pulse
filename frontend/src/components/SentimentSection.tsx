@@ -1,6 +1,7 @@
 "use client"
 
 import React, { useCallback } from "react"
+import { SectionSkeleton } from '@/components/Skeleton'
 import dynamic from "next/dynamic"
 import type { SentimentData } from "@/lib/gdelt-client"
 import { usePolling } from "@/hooks/usePolling"
@@ -29,16 +30,7 @@ export default function SentimentSection({ region }: SentimentSectionProps = {})
   const ct = useChartTheme()
 
   if (loading) {
-    return (
-      <section>
-        <div className="section-header">
-          <h2>Media Sentiment Analysis</h2>
-        </div>
-        <div className="saas-card p-6">
-          <p className="text-sm font-medium" style={{ color: 'var(--text-muted)' }}>Loading sentiment data...</p>
-        </div>
-      </section>
-    )
+    return <SectionSkeleton title="Media Sentiment Analysis" variant="chart" />
   }
 
   if (!data) {

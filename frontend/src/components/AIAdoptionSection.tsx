@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import dynamic from "next/dynamic"
 import type { StatCanAdoptionData } from "@/lib/statcan-sdmx-client"
+import { SectionSkeleton } from '@/components/Skeleton'
 import echarts from "@/lib/echarts-custom"
 
 const ReactECharts = dynamic(() => import("echarts-for-react/lib/core"), { ssr: false })
@@ -21,14 +22,7 @@ export default function AIAdoptionSection() {
     }, [])
 
     if (loading) {
-        return (
-            <section>
-                <h2 className="section-header mb-4">AI Adoption by Industry</h2>
-                <div className="saas-card p-8 text-center">
-                    <div className="animate-pulse text-sm" style={{ color: 'var(--text-muted)' }}>Loading adoption data...</div>
-                </div>
-            </section>
-        )
+        return <SectionSkeleton title="AI Adoption by Industry" variant="chart" />
     }
 
     if (!data) return null

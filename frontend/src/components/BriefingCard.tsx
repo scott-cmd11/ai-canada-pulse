@@ -3,12 +3,25 @@
 import type { Story } from "@/lib/mock-data"
 import { useStories } from "@/hooks/useStories"
 import { relativeTime } from "@/lib/relative-time"
+import { SkeletonBar } from '@/components/Skeleton'
 
 export default function BriefingCard() {
   const { stories } = useStories()
 
   const topStory: Story | undefined = stories.find((s) => s.isBriefingTop) || stories[0]
-  if (!topStory) return null
+  if (!topStory) {
+    return (
+      <article className="saas-card flex flex-col gap-5 border-l-[3px] p-6 sm:p-8" style={{ borderLeftColor: 'var(--border-subtle)' }}>
+        <SkeletonBar width="80px" height="22px" />
+        <div className="space-y-3">
+          <SkeletonBar width="85%" height="28px" />
+          <SkeletonBar width="100%" height="12px" />
+          <SkeletonBar width="70%" height="12px" />
+        </div>
+        <SkeletonBar width="120px" height="12px" />
+      </article>
+    )
+  }
 
   return (
     <article

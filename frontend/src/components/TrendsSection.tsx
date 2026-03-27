@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { SectionSkeleton } from '@/components/Skeleton'
 import dynamic from "next/dynamic"
 import type { TrendsData } from "@/lib/trends-client"
 import { useChartTheme } from "@/hooks/useChartTheme"
@@ -26,14 +27,7 @@ export default function TrendsSection() {
   const sectionTitle = "AI Tool Adoption Curve"
 
   if (loading) {
-    return (
-      <section>
-        <div className="section-header"><h2>{sectionTitle}</h2></div>
-        <div className="saas-card p-6">
-          <p className="text-sm font-medium" style={{ color: 'var(--text-muted)' }}>Loading AI adoption data...</p>
-        </div>
-      </section>
-    )
+    return <SectionSkeleton title={sectionTitle} variant="chart" />
   }
 
   if (!data) {
