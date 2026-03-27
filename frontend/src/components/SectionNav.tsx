@@ -3,6 +3,7 @@
 const sections = [
   { id: "acceleration", label: "Signals" },
   { id: "capacity", label: "Capacity" },
+  { id: "research", label: "Research" },
   { id: "impact", label: "Impact" },
 ]
 

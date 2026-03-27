@@ -9,6 +9,14 @@ import StocksSection from "@/components/StocksSection"
 import ComputeStatusSection from "@/components/ComputeStatusSection"
 import TrendsInsightsSection from "@/components/TrendsInsightsSection"
 import LabFeedsSection from "@/components/LabFeedsSection"
+import ResearchSection from "@/components/ResearchSection"
+import OpenSourceSection from "@/components/OpenSourceSection"
+import EpochAISection from "@/components/EpochAISection"
+import HuggingFaceSection from "@/components/HuggingFaceSection"
+import JobMarketSection from "@/components/JobMarketSection"
+import ParliamentSection from "@/components/ParliamentSection"
+import GovRegistrySection from "@/components/GovRegistrySection"
+import OecdSection from "@/components/OecdSection"
 import ProvinceIndex from '@/components/ProvinceIndex'
 import SectionNav from "@/components/SectionNav"
 import ScrollToTop from "@/components/ScrollToTop"
@@ -77,6 +85,26 @@ export default function DashboardPage() {
         </ScrollReveal>
 
         <ScrollReveal>
+          <section id="research" className="saas-card rounded-2xl p-5 sm:p-6">
+            <SectionTitle
+              eyebrow="Research & Innovation"
+              title="What Canadian AI labs are producing"
+              description="Track research output, open-source contributions, and frontier model progress from Canadian institutions and the global AI research ecosystem."
+            />
+
+            <div className="grid gap-4 xl:grid-cols-2">
+              <ResearchSection />
+              <OpenSourceSection />
+            </div>
+
+            <div className="mt-4 grid gap-4 xl:grid-cols-2">
+              <EpochAISection />
+              <HuggingFaceSection />
+            </div>
+          </section>
+        </ScrollReveal>
+
+        <ScrollReveal>
           <section id="impact" className="saas-card rounded-2xl p-5 sm:p-6">
             <SectionTitle
               eyebrow="Market And Policy Impact"
@@ -91,6 +119,16 @@ export default function DashboardPage() {
 
             <div className="mt-4">
               <IndicatorsSection />
+            </div>
+
+            <div className="mt-4 grid gap-4 xl:grid-cols-2">
+              <JobMarketSection />
+              <ParliamentSection />
+            </div>
+
+            <div className="mt-4 grid gap-4 xl:grid-cols-2">
+              <GovRegistrySection />
+              <OecdSection />
             </div>
           </section>
         </ScrollReveal>
