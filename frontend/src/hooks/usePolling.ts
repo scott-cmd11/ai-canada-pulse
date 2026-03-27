@@ -6,21 +6,33 @@ import { useState, useEffect, useCallback, useRef } from "react"
  * Hook for auto-polling an API endpoint at a configurable interval.
  * Fetches immediately on mount, then every `intervalMs` milliseconds.
  * Pauses when the tab is hidden to save bandwidth.
+ *
+ * Optional fallback: if the primary fetch returns empty data (per `isEmpty`),
+ * and `fallbackUrl` is provided, a second fetch from `fallbackUrl` is made.
+ * The `isFallback` return value indicates whether fallback data is being shown.
  */
 export function usePolling<T>(
     url: string,
     opts: {
         intervalMs?: number
         transform?: (json: Record<string, unknown>) => T | null
+        fallbackUrl?: string
+        isEmpty?: (data: T) => boolean
     } = {}
 ) {
-    const { intervalMs = 120_000, transform } = opts  // Default: 2 minutes
+    const { intervalMs = 120_000, transform, fallbackUrl, isEmpty } = opts  // Default: 2 minutes
     const [data, setData] = useState<T | null>(null)
     const [loading, setLoading] = useState(true)
     const [lastUpdated, setLastUpdated] = useState<string | null>(null)
+    const [isFallback, setIsFallback] = useState(false)
     const mountedRef = useRef(true)
 
+    const defaultIsEmpty = useCallback((d: T): boolean => {
+        return Array.isArray(d) && (d as unknown[]).length === 0
+    }, [])
+
     const doFetch = useCallback(async (isInitial = false) => {
+        const checkEmpty = isEmpty ?? defaultIsEmpty
         try {
             if (isInitial) setLoading(true)
             const res = await fetch(url)
@@ -30,15 +42,38 @@ export function usePolling<T>(
 
             const value = transform ? transform(json) : (json as T)
             if (value !== null) {
-                setData(value)
-                setLastUpdated(new Date().toLocaleTimeString())
+                if (fallbackUrl && checkEmpty(value)) {
+                    // Primary returned empty — try fallback
+                    try {
+                        const fbRes = await fetch(fallbackUrl)
+                        if (!fbRes.ok) throw new Error(`HTTP ${fbRes.status}`)
+                        const fbJson = await fbRes.json()
+                        if (!mountedRef.current) return
+                        const fbValue = transform ? transform(fbJson) : (fbJson as T)
+                        if (fbValue !== null) {
+                            setData(fbValue)
+                            setLastUpdated(new Date().toLocaleTimeString())
+                            setIsFallback(true)
+                        }
+                    } catch (fbErr) {
+                        console.warn(`[usePolling] fallback ${fallbackUrl} failed:`, fbErr)
+                        // Still set original (empty) data so callers are not stuck loading
+                        setData(value)
+                        setLastUpdated(new Date().toLocaleTimeString())
+                        setIsFallback(false)
+                    }
+                } else {
+                    setData(value)
+                    setLastUpdated(new Date().toLocaleTimeString())
+                    setIsFallback(false)
+                }
             }
         } catch (err) {
             console.warn(`[usePolling] ${url} failed:`, err)
         } finally {
             if (mountedRef.current) setLoading(false)
         }
-    }, [url, transform])
+    }, [url, transform, fallbackUrl, isEmpty, defaultIsEmpty])
 
     useEffect(() => {
         mountedRef.current = true
@@ -64,5 +99,5 @@ export function usePolling<T>(
         }
     }, [doFetch, intervalMs])
 
-    return { data, loading, lastUpdated }
+    return { data, loading, lastUpdated, isFallback }
 }
