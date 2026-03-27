@@ -18,6 +18,9 @@ import JobMarketSection from "@/components/JobMarketSection"
 import ParliamentSection from "@/components/ParliamentSection"
 import GovRegistrySection from "@/components/GovRegistrySection"
 import OecdSection from "@/components/OecdSection"
+import TalentEducationSection from "@/components/TalentEducationSection"
+import EcosystemSection from "@/components/EcosystemSection"
+import RegulatorySection from "@/components/RegulatorySection"
 import ProvinceIndex from '@/components/ProvinceIndex'
 import SectionNav from "@/components/SectionNav"
 import ScrollToTop from "@/components/ScrollToTop"
@@ -143,6 +146,39 @@ export default function DashboardPage() {
         <hr className="section-divider" />
 
         <ScrollReveal>
+          <section id="talent" className="section-dark rounded-2xl p-5 sm:p-6">
+            <SectionTitle
+              eyebrow="Talent & Education"
+              title="Building Canada's AI workforce"
+              description="Track tech immigration trends, federal research funding, and the university programs producing Canada's next generation of AI researchers."
+              dark
+            />
+
+            <SectionErrorBoundary sectionName="Talent & Education">
+              <TalentEducationSection />
+            </SectionErrorBoundary>
+          </section>
+        </ScrollReveal>
+
+        <hr className="section-divider" />
+
+        <ScrollReveal>
+          <section id="ecosystem" className="saas-card rounded-2xl p-5 sm:p-6">
+            <SectionTitle
+              eyebrow="Ecosystem & Community"
+              title="Startups, funding, and community"
+              description="Map the Canadian AI startup landscape, track funding signals from the news, and find upcoming conferences and meetups."
+            />
+
+            <SectionErrorBoundary sectionName="Ecosystem & Community">
+              <EcosystemSection />
+            </SectionErrorBoundary>
+          </section>
+        </ScrollReveal>
+
+        <hr className="section-divider" />
+
+        <ScrollReveal>
           <section id="impact" className="section-dark rounded-2xl p-5 sm:p-6">
             <SectionTitle
               eyebrow="Market And Policy Impact"
@@ -183,6 +219,22 @@ export default function DashboardPage() {
                 <OecdSection />
               </SectionErrorBoundary>
             </div>
+          </section>
+        </ScrollReveal>
+
+        <hr className="section-divider" />
+
+        <ScrollReveal>
+          <section id="regulatory" className="saas-card rounded-2xl p-5 sm:p-6">
+            <SectionTitle
+              eyebrow="Regulatory & Global Standing"
+              title="Where Canada stands on AI governance"
+              description="Track AI legislation, privacy commissioner rulings, international rankings, and patent activity to understand Canada's regulatory and competitive position."
+            />
+
+            <SectionErrorBoundary sectionName="Regulatory & Global Standing">
+              <RegulatorySection />
+            </SectionErrorBoundary>
           </section>
         </ScrollReveal>
       </main>

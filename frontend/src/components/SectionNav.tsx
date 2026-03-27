@@ -6,7 +6,10 @@ const sections = [
   { id: "acceleration", label: "Signals" },
   { id: "capacity", label: "Capacity" },
   { id: "research", label: "Research" },
+  { id: "talent", label: "Talent" },
+  { id: "ecosystem", label: "Ecosystem" },
   { id: "impact", label: "Impact" },
+  { id: "regulatory", label: "Regulatory" },
 ]
 
 export default function SectionNav() {

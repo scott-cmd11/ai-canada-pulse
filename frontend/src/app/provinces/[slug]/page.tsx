@@ -11,6 +11,8 @@ import TrendsInsightsSection from '@/components/TrendsInsightsSection';
 import JobMarketSection from '@/components/JobMarketSection';
 import StocksSection from '@/components/StocksSection';
 import ArxivSection from '@/components/ArxivSection';
+import TalentEducationSection from '@/components/TalentEducationSection';
+import EcosystemSection from '@/components/EcosystemSection';
 import ScrollToTop from '@/components/ScrollToTop';
 import DashboardFooter from '@/components/DashboardFooter';
 
@@ -168,6 +170,32 @@ export default async function ProvincePage({
       {province.sections.parliament && (
         <section className="mx-auto max-w-[1080px] px-4 pb-8 sm:px-6 sm:pb-10 lg:px-10">
           <ParliamentSection />
+        </section>
+      )}
+
+      {/* Talent & Education */}
+      {province.sections.talent && (
+        <section className="mx-auto max-w-[1080px] px-4 pb-8 sm:px-6 sm:pb-10 lg:px-10">
+          <h2
+            className="mb-4 text-2xl font-semibold"
+            style={{ fontFamily: 'var(--font-display)', color: 'var(--text-primary)', letterSpacing: '-0.3px' }}
+          >
+            Talent & Education
+          </h2>
+          <TalentEducationSection provinceFilter={province.slug} />
+        </section>
+      )}
+
+      {/* Ecosystem & Community */}
+      {(province.sections.startups || province.sections.events) && (
+        <section className="mx-auto max-w-[1080px] px-4 pb-8 sm:px-6 sm:pb-10 lg:px-10">
+          <h2
+            className="mb-4 text-2xl font-semibold"
+            style={{ fontFamily: 'var(--font-display)', color: 'var(--text-primary)', letterSpacing: '-0.3px' }}
+          >
+            Ecosystem & Community
+          </h2>
+          <EcosystemSection provinceFilter={province.slug} />
         </section>
       )}
 
