@@ -54,7 +54,7 @@ export function getSourcesByType(type: DataSource["type"]): DataSource[]
 ### Rules
 
 - Every client library (`rss-client.ts`, `arxiv-client.ts`, etc.) must reference its `sourceId`
-- Every API response includes a `_source` field: `{ id, name, url }`
+- Every API response includes `sourceName` and `sourceUrl` at the top level (section-level attribution)
 - Every rendered item links back to its source
 - The methodology page reads directly from `SOURCES` — no hand-written descriptions
 
@@ -82,19 +82,20 @@ Strip every fabricated claim from `provinces-config.ts`.
 
 ### Replacement
 
-- `aiHub` field → removed from the `ProvinceConfig` interface entirely
+- `aiHub` field → removed from the `ProvinceConfig` interface entirely. **Migration prerequisite:** search all usages of `aiHub` (currently used in `ProvinceIndexSection.tsx`, `ProvincePreviewPanel.tsx`, and province page) and remove/replace before deleting from the interface.
 - `description` → replaced with a factual one-liner: population rank, which (if any) of the 3 national AI institutes is located there, number of universities with AI programs
 - `InstitutionConfig.url` → required (was optional). If you can't link it, it doesn't go on the site
-- `InstitutionConfig.sourceId` → new required field referencing `source-registry.ts`
+- `InstitutionConfig.type` → rename `"lab"` to `"institute"` (migration: update all existing `type: "lab"` entries in provinces-config). Search all usages of `type === "lab"` before changing.
 
 ```typescript
 export interface InstitutionConfig {
   name: string
-  type: "institute" | "university" | "company"
+  type: "institute" | "university" | "company"  // "lab" renamed to "institute"
   url: string                    // REQUIRED — verifiable link
-  sourceId: string               // references source-registry.ts
 }
 ```
+
+**Note:** `sourceId` is NOT added to `InstitutionConfig`. Institutions are static config entries, not data streams. The `url` field provides verifiability — if you can link to it, it's verified.
 
 ### Provinces with no notable AI presence
 
@@ -120,9 +121,9 @@ Every rendered item must carry its primary source link.
 
 ### Implementation
 
-- API responses include `sourceUrl` and `sourceName` on every item
-- Section components render a clickable source link on each item
-- Each dashboard section has a footer: `"Data from [Source Name →]"` linking to source URL
+- **Item-level:** Individual items (stories, papers, jobs) carry their own `link` or `url` field pointing to the original source. Most data types already have this (e.g., RSS stories have a `link` field). No new fields needed — use existing fields consistently.
+- **Section-level:** Each dashboard section has a footer: `"Data from [Source Name →]"` linking to the source's top-level URL. The `<SourceAttribution sourceId="rss-news" />` component reads from the source registry.
+- **API response shape:** Top-level API responses add `sourceName` and `sourceUrl` fields (e.g., `{ stories: [...], sourceName: "RSS News Feeds", sourceUrl: "..." }`). Individual items within the array keep their existing `link` field.
 
 ---
 
@@ -182,6 +183,26 @@ The `/methodology` page becomes auto-generated from the source registry.
    - What the AI does NOT do (no editorial judgment, no source selection, no ranking manipulation)
 5. A "Data Freshness" section shows last successful fetch timestamp per source
 
+### What happens to existing methodology content
+
+The current methodology page (~310 lines) has hand-written sections. Here's the disposition:
+
+| Existing section | Action |
+|-----------------|--------|
+| Data sources listing | **Replaced** — auto-generated from `SOURCES` registry |
+| AI generation and caching | **Rewritten** — becomes the "AI Processing" section with model versions |
+| Cadence and reliability | **Replaced** — auto-generated as "Refresh frequency" per source |
+| Data quality and limits | **Kept** — hand-written disclaimer about limitations stays as-is |
+| Disclaimer | **Kept** — legal/editorial disclaimer stays as-is |
+
+### Data Freshness implementation
+
+The "Data Freshness" section shows last successful fetch timestamp per source. Implementation: each client library writes a `lastFetched` timestamp to Vercel KV (key: `source:${sourceId}:lastFetched`) on successful fetch. The methodology page reads these via a lightweight API route `/api/v1/source-status`. If KV is unavailable, the section shows "Timestamp unavailable" rather than failing.
+
+### Dark mode
+
+The current methodology page uses hardcoded Tailwind colors (`bg-white`, `text-slate-900`). The rewrite must migrate to CSS custom variables (`var(--bg-page)`, `var(--text-primary)`, etc.) to match the dashboard pattern. All new components (`ProvinceIndex`, `AILabel`, `SourceAttribution`) must also use CSS custom variables exclusively.
+
 **Key principle:** If someone asks "where does this data come from?" — this page answers completely, and it's always accurate because it's generated from the same config the platform actually uses.
 
 ---
@@ -204,8 +225,30 @@ For each data section (Stories, Jobs, Trends, Research, Parliament):
 ### Implementation
 
 - Each section component gets a `fallbackToNational` prop (boolean, default true)
-- `usePolling` hook gets an optional `fallbackUrl` — if primary returns empty, re-fetches from fallback
-- A `<ScopeLabel>` component renders either "Provincial" or "National" with appropriate styling
+- `usePolling` hook gets new optional parameters and return fields:
+
+```typescript
+// Enhanced usePolling signature
+function usePolling<T>(
+  url: string,
+  options: {
+    interval?: number
+    transform?: (data: unknown) => T
+    fallbackUrl?: string           // URL to fetch if primary returns empty
+    isEmpty?: (data: T) => boolean // Predicate to determine "empty" (default: Array.isArray(d) && d.length === 0)
+  }
+): {
+  data: T | null
+  loading: boolean
+  lastUpdated: Date | null
+  isFallback: boolean             // true when showing fallback data
+}
+```
+
+- `isEmpty` is checked after every fetch (including subsequent poll cycles)
+- When `isEmpty` returns true and `fallbackUrl` is set, the hook fetches from `fallbackUrl` instead and sets `isFallback: true`
+- On subsequent poll cycles, the hook re-checks the primary URL first — if provincial data appears later, it switches back (`isFallback: false`)
+- A `<ScopeLabel>` component reads `isFallback` and renders either "Provincial" or "National · No [Province]-specific data found" with appropriate styling
 
 ### Rules
 
@@ -261,18 +304,21 @@ A styled table with 11 rows (one per province/territory region), sorted by popul
 | Column | Content | Style |
 |--------|---------|-------|
 | Province | Full name + abbreviation badge | Fraunces serif (name), monospace (abbr) |
-| AI Institute | Vector Institute / Mila / Amii, or "—" | Regular text, linked if present |
+| AI Institute | Vector Institute / Mila / Amii, or "—" | Regular text, linked to institute URL if present |
 | Key University | First university from institutions list | Regular text |
-| Sections | Dot indicators for active data sections | Small filled/empty circles |
+| Data | Dot indicators for which `ProvinceSections` booleans are `true` | Small filled (active) / empty (inactive) circles, one per section flag |
 | → | Arrow link | Accent color on hover |
+
+The "Data" column reflects the static `sections` flags from `ProvinceSections` (stories, trends, jobs, stocks, research, parliament) — NOT live data availability. This is a config-time indicator of what data streams are enabled for that province.
 
 ### Design
 
-- Container uses `saas-card` class
+- Container uses `saas-card` class, all colors via CSS custom variables (dark mode compatible)
 - Header row: small uppercase muted text (financial index style)
 - Row hover: subtle background highlight (`var(--surface-secondary)`)
-- Mobile: collapses to Province name + arrow only
+- Mobile (below `768px`): collapses to Province name + abbreviation + arrow only. AI Institute, Key University, and Data columns are hidden via `display: none` at the breakpoint.
 - Section heading: "Province & Territory Profiles" with eyebrow + Fraunces pattern
+- 11 rows: 10 provinces + 1 "Northern Territories" (aggregate of YT/NT/NU). Territories are not listed separately.
 
 ### Component changes
 
@@ -317,7 +363,11 @@ A styled table with 11 rows (one per province/territory region), sorted by popul
 | `frontend/src/app/dashboard/page.tsx` | Swap map for index, add source attributions |
 | `frontend/src/app/methodology/page.tsx` | Auto-generate from source registry |
 | `frontend/src/components/StoryFeed.tsx` | Add AI labels and source links |
-| Other section components | Add source attribution footers |
+| `frontend/src/components/IndicatorsSection.tsx` | Add `<SourceAttribution sourceId="stocks" />` footer |
+| `frontend/src/components/TrendsInsightsSection.tsx` | Add `<SourceAttribution sourceId="google-trends" />` footer |
+| `frontend/src/components/LabFeedsSection.tsx` | Add `<SourceAttribution sourceId="arxiv" />` footer |
+| `frontend/src/components/ProvinceIndexSection.tsx` | Remove (replaced by `ProvinceIndex.tsx`) |
+| `frontend/src/hooks/usePolling.ts` | Add `fallbackUrl`, `isEmpty`, `isFallback` support |
 
 ### Not in this phase
 
