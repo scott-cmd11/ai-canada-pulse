@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import { indicators as defaultIndicators } from "@/lib/indicators-data"
 import type { Indicator } from "@/lib/indicators-data"
 import IndicatorChart from "./IndicatorChart"
+import SourceAttribution from '@/components/SourceAttribution'
 
 export default function IndicatorsSection() {
   const [data, setData] = useState<Indicator[]>(defaultIndicators)
@@ -45,6 +46,7 @@ export default function IndicatorsSection() {
           Retrieving baseline economic data...
         </p>
       )}
+      <SourceAttribution sourceId="stocks" />
     </section>
   )
 }

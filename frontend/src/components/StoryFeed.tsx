@@ -1,6 +1,7 @@
 "use client"
 
 import Link from "next/link"
+import SourceAttribution from '@/components/SourceAttribution'
 import { useState, useCallback } from "react"
 import type { Category, Story } from "@/lib/mock-data"
 import StoryCard from "./StoryCard"
@@ -130,6 +131,7 @@ export default function StoryFeed({ region }: StoryFeedProps = {}) {
           )}
         </div>
       )}
+      <SourceAttribution sourceId="rss-news" />
     </section>
   )
 }

@@ -1,5 +1,6 @@
 import type { Story } from "@/lib/mock-data"
 import { relativeTime } from "@/lib/relative-time"
+import AILabel from '@/components/AILabel'
 
 interface Props {
   story: Story
@@ -23,6 +24,7 @@ export default function StoryCard({ story }: Props) {
         <span className="self-start rounded-full border border-indigo-100 bg-indigo-50 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-indigo-700">
           {categoryLabel}
         </span>
+        <AILabel level="classification" />
       </div>
 
       <div className="min-w-0 flex-1">
@@ -38,10 +40,12 @@ export default function StoryCard({ story }: Props) {
           </h3>
 
           {story.aiSummary ? (
-            <p className="text-sm leading-7 text-slate-700">
-              <span className="mr-1 text-xs text-indigo-500">*</span>
-              {story.aiSummary}
-            </p>
+            <div>
+              <AILabel level="summary" sourceUrl={story.sourceUrl} sourceName={story.sourceName} />
+              <p className="text-sm leading-7 text-slate-700">
+                {story.aiSummary}
+              </p>
+            </div>
           ) : story.summary && !story.headline.startsWith(story.summary.split("  ")[0]) ? (
             <p className="text-sm leading-7 text-slate-600">
               {story.summary}

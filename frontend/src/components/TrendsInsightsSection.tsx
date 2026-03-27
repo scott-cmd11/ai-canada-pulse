@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import type { ProvinceInterest } from "@/lib/trends-regional-client"
+import SourceAttribution from '@/components/SourceAttribution'
 
 interface TrendsInsightsSectionProps {
     highlightProvince?: string // Province code to visually highlight, e.g. "ON"
@@ -86,6 +87,7 @@ export default function TrendsInsightsSection({ highlightProvince }: TrendsInsig
                     Relative search interest (0–100). Higher values indicate greater search volume relative to total searches in that region.
                 </p>
             </div>
+        <SourceAttribution sourceId="google-trends" />
         </section>
     )
 }

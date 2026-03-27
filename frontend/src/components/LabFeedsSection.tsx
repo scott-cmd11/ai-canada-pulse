@@ -1,5 +1,7 @@
 "use client"
 
+import SourceAttribution from '@/components/SourceAttribution'
+
 const LABS = [
     {
         name: "Mila: Quebec AI Institute",
@@ -68,6 +70,7 @@ export default function LabFeedsSection() {
                     </a>
                 ))}
             </div>
+            <SourceAttribution sourceId="alliance-compute" />
         </section>
     )
 }
