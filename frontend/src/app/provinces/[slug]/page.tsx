@@ -56,7 +56,7 @@ export default async function ProvincePage({
       <Header />
 
       {/* Breadcrumb */}
-      <nav className="mx-auto max-w-[1080px] px-4 py-4 text-[13px] sm:px-6 lg:px-10" style={{ color: 'var(--text-muted)' }}>
+      <nav id="main-content" className="mx-auto max-w-[1080px] px-4 py-4 text-[13px] sm:px-6 lg:px-10" style={{ color: 'var(--text-muted)' }}>
         <a href="/dashboard" className="font-medium hover:underline" style={{ color: 'var(--accent-primary)' }}>
           Dashboard
         </a>
