@@ -4,8 +4,8 @@
 
 export interface InstitutionConfig {
   name: string
-  type: "lab" | "university" | "company"
-  url?: string
+  type: "institute" | "university" | "company"
+  url: string
 }
 
 export interface ProvinceSections {
@@ -26,8 +26,6 @@ export interface ProvinceConfig {
   population: number
   /** 1-2 sentence editorial blurb */
   description: string
-  /** Name of the primary AI hub or corridor */
-  aiHub: string
   /** Google Trends geo code (e.g. "CA-ON") */
   googleTrendsGeo: string
   institutions: InstitutionConfig[]
@@ -47,16 +45,15 @@ export const PROVINCES: ProvinceConfig[] = [
     capital: "Toronto",
     population: 15.8,
     description:
-      "Ontario anchors Canada's AI economy through the Toronto–Waterloo Corridor, home to the highest concentration of AI researchers and startups in the country. The province hosts world-leading institutions that have shaped the global deep-learning era.",
-    aiHub: "Toronto–Waterloo Corridor",
+      "Canada's most populous province. Home to Vector Institute and CIFAR — two of three Pan-Canadian AI institutes.",
     googleTrendsGeo: "CA-ON",
     institutions: [
-      { name: "Vector Institute", type: "lab" },
-      { name: "CIFAR", type: "lab" },
-      { name: "University of Toronto", type: "university" },
-      { name: "University of Waterloo", type: "university" },
-      { name: "Cohere", type: "company" },
-      { name: "Shopify", type: "company" },
+      { name: "Vector Institute", type: "institute", url: "https://vectorinstitute.ai" },
+      { name: "CIFAR", type: "institute", url: "https://cifar.ca" },
+      { name: "University of Toronto", type: "university", url: "https://web.cs.toronto.edu" },
+      { name: "University of Waterloo", type: "university", url: "https://uwaterloo.ca/artificial-intelligence-group" },
+      { name: "Cohere", type: "company", url: "https://cohere.com" },
+      { name: "Shopify", type: "company", url: "https://shopify.engineering" },
     ],
     sections: {
       stories: true,
@@ -75,14 +72,12 @@ export const PROVINCES: ProvinceConfig[] = [
     capital: "Quebec City",
     population: 8.9,
     description:
-      "Quebec's Montreal AI Corridor is one of the world's premier AI research ecosystems, driven by Mila and its affiliated universities. The province has attracted major international investment and produced foundational advances in deep learning.",
-    aiHub: "Montreal AI Corridor",
+      "Home to Mila, the world's largest academic deep-learning research institute.",
     googleTrendsGeo: "CA-QC",
     institutions: [
-      { name: "Mila", type: "lab" },
-      { name: "McGill University", type: "university" },
-      { name: "Université de Montréal", type: "university" },
-      { name: "Element AI (legacy)", type: "company" },
+      { name: "Mila", type: "institute", url: "https://mila.quebec" },
+      { name: "McGill University", type: "university", url: "https://www.cs.mcgill.ca" },
+      { name: "Université de Montréal", type: "university", url: "https://diro.umontreal.ca" },
     ],
     sections: {
       stories: true,
@@ -101,13 +96,12 @@ export const PROVINCES: ProvinceConfig[] = [
     capital: "Victoria",
     population: 5.4,
     description:
-      "British Columbia's Vancouver Tech Hub bridges Canadian AI talent with Pacific Rim markets, hosting a thriving ecosystem of AI startups and research institutions. The province is a leader in quantum computing through D-Wave.",
-    aiHub: "Vancouver Tech Hub",
+      "Home to D-Wave Systems, a global leader in quantum computing, and two major research universities.",
     googleTrendsGeo: "CA-BC",
     institutions: [
-      { name: "University of British Columbia", type: "university" },
-      { name: "Simon Fraser University", type: "university" },
-      { name: "D-Wave", type: "company" },
+      { name: "University of British Columbia", type: "university", url: "https://www.cs.ubc.ca" },
+      { name: "Simon Fraser University", type: "university", url: "https://www.sfu.ca/computing.html" },
+      { name: "D-Wave", type: "company", url: "https://www.dwavesys.com" },
     ],
     sections: {
       stories: true,
@@ -126,12 +120,11 @@ export const PROVINCES: ProvinceConfig[] = [
     capital: "Edmonton",
     population: 4.6,
     description:
-      "Alberta's Edmonton AI Corridor is anchored by Amii and the University of Alberta, birthplace of foundational reinforcement learning research. The province is rapidly expanding its AI sector alongside its energy transition agenda.",
-    aiHub: "Edmonton AI Corridor",
+      "Home to Amii, the third Pan-Canadian AI institute, at the University of Alberta.",
     googleTrendsGeo: "CA-AB",
     institutions: [
-      { name: "Amii", type: "lab" },
-      { name: "University of Alberta", type: "university" },
+      { name: "Amii", type: "institute", url: "https://amii.ca" },
+      { name: "University of Alberta", type: "university", url: "https://www.ualberta.ca/computing-science" },
     ],
     sections: {
       stories: true,
@@ -150,11 +143,10 @@ export const PROVINCES: ProvinceConfig[] = [
     capital: "Regina",
     population: 1.2,
     description:
-      "Saskatchewan is applying AI to agriculture, precision farming, and natural resource management, leveraging its vast prairies as a living lab for intelligent systems.",
-    aiHub: "Saskatoon AgriTech Cluster",
+      "The University of Saskatchewan hosts AI research programs focused on agriculture and natural resources.",
     googleTrendsGeo: "CA-SK",
     institutions: [
-      { name: "University of Saskatchewan", type: "university" },
+      { name: "University of Saskatchewan", type: "university", url: "https://cs.usask.ca" },
     ],
     sections: {
       stories: true,
@@ -173,11 +165,10 @@ export const PROVINCES: ProvinceConfig[] = [
     capital: "Winnipeg",
     population: 1.4,
     description:
-      "Manitoba is building an AI ecosystem centred on health informatics, data analytics, and its growing tech sector in Winnipeg.",
-    aiHub: "Winnipeg Tech District",
+      "The University of Manitoba has growing AI and data science research programs.",
     googleTrendsGeo: "CA-MB",
     institutions: [
-      { name: "University of Manitoba", type: "university" },
+      { name: "University of Manitoba", type: "university", url: "https://sci.umanitoba.ca/cs" },
     ],
     sections: {
       stories: true,
@@ -196,11 +187,10 @@ export const PROVINCES: ProvinceConfig[] = [
     capital: "Halifax",
     population: 1.0,
     description:
-      "Nova Scotia is emerging as an Atlantic Canadian AI hub, with Dalhousie University and a growing ocean-technology sector driving applied AI research.",
-    aiHub: "Halifax Innovation District",
+      "Dalhousie University leads AI research in Atlantic Canada with a focus on ocean technology.",
     googleTrendsGeo: "CA-NS",
     institutions: [
-      { name: "Dalhousie University", type: "university" },
+      { name: "Dalhousie University", type: "university", url: "https://www.dal.ca/faculty/computerscience.html" },
     ],
     sections: {
       stories: true,
@@ -219,11 +209,10 @@ export const PROVINCES: ProvinceConfig[] = [
     capital: "Fredericton",
     population: 0.82,
     description:
-      "New Brunswick is leveraging bilingual talent and its cybersecurity cluster to carve out a niche in applied AI and data services.",
-    aiHub: "Fredericton Cybersecurity Cluster",
+      "The University of New Brunswick hosts the Canadian Institute for Cybersecurity.",
     googleTrendsGeo: "CA-NB",
     institutions: [
-      { name: "University of New Brunswick", type: "university" },
+      { name: "University of New Brunswick", type: "university", url: "https://www.unb.ca/cic" },
     ],
     sections: {
       stories: true,
@@ -242,11 +231,10 @@ export const PROVINCES: ProvinceConfig[] = [
     capital: "St. John's",
     population: 0.53,
     description:
-      "Newfoundland & Labrador is applying AI to ocean science, fisheries management, and offshore energy, with Memorial University driving research at the edge of the North Atlantic.",
-    aiHub: "St. John's Ocean Tech Hub",
+      "Memorial University conducts AI research applied to ocean science and offshore energy.",
     googleTrendsGeo: "CA-NL",
     institutions: [
-      { name: "Memorial University of Newfoundland", type: "university" },
+      { name: "Memorial University of Newfoundland", type: "university", url: "https://www.mun.ca/computerscience" },
     ],
     sections: {
       stories: true,
@@ -265,11 +253,10 @@ export const PROVINCES: ProvinceConfig[] = [
     capital: "Charlottetown",
     population: 0.17,
     description:
-      "Prince Edward Island is Canada's smallest province, pioneering AI applications in agri-food, tourism, and public-sector services through UPEI and growing tech clusters.",
-    aiHub: "Charlottetown Tech Community",
+      "The University of Prince Edward Island has emerging computer science programs.",
     googleTrendsGeo: "CA-PE",
     institutions: [
-      { name: "University of Prince Edward Island", type: "university" },
+      { name: "University of Prince Edward Island", type: "university", url: "https://www.upei.ca/programs/computer-science" },
     ],
     sections: {
       stories: true,
@@ -288,8 +275,7 @@ export const PROVINCES: ProvinceConfig[] = [
     capital: "Whitehorse",
     population: 0.13,
     description:
-      "Canada's three northern territories — Yukon, Northwest Territories, and Nunavut — are exploring AI for remote healthcare, environmental monitoring, and Indigenous language preservation across vast and challenging geographies.",
-    aiHub: "Northern Digital Initiative",
+      "Canada's three northern territories have limited but growing digital infrastructure.",
     googleTrendsGeo: "CA",
     institutions: [],
     sections: {

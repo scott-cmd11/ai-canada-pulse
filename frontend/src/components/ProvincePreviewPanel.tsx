@@ -75,18 +75,6 @@ export default function ProvincePreviewPanel({ slug }: ProvincePreviewPanelProps
         {province.capital} &middot; {province.population}M residents
       </p>
 
-      {/* AI Hub */}
-      <p
-        style={{
-          fontSize: '13px',
-          color: 'var(--text-muted)',
-          fontFamily: 'var(--font-ui)',
-          marginBottom: '16px',
-        }}
-      >
-        AI Hub: {province.aiHub}
-      </p>
-
       {/* Divider */}
       <div
         style={{

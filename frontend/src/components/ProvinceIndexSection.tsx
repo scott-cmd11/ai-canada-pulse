@@ -31,7 +31,7 @@ export default function ProvinceIndexSection() {
           columnGap: '1.25rem',
         }}
       >
-        {(['Province / Territory', 'AI Hub', ''].map((label, i) => (
+        {(['Province / Territory', 'Description', ''].map((label, i) => (
           <span
             key={i}
             className="text-[10.5px] font-semibold uppercase tracking-[0.12em]"
@@ -84,12 +84,13 @@ export default function ProvinceIndexSection() {
                 </span>
               </div>
 
-              {/* AI Hub */}
+              {/* Description */}
+              {/* Removed: aiHub */}
               <span
                 className="self-center text-sm leading-snug"
                 style={{ color: 'var(--text-secondary)' }}
               >
-                {province.aiHub}
+                {province.description}
               </span>
 
               {/* CTA */}

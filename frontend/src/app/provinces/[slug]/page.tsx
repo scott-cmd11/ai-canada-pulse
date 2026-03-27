@@ -38,9 +38,9 @@ export default async function ProvincePage({
   const province = getProvinceBySlug(slug);
   if (!province) return notFound();
 
-  const labCount = province.institutions.filter((i) => i.type === 'lab').length;
-  const labNames = province.institutions
-    .filter((i) => i.type === 'lab')
+  const instituteCount = province.institutions.filter((i) => i.type === 'institute').length;
+  const instituteNames = province.institutions
+    .filter((i) => i.type === 'institute')
     .map((i) => i.name)
     .join(' · ');
 
@@ -106,19 +106,16 @@ export default async function ProvincePage({
               isPositive: false,
             },
             {
-              label: 'Research Hubs',
-              value: String(labCount),
-              note: labNames,
+              label: 'AI Institutes',
+              value: instituteCount > 0
+                ? province.institutions.filter(i => i.type === 'institute').map(i => i.name).join(', ')
+                : '—',
+              note: instituteNames,
             },
             {
               label: 'Capital',
               value: province.capital,
               note: `Pop. ${province.population}`,
-            },
-            {
-              label: 'AI Hub',
-              value: province.aiHub,
-              note: '',
             },
           ]}
         />

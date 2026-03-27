@@ -44,9 +44,9 @@ export default function ProvinceInstitutions({ institutions }: ProvinceInstituti
             )}
             <span
               style={{
-                fontWeight: institution.type === 'lab' ? 600 : 400,
+                fontWeight: institution.type === 'institute' ? 600 : 400,
                 color:
-                  institution.type === 'lab'
+                  institution.type === 'institute'
                     ? 'var(--text-primary)'
                     : 'var(--text-secondary)',
               }}
