@@ -2,6 +2,7 @@
 
 import Link from "next/link"
 import SourceAttribution from '@/components/SourceAttribution'
+import ScopeLabel from '@/components/ScopeLabel'
 import { useState, useCallback } from "react"
 import type { Category, Story } from "@/lib/mock-data"
 import StoryCard from "./StoryCard"
@@ -41,10 +42,13 @@ export default function StoryFeed({ region }: StoryFeedProps = {}) {
   const regionResult = usePolling<Story[]>(regionUrl, {
     intervalMs: 120_000,
     transform: regionTransform,
+    fallbackUrl: region ? '/api/v1/stories' : undefined,
+    isEmpty: (d) => Array.isArray(d) && d.length === 0,
   })
 
   const stories = region ? (regionResult.data ?? []) : sharedCtx.stories
   const loading = region ? regionResult.loading : sharedCtx.loading
+  const { isFallback } = regionResult
 
   const feedStories = stories.filter((story) => !story.isBriefingTop)
 
@@ -70,6 +74,12 @@ export default function StoryFeed({ region }: StoryFeedProps = {}) {
           Source methodology
         </Link>
       </div>
+
+      {region && (
+        <div className="mt-4">
+          <ScopeLabel provinceName={region} isFallback={isFallback} dataType="stories" />
+        </div>
+      )}
 
       <div className="mt-4 flex flex-wrap gap-2">
         {CATEGORIES.map((category) => (
