@@ -48,7 +48,7 @@ export default function StoryFeed({ region }: StoryFeedProps = {}) {
 
   const stories = region ? (regionResult.data ?? []) : sharedCtx.stories
   const loading = region ? regionResult.loading : sharedCtx.loading
-  const { isFallback } = regionResult
+  const { isFallback, lastUpdated } = regionResult
 
   const feedStories = stories.filter((story) => !story.isBriefingTop)
 
@@ -150,7 +150,7 @@ export default function StoryFeed({ region }: StoryFeedProps = {}) {
           )}
         </div>
       )}
-      <SourceAttribution sourceId="rss-news" />
+      <SourceAttribution sourceId="rss-news" lastUpdated={lastUpdated} />
     </section>
   )
 }

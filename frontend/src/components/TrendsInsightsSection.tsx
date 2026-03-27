@@ -11,12 +11,16 @@ interface TrendsInsightsSectionProps {
 export default function TrendsInsightsSection({ highlightProvince }: TrendsInsightsSectionProps = {}) {
     const [provinces, setProvinces] = useState<ProvinceInterest[]>([])
     const [loading, setLoading] = useState(true)
+    const [lastUpdated, setLastUpdated] = useState<string | null>(null)
 
     useEffect(() => {
         fetch("/api/v1/trends-regional")
             .then((r) => r.json())
             .then((json) => {
-                if (json.data?.provinces) setProvinces(json.data.provinces)
+                if (json.data?.provinces) {
+                    setProvinces(json.data.provinces)
+                    setLastUpdated(new Date().toLocaleTimeString())
+                }
             })
             .finally(() => setLoading(false))
     }, [])
@@ -93,7 +97,7 @@ export default function TrendsInsightsSection({ highlightProvince }: TrendsInsig
                     Relative search interest (0–100). Higher values indicate greater search volume relative to total searches in that region.
                 </p>
             </div>
-        <SourceAttribution sourceId="google-trends" />
+        <SourceAttribution sourceId="google-trends" lastUpdated={lastUpdated} />
         </section>
     )
 }

@@ -9,6 +9,7 @@ import SourceAttribution from '@/components/SourceAttribution'
 export default function IndicatorsSection() {
   const [data, setData] = useState<Indicator[]>(defaultIndicators)
   const [loading, setLoading] = useState(true)
+  const [lastUpdated, setLastUpdated] = useState<string | null>(null)
 
   useEffect(() => {
     fetch("/api/v1/indicators", { cache: "no-cache" })
@@ -16,6 +17,7 @@ export default function IndicatorsSection() {
       .then((json) => {
         if (Array.isArray(json) && json.length > 0) {
           setData(json)
+          setLastUpdated(new Date().toLocaleTimeString())
         }
       })
       .catch((err) => console.warn("[IndicatorsSection] fetch failed:", err))
@@ -46,7 +48,7 @@ export default function IndicatorsSection() {
           Retrieving baseline economic data...
         </p>
       )}
-      <SourceAttribution sourceId="stocks" />
+      <SourceAttribution sourceId="stocks" lastUpdated={lastUpdated} />
     </section>
   )
 }
