@@ -30,7 +30,7 @@ export default function TrendsSection() {
       <section>
         <div className="section-header"><h2>{sectionTitle}</h2></div>
         <div className="saas-card p-6">
-          <p className="text-sm font-medium text-slate-500">Loading AI adoption data...</p>
+          <p className="text-sm font-medium" style={{ color: 'var(--text-muted)' }}>Loading AI adoption data...</p>
         </div>
       </section>
     )
@@ -41,7 +41,7 @@ export default function TrendsSection() {
       <section>
         <div className="section-header"><h2>{sectionTitle}</h2></div>
         <div className="saas-card p-6">
-          <p className="text-sm font-medium text-slate-500">Data unavailable for AI tool trends.</p>
+          <p className="text-sm font-medium" style={{ color: 'var(--text-muted)' }}>Data unavailable for AI tool trends.</p>
         </div>
       </section>
     )
@@ -113,11 +113,11 @@ export default function TrendsSection() {
   return (
     <section>
       <div className="section-header"><h2>{sectionTitle}</h2></div>
-      <div className="saas-card p-5 sm:p-6 lg:p-8 flex flex-col border-t-4 border-t-indigo-700">
+      <div className="saas-card p-5 sm:p-6 lg:p-8 flex flex-col border-t-4" style={{ borderTopColor: 'var(--accent-primary)' }}>
         <div className="w-full min-h-[300px]">
           <ReactECharts echarts={echarts} option={option} style={{ height: '300px', width: '100%' }} />
         </div>
-        <div className="mt-4 pt-4 border-t border-slate-100 text-xs font-medium text-slate-500">
+        <div className="mt-4 pt-4 border-t text-xs font-medium" style={{ borderColor: 'color-mix(in srgb, var(--accent-primary) 20%, transparent)', color: 'var(--text-muted)' }}>
           <p>
             Relative search interest (0–100), Jan 2022 → Present
           </p>

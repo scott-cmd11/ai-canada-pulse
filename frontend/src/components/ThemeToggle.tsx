@@ -4,6 +4,7 @@ import { useEffect, useState } from "react"
 
 export default function ThemeToggle() {
   const [dark, setDark] = useState(false)
+  const [hovered, setHovered] = useState(false)
 
   useEffect(() => {
     setDark(document.documentElement.getAttribute("data-theme") === "dark")
@@ -19,11 +20,13 @@ export default function ThemeToggle() {
   return (
     <button
       onClick={toggle}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
       aria-label={dark ? "Switch to light mode" : "Switch to dark mode"}
-      className="rounded-full border border-slate-200 bg-white/80 px-3.5 py-2 text-xs font-semibold shadow-sm hover:border-indigo-200 hover:text-indigo-700"
+      className="rounded-full border px-3.5 py-2 text-xs font-semibold shadow-sm"
       style={{
-        color: "var(--text-muted)",
-        borderColor: "var(--border-strong)",
+        color: hovered ? "var(--accent-primary)" : "var(--text-muted)",
+        borderColor: hovered ? "color-mix(in srgb, var(--accent-primary) 40%, transparent)" : "var(--border-strong)",
         background: "var(--surface-primary)",
       }}
     >

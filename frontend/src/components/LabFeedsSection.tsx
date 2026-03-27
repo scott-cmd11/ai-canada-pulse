@@ -54,17 +54,17 @@ export default function LabFeedsSection() {
                         className="saas-card p-4 sm:p-5 hover:shadow-md transition-shadow group flex flex-col gap-2"
                     >
                         <div className="flex items-start justify-between">
-                            <h3 className="text-sm font-bold text-slate-900 group-hover:text-indigo-700 transition-colors leading-snug">
+                            <h3 className="text-sm font-bold group-hover:text-indigo-700 transition-colors leading-snug" style={{ color: 'var(--text-primary)' }}>
                                 {lab.name}
                             </h3>
                             <span className={`shrink-0 text-[10px] uppercase tracking-wider font-semibold px-1.5 py-0.5 rounded border ${lab.color}`}>
                                 {lab.location}
                             </span>
                         </div>
-                        <p className="text-xs text-slate-600 leading-relaxed">
+                        <p className="text-xs leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
                             {lab.description}
                         </p>
-                        <span className="text-xs font-semibold text-indigo-700 group-hover:underline mt-auto">
+                        <span className="text-xs font-semibold group-hover:underline mt-auto" style={{ color: 'var(--accent-primary)' }}>
                             View publications →
                         </span>
                     </a>

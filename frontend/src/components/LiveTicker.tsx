@@ -37,7 +37,13 @@ export default function LiveTicker() {
     const catClass = categoryColors[story.category] || "bg-slate-100 text-slate-600"
 
     return (
-        <div className="w-full bg-slate-900 border-b border-slate-800 overflow-hidden">
+        <div
+            className="w-full border-b overflow-hidden"
+            style={{
+                backgroundColor: 'var(--surface-secondary)',
+                borderColor: 'var(--border-subtle)',
+            }}
+        >
             <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-1.5 flex items-center gap-3">
                 <div className="flex items-center gap-1.5 shrink-0">
                     <span className="relative flex h-2 w-2">
@@ -47,7 +53,10 @@ export default function LiveTicker() {
                     <span className="text-[10px] font-bold uppercase tracking-wider text-red-400">Live</span>
                 </div>
 
-                <div className="h-3 w-px bg-slate-700 shrink-0"></div>
+                <div
+                    className="h-3 w-px shrink-0"
+                    style={{ backgroundColor: 'color-mix(in srgb, var(--text-primary) 60%, transparent)' }}
+                ></div>
 
                 <div
                     className="flex-1 min-w-0 flex items-center gap-2 transition-all duration-300 ease-in-out"
@@ -64,17 +73,18 @@ export default function LiveTicker() {
                         href={story.sourceUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-xs text-slate-300 hover:text-white truncate transition-colors"
+                        className="text-xs truncate transition-colors hover:underline"
+                        style={{ color: 'var(--text-secondary)' }}
                     >
                         {story.headline}
                     </a>
 
-                    <span className="hidden sm:inline text-[10px] text-slate-500 shrink-0">
+                    <span className="hidden sm:inline text-[10px] shrink-0" style={{ color: 'var(--text-muted)' }}>
                         | {story.sourceName}
                     </span>
                 </div>
 
-                <span className="text-[10px] text-slate-600 font-mono shrink-0 hidden sm:block">
+                <span className="text-[10px] font-mono shrink-0 hidden sm:block" style={{ color: 'var(--text-muted)' }}>
                     {(currentIndex % stories.length) + 1}/{stories.length}
                 </span>
             </div>

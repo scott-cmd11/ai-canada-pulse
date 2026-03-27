@@ -25,7 +25,7 @@ export default function AIAdoptionSection() {
             <section>
                 <h2 className="section-header mb-4">AI Adoption by Industry</h2>
                 <div className="saas-card p-8 text-center">
-                    <div className="animate-pulse text-sm text-slate-500">Loading adoption data...</div>
+                    <div className="animate-pulse text-sm" style={{ color: 'var(--text-muted)' }}>Loading adoption data...</div>
                 </div>
             </section>
         )
@@ -78,14 +78,21 @@ export default function AIAdoptionSection() {
         <section>
             <div className="flex items-center justify-between mb-4">
                 <h2 className="section-header">AI Adoption by Industry</h2>
-                <span className="text-xs font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 px-2.5 py-1 rounded-full">
+                <span
+                    className="text-xs font-bold px-2.5 py-1 rounded-full border"
+                    style={{
+                        color: 'var(--accent-primary)',
+                        backgroundColor: 'color-mix(in srgb, var(--accent-primary) 10%, transparent)',
+                        borderColor: 'color-mix(in srgb, var(--accent-primary) 20%, transparent)',
+                    }}
+                >
                     Avg: {data.averageRate}%
                 </span>
             </div>
 
 
             <div className="saas-card p-5">
-                <p className="text-xs text-slate-500 mb-1">
+                <p className="text-xs mb-1" style={{ color: 'var(--text-muted)' }}>
                     % of businesses planning to adopt AI software in next 12 months ({data.surveyPeriod})
                 </p>
                 <ReactECharts

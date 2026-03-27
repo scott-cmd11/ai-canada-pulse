@@ -42,7 +42,7 @@ export default function IndicatorsSection() {
         ))}
       </div>
       {loading && (
-        <p className="text-sm font-medium text-slate-500 mt-4">
+        <p className="text-sm font-medium mt-4" style={{ color: 'var(--text-muted)' }}>
           Retrieving baseline economic data...
         </p>
       )}

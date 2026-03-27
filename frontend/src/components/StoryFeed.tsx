@@ -59,18 +59,18 @@ export default function StoryFeed({ region }: StoryFeedProps = {}) {
   const visible = filtered.slice(0, displayCount)
 
   return (
-    <section className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6">
-      <div className="flex flex-col gap-4 border-b border-slate-100 pb-4 lg:flex-row lg:items-end lg:justify-between">
+    <section className="rounded-2xl border p-5 sm:p-6" style={{ borderColor: 'var(--border-subtle)', backgroundColor: 'var(--surface-primary)' }}>
+      <div className="flex flex-col gap-4 border-b pb-4 lg:flex-row lg:items-end lg:justify-between" style={{ borderColor: 'var(--border-subtle)' }}>
         <div>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.18em]" style={{ color: 'var(--text-muted)' }}>
             Curated Canada stream
           </p>
-          <h3 className="mt-1 text-xl font-bold text-slate-900">Signals worth scanning now</h3>
-          <p className="mt-2 max-w-2xl text-sm leading-relaxed text-slate-600">
+          <h3 className="mt-1 text-xl font-bold" style={{ color: 'var(--text-primary)' }}>Signals worth scanning now</h3>
+          <p className="mt-2 max-w-2xl text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
             A narrower Canada feed focused on the items most relevant to acceleration, capacity building, and institutional impact.
           </p>
         </div>
-        <Link href="/methodology" className="text-sm font-semibold text-indigo-700 hover:text-indigo-800 hover:underline">
+        <Link href="/methodology" className="text-sm font-semibold hover:underline" style={{ color: 'var(--accent-primary)' }}>
           Source methodology
         </Link>
       </div>
@@ -89,12 +89,19 @@ export default function StoryFeed({ region }: StoryFeedProps = {}) {
               setActive(category.value)
               setDisplayCount(PAGE_SIZE)
             }}
-            className={[
-              "rounded-full border px-3 py-1.5 text-xs font-semibold transition-colors",
-              active === category.value
-                ? "border-indigo-200 bg-indigo-50 text-indigo-700"
-                : "border-slate-200 bg-white text-slate-500 hover:border-slate-300 hover:text-slate-700",
-            ].join(" ")}
+            className="rounded-full border px-3 py-1.5 text-xs font-semibold transition-colors"
+            style={active === category.value
+              ? {
+                  borderColor: 'color-mix(in srgb, var(--accent-primary) 20%, transparent)',
+                  backgroundColor: 'color-mix(in srgb, var(--accent-primary) 8%, transparent)',
+                  color: 'var(--accent-primary)',
+                }
+              : {
+                  borderColor: 'var(--border-subtle)',
+                  backgroundColor: 'var(--surface-primary)',
+                  color: 'var(--text-muted)',
+                }
+            }
           >
             {category.label}
           </button>
@@ -109,32 +116,34 @@ export default function StoryFeed({ region }: StoryFeedProps = {}) {
 
       {loading && (
         <div className="py-8 text-center">
-          <p className="text-sm font-medium text-slate-500">Retrieving Canada signals...</p>
+          <p className="text-sm font-medium" style={{ color: 'var(--text-muted)' }}>Retrieving Canada signals...</p>
         </div>
       )}
 
       {!loading && filtered.length === 0 && (
         <div className="py-8 text-center">
-          <p className="text-sm font-medium text-slate-500">No signals in this view right now.</p>
+          <p className="text-sm font-medium" style={{ color: 'var(--text-muted)' }}>No signals in this view right now.</p>
         </div>
       )}
 
       {!loading && filtered.length > PAGE_SIZE && (
-        <div className="mt-5 flex items-center justify-between border-t border-slate-100 pt-4">
-          <p className="text-xs text-slate-500">
+        <div className="mt-5 flex items-center justify-between border-t pt-4" style={{ borderColor: 'var(--border-subtle)' }}>
+          <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
             Showing {visible.length} of {filtered.length} signals
           </p>
           {filtered.length > displayCount ? (
             <button
               onClick={() => setDisplayCount((prev) => prev + PAGE_SIZE)}
-              className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50"
+              className="rounded-lg border px-4 py-2 text-sm font-semibold transition-colors"
+              style={{ borderColor: 'var(--border-subtle)', backgroundColor: 'var(--surface-primary)', color: 'var(--text-secondary)' }}
             >
               Show more signals
             </button>
           ) : (
             <button
               onClick={() => setDisplayCount(PAGE_SIZE)}
-              className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50"
+              className="rounded-lg border px-4 py-2 text-sm font-semibold transition-colors"
+              style={{ borderColor: 'var(--border-subtle)', backgroundColor: 'var(--surface-primary)', color: 'var(--text-secondary)' }}
             >
               Collapse
             </button>

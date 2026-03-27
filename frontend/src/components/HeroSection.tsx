@@ -23,19 +23,34 @@ export default function HeroSection() {
   const config = pulse ? moodConfig[pulse.mood] : null
 
   return (
-    <div className="bg-white border border-slate-200 rounded-lg p-6 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div
+      className="rounded-lg p-6 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4 border"
+      style={{
+        backgroundColor: 'var(--surface-primary)',
+        borderColor: 'var(--border-subtle)',
+      }}
+    >
       <div>
-        <h1 className="text-2xl font-bold text-slate-900 mb-1">
+        <h1
+          className="text-2xl font-bold mb-1"
+          style={{ color: 'var(--text-primary)' }}
+        >
           National Impact Overview
         </h1>
-        <p className="text-sm text-slate-600 max-w-2xl">
+        <p
+          className="text-sm max-w-2xl"
+          style={{ color: 'var(--text-secondary)' }}
+        >
           Tracking Canada&apos;s $2.4B AI strategy across policy, markets, research, open-source development, and national compute infrastructure.
         </p>
       </div>
 
       <div className="flex items-center gap-3 md:justify-end shrink-0">
         {pulse && (
-          <span className="text-sm font-medium text-slate-500">
+          <span
+            className="text-sm font-medium"
+            style={{ color: 'var(--text-muted)' }}
+          >
             {relativeTime(pulse.updatedAt)}
           </span>
         )}

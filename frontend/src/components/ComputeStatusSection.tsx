@@ -49,7 +49,7 @@ export default function ComputeStatusSection() {
 
             {loading && (
                 <div className="saas-card p-8 text-center">
-                    <div className="animate-pulse text-sm text-slate-500">Checking compute cluster status...</div>
+                    <div className="animate-pulse text-sm" style={{ color: 'var(--text-muted)' }}>Checking compute cluster status...</div>
                 </div>
             )}
 
@@ -72,12 +72,12 @@ export default function ComputeStatusSection() {
                     {/* Active incidents */}
                     {data.activeIncidents.length > 0 && (
                         <div className="saas-card p-4 mt-3 border-l-4 border-l-amber-400">
-                            <p className="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">
+                            <p className="text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: 'var(--text-muted)' }}>
                                 Active Notices
                             </p>
                             <ul className="flex flex-col gap-1.5">
                                 {data.activeIncidents.map((inc, i) => (
-                                    <li key={i} className="text-xs text-slate-600 leading-relaxed">
+                                    <li key={i} className="text-xs leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
                                         • {stripFrench(inc)}
                                     </li>
                                 ))}
@@ -109,7 +109,7 @@ function ClusterCard({ cluster }: { cluster: ComputeCluster }) {
             title={cleanIncident}
         >
             <div className="flex items-center justify-between gap-2 mb-2">
-                <p className="text-sm font-bold text-slate-900">{cluster.name}</p>
+                <p className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>{cluster.name}</p>
                 <div className="flex items-center gap-1.5 shrink-0">
                     <span className={`w-2 h-2 rounded-full ${cfg.dot}`} />
                     <span className={`text-[10px] font-semibold uppercase tracking-wider ${cfg.text}`}>
@@ -117,7 +117,7 @@ function ClusterCard({ cluster }: { cluster: ComputeCluster }) {
                     </span>
                 </div>
             </div>
-            <p className="text-xs text-slate-500">{cluster.location}</p>
+            <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{cluster.location}</p>
             {cleanIncident ? (
                 <p className="text-[10px] text-amber-600 mt-auto pt-2 leading-relaxed line-clamp-1">
                     ⚠ {cleanIncident}

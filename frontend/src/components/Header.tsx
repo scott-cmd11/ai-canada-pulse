@@ -18,7 +18,7 @@ export default function Header() {
 
   return (
     <header className="sticky top-0 z-50 shadow-[0_10px_30px_rgba(15,23,42,0.06)] backdrop-blur-xl" style={{ borderBottom: "1px solid var(--header-border)", background: "var(--header-bg)" }}>
-      <div className="border-b border-slate-200/70">
+      <div className="border-b" style={{ borderColor: "var(--border-subtle)" }}>
         <LiveTicker />
       </div>
 
@@ -30,20 +30,20 @@ export default function Header() {
                 AI
               </div>
               <div>
-                <span className="block text-lg font-bold tracking-tight text-slate-950 group-hover:text-indigo-700">
+                <span className="block text-lg font-bold tracking-tight" style={{ color: "var(--text-primary)" }}>
                   Canada Pulse
                 </span>
-                <span className="block text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">
+                <span className="block text-[11px] font-semibold uppercase tracking-[0.18em]" style={{ color: "var(--text-muted)" }}>
                   Editorial intelligence monitor
                 </span>
               </div>
             </Link>
 
-            <div className="hidden h-8 w-px bg-slate-200 lg:block"></div>
+            <div className="hidden h-8 w-px lg:block" style={{ backgroundColor: "color-mix(in srgb, var(--text-muted) 20%, transparent)" }}></div>
 
             <div className="hidden lg:flex lg:flex-col">
-              <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">Today</span>
-              <span className="text-sm font-medium text-slate-600">{today}</span>
+              <span className="text-[11px] font-semibold uppercase tracking-[0.18em]" style={{ color: "var(--text-muted)" }}>Today</span>
+              <span className="text-sm font-medium" style={{ color: "var(--text-secondary)" }}>{today}</span>
             </div>
           </div>
 
