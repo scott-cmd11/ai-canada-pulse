@@ -23,6 +23,8 @@ import SectionNav from "@/components/SectionNav"
 import ScrollToTop from "@/components/ScrollToTop"
 import ScrollReveal from "@/components/ScrollReveal"
 import DashboardFooter from "@/components/DashboardFooter"
+import SectionErrorBoundary from "@/components/SectionErrorBoundary"
+import KeyboardShortcuts from "@/components/KeyboardShortcuts"
 import { StoriesProvider } from "@/hooks/useStories"
 
 export const metadata: Metadata = {
@@ -61,12 +63,18 @@ export default function DashboardPage() {
           />
 
           <div className="grid gap-4 xl:grid-cols-[1.05fr_0.95fr]">
-            <BriefingCard />
-            <ExecutiveBriefSection />
+            <SectionErrorBoundary sectionName="Lead Signal">
+              <BriefingCard />
+            </SectionErrorBoundary>
+            <SectionErrorBoundary sectionName="Executive Brief">
+              <ExecutiveBriefSection />
+            </SectionErrorBoundary>
           </div>
 
           <div className="mt-4">
-            <StoryFeed />
+            <SectionErrorBoundary sectionName="Story Feed">
+              <StoryFeed />
+            </SectionErrorBoundary>
           </div>
         </section>
 
@@ -79,13 +87,21 @@ export default function DashboardPage() {
             />
 
             <div className="grid gap-4 xl:grid-cols-2">
-              <TrendsSection />
-              <TrendsInsightsSection />
+              <SectionErrorBoundary sectionName="AI Adoption Trends">
+                <TrendsSection />
+              </SectionErrorBoundary>
+              <SectionErrorBoundary sectionName="Provincial Search Interest">
+                <TrendsInsightsSection />
+              </SectionErrorBoundary>
             </div>
 
             <div className="mt-4 grid gap-4 xl:grid-cols-[0.95fr_1.05fr]">
-              <ComputeStatusSection />
-              <LabFeedsSection />
+              <SectionErrorBoundary sectionName="Compute Infrastructure">
+                <ComputeStatusSection />
+              </SectionErrorBoundary>
+              <SectionErrorBoundary sectionName="Lab Activity">
+                <LabFeedsSection />
+              </SectionErrorBoundary>
             </div>
           </section>
         </ScrollReveal>
@@ -99,13 +115,21 @@ export default function DashboardPage() {
             />
 
             <div className="grid gap-4 xl:grid-cols-2">
-              <ResearchSection />
-              <OpenSourceSection />
+              <SectionErrorBoundary sectionName="Fundamental Research">
+                <ResearchSection />
+              </SectionErrorBoundary>
+              <SectionErrorBoundary sectionName="Open Source Activity">
+                <OpenSourceSection />
+              </SectionErrorBoundary>
             </div>
 
             <div className="mt-4 grid gap-4 xl:grid-cols-2">
-              <EpochAISection />
-              <HuggingFaceSection />
+              <SectionErrorBoundary sectionName="AI Capability Tracker">
+                <EpochAISection />
+              </SectionErrorBoundary>
+              <SectionErrorBoundary sectionName="Canadian AI Models">
+                <HuggingFaceSection />
+              </SectionErrorBoundary>
             </div>
           </section>
         </ScrollReveal>
@@ -119,22 +143,36 @@ export default function DashboardPage() {
             />
 
             <div className="grid gap-4 xl:grid-cols-[0.9fr_1.1fr]">
-              <SentimentSection />
-              <StocksSection />
+              <SectionErrorBoundary sectionName="Media Sentiment">
+                <SentimentSection />
+              </SectionErrorBoundary>
+              <SectionErrorBoundary sectionName="Market Performance">
+                <StocksSection />
+              </SectionErrorBoundary>
             </div>
 
             <div className="mt-4">
-              <IndicatorsSection />
+              <SectionErrorBoundary sectionName="Pulse Indicators">
+                <IndicatorsSection />
+              </SectionErrorBoundary>
             </div>
 
             <div className="mt-4 grid gap-4 xl:grid-cols-2">
-              <JobMarketSection />
-              <ParliamentSection />
+              <SectionErrorBoundary sectionName="Labour Demand">
+                <JobMarketSection />
+              </SectionErrorBoundary>
+              <SectionErrorBoundary sectionName="Parliament Activity">
+                <ParliamentSection />
+              </SectionErrorBoundary>
             </div>
 
             <div className="mt-4 grid gap-4 xl:grid-cols-2">
-              <GovRegistrySection />
-              <OecdSection />
+              <SectionErrorBoundary sectionName="Federal AI Registry">
+                <GovRegistrySection />
+              </SectionErrorBoundary>
+              <SectionErrorBoundary sectionName="OECD Policy Tracker">
+                <OecdSection />
+              </SectionErrorBoundary>
             </div>
           </section>
         </ScrollReveal>
@@ -142,6 +180,7 @@ export default function DashboardPage() {
 
       <DashboardFooter />
       <ScrollToTop />
+      <KeyboardShortcuts />
     </div>
     </StoriesProvider>
   )
