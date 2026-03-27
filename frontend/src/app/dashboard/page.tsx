@@ -1,3 +1,4 @@
+import type { Metadata } from "next"
 import Header from "@/components/Header"
 import BriefingCard from "@/components/BriefingCard"
 import ExecutiveBriefSection from "@/components/ExecutiveBriefSection"
@@ -23,6 +24,11 @@ import ScrollToTop from "@/components/ScrollToTop"
 import ScrollReveal from "@/components/ScrollReveal"
 import DashboardFooter from "@/components/DashboardFooter"
 import { StoriesProvider } from "@/hooks/useStories"
+
+export const metadata: Metadata = {
+  title: "Dashboard",
+  description: "Real-time Canadian AI intelligence dashboard. Track policy, research, industry, market, and job signals from 17+ public data sources.",
+}
 
 function SectionTitle({ eyebrow, title, description }: { eyebrow: string; title: string; description: string }) {
   return (

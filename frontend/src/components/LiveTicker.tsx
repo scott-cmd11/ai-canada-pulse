@@ -28,13 +28,13 @@ export default function LiveTicker() {
 
     const story = stories[currentIndex % stories.length]
 
-    const categoryColors: Record<string, string> = {
-        "Policy & Regulation": "bg-blue-100 text-blue-700",
-        "Industry & Startups": "bg-emerald-100 text-emerald-700",
-        "Research & Development": "bg-purple-100 text-purple-700",
-        "Funding & Investment": "bg-amber-100 text-amber-700",
+    const categoryColors: Record<string, { bg: string; text: string }> = {
+        "Policy & Regulation": { bg: 'color-mix(in srgb, #3b82f6 12%, var(--surface-primary))', text: '#3b82f6' },
+        "Industry & Startups": { bg: 'color-mix(in srgb, #10b981 12%, var(--surface-primary))', text: '#10b981' },
+        "Research & Development": { bg: 'color-mix(in srgb, #8b5cf6 12%, var(--surface-primary))', text: '#8b5cf6' },
+        "Funding & Investment": { bg: 'color-mix(in srgb, #f59e0b 12%, var(--surface-primary))', text: '#f59e0b' },
     }
-    const catClass = categoryColors[story.category] || "bg-slate-100 text-slate-600"
+    const catStyle = categoryColors[story.category] || { bg: 'color-mix(in srgb, var(--text-muted) 12%, var(--surface-primary))', text: 'var(--text-muted)' }
 
     return (
         <div
@@ -65,7 +65,10 @@ export default function LiveTicker() {
                         transform: visible ? "translateY(0)" : "translateY(-6px)",
                     }}
                 >
-                    <span className={`hidden sm:inline-block text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded shrink-0 ${catClass}`}>
+                    <span
+                        className="hidden sm:inline-block text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded shrink-0"
+                        style={{ backgroundColor: catStyle.bg, color: catStyle.text }}
+                    >
                         {story.category?.split(" ")[0]}
                     </span>
 

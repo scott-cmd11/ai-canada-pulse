@@ -27,8 +27,12 @@ export async function generateMetadata({
   const province = getProvinceBySlug(slug);
   if (!province) return {};
   return {
-    title: `${province.name} — AI Canada Pulse`,
-    description: province.description,
+    title: `${province.name} AI Intelligence`,
+    description: `AI developments in ${province.name}: ${province.description}`,
+    openGraph: {
+      title: `${province.name} — AI Canada Pulse`,
+      description: `AI developments in ${province.name}: ${province.description}`,
+    },
   };
 }
 
