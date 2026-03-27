@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import type { GitHubData } from "@/lib/github-client"
 import SourceAttribution from '@/components/SourceAttribution'
+import { SectionSkeleton } from '@/components/Skeleton'
 
 export default function OpenSourceSection() {
     const [gh, setGh] = useState<GitHubData | null>(null)
@@ -25,9 +26,7 @@ export default function OpenSourceSection() {
             </p>
 
             {loading && (
-                <div className="saas-card p-8 text-center">
-                    <div className="animate-pulse text-sm" style={{ color: 'var(--text-muted)' }}>Loading GitHub data...</div>
-                </div>
+                <SectionSkeleton title="Canadian AI on GitHub" variant="cards" />
             )}
 
             {!loading && gh && (

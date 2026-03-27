@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import type { HuggingFaceData } from "@/lib/huggingface-client"
 import SourceAttribution from '@/components/SourceAttribution'
+import { SectionSkeleton } from '@/components/Skeleton'
 
 export default function HuggingFaceSection() {
     const [data, setData] = useState<HuggingFaceData | null>(null)
@@ -17,14 +18,7 @@ export default function HuggingFaceSection() {
     }, [])
 
     if (loading) {
-        return (
-            <section>
-                <div className="section-header"><h2>Canadian AI Models</h2></div>
-                <div className="saas-card p-8 text-center">
-                    <div className="animate-pulse text-sm" style={{ color: 'var(--text-muted)' }}>Loading Hugging Face data...</div>
-                </div>
-            </section>
-        )
+        return <SectionSkeleton title="Canadian AI Models" variant="cards" />
     }
 
     if (!data || data.orgs.length === 0) return null

@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import type { StocksData, StockQuote } from "@/lib/stocks-client"
 import SourceAttribution from '@/components/SourceAttribution'
+import { SectionSkeleton } from '@/components/Skeleton'
 
 interface StocksSectionProps {
   region?: string
@@ -26,16 +27,7 @@ export default function StocksSection({ region }: StocksSectionProps = {}) {
   }, [region])
 
   if (loading) {
-    return (
-      <section>
-        <div className="section-header">
-          <h2>Market Performance</h2>
-        </div>
-        <div className="saas-card p-6">
-          <p className="text-sm font-medium" style={{ color: 'var(--text-muted)' }}>Retrieving TSX market data...</p>
-        </div>
-      </section>
-    )
+    return <SectionSkeleton title="Market Performance" variant="table" />
   }
 
   if (!data || data.quotes.length === 0) {

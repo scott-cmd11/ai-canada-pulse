@@ -5,6 +5,7 @@ import dynamic from "next/dynamic"
 import type { JobMarketData } from "@/lib/jobs-client"
 import { useChartTheme } from "@/hooks/useChartTheme"
 import SourceAttribution from '@/components/SourceAttribution'
+import { SectionSkeleton } from '@/components/Skeleton'
 import echarts from "@/lib/echarts-custom"
 
 const ReactECharts = dynamic(() => import("echarts-for-react/lib/core"), { ssr: false })
@@ -32,16 +33,7 @@ export default function JobMarketSection({ region }: JobMarketSectionProps = {})
   }, [region])
 
   if (loading) {
-    return (
-      <section>
-        <div className="section-header">
-          <h2>Labour Demand</h2>
-        </div>
-        <div className="saas-card p-6">
-          <p className="text-sm font-medium" style={{ color: 'var(--text-muted)' }}>Analyzing national labour patterns...</p>
-        </div>
-      </section>
-    )
+    return <SectionSkeleton title="Labour Demand" variant="chart" />
   }
 
   if (!data) {

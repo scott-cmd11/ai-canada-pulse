@@ -4,6 +4,7 @@ import { useState, useCallback } from "react"
 import type { ResearchPaper } from "@/lib/research-client"
 import { usePolling } from "@/hooks/usePolling"
 import SourceAttribution from '@/components/SourceAttribution'
+import { SkeletonTable } from '@/components/Skeleton'
 
 interface ArxivSectionProps {
     // When provided, only display papers whose institutions list contains at least
@@ -45,9 +46,7 @@ export default function ArxivSection({ institutionFilter }: ArxivSectionProps = 
             </div>
 
             {loading && (
-                <div className="saas-card p-8 text-center">
-                    <div className="animate-pulse text-sm" style={{ color: 'var(--text-muted)' }}>Loading Canadian AI research...</div>
-                </div>
+                <div className="saas-card p-6"><SkeletonTable rows={4} /></div>
             )}
 
             {!loading && papers && papers.length > 0 && (

@@ -5,6 +5,7 @@ import { indicators as defaultIndicators } from "@/lib/indicators-data"
 import type { Indicator } from "@/lib/indicators-data"
 import IndicatorChart from "./IndicatorChart"
 import SourceAttribution from '@/components/SourceAttribution'
+import { SectionSkeleton } from '@/components/Skeleton'
 
 export default function IndicatorsSection() {
   const [data, setData] = useState<Indicator[]>(defaultIndicators)
@@ -43,11 +44,7 @@ export default function IndicatorsSection() {
           />
         ))}
       </div>
-      {loading && (
-        <p className="text-sm font-medium mt-4" style={{ color: 'var(--text-muted)' }}>
-          Retrieving baseline economic data...
-        </p>
-      )}
+      {loading && <SectionSkeleton title="Pulse Indicators" variant="chart" />}
       <SourceAttribution sourceId="stocks" lastUpdated={lastUpdated} />
     </section>
   )

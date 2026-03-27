@@ -12,6 +12,7 @@ import JobMarketSection from '@/components/JobMarketSection';
 import StocksSection from '@/components/StocksSection';
 import ArxivSection from '@/components/ArxivSection';
 import ScrollToTop from '@/components/ScrollToTop';
+import DashboardFooter from '@/components/DashboardFooter';
 
 export function generateStaticParams() {
   return getAllProvinceSlugs().map((slug) => ({ slug }));
@@ -248,6 +249,7 @@ export default async function ProvincePage({
         </div>
       </footer>
 
+      <DashboardFooter />
       <ScrollToTop />
     </div>
   );

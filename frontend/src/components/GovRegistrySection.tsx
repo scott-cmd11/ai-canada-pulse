@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import type { GovAISystem } from "@/lib/gov-ai-registry-client"
 import SourceAttribution from '@/components/SourceAttribution'
+import { SectionSkeleton } from '@/components/Skeleton'
 
 const RISK_MAP: Record<string, { classes: string; label: string }> = {
   High: { classes: "bg-red-50 text-red-700 border-red-200", label: "High Risk" },
@@ -61,9 +62,7 @@ export default function GovRegistrySection() {
       </p>
 
       {loading && (
-        <div className="py-6">
-          <p className="text-sm font-medium" style={{ color: 'var(--text-muted)' }}>Synchronizing with TBS database...</p>
-        </div>
+        <SectionSkeleton title="Federal AI Registry" variant="table" />
       )}
 
       {!loading && systems.length === 0 && (

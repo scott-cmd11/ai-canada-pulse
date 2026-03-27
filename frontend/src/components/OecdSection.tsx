@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import dynamic from "next/dynamic"
 import type { OecdData } from "@/lib/oecd-client"
 import SourceAttribution from '@/components/SourceAttribution'
+import { SectionSkeleton } from '@/components/Skeleton'
 import echarts from "@/lib/echarts-custom"
 
 const ReactECharts = dynamic(() => import("echarts-for-react/lib/core"), { ssr: false })
@@ -20,14 +21,7 @@ export default function OecdSection() {
     }, [])
 
     if (loading) {
-        return (
-            <section>
-                <h2 className="section-header mb-4">Global AI Comparison</h2>
-                <div className="saas-card p-8 text-center">
-                    <div className="animate-pulse text-sm" style={{ color: 'var(--text-muted)' }}>Loading OECD data...</div>
-                </div>
-            </section>
-        )
+        return <SectionSkeleton title="OECD Policy Tracker" variant="table" />
     }
 
     if (!data) return null

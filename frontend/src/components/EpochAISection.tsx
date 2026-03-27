@@ -4,6 +4,7 @@ import { useCallback, useMemo } from "react"
 import dynamic from "next/dynamic"
 import { usePolling } from "@/hooks/usePolling"
 import SourceAttribution from '@/components/SourceAttribution'
+import { SectionSkeleton } from '@/components/Skeleton'
 import type { METRModel, METRStats } from "@/lib/epoch-client"
 import echarts from "@/lib/echarts-custom"
 
@@ -251,14 +252,7 @@ export default function EpochAISection() {
     }, [data])
 
     if (loading) {
-        return (
-            <section>
-                <h2 className="section-header">AI Capability Tracker</h2>
-                <div className="saas-card p-8 text-center">
-                    <div className="animate-pulse text-sm" style={{ color: 'var(--text-muted)' }}>Loading AI capability data from METR...</div>
-                </div>
-            </section>
-        )
+        return <SectionSkeleton title="AI Capability Tracker" variant="chart" />
     }
 
     if (!data) {

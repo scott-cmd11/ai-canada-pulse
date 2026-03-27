@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import type { AllianceData, ComputeCluster } from "@/lib/alliance-client"
+import { SectionSkeleton } from '@/components/Skeleton'
 
 /** Strip French portion from bilingual incident titles (format: "English - Français") */
 function stripFrench(text: string): string {
@@ -48,9 +49,7 @@ export default function ComputeStatusSection() {
             </div>
 
             {loading && (
-                <div className="saas-card p-8 text-center">
-                    <div className="animate-pulse text-sm" style={{ color: 'var(--text-muted)' }}>Checking compute cluster status...</div>
-                </div>
+                <SectionSkeleton title="National AI Compute Infrastructure" variant="cards" />
             )}
 
             {!loading && data && (

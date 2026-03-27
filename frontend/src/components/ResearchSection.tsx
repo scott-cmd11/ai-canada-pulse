@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import type { ResearchPaper } from "@/lib/research-client"
 import SourceAttribution from '@/components/SourceAttribution'
+import { SkeletonTable } from '@/components/Skeleton'
 
 export default function ResearchSection() {
   const [papers, setPapers] = useState<ResearchPaper[]>([])
@@ -39,9 +40,7 @@ export default function ResearchSection() {
       </div>
 
       {loading && (
-        <div className="py-8">
-          <p className="text-sm font-medium" style={{ color: 'var(--text-muted)' }}>Querying academic indices...</p>
-        </div>
+        <div className="saas-card p-6"><SkeletonTable rows={4} /></div>
       )}
 
       {!loading && papers.length === 0 && (
