@@ -1,15 +1,17 @@
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import { getProvinceBySlug, getAllProvinceSlugs } from '@/lib/provinces-config';
+import Header from '@/components/Header';
 import ProvinceHero from '@/components/ProvinceHero';
 import ProvinceStatsRibbon from '@/components/ProvinceStatsRibbon';
 import ProvinceInstitutions from '@/components/ProvinceInstitutions';
-import ComingSoonSection from '@/components/ComingSoonSection';
+import ParliamentSection from '@/components/ParliamentSection';
 import StoryFeed from '@/components/StoryFeed';
 import TrendsInsightsSection from '@/components/TrendsInsightsSection';
 import JobMarketSection from '@/components/JobMarketSection';
 import StocksSection from '@/components/StocksSection';
 import ArxivSection from '@/components/ArxivSection';
+import ScrollToTop from '@/components/ScrollToTop';
 
 export function generateStaticParams() {
   return getAllProvinceSlugs().map((slug) => ({ slug }));
@@ -57,6 +59,8 @@ export default async function ProvincePage({
 
   return (
     <div>
+      <Header />
+
       {/* Breadcrumb */}
       <nav
         style={{
@@ -194,10 +198,7 @@ export default async function ProvincePage({
         <section
           style={{ maxWidth: '1080px', margin: '0 auto', padding: '8px 40px 40px' }}
         >
-          <ComingSoonSection
-            title="Parliamentary mentions"
-            message="We're building provincial parliamentary tracking."
-          />
+          <ParliamentSection />
         </section>
       )}
 
@@ -246,6 +247,8 @@ export default async function ProvincePage({
           })}
         </div>
       </footer>
+
+      <ScrollToTop />
     </div>
   );
 }

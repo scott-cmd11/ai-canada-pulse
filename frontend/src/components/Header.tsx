@@ -3,12 +3,7 @@
 import Link from "next/link"
 import LiveTicker from "./LiveTicker"
 import ThemeToggle from "./ThemeToggle"
-import { relativeTime } from "@/lib/relative-time"
-import { useStories } from "@/hooks/useStories"
-
 export default function Header() {
-  const { pulse } = useStories()
-
   const today = new Date().toLocaleDateString("en-CA", {
     weekday: "short",
     year: "numeric",
