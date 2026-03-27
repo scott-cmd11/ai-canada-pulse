@@ -54,18 +54,22 @@ export default function SectionNav() {
             <button
               key={section.id}
               onClick={() => scrollTo(section.id)}
-              className="rounded-full border px-3.5 py-1.5 text-xs font-semibold shadow-sm transition-all duration-200"
+              className="rounded-full border px-3.5 py-1.5 text-xs font-semibold shadow-sm transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-700 focus-visible:ring-offset-1"
               style={{
                 borderColor: isActive
                   ? 'var(--accent-primary)'
                   : 'var(--border-subtle)',
                 backgroundColor: isActive
-                  ? 'color-mix(in srgb, var(--accent-primary) 10%, var(--surface-primary))'
+                  ? 'color-mix(in srgb, var(--accent-primary) 12%, var(--surface-primary))'
                   : 'var(--surface-primary)',
                 color: isActive
                   ? 'var(--accent-primary)'
                   : 'var(--text-secondary)',
                 fontWeight: isActive ? 700 : 600,
+                transform: isActive ? 'scale(1.04)' : 'scale(1)',
+                boxShadow: isActive
+                  ? '0 2px 8px color-mix(in srgb, var(--accent-primary) 20%, transparent)'
+                  : undefined,
               }}
               onMouseEnter={(e) => {
                 if (!isActive) {

@@ -6,6 +6,15 @@ interface Props {
   story: Story
 }
 
+const categoryColors: Record<string, string> = {
+  "Policy & Regulation": "var(--cat-policy)",
+  "Industry & Startups": "var(--cat-markets)",
+  "Research": "var(--cat-research)",
+  "Research & Development": "var(--cat-research)",
+  "Funding & Investment": "var(--cat-funding)",
+  "Global AI Race": "var(--cat-geopolitics)",
+}
+
 export default function StoryCard({ story }: Props) {
   const categoryLabel = story.category === "Industry & Startups"
     ? "Markets"
@@ -15,13 +24,15 @@ export default function StoryCard({ story }: Props) {
         ? "Geopolitics"
         : story.category
 
+  const catColor = categoryColors[story.category] || "var(--accent-primary)"
+
   return (
     <article className="saas-card flex flex-col gap-4 p-5 sm:flex-row sm:gap-5">
       <div className="mt-0.5 flex shrink-0 gap-3 sm:w-32 sm:flex-col sm:gap-2">
         <span className="text-[11px] font-semibold uppercase tracking-[0.14em]" style={{ color: 'var(--text-muted)' }}>
           {relativeTime(story.publishedAt)}
         </span>
-        <span className="self-start rounded-full border px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.12em]" style={{ borderColor: 'color-mix(in srgb, var(--accent-primary) 20%, transparent)', backgroundColor: 'color-mix(in srgb, var(--accent-primary) 8%, transparent)', color: 'var(--accent-primary)' }}>
+        <span className="self-start rounded-full border px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.12em]" style={{ borderColor: `color-mix(in srgb, ${catColor} 25%, transparent)`, backgroundColor: `color-mix(in srgb, ${catColor} 10%, transparent)`, color: catColor }}>
           {categoryLabel}
         </span>
         <AILabel level="classification" />

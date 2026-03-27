@@ -11,7 +11,7 @@ export default function BriefingCard() {
   const topStory: Story | undefined = stories.find((s) => s.isBriefingTop) || stories[0]
   if (!topStory) {
     return (
-      <article className="saas-card flex flex-col gap-5 border-l-[3px] p-6 sm:p-8" style={{ borderLeftColor: 'var(--border-subtle)' }}>
+      <article className="saas-card accent-border-left flex flex-col gap-5 p-6 sm:p-8">
         <SkeletonBar width="80px" height="22px" />
         <div className="space-y-3">
           <SkeletonBar width="85%" height="28px" />
@@ -25,8 +25,7 @@ export default function BriefingCard() {
 
   return (
     <article
-      className="saas-card flex flex-col gap-5 border-l-[3px] p-6 sm:p-8"
-      style={{ borderLeftColor: 'var(--accent-primary)' }}
+      className="saas-card accent-border-left flex flex-col gap-5 p-6 sm:p-8"
     >
       <div
         className="flex flex-wrap items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.16em]"

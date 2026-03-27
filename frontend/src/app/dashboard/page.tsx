@@ -32,12 +32,12 @@ export const metadata: Metadata = {
   description: "Real-time Canadian AI intelligence dashboard. Track policy, research, industry, market, and job signals from 17+ public data sources.",
 }
 
-function SectionTitle({ eyebrow, title, description }: { eyebrow: string; title: string; description: string }) {
+function SectionTitle({ eyebrow, title, description, dark }: { eyebrow: string; title: string; description: string; dark?: boolean }) {
   return (
     <div className="mb-4 sm:mb-5">
-      <p className="text-[11px] font-semibold uppercase tracking-[0.18em]" style={{ color: 'var(--accent-primary)' }}>{eyebrow}</p>
-      <h2 className="mt-1 text-2xl font-bold" style={{ fontFamily: 'var(--font-display)', color: 'var(--text-primary)' }}>{title}</h2>
-      <p className="mt-2 max-w-3xl text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>{description}</p>
+      <p className="text-[11px] font-semibold uppercase tracking-[0.18em]" style={{ color: dark ? 'var(--accent-on-invert)' : 'var(--accent-primary)' }}>{eyebrow}</p>
+      <h2 className="mt-1 text-2xl font-bold sm:text-3xl" style={{ fontFamily: 'var(--font-display)', color: dark ? 'var(--text-on-invert)' : 'var(--text-primary)', fontWeight: 600 }}>{title}</h2>
+      <p className="mt-2 max-w-3xl text-sm leading-relaxed" style={{ color: dark ? 'var(--text-on-invert-secondary)' : 'var(--text-secondary)' }}>{description}</p>
     </div>
   )
 }
@@ -62,6 +62,7 @@ export default function DashboardPage() {
             description="Start with the highest-priority Canada development, then move to the machine-assisted synthesis and the curated signal stream beneath it."
           />
 
+
           <div className="grid gap-4 xl:grid-cols-[1.05fr_0.95fr]">
             <SectionErrorBoundary sectionName="Lead Signal">
               <BriefingCard />
@@ -78,12 +79,15 @@ export default function DashboardPage() {
           </div>
         </section>
 
+        <hr className="section-divider" />
+
         <ScrollReveal>
-          <section id="capacity" className="saas-card rounded-2xl p-5 sm:p-6">
+          <section id="capacity" className="section-dark rounded-2xl p-5 sm:p-6">
             <SectionTitle
               eyebrow="Canada Capacity"
               title="Evidence that the ecosystem is building"
               description="These modules answer whether Canada is adding capability through adoption, compute availability, and lab activity rather than just generating headlines."
+              dark
             />
 
             <div className="grid gap-4 xl:grid-cols-2">
@@ -105,6 +109,8 @@ export default function DashboardPage() {
             </div>
           </section>
         </ScrollReveal>
+
+        <hr className="section-divider" />
 
         <ScrollReveal>
           <section id="research" className="saas-card rounded-2xl p-5 sm:p-6">
@@ -134,12 +140,15 @@ export default function DashboardPage() {
           </section>
         </ScrollReveal>
 
+        <hr className="section-divider" />
+
         <ScrollReveal>
-          <section id="impact" className="saas-card rounded-2xl p-5 sm:p-6">
+          <section id="impact" className="section-dark rounded-2xl p-5 sm:p-6">
             <SectionTitle
               eyebrow="Market And Policy Impact"
               title="Where acceleration is already visible"
               description="Focus on the areas where Canadian AI momentum is already showing up in market tone, public-company exposure, and economic indicators."
+              dark
             />
 
             <div className="grid gap-4 xl:grid-cols-[0.9fr_1.1fr]">

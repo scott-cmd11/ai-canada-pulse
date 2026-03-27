@@ -38,10 +38,10 @@ export default function LiveTicker() {
 
     return (
         <div
-            className="w-full border-b overflow-hidden"
+            className="w-full overflow-hidden"
             style={{
                 backgroundColor: 'var(--surface-secondary)',
-                borderColor: 'var(--border-subtle)',
+                borderBottom: '1px solid color-mix(in srgb, var(--accent-primary) 25%, var(--border-subtle))',
             }}
         >
             <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-1.5 flex items-center gap-3">
