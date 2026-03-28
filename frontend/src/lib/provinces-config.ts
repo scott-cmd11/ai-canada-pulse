@@ -1,6 +1,11 @@
 // ─── Province Configuration ──────────────────────────────────────────────────
 // Foundation config for all provincial pages, the Canada map component,
 // and API filtering. Each entry describes one province/territory region.
+/**
+ * Last audited: 2026-03-28
+ * Sources: Stats Canada Q4 2025 population estimates, institutional websites
+ * Next review recommended: 2027-03-28 (12 months)
+ */
 
 export interface InstitutionConfig {
   name: string
@@ -47,7 +52,7 @@ export const PROVINCES: ProvinceConfig[] = [
     name: "Ontario",
     abbreviation: "ON",
     capital: "Toronto",
-    population: 15.8,
+    population: 15.9,
     description:
       "Canada's most populous province. Home to Vector Institute and CIFAR — two of three Pan-Canadian AI institutes.",
     googleTrendsGeo: "CA-ON",
@@ -71,15 +76,16 @@ export const PROVINCES: ProvinceConfig[] = [
       events: true,
     },
     neighborSlugs: ["quebec", "manitoba"],
+    lastVerified: "2026-03-28",
   },
   {
     slug: "quebec",
     name: "Quebec",
     abbreviation: "QC",
     capital: "Quebec City",
-    population: 8.9,
+    population: 9.0,
     description:
-      "Home to Mila, the world's largest academic deep-learning research institute.",
+      "Home to Mila, one of the world's leading academic deep-learning research institutes.",
     googleTrendsGeo: "CA-QC",
     institutions: [
       { name: "Mila", type: "institute", url: "https://mila.quebec" },
@@ -98,13 +104,14 @@ export const PROVINCES: ProvinceConfig[] = [
       events: true,
     },
     neighborSlugs: ["ontario", "new-brunswick", "northern-territories"],
+    lastVerified: "2026-03-28",
   },
   {
     slug: "british-columbia",
     name: "British Columbia",
     abbreviation: "BC",
     capital: "Victoria",
-    population: 5.4,
+    population: 5.6,
     description:
       "Home to D-Wave Systems, a global leader in quantum computing, and two major research universities.",
     googleTrendsGeo: "CA-BC",
@@ -125,13 +132,14 @@ export const PROVINCES: ProvinceConfig[] = [
       events: true,
     },
     neighborSlugs: ["alberta", "northern-territories"],
+    lastVerified: "2026-03-28",
   },
   {
     slug: "alberta",
     name: "Alberta",
     abbreviation: "AB",
     capital: "Edmonton",
-    population: 4.6,
+    population: 4.8,
     description:
       "Home to Amii, the third Pan-Canadian AI institute, at the University of Alberta.",
     googleTrendsGeo: "CA-AB",
@@ -151,6 +159,7 @@ export const PROVINCES: ProvinceConfig[] = [
       events: true,
     },
     neighborSlugs: ["british-columbia", "saskatchewan", "northern-territories"],
+    lastVerified: "2026-03-28",
   },
   {
     slug: "saskatchewan",
@@ -176,6 +185,7 @@ export const PROVINCES: ProvinceConfig[] = [
       events: false,
     },
     neighborSlugs: ["alberta", "manitoba", "northern-territories"],
+    lastVerified: "2026-03-28",
   },
   {
     slug: "manitoba",
@@ -201,13 +211,14 @@ export const PROVINCES: ProvinceConfig[] = [
       events: false,
     },
     neighborSlugs: ["saskatchewan", "ontario", "northern-territories"],
+    lastVerified: "2026-03-28",
   },
   {
     slug: "nova-scotia",
     name: "Nova Scotia",
     abbreviation: "NS",
     capital: "Halifax",
-    population: 1.0,
+    population: 1.1,
     description:
       "Dalhousie University leads AI research in Atlantic Canada with a focus on ocean technology.",
     googleTrendsGeo: "CA-NS",
@@ -226,13 +237,14 @@ export const PROVINCES: ProvinceConfig[] = [
       events: false,
     },
     neighborSlugs: ["new-brunswick"],
+    lastVerified: "2026-03-28",
   },
   {
     slug: "new-brunswick",
     name: "New Brunswick",
     abbreviation: "NB",
     capital: "Fredericton",
-    population: 0.82,
+    population: 0.84,
     description:
       "The University of New Brunswick hosts the Canadian Institute for Cybersecurity.",
     googleTrendsGeo: "CA-NB",
@@ -251,13 +263,14 @@ export const PROVINCES: ProvinceConfig[] = [
       events: false,
     },
     neighborSlugs: ["quebec", "nova-scotia"],
+    lastVerified: "2026-03-28",
   },
   {
     slug: "newfoundland-labrador",
     name: "Newfoundland & Labrador",
     abbreviation: "NL",
     capital: "St. John's",
-    population: 0.53,
+    population: 0.54,
     description:
       "Memorial University conducts AI research applied to ocean science and offshore energy.",
     googleTrendsGeo: "CA-NL",
@@ -276,13 +289,14 @@ export const PROVINCES: ProvinceConfig[] = [
       events: false,
     },
     neighborSlugs: [],
+    lastVerified: "2026-03-28",
   },
   {
     slug: "prince-edward-island",
     name: "Prince Edward Island",
     abbreviation: "PE",
     capital: "Charlottetown",
-    population: 0.17,
+    population: 0.18,
     description:
       "The University of Prince Edward Island has emerging computer science programs.",
     googleTrendsGeo: "CA-PE",
@@ -301,6 +315,7 @@ export const PROVINCES: ProvinceConfig[] = [
       events: false,
     },
     neighborSlugs: ["nova-scotia", "new-brunswick"],
+    lastVerified: "2026-03-28",
   },
   {
     slug: "northern-territories",
@@ -331,6 +346,7 @@ export const PROVINCES: ProvinceConfig[] = [
       "quebec",
     ],
     subRegions: ["yukon", "northwest-territories", "nunavut"],
+    lastVerified: "2026-03-28",
   },
 ]
 
