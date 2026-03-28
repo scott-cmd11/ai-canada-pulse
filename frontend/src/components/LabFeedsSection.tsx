@@ -2,38 +2,36 @@
 
 import SourceAttribution from '@/components/SourceAttribution'
 
+import type { CSSProperties } from "react"
+
 const LABS = [
     {
         name: "Mila: Quebec AI Institute",
         description: "World-leading research lab in deep learning and reinforcement learning. Co-founded by Yoshua Bengio.",
         url: "https://mila.quebec/en/publications",
         location: "Montréal, QC",
-        color: "bg-blue-50 border-blue-200 text-blue-800",
-        iconColor: "text-blue-600",
+        badgeStyle: { backgroundColor: 'color-mix(in srgb, #3b82f6 12%, var(--surface-primary))', color: '#1d4ed8', border: '1px solid color-mix(in srgb, #3b82f6 20%, var(--surface-primary))' } as CSSProperties,
     },
     {
         name: "Vector Institute",
         description: "Ontario's flagship AI research institute focused on machine learning applications in healthcare, finance, and industry.",
         url: "https://vectorinstitute.ai/research/publications/",
         location: "Toronto, ON",
-        color: "bg-emerald-50 border-emerald-200 text-emerald-800",
-        iconColor: "text-emerald-600",
+        badgeStyle: { backgroundColor: 'color-mix(in srgb, #10b981 12%, var(--surface-primary))', color: '#047857', border: '1px solid color-mix(in srgb, #10b981 20%, var(--surface-primary))' } as CSSProperties,
     },
     {
         name: "CIFAR: Pan-Canadian AI Strategy",
         description: "Funds Canada's National AI Strategy and supports fundamental research across AI safety, learning algorithms, and societal impact.",
         url: "https://cifar.ca/ai-society-publications/",
         location: "Toronto, ON (National)",
-        color: "bg-violet-50 border-violet-200 text-violet-800",
-        iconColor: "text-violet-600",
+        badgeStyle: { backgroundColor: 'color-mix(in srgb, #8b5cf6 12%, var(--surface-primary))', color: '#6d28d9', border: '1px solid color-mix(in srgb, #8b5cf6 20%, var(--surface-primary))' } as CSSProperties,
     },
     {
         name: "Amii: Alberta Machine Intelligence Institute",
         description: "Alberta's AI institute advancing reinforcement learning and AI for scientific discovery. Home to Rich Sutton's research group.",
         url: "https://www.amii.ca/research/",
         location: "Edmonton, AB",
-        color: "bg-amber-50 border-amber-200 text-amber-800",
-        iconColor: "text-amber-600",
+        badgeStyle: { backgroundColor: 'color-mix(in srgb, #f59e0b 12%, var(--surface-primary))', color: '#b45309', border: '1px solid color-mix(in srgb, #f59e0b 20%, var(--surface-primary))' } as CSSProperties,
     },
 ]
 
@@ -57,7 +55,7 @@ export default function LabFeedsSection() {
                             <h3 className="text-sm font-bold group-hover:text-indigo-700 transition-colors leading-snug" style={{ color: 'var(--text-primary)' }}>
                                 {lab.name}
                             </h3>
-                            <span className={`shrink-0 text-[10px] uppercase tracking-wider font-semibold px-1.5 py-0.5 rounded border ${lab.color}`}>
+                            <span className="shrink-0 text-[10px] uppercase tracking-wider font-semibold px-1.5 py-0.5 rounded" style={lab.badgeStyle}>
                                 {lab.location}
                             </span>
                         </div>

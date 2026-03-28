@@ -47,10 +47,10 @@ export default function LiveTicker() {
             <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-1.5 flex items-center gap-3">
                 <div className="flex items-center gap-1.5 shrink-0">
                     <span className="relative flex h-2 w-2">
-                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                        <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75" style={{ backgroundColor: '#f87171' }}></span>
+                        <span className="relative inline-flex rounded-full h-2 w-2" style={{ backgroundColor: '#ef4444' }}></span>
                     </span>
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-red-400">Live</span>
+                    <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: '#f87171' }}>Live</span>
                 </div>
 
                 <div

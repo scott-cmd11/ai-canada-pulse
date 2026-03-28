@@ -25,17 +25,18 @@ function LegislationTracker() {
   // Merge live bills with curated regulations
   const directRegulations = getDirectAIRegulations()
 
-  const STATUS_COLORS: Record<string, string> = {
-    "In Force": "bg-green-50 text-green-700 border-green-200",
-    "Royal Assent": "bg-emerald-50 text-emerald-700 border-emerald-200",
-    "Committee Stage": "bg-blue-50 text-blue-700 border-blue-200",
-    "Second Reading": "bg-indigo-50 text-indigo-700 border-indigo-200",
-    "First Reading": "bg-purple-50 text-purple-700 border-purple-200",
-    Proposed: "bg-amber-50 text-amber-700 border-amber-200",
-    Consultation: "bg-teal-50 text-teal-700 border-teal-200",
-    "Died on Order Paper": "bg-slate-50 text-slate-500 border-slate-200",
-    "Died on the Order Paper": "bg-slate-50 text-slate-500 border-slate-200",
+  const STATUS_STYLES: Record<string, React.CSSProperties> = {
+    "In Force": { backgroundColor: 'color-mix(in srgb, #22c55e 12%, var(--surface-primary))', color: '#15803d', border: '1px solid color-mix(in srgb, #22c55e 20%, var(--surface-primary))' },
+    "Royal Assent": { backgroundColor: 'color-mix(in srgb, #10b981 12%, var(--surface-primary))', color: '#047857', border: '1px solid color-mix(in srgb, #10b981 20%, var(--surface-primary))' },
+    "Committee Stage": { backgroundColor: 'color-mix(in srgb, #3b82f6 12%, var(--surface-primary))', color: '#1d4ed8', border: '1px solid color-mix(in srgb, #3b82f6 20%, var(--surface-primary))' },
+    "Second Reading": { backgroundColor: 'color-mix(in srgb, #6366f1 12%, var(--surface-primary))', color: '#4338ca', border: '1px solid color-mix(in srgb, #6366f1 20%, var(--surface-primary))' },
+    "First Reading": { backgroundColor: 'color-mix(in srgb, #a855f7 12%, var(--surface-primary))', color: '#7e22ce', border: '1px solid color-mix(in srgb, #a855f7 20%, var(--surface-primary))' },
+    Proposed: { backgroundColor: 'color-mix(in srgb, #f59e0b 12%, var(--surface-primary))', color: '#b45309', border: '1px solid color-mix(in srgb, #f59e0b 20%, var(--surface-primary))' },
+    Consultation: { backgroundColor: 'color-mix(in srgb, #14b8a6 12%, var(--surface-primary))', color: '#0f766e', border: '1px solid color-mix(in srgb, #14b8a6 20%, var(--surface-primary))' },
+    "Died on Order Paper": { backgroundColor: 'color-mix(in srgb, #64748b 12%, var(--surface-primary))', color: '#64748b', border: '1px solid color-mix(in srgb, #64748b 20%, var(--surface-primary))' },
+    "Died on the Order Paper": { backgroundColor: 'color-mix(in srgb, #64748b 12%, var(--surface-primary))', color: '#64748b', border: '1px solid color-mix(in srgb, #64748b 20%, var(--surface-primary))' },
   }
+  const DEFAULT_STATUS_STYLE: React.CSSProperties = { backgroundColor: 'color-mix(in srgb, #64748b 12%, var(--surface-primary))', color: '#64748b', border: '1px solid color-mix(in srgb, #64748b 20%, var(--surface-primary))' }
 
   if (loading) return <SectionSkeleton title="AI Legislation" variant="table" />
 
@@ -57,7 +58,19 @@ function LegislationTracker() {
       {/* Key Regulations */}
       <div className="flex flex-col gap-2">
         {directRegulations.slice(0, 4).map((reg: RegulationItem) => (
-          <div key={reg.id} className="saas-card p-3">
+          <div
+            key={reg.id}
+            className="saas-card p-3"
+            style={{ transition: 'background 0.2s ease, border-color 0.2s ease' }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = 'color-mix(in srgb, var(--accent-primary) 3%, var(--surface-primary))'
+              e.currentTarget.style.borderColor = 'var(--accent-primary)'
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = ''
+              e.currentTarget.style.borderColor = ''
+            }}
+          >
             <div className="flex items-start justify-between gap-2">
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-0.5 text-[10px] font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>
@@ -78,7 +91,7 @@ function LegislationTracker() {
                   {reg.description}
                 </p>
               </div>
-              <span className={`px-2 py-1 text-[9px] font-semibold uppercase tracking-wider rounded border shrink-0 ${STATUS_COLORS[reg.status] || "bg-slate-50 text-slate-600 border-slate-200"}`}>
+              <span className="px-2 py-1 text-[9px] font-semibold uppercase tracking-wider rounded shrink-0" style={STATUS_STYLES[reg.status] || DEFAULT_STATUS_STYLE}>
                 {reg.status}
               </span>
             </div>
@@ -87,7 +100,19 @@ function LegislationTracker() {
 
         {/* Bills from LEGISinfo */}
         {data && data.bills.slice(0, 3).map((bill: BillInfo) => (
-          <div key={bill.id} className="saas-card p-3">
+          <div
+            key={bill.id}
+            className="saas-card p-3"
+            style={{ transition: 'background 0.2s ease, border-color 0.2s ease' }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = 'color-mix(in srgb, var(--accent-primary) 3%, var(--surface-primary))'
+              e.currentTarget.style.borderColor = 'var(--accent-primary)'
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = ''
+              e.currentTarget.style.borderColor = ''
+            }}
+          >
             <div className="flex items-start justify-between gap-2">
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-0.5 text-[10px] font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>
@@ -105,7 +130,7 @@ function LegislationTracker() {
                   {bill.title}
                 </a>
               </div>
-              <span className={`px-2 py-1 text-[9px] font-semibold uppercase tracking-wider rounded border shrink-0 ${STATUS_COLORS[bill.status] || "bg-slate-50 text-slate-600 border-slate-200"}`}>
+              <span className="px-2 py-1 text-[9px] font-semibold uppercase tracking-wider rounded shrink-0" style={STATUS_STYLES[bill.status] || DEFAULT_STATUS_STYLE}>
                 {bill.status}
               </span>
             </div>
@@ -130,12 +155,13 @@ function PrivacyDecisionsPanel() {
       .finally(() => setLoading(false))
   }, [])
 
-  const TYPE_COLORS: Record<string, string> = {
-    Finding: "bg-red-50 text-red-700 border-red-200",
-    Guidance: "bg-blue-50 text-blue-700 border-blue-200",
-    Report: "bg-purple-50 text-purple-700 border-purple-200",
-    Consultation: "bg-amber-50 text-amber-700 border-amber-200",
+  const TYPE_STYLES: Record<string, React.CSSProperties> = {
+    Finding: { backgroundColor: 'color-mix(in srgb, #ef4444 12%, var(--surface-primary))', color: '#b91c1c', border: '1px solid color-mix(in srgb, #ef4444 20%, var(--surface-primary))' },
+    Guidance: { backgroundColor: 'color-mix(in srgb, #3b82f6 12%, var(--surface-primary))', color: '#1d4ed8', border: '1px solid color-mix(in srgb, #3b82f6 20%, var(--surface-primary))' },
+    Report: { backgroundColor: 'color-mix(in srgb, #a855f7 12%, var(--surface-primary))', color: '#7e22ce', border: '1px solid color-mix(in srgb, #a855f7 20%, var(--surface-primary))' },
+    Consultation: { backgroundColor: 'color-mix(in srgb, #f59e0b 12%, var(--surface-primary))', color: '#b45309', border: '1px solid color-mix(in srgb, #f59e0b 20%, var(--surface-primary))' },
   }
+  const DEFAULT_TYPE_STYLE: React.CSSProperties = { backgroundColor: 'color-mix(in srgb, #64748b 12%, var(--surface-primary))', color: '#64748b', border: '1px solid color-mix(in srgb, #64748b 20%, var(--surface-primary))' }
 
   if (loading) return <SectionSkeleton title="Privacy Commissioner (AI)" variant="table" />
 
@@ -162,11 +188,23 @@ function PrivacyDecisionsPanel() {
       {data && data.decisions.length > 0 && (
         <div className="flex flex-col gap-2">
           {data.decisions.slice(0, 4).map((dec: OPCDecision) => (
-            <div key={dec.id} className="saas-card p-3">
+            <div
+              key={dec.id}
+              className="saas-card p-3"
+              style={{ transition: 'background 0.2s ease, border-color 0.2s ease' }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'color-mix(in srgb, var(--accent-primary) 3%, var(--surface-primary))'
+                e.currentTarget.style.borderColor = 'var(--accent-primary)'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = ''
+                e.currentTarget.style.borderColor = ''
+              }}
+            >
               <div className="flex items-start gap-2">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-0.5">
-                    <span className={`px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider rounded border ${TYPE_COLORS[dec.type] || ""}`}>
+                    <span className="px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider rounded" style={TYPE_STYLES[dec.type] || DEFAULT_TYPE_STYLE}>
                       {dec.type}
                     </span>
                     <span className="text-[10px]" style={{ color: 'var(--text-muted)' }}>{dec.date}</span>

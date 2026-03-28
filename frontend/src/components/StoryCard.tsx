@@ -27,7 +27,18 @@ export default function StoryCard({ story }: Props) {
   const catColor = categoryColors[story.category] || "var(--accent-primary)"
 
   return (
-    <article className="saas-card flex flex-col gap-4 p-5 sm:flex-row sm:gap-5">
+    <article
+      className="saas-card flex flex-col gap-4 p-5 sm:flex-row sm:gap-5"
+      style={{ transition: 'border-color 0.2s ease, box-shadow 0.2s ease' }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.borderColor = 'var(--accent-primary)'
+        e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.06)'
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.borderColor = ''
+        e.currentTarget.style.boxShadow = ''
+      }}
+    >
       <div className="mt-0.5 flex shrink-0 gap-3 sm:w-32 sm:flex-col sm:gap-2">
         <span className="text-[11px] font-semibold uppercase tracking-[0.14em]" style={{ color: 'var(--text-muted)' }}>
           {relativeTime(story.publishedAt)}
@@ -42,7 +53,7 @@ export default function StoryCard({ story }: Props) {
         <div className="space-y-2.5">
           <h3 className="text-lg font-semibold leading-snug" style={{ color: 'var(--text-primary)' }}>
             {story.sourceUrl ? (
-              <a href={story.sourceUrl} target="_blank" rel="noopener noreferrer" className="hover:underline" style={{ color: 'var(--accent-primary)' }}>
+              <a href={story.sourceUrl} target="_blank" rel="noopener noreferrer" className="hover:underline focus-visible:underline focus-visible:outline-none" style={{ color: 'var(--accent-primary)', transition: 'opacity 0.15s ease' }}>
                 {story.headline}
               </a>
             ) : (

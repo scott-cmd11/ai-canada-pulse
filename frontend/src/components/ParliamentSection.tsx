@@ -4,13 +4,16 @@ import { useState, useEffect } from "react"
 import type { ParliamentMention, ParliamentData } from "@/lib/parliament-client"
 import SourceAttribution from '@/components/SourceAttribution'
 
-const PARTY_BADGES: Record<string, string> = {
-  Liberal: "bg-red-50 text-red-700 border-red-200",
-  Conservative: "bg-blue-50 text-blue-700 border-blue-200",
-  NDP: "bg-amber-50 text-amber-700 border-amber-200",
-  "Bloc Québécois": "bg-sky-50 text-sky-700 border-sky-200",
-  Green: "bg-green-50 text-green-700 border-green-200",
+import type { CSSProperties } from "react"
+
+const PARTY_STYLES: Record<string, CSSProperties> = {
+  Liberal: { backgroundColor: 'color-mix(in srgb, #ef4444 12%, var(--surface-primary))', color: '#b91c1c', border: '1px solid color-mix(in srgb, #ef4444 20%, var(--surface-primary))' },
+  Conservative: { backgroundColor: 'color-mix(in srgb, #3b82f6 12%, var(--surface-primary))', color: '#1d4ed8', border: '1px solid color-mix(in srgb, #3b82f6 20%, var(--surface-primary))' },
+  NDP: { backgroundColor: 'color-mix(in srgb, #f59e0b 12%, var(--surface-primary))', color: '#b45309', border: '1px solid color-mix(in srgb, #f59e0b 20%, var(--surface-primary))' },
+  "Bloc Québécois": { backgroundColor: 'color-mix(in srgb, #0ea5e9 12%, var(--surface-primary))', color: '#0369a1', border: '1px solid color-mix(in srgb, #0ea5e9 20%, var(--surface-primary))' },
+  Green: { backgroundColor: 'color-mix(in srgb, #22c55e 12%, var(--surface-primary))', color: '#15803d', border: '1px solid color-mix(in srgb, #22c55e 20%, var(--surface-primary))' },
 }
+const DEFAULT_PARTY_STYLE: CSSProperties = { backgroundColor: 'var(--surface-secondary)', color: 'var(--text-secondary)', border: '1px solid var(--border-subtle)' }
 
 export default function ParliamentSection() {
   const [data, setData] = useState<ParliamentData | null>(null)
@@ -73,13 +76,7 @@ export default function ParliamentSection() {
 }
 
 function MentionRow({ mention }: { mention: ParliamentMention }) {
-  const knownBadgeClass = PARTY_BADGES[mention.party || ""]
-  const badgeClass = knownBadgeClass || ""
-  const badgeStyle = !knownBadgeClass ? {
-    backgroundColor: 'var(--surface-secondary)',
-    color: 'var(--text-secondary)',
-    borderColor: 'var(--border-subtle)',
-  } : undefined
+  const partyStyle = PARTY_STYLES[mention.party || ""] || DEFAULT_PARTY_STYLE
 
   return (
     <tr className="transition-colors align-top" style={{ ['--hover-bg' as string]: 'var(--surface-secondary)' }}
@@ -95,7 +92,7 @@ function MentionRow({ mention }: { mention: ParliamentMention }) {
             {mention.speaker}
           </span>
           {mention.party && (
-            <span className={`px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wider rounded border ${badgeClass}`} style={badgeStyle}>
+            <span className="px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wider rounded" style={partyStyle}>
               {mention.party}
             </span>
           )}

@@ -3,12 +3,13 @@
 import { useEffect, useState } from "react"
 
 export default function ThemeToggle() {
-  const [dark, setDark] = useState(false)
+  const [dark, setDark] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return document.documentElement.getAttribute('data-theme') === 'dark'
+    }
+    return false
+  })
   const [hovered, setHovered] = useState(false)
-
-  useEffect(() => {
-    setDark(document.documentElement.getAttribute("data-theme") === "dark")
-  }, [])
 
   function toggle() {
     const next = !dark

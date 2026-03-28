@@ -21,15 +21,15 @@ function StartupMapPanel({ provinceFilter }: { provinceFilter?: string }) {
     .sort(([, a], [, b]) => b - a)
     .slice(0, 6)
 
-  const STAGE_COLORS: Record<string, string> = {
-    Seed: "bg-emerald-50 text-emerald-700 border-emerald-200",
-    "Series A": "bg-blue-50 text-blue-700 border-blue-200",
-    "Series B": "bg-indigo-50 text-indigo-700 border-indigo-200",
-    "Series C": "bg-purple-50 text-purple-700 border-purple-200",
-    "Series D+": "bg-violet-50 text-violet-700 border-violet-200",
-    Public: "bg-amber-50 text-amber-700 border-amber-200",
-    Acquired: "bg-slate-50 text-slate-600 border-slate-200",
-    Growth: "bg-teal-50 text-teal-700 border-teal-200",
+  const STAGE_COLORS: Record<string, { bg: string; color: string; border: string }> = {
+    Seed: { bg: 'color-mix(in srgb, #10b981 12%, var(--surface-primary))', color: '#10b981', border: '1px solid color-mix(in srgb, #10b981 20%, var(--surface-primary))' },
+    "Series A": { bg: 'color-mix(in srgb, #3b82f6 12%, var(--surface-primary))', color: '#3b82f6', border: '1px solid color-mix(in srgb, #3b82f6 20%, var(--surface-primary))' },
+    "Series B": { bg: 'color-mix(in srgb, #6366f1 12%, var(--surface-primary))', color: '#6366f1', border: '1px solid color-mix(in srgb, #6366f1 20%, var(--surface-primary))' },
+    "Series C": { bg: 'color-mix(in srgb, #8b5cf6 12%, var(--surface-primary))', color: '#8b5cf6', border: '1px solid color-mix(in srgb, #8b5cf6 20%, var(--surface-primary))' },
+    "Series D+": { bg: 'color-mix(in srgb, #7c3aed 12%, var(--surface-primary))', color: '#7c3aed', border: '1px solid color-mix(in srgb, #7c3aed 20%, var(--surface-primary))' },
+    Public: { bg: 'color-mix(in srgb, #f59e0b 12%, var(--surface-primary))', color: '#f59e0b', border: '1px solid color-mix(in srgb, #f59e0b 20%, var(--surface-primary))' },
+    Acquired: { bg: 'color-mix(in srgb, #64748b 12%, var(--surface-primary))', color: '#64748b', border: '1px solid color-mix(in srgb, #64748b 20%, var(--surface-primary))' },
+    Growth: { bg: 'color-mix(in srgb, #14b8a6 12%, var(--surface-primary))', color: '#14b8a6', border: '1px solid color-mix(in srgb, #14b8a6 20%, var(--surface-primary))' },
   }
 
   return (
@@ -78,18 +78,39 @@ function StartupMapPanel({ provinceFilter }: { provinceFilter?: string }) {
       {/* Startup Grid */}
       <div className="grid gap-2.5 sm:grid-cols-2">
         {startups.slice(0, 8).map((startup: CanadianStartup) => (
-          <div key={startup.name} className="saas-card p-3">
+          <div
+            key={startup.name}
+            className="saas-card p-3"
+            style={{ transition: 'transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease' }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = 'translateY(-1px)'
+              e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.08)'
+              e.currentTarget.style.borderColor = 'var(--accent-primary)'
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = ''
+              e.currentTarget.style.boxShadow = ''
+              e.currentTarget.style.borderColor = ''
+            }}
+          >
             <div className="flex items-start justify-between gap-2 mb-1">
               <a
                 href={startup.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-sm font-bold hover:underline truncate"
+                className="text-sm font-bold hover:underline focus-visible:underline focus-visible:outline-none truncate"
                 style={{ color: 'var(--text-primary)' }}
               >
                 {startup.name}
               </a>
-              <span className={`px-2 py-0.5 text-[9px] font-semibold uppercase tracking-wider rounded border shrink-0 ${STAGE_COLORS[startup.stage] || STAGE_COLORS.Growth}`}>
+              <span
+                className="px-2 py-0.5 text-[9px] font-semibold uppercase tracking-wider rounded shrink-0"
+                style={{
+                  backgroundColor: (STAGE_COLORS[startup.stage] || STAGE_COLORS.Growth).bg,
+                  color: (STAGE_COLORS[startup.stage] || STAGE_COLORS.Growth).color,
+                  border: (STAGE_COLORS[startup.stage] || STAGE_COLORS.Growth).border,
+                }}
+              >
                 {startup.stage}
               </span>
             </div>
@@ -142,13 +163,13 @@ function StartupSignalsPanel() {
     IPO: "📊",
   }
 
-  const SIGNAL_COLORS: Record<string, string> = {
-    Funding: "bg-emerald-50 text-emerald-700 border-emerald-200",
-    Acquisition: "bg-purple-50 text-purple-700 border-purple-200",
-    "Product Launch": "bg-blue-50 text-blue-700 border-blue-200",
-    Partnership: "bg-amber-50 text-amber-700 border-amber-200",
-    Expansion: "bg-teal-50 text-teal-700 border-teal-200",
-    IPO: "bg-indigo-50 text-indigo-700 border-indigo-200",
+  const SIGNAL_COLORS: Record<string, { bg: string; color: string; border: string }> = {
+    Funding: { bg: 'color-mix(in srgb, #10b981 12%, var(--surface-primary))', color: '#10b981', border: '1px solid color-mix(in srgb, #10b981 20%, var(--surface-primary))' },
+    Acquisition: { bg: 'color-mix(in srgb, #8b5cf6 12%, var(--surface-primary))', color: '#8b5cf6', border: '1px solid color-mix(in srgb, #8b5cf6 20%, var(--surface-primary))' },
+    "Product Launch": { bg: 'color-mix(in srgb, #3b82f6 12%, var(--surface-primary))', color: '#3b82f6', border: '1px solid color-mix(in srgb, #3b82f6 20%, var(--surface-primary))' },
+    Partnership: { bg: 'color-mix(in srgb, #f59e0b 12%, var(--surface-primary))', color: '#f59e0b', border: '1px solid color-mix(in srgb, #f59e0b 20%, var(--surface-primary))' },
+    Expansion: { bg: 'color-mix(in srgb, #14b8a6 12%, var(--surface-primary))', color: '#14b8a6', border: '1px solid color-mix(in srgb, #14b8a6 20%, var(--surface-primary))' },
+    IPO: { bg: 'color-mix(in srgb, #6366f1 12%, var(--surface-primary))', color: '#6366f1', border: '1px solid color-mix(in srgb, #6366f1 20%, var(--surface-primary))' },
   }
 
   return (
@@ -182,13 +203,38 @@ function StartupSignalsPanel() {
       {!loading && data && data.signals.length > 0 && (
         <div className="flex flex-col gap-2.5">
           {data.signals.slice(0, 6).map((signal: StartupSignal) => (
-            <div key={signal.id} className="saas-card p-3">
+            <div
+              key={signal.id}
+              className="saas-card p-3"
+              style={{ transition: 'transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease' }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'translateY(-1px)'
+                e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.08)'
+                e.currentTarget.style.borderColor = 'var(--accent-primary)'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = ''
+                e.currentTarget.style.boxShadow = ''
+                e.currentTarget.style.borderColor = ''
+              }}
+            >
               <div className="flex items-start gap-3">
                 <span className="text-lg shrink-0">{SIGNAL_ICONS[signal.signalType] || "📋"}</span>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-0.5">
                     <span className="text-xs font-bold" style={{ color: 'var(--text-primary)' }}>{signal.companyName}</span>
-                    <span className={`px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider rounded border ${SIGNAL_COLORS[signal.signalType] || ""}`}>
+                    <span
+                      className="px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider rounded"
+                      style={SIGNAL_COLORS[signal.signalType] ? {
+                        backgroundColor: SIGNAL_COLORS[signal.signalType].bg,
+                        color: SIGNAL_COLORS[signal.signalType].color,
+                        border: SIGNAL_COLORS[signal.signalType].border,
+                      } : {
+                        backgroundColor: 'color-mix(in srgb, var(--text-muted) 12%, var(--surface-primary))',
+                        color: 'var(--text-muted)',
+                        border: '1px solid color-mix(in srgb, var(--text-muted) 20%, var(--surface-primary))',
+                      }}
+                    >
                       {signal.signalType}
                     </span>
                     {signal.amount && (
@@ -233,14 +279,14 @@ function EventsPanel({ provinceFilter }: { provinceFilter?: string }) {
     return provinceFilter ? upcoming.filter((e) => e.provinceSlug === provinceFilter) : upcoming
   }, [provinceFilter])
 
-  const TYPE_COLORS: Record<string, string> = {
-    Conference: "bg-indigo-50 text-indigo-700 border-indigo-200",
-    Seminar: "bg-blue-50 text-blue-700 border-blue-200",
-    Workshop: "bg-teal-50 text-teal-700 border-teal-200",
-    Meetup: "bg-green-50 text-green-700 border-green-200",
-    "Public Consultation": "bg-amber-50 text-amber-700 border-amber-200",
-    Hackathon: "bg-purple-50 text-purple-700 border-purple-200",
-    Summit: "bg-rose-50 text-rose-700 border-rose-200",
+  const TYPE_COLORS: Record<string, { bg: string; color: string; border: string }> = {
+    Conference: { bg: 'color-mix(in srgb, #6366f1 12%, var(--surface-primary))', color: '#6366f1', border: '1px solid color-mix(in srgb, #6366f1 20%, var(--surface-primary))' },
+    Seminar: { bg: 'color-mix(in srgb, #3b82f6 12%, var(--surface-primary))', color: '#3b82f6', border: '1px solid color-mix(in srgb, #3b82f6 20%, var(--surface-primary))' },
+    Workshop: { bg: 'color-mix(in srgb, #14b8a6 12%, var(--surface-primary))', color: '#14b8a6', border: '1px solid color-mix(in srgb, #14b8a6 20%, var(--surface-primary))' },
+    Meetup: { bg: 'color-mix(in srgb, #22c55e 12%, var(--surface-primary))', color: '#22c55e', border: '1px solid color-mix(in srgb, #22c55e 20%, var(--surface-primary))' },
+    "Public Consultation": { bg: 'color-mix(in srgb, #f59e0b 12%, var(--surface-primary))', color: '#f59e0b', border: '1px solid color-mix(in srgb, #f59e0b 20%, var(--surface-primary))' },
+    Hackathon: { bg: 'color-mix(in srgb, #8b5cf6 12%, var(--surface-primary))', color: '#8b5cf6', border: '1px solid color-mix(in srgb, #8b5cf6 20%, var(--surface-primary))' },
+    Summit: { bg: 'color-mix(in srgb, #f43f5e 12%, var(--surface-primary))', color: '#f43f5e', border: '1px solid color-mix(in srgb, #f43f5e 20%, var(--surface-primary))' },
   }
 
   const formatDate = (d: string) => {
@@ -271,7 +317,21 @@ function EventsPanel({ provinceFilter }: { provinceFilter?: string }) {
 
       <div className="grid gap-2.5 sm:grid-cols-2 xl:grid-cols-3">
         {events.slice(0, 6).map((event) => (
-          <div key={event.id} className="saas-card p-3">
+          <div
+            key={event.id}
+            className="saas-card p-3"
+            style={{ transition: 'transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease' }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = 'translateY(-1px)'
+              e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.08)'
+              e.currentTarget.style.borderColor = 'var(--accent-primary)'
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = ''
+              e.currentTarget.style.boxShadow = ''
+              e.currentTarget.style.borderColor = ''
+            }}
+          >
             <div className="flex items-start gap-3">
               <div className="text-center shrink-0 w-12 rounded-lg p-1.5" style={{ background: 'color-mix(in srgb, var(--accent-primary) 10%, transparent)' }}>
                 <p className="text-[10px] font-bold uppercase" style={{ color: 'var(--accent-primary)' }}>
@@ -301,7 +361,18 @@ function EventsPanel({ provinceFilter }: { provinceFilter?: string }) {
                   )}
                 </div>
                 <div className="flex items-center gap-1.5 mt-1.5">
-                  <span className={`px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider rounded border ${TYPE_COLORS[event.type] || ""}`}>
+                  <span
+                    className="px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider rounded"
+                    style={TYPE_COLORS[event.type] ? {
+                      backgroundColor: TYPE_COLORS[event.type].bg,
+                      color: TYPE_COLORS[event.type].color,
+                      border: TYPE_COLORS[event.type].border,
+                    } : {
+                      backgroundColor: 'color-mix(in srgb, var(--text-muted) 12%, var(--surface-primary))',
+                      color: 'var(--text-muted)',
+                      border: '1px solid color-mix(in srgb, var(--text-muted) 20%, var(--surface-primary))',
+                    }}
+                  >
                     {event.type}
                   </span>
                 </div>

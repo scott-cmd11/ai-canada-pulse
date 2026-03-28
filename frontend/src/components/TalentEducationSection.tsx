@@ -145,7 +145,23 @@ function NSERCPanel({ dark }: { dark?: boolean }) {
       {/* Top Institutions */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4">
         {data.topInstitutions.slice(0, 4).map((inst) => (
-          <div key={inst.name} className="rounded-lg p-2.5" style={{ background: dark ? 'rgba(255,255,255,0.05)' : 'var(--surface-secondary, rgba(0,0,0,0.02))' }}>
+          <div
+            key={inst.name}
+            className="rounded-lg p-2.5"
+            style={{
+              background: dark ? 'rgba(255,255,255,0.05)' : 'var(--surface-secondary, rgba(0,0,0,0.02))',
+              transition: 'border-color 0.2s ease, background 0.2s ease',
+              border: '1px solid transparent',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.borderColor = 'var(--accent-primary)'
+              e.currentTarget.style.background = dark ? 'rgba(255,255,255,0.08)' : 'color-mix(in srgb, var(--accent-primary) 5%, var(--surface-secondary, rgba(0,0,0,0.02)))'
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.borderColor = 'transparent'
+              e.currentTarget.style.background = dark ? 'rgba(255,255,255,0.05)' : 'var(--surface-secondary, rgba(0,0,0,0.02))'
+            }}
+          >
             <p className="text-xs font-bold truncate" style={{ color: textPrimary }}>{inst.name.replace(/University of |Université de /g, "U ")}</p>
             <p className="text-lg font-bold" style={{ color: 'var(--accent-primary)', fontFamily: 'var(--font-display)' }}>{formatCurrency(inst.totalFunding)}</p>
             <p className="text-[10px]" style={{ color: textMuted }}>{inst.count} grants</p>
@@ -184,12 +200,12 @@ function UniversityProgramsPanel({ dark, provinceFilter }: { dark?: boolean; pro
     : UNIVERSITY_PROGRAMS
   const stats = getProgramStats()
 
-  const DEGREE_COLORS: Record<string, string> = {
-    PhD: "bg-purple-50 text-purple-700 border-purple-200",
-    MSc: "bg-blue-50 text-blue-700 border-blue-200",
-    BSc: "bg-green-50 text-green-700 border-green-200",
-    Certificate: "bg-amber-50 text-amber-700 border-amber-200",
-    Diploma: "bg-slate-50 text-slate-600 border-slate-200",
+  const DEGREE_COLORS: Record<string, { bg: string; color: string; border: string }> = {
+    PhD: { bg: 'color-mix(in srgb, #8b5cf6 12%, var(--surface-primary))', color: '#8b5cf6', border: '1px solid color-mix(in srgb, #8b5cf6 20%, var(--surface-primary))' },
+    MSc: { bg: 'color-mix(in srgb, #3b82f6 12%, var(--surface-primary))', color: '#3b82f6', border: '1px solid color-mix(in srgb, #3b82f6 20%, var(--surface-primary))' },
+    BSc: { bg: 'color-mix(in srgb, #22c55e 12%, var(--surface-primary))', color: '#22c55e', border: '1px solid color-mix(in srgb, #22c55e 20%, var(--surface-primary))' },
+    Certificate: { bg: 'color-mix(in srgb, #f59e0b 12%, var(--surface-primary))', color: '#f59e0b', border: '1px solid color-mix(in srgb, #f59e0b 20%, var(--surface-primary))' },
+    Diploma: { bg: 'color-mix(in srgb, #64748b 12%, var(--surface-primary))', color: '#64748b', border: '1px solid color-mix(in srgb, #64748b 20%, var(--surface-primary))' },
   }
 
   // Group by institution
@@ -217,12 +233,36 @@ function UniversityProgramsPanel({ dark, provinceFilter }: { dark?: boolean; pro
 
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         {institutions.map(([name, progs]) => (
-          <div key={name} className="rounded-lg p-3" style={{ background: dark ? 'rgba(255,255,255,0.05)' : 'var(--surface-secondary, rgba(0,0,0,0.02))' }}>
+          <div
+            key={name}
+            className="rounded-lg p-3"
+            style={{
+              background: dark ? 'rgba(255,255,255,0.05)' : 'var(--surface-secondary, rgba(0,0,0,0.02))',
+              transition: 'border-color 0.2s ease, background 0.2s ease, transform 0.2s ease',
+              border: '1px solid transparent',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.borderColor = 'var(--accent-primary)'
+              e.currentTarget.style.background = dark ? 'rgba(255,255,255,0.08)' : 'color-mix(in srgb, var(--accent-primary) 5%, var(--surface-secondary, rgba(0,0,0,0.02)))'
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.borderColor = 'transparent'
+              e.currentTarget.style.background = dark ? 'rgba(255,255,255,0.05)' : 'var(--surface-secondary, rgba(0,0,0,0.02))'
+            }}
+          >
             <p className="text-xs font-bold mb-1 truncate" style={{ color: textPrimary }}>{name}</p>
             <p className="text-[10px] mb-2" style={{ color: textMuted }}>{progs[0].province}</p>
             <div className="flex flex-wrap gap-1">
               {progs.map((p, i) => (
-                <span key={i} className={`px-1.5 py-0.5 text-[10px] font-semibold rounded border ${DEGREE_COLORS[p.degree] || DEGREE_COLORS.Diploma}`}>
+                <span
+                  key={i}
+                  className="px-1.5 py-0.5 text-[10px] font-semibold rounded"
+                  style={{
+                    backgroundColor: (DEGREE_COLORS[p.degree] || DEGREE_COLORS.Diploma).bg,
+                    color: (DEGREE_COLORS[p.degree] || DEGREE_COLORS.Diploma).color,
+                    border: (DEGREE_COLORS[p.degree] || DEGREE_COLORS.Diploma).border,
+                  }}
+                >
                   {p.degree}
                 </span>
               ))}
