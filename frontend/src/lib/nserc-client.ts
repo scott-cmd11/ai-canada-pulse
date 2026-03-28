@@ -1,6 +1,11 @@
 // NSERC AI/ML grant data client
 // Fetches grant data from Open Canada CKAN API
 // Docs: https://open.canada.ca/data/en/dataset
+//
+// Open Canada dataset: NSERC Awards (Natural Sciences and Engineering Research Council of Canada)
+// — searched dynamically via CKAN package_search for "nserc discovery grant awards"
+// — filters records whose project_title matches AI_KEYWORDS (see below)
+// — https://open.canada.ca/data/en/dataset?q=nserc+discovery+grant+awards
 
 const CKAN_BASE = "https://open.canada.ca/data/api/3"
 const CACHE_TTL = 24 * 60 * 60 * 1000 // 24 hours

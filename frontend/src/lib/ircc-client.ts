@@ -1,6 +1,12 @@
 // IRCC Immigration data client
 // Fetches tech work permit and immigration data from Open Canada CKAN API
 // Docs: https://open.canada.ca/data/en/dataset
+//
+// Open Canada dataset: Temporary Residents: Work Permit Holders with at least one valid work permit
+// — searched dynamically via CKAN package_search for "ircc temporary residents work permit"
+// — no fixed dataset ID; the client filters results for datasets with occupation/NOC data
+// — fallback data sourced from IRCC Annual Report to Parliament on Immigration (2024 edition)
+// — https://open.canada.ca/data/en/dataset?q=ircc+work+permit+noc
 
 const CKAN_BASE = "https://open.canada.ca/data/api/3"
 const CACHE_TTL = 24 * 60 * 60 * 1000 // 24 hours
