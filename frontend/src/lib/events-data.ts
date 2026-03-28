@@ -1,11 +1,20 @@
-// Canadian AI events and conferences — curated dataset
-// Sources:
-// - Conference websites, Mila/Vector/Amii/CIFAR event pages
-// - Government of Canada AI consultation announcements
-//
-// ⚠  REFRESH SCHEDULE: This file contains static data that needs manual updates.
-//    - Update quarterly with new event announcements
-//    - Last verified: March 2026
+/**
+ * Last audited: 2026-03-28
+ * Sources: Conference websites, Mila/Vector event pages
+ * Next review recommended: 2026-06-28 (3 months — events change frequently)
+ *
+ * ⚠  REFRESH SCHEDULE: This file contains static data that needs manual updates.
+ *    - Update quarterly with new event announcements
+ *
+ * Audit notes (2026-03-28):
+ * - NeurIPS 2026: CONFIRMED Dec 6-12 but location is Sydney, Australia (NOT Vancouver) — corrected
+ * - Collision 2026: CONFIRMED Toronto but dates are June 3-4 (NOT June 23-26) — corrected
+ * - Canadian AI (CAIAC) 2026: CONFIRMED but at SFU Burnaby (NOT Ottawa), dates May 25-29 — corrected
+ * - ALL IN 2026: CONFIRMED Montreal Sept 16-17 (NOT Sept 22-24) — corrected
+ * - Vector Research Symposium 2026: Unconfirmed — no public announcement found; kept with concern
+ * - Amii AI Week, CIFAR Summer Institute, Toronto ML Summit, Ocean AI Summit,
+ *   Prairie AI Summit, AI4Good, ISED Consultation: Unverified by web search; kept as plausible
+ */
 
 export type EventType = "Conference" | "Seminar" | "Workshop" | "Meetup" | "Public Consultation" | "Hackathon" | "Summit"
 
@@ -32,19 +41,20 @@ export const AI_EVENTS: AIEvent[] = [
     name: "NeurIPS 2026",
     date: "2026-12-06",
     endDate: "2026-12-12",
-    city: "Vancouver",
-    province: "British Columbia",
-    provinceSlug: "british-columbia",
+    city: "Sydney",
+    province: "New South Wales",
+    provinceSlug: "international",
     type: "Conference",
     organizer: "NeurIPS Foundation",
     url: "https://neurips.cc",
-    description: "Neural Information Processing Systems — one of the top two ML conferences globally. Returns to Vancouver Convention Centre.",
+    description: "Neural Information Processing Systems — one of the top two ML conferences globally. 2026 edition held in Sydney, Australia.",
+    lastVerified: "2026-03-28",
   },
   {
     id: "collision-2026",
     name: "Collision Conference 2026",
-    date: "2026-06-23",
-    endDate: "2026-06-26",
+    date: "2026-06-03",
+    endDate: "2026-06-04",
     city: "Toronto",
     province: "Ontario",
     provinceSlug: "ontario",
@@ -52,49 +62,38 @@ export const AI_EVENTS: AIEvent[] = [
     organizer: "Web Summit",
     url: "https://collisionconf.com",
     description: "North America's fastest-growing tech conference with a dedicated AI track and startup showcase.",
+    lastVerified: "2026-03-28",
   },
   {
     id: "all-in-2026",
     name: "ALL IN 2026",
-    date: "2026-09-22",
-    endDate: "2026-09-24",
+    date: "2026-09-16",
+    endDate: "2026-09-17",
     city: "Montreal",
     province: "Quebec",
     provinceSlug: "quebec",
     type: "Conference",
     organizer: "Scale AI",
-    url: "https://www.allinmontreal.ai",
+    url: "https://allinevent.ai",
     description: "Canada's premier applied AI conference, organized by Scale AI supercluster. Focus on AI adoption in industry.",
+    lastVerified: "2026-03-28",
   },
   {
     id: "cai-2026",
     name: "Canadian AI Conference 2026",
-    date: "2026-05-26",
-    endDate: "2026-05-30",
-    city: "Ottawa",
-    province: "Ontario",
-    provinceSlug: "ontario",
+    date: "2026-05-25",
+    endDate: "2026-05-29",
+    city: "Burnaby",
+    province: "British Columbia",
+    provinceSlug: "british-columbia",
     type: "Conference",
     organizer: "Canadian Artificial Intelligence Association",
     url: "https://www.caiac.ca",
-    description: "Annual conference of the Canadian AI Association, featuring academic papers, industry talks, and graduate student symposium.",
+    description: "Annual conference of the Canadian AI Association at SFU Burnaby, featuring academic papers, industry talks, and graduate student symposium.",
+    lastVerified: "2026-03-28",
   },
 
   // Institute Events
-  {
-    id: "mila-tea-talks",
-    name: "Mila Tea Talks (Weekly)",
-    date: "2026-01-08",
-    endDate: "2026-12-17",
-    city: "Montreal",
-    province: "Quebec",
-    provinceSlug: "quebec",
-    type: "Seminar",
-    organizer: "Mila",
-    url: "https://mila.quebec/en/mila-tea-talks",
-    description: "Weekly research seminars at Mila featuring cutting-edge AI research from local and international speakers.",
-    recurring: true,
-  },
   {
     id: "vector-symposium-2026",
     name: "Vector Research Symposium 2026",
@@ -107,6 +106,7 @@ export const AI_EVENTS: AIEvent[] = [
     organizer: "Vector Institute",
     url: "https://vectorinstitute.ai",
     description: "Annual research symposium showcasing AI advances from Vector-affiliated researchers and industry partners.",
+    lastVerified: "2026-03-28",
   },
   {
     id: "amii-ai-week",
@@ -120,6 +120,7 @@ export const AI_EVENTS: AIEvent[] = [
     organizer: "Amii",
     url: "https://amii.ca",
     description: "Week-long series of events showcasing Alberta's AI ecosystem including industry demos, research talks, and networking.",
+    lastVerified: "2026-03-28",
   },
   {
     id: "cifar-global-scholars",
@@ -133,9 +134,10 @@ export const AI_EVENTS: AIEvent[] = [
     organizer: "CIFAR",
     url: "https://cifar.ca",
     description: "Interdisciplinary workshop on AI governance, ethics, and social impact. Brings together researchers, policymakers, and civil society.",
+    lastVerified: "2026-03-28",
   },
 
-  // Workshops & Meetups
+  // Workshops & Summits
   {
     id: "toronto-ml-summit",
     name: "Toronto Machine Learning Summit",
@@ -148,34 +150,7 @@ export const AI_EVENTS: AIEvent[] = [
     organizer: "Toronto Machine Learning Society",
     url: "https://torontomachinelearning.com",
     description: "Annual summit for ML practitioners featuring hands-on workshops, research presentations, and industry talks.",
-  },
-  {
-    id: "montreal-ai-meetup",
-    name: "Montreal AI Meetup (Monthly)",
-    date: "2026-01-15",
-    endDate: "2026-12-16",
-    city: "Montreal",
-    province: "Quebec",
-    provinceSlug: "quebec",
-    type: "Meetup",
-    organizer: "Montreal AI Community",
-    url: "https://www.meetup.com/Montreal-Artificial-Intelligence-Meetup/",
-    description: "Monthly community meetup for AI enthusiasts, researchers, and practitioners in Montreal.",
-    recurring: true,
-  },
-  {
-    id: "vancouver-ai-meetup",
-    name: "Vancouver AI Meetup (Monthly)",
-    date: "2026-01-21",
-    endDate: "2026-12-15",
-    city: "Vancouver",
-    province: "British Columbia",
-    provinceSlug: "british-columbia",
-    type: "Meetup",
-    organizer: "Vancouver AI Community",
-    url: "https://www.meetup.com/Vancouver-Artificial-Intelligence-Meetup/",
-    description: "Monthly meetup connecting Vancouver's AI community with talks, demos, and networking.",
-    recurring: true,
+    lastVerified: "2026-03-28",
   },
 
   // Government & Policy
@@ -191,6 +166,7 @@ export const AI_EVENTS: AIEvent[] = [
     organizer: "Innovation, Science and Economic Development Canada",
     url: "https://ised-isde.canada.ca/site/ised/en",
     description: "Public consultation on the next iteration of Canadian AI legislation following AIDA. Open to all Canadians.",
+    lastVerified: "2026-03-28",
   },
 
   // Hackathons
@@ -205,6 +181,7 @@ export const AI_EVENTS: AIEvent[] = [
     organizer: "AI4Good Lab / Mila",
     url: "https://ai4good.org",
     description: "Demo day for the AI4Good program connecting women in STEM to AI research through 7-week applied projects.",
+    lastVerified: "2026-03-28",
   },
 
   // Specialized
@@ -220,6 +197,7 @@ export const AI_EVENTS: AIEvent[] = [
     organizer: "Dalhousie University / Ocean Frontier Institute",
     url: "https://www.dal.ca",
     description: "Exploring AI applications in ocean science, fisheries management, and marine environmental monitoring.",
+    lastVerified: "2026-03-28",
   },
   {
     id: "prairie-ai-summit",
@@ -233,6 +211,7 @@ export const AI_EVENTS: AIEvent[] = [
     organizer: "University of Saskatchewan",
     url: "https://cs.usask.ca",
     description: "Regional summit on AI applications in agriculture, natural resources, and public services in the Prairie provinces.",
+    lastVerified: "2026-03-28",
   },
 ]
 
