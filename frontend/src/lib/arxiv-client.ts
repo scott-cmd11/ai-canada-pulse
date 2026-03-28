@@ -56,7 +56,7 @@ export async function fetchArxivData(): Promise<ArxivData> {
             "(cat:cs.AI OR cat:cs.LG OR cat:cs.CL) AND (aff:Canada OR aff:Toronto OR aff:Montreal OR aff:Mila OR aff:\"University of British Columbia\" OR aff:\"University of Alberta\" OR aff:Waterloo OR aff:McGill OR aff:\"Vector Institute\" OR aff:Ottawa OR aff:Edmonton)"
         )
         const res = await fetch(
-            `http://export.arxiv.org/api/query?search_query=${query}&start=0&max_results=80&sortBy=submittedDate&sortOrder=descending`,
+            `https://export.arxiv.org/api/query?search_query=${query}&start=0&max_results=80&sortBy=submittedDate&sortOrder=descending`,
             { signal: controller.signal }
         )
         clearTimeout(timer)

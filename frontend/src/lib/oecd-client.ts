@@ -1,6 +1,14 @@
 /**
  * OECD AI Observatory Client
  * Fetches AI publication and policy data for Canada from the OECD.
+ *
+ * OECD.AI Policy Observatory — AI Publications by Country & AI Policy tracker
+ * — Attempted endpoint: https://oecd.ai/en/data?selectedArea=ai-research&selectedVisualization=ai-publications-by-country
+ * — The Observatory is a complex SPA; the REST layer does not return parseable JSON directly.
+ * — This client always falls back to curated static data from OECD AI Policy Observatory 2024–2025 reports.
+ * — Canada data: ~21,500 AI publications (Scopus/Web of Science, 2023); 52 AI policies on record.
+ * — Canada rank: 5th globally by AI publications among comparator countries tracked here.
+ * — Source: https://oecd.ai/en/data and OECD (2024), "OECD AI Policy Observatory Annual Report"
  */
 
 const TIMEOUT_MS = 15_000

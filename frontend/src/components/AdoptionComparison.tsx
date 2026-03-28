@@ -70,38 +70,38 @@ export default function AdoptionComparison() {
 
         <div className="flex flex-col gap-6">
           <div className="saas-card p-6 flex-1 flex flex-col justify-center">
-            <p className="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">
+            <p className="text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: 'var(--text-muted)' }}>
               Public Sector
             </p>
-            <p className="text-2xl sm:text-4xl font-bold text-slate-900 tracking-tight leading-none mb-2">
+            <p className="text-2xl sm:text-4xl font-bold tracking-tight leading-none mb-2" style={{ color: 'var(--text-primary)' }}>
               {overallComparison.publicSector.adoptionRate}%
             </p>
-            <p className="text-sm font-medium text-slate-600 leading-relaxed">
+            <p className="text-sm font-medium leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
               Agencies utilizing ≥1 system
             </p>
-            <span className="text-[11px] uppercase tracking-wider font-semibold text-slate-400 mt-4 block">
+            <span className="text-[11px] uppercase tracking-wider font-semibold mt-4 block" style={{ color: 'var(--text-muted)' }}>
               Source: {overallComparison.publicSector.source}
             </span>
           </div>
 
           <div className="saas-card p-6 flex-1 flex flex-col justify-center">
-            <p className="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">
+            <p className="text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: 'var(--text-muted)' }}>
               Private Sector
             </p>
-            <p className="text-2xl sm:text-4xl font-bold text-slate-900 tracking-tight leading-none mb-2">
+            <p className="text-2xl sm:text-4xl font-bold tracking-tight leading-none mb-2" style={{ color: 'var(--text-primary)' }}>
               {overallComparison.privateSector.adoptionRate}%
             </p>
-            <p className="text-sm font-medium text-slate-600 leading-relaxed">
+            <p className="text-sm font-medium leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
               National enterprise average
             </p>
-            <span className="text-[11px] uppercase tracking-wider font-semibold text-slate-400 mt-4 block">
+            <span className="text-[11px] uppercase tracking-wider font-semibold mt-4 block" style={{ color: 'var(--text-muted)' }}>
               Source: {overallComparison.privateSector.source}
             </span>
           </div>
         </div>
 
         <div className="saas-card p-6 lg:p-8 lg:col-span-2 flex flex-col border-t-4 border-t-indigo-700">
-          <p className="text-sm font-bold text-slate-900 mb-4">
+          <p className="text-sm font-bold mb-4" style={{ color: 'var(--text-primary)' }}>
             Commercial Deployment by Sector
           </p>
           <div className="flex-1 min-h-[250px] w-full">
@@ -114,7 +114,7 @@ export default function AdoptionComparison() {
         </div>
 
       </div>
-      <p className="mt-3 text-[11px] font-semibold uppercase tracking-wider text-slate-400 text-right">
+      <p className="mt-3 text-[11px] font-semibold uppercase tracking-wider text-right" style={{ color: 'var(--text-muted)' }}>
         Source: Statistics Canada 11-621-M, Treasury Board of Canada
       </p>
     </section>

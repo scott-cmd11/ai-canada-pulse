@@ -36,8 +36,8 @@ export default function PulseScore() {
 
   if (!pulse) {
     return (
-      <div className="bg-slate-800/50 rounded border border-slate-700/50 p-6">
-        <p className="text-sm text-slate-500">Loading pulse data...</p>
+      <div className="rounded border p-6" style={{ backgroundColor: 'var(--surface-secondary)', borderColor: 'var(--border-subtle)' }}>
+        <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Loading pulse data...</p>
       </div>
     )
   }
@@ -46,9 +46,9 @@ export default function PulseScore() {
   const config = moodConfig[mood]
 
   return (
-    <div className={`bg-slate-800/60 rounded border border-slate-700/50 border-l-2 ${config.borderClass} p-5 sm:p-6`}>
+    <div className={`rounded border border-l-2 ${config.borderClass} p-5 sm:p-6`} style={{ backgroundColor: 'var(--surface-secondary)', borderTopColor: 'var(--border-subtle)', borderRightColor: 'var(--border-subtle)', borderBottomColor: 'var(--border-subtle)' }}>
       <div className="flex items-center gap-3 mb-1">
-        <p className="text-xs font-medium uppercase tracking-widest text-slate-400">
+        <p className="text-xs font-medium uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>
           Sector Pulse
         </p>
         <span
@@ -59,11 +59,11 @@ export default function PulseScore() {
         </span>
       </div>
 
-      <p className="text-sm sm:text-base text-slate-300 leading-relaxed mt-2 max-w-3xl">
+      <p className="text-sm sm:text-base leading-relaxed mt-2 max-w-3xl" style={{ color: 'var(--text-secondary)' }}>
         {description}
       </p>
 
-      <p className="text-xs text-slate-500 mt-3">
+      <p className="text-xs mt-3" style={{ color: 'var(--text-muted)' }}>
         Updated {relativeTime(updatedAt)}
       </p>
     </div>

@@ -1,15 +1,21 @@
 import { NextResponse } from "next/server"
-import { fetchAllStories, derivePulseFromStories } from "@/lib/rss-client"
+import { fetchAllStories, derivePulseFromStories, filterStoriesByRegion } from "@/lib/rss-client"
 import { hydrateCanadaStories } from "@/lib/dashboard-enrichment"
+import { getProvinceBySlug } from "@/lib/provinces-config"
 
 export const dynamic = "force-dynamic"
 export const maxDuration = 30
 
-export async function GET() {
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url)
+  const regionSlug = searchParams.get('region')
+  const regionName = regionSlug ? (getProvinceBySlug(regionSlug)?.name ?? regionSlug) : null
+
   try {
     const stories = await fetchAllStories()
-    const pulse = derivePulseFromStories(stories)
-    const { stories: enrichedStories, executiveBrief } = await hydrateCanadaStories(stories)
+    const filteredStories = regionName ? filterStoriesByRegion(stories, regionName) : stories
+    const pulse = derivePulseFromStories(filteredStories)
+    const { stories: enrichedStories, executiveBrief } = await hydrateCanadaStories(filteredStories)
 
     return NextResponse.json(
       { stories: enrichedStories, pulse, executiveBrief },

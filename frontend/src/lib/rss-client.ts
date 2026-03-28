@@ -1,3 +1,7 @@
+// RSS feed aggregator for Canadian AI news
+// Sources: Google News RSS (AI Canada search), BetaKit (betakit.com/feed/), CBC Technology (cbc.ca/webfeed/rss/rss-technology)
+// No API key required; filters AI-relevant items via keyword regex
+
 import Parser from "rss-parser"
 import { unstable_cache } from "next/cache"
 import type { Story, Category, PulseData } from "./mock-data"
@@ -207,6 +211,13 @@ export const fetchAllStories = unstable_cache(
   ["rss-stories-canada-ai"],
   { revalidate: 1800 } // 30 minutes
 )
+
+// ─── Public: filter stories by region display name ──────────────────────────
+
+export function filterStoriesByRegion(stories: Story[], regionName: string): Story[] {
+  const target = regionName.toLowerCase();
+  return stories.filter(s => s.region.toLowerCase() === target);
+}
 
 // ─── Public: derive PulseScore from story sentiment distribution ────────────
 

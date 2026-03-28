@@ -1,5 +1,7 @@
 // OpenParliament.ca API client
 // Tracks AI-related mentions in House of Commons debates
+// Source: OpenParliament.ca — https://api.openparliament.ca/
+// Data originates from Hansard (official transcripts), bilingual (EN + FR).
 // Docs: https://api.openparliament.ca/
 
 const OPENPARL_BASE = "https://api.openparliament.ca"
@@ -26,7 +28,9 @@ interface CacheEntry {
 
 let cache: CacheEntry | null = null
 
-const AI_KEYWORDS = /artificial intelligence|machine learning|generative ai|aida|algorithmic|deep learning|large language model|chatgpt|openai|AI\s+regulation|AI\s+act/i
+// Bilingual keyword filter — Parliament debates are in both English and French.
+// French equivalents added for key terms to capture Hansard entries in either official language.
+const AI_KEYWORDS = /artificial intelligence|machine learning|generative ai|aida|algorithmic|deep learning|large language model|chatgpt|openai|AI\s+regulation|AI\s+act|intelligence artificielle|apprentissage automatique|apprentissage profond|modèle de langage|IA générative|réglementation.*IA|loi.*IA/i
 
 export async function fetchParliamentAIMentions(): Promise<ParliamentData> {
   if (cache && Date.now() - cache.fetchedAt < CACHE_TTL) {

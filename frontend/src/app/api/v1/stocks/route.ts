@@ -1,12 +1,16 @@
 import { NextResponse } from "next/server"
-import { fetchCanadianAIStocks } from "@/lib/stocks-client"
+import { fetchCanadianAIStocks, filterStocksByProvince } from "@/lib/stocks-client"
 
-export async function GET() {
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url)
+  const region = searchParams.get('region')
+
   try {
     const data = await fetchCanadianAIStocks()
+    const filtered = region && data ? filterStocksByProvince(data, region) : data
 
     return NextResponse.json(
-      { data },
+      { data: filtered },
       {
         headers: {
           "Cache-Control": "public, max-age=1800, stale-while-revalidate=600",

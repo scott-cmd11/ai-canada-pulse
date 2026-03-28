@@ -28,26 +28,35 @@ export default function LiveTicker() {
 
     const story = stories[currentIndex % stories.length]
 
-    const categoryColors: Record<string, string> = {
-        "Policy & Regulation": "bg-blue-100 text-blue-700",
-        "Industry & Startups": "bg-emerald-100 text-emerald-700",
-        "Research & Development": "bg-purple-100 text-purple-700",
-        "Funding & Investment": "bg-amber-100 text-amber-700",
+    const categoryColors: Record<string, { bg: string; text: string }> = {
+        "Policy & Regulation": { bg: 'color-mix(in srgb, #3b82f6 12%, var(--surface-primary))', text: '#3b82f6' },
+        "Industry & Startups": { bg: 'color-mix(in srgb, #10b981 12%, var(--surface-primary))', text: '#10b981' },
+        "Research & Development": { bg: 'color-mix(in srgb, #8b5cf6 12%, var(--surface-primary))', text: '#8b5cf6' },
+        "Funding & Investment": { bg: 'color-mix(in srgb, #f59e0b 12%, var(--surface-primary))', text: '#f59e0b' },
     }
-    const catClass = categoryColors[story.category] || "bg-slate-100 text-slate-600"
+    const catStyle = categoryColors[story.category] || { bg: 'color-mix(in srgb, var(--text-muted) 12%, var(--surface-primary))', text: 'var(--text-muted)' }
 
     return (
-        <div className="w-full bg-slate-900 border-b border-slate-800 overflow-hidden">
+        <div
+            className="w-full overflow-hidden"
+            style={{
+                backgroundColor: 'var(--surface-secondary)',
+                borderBottom: '1px solid color-mix(in srgb, var(--accent-primary) 25%, var(--border-subtle))',
+            }}
+        >
             <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-1.5 flex items-center gap-3">
                 <div className="flex items-center gap-1.5 shrink-0">
                     <span className="relative flex h-2 w-2">
-                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                        <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75" style={{ backgroundColor: '#f87171' }}></span>
+                        <span className="relative inline-flex rounded-full h-2 w-2" style={{ backgroundColor: '#ef4444' }}></span>
                     </span>
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-red-400">Live</span>
+                    <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: '#f87171' }}>Live</span>
                 </div>
 
-                <div className="h-3 w-px bg-slate-700 shrink-0"></div>
+                <div
+                    className="h-3 w-px shrink-0"
+                    style={{ backgroundColor: 'color-mix(in srgb, var(--text-primary) 60%, transparent)' }}
+                ></div>
 
                 <div
                     className="flex-1 min-w-0 flex items-center gap-2 transition-all duration-300 ease-in-out"
@@ -56,7 +65,10 @@ export default function LiveTicker() {
                         transform: visible ? "translateY(0)" : "translateY(-6px)",
                     }}
                 >
-                    <span className={`hidden sm:inline-block text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded shrink-0 ${catClass}`}>
+                    <span
+                        className="hidden sm:inline-block text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded shrink-0"
+                        style={{ backgroundColor: catStyle.bg, color: catStyle.text }}
+                    >
                         {story.category?.split(" ")[0]}
                     </span>
 
@@ -64,17 +76,18 @@ export default function LiveTicker() {
                         href={story.sourceUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-xs text-slate-300 hover:text-white truncate transition-colors"
+                        className="text-xs truncate transition-colors hover:underline"
+                        style={{ color: 'var(--text-secondary)' }}
                     >
                         {story.headline}
                     </a>
 
-                    <span className="hidden sm:inline text-[10px] text-slate-500 shrink-0">
+                    <span className="hidden sm:inline text-[10px] shrink-0" style={{ color: 'var(--text-muted)' }}>
                         | {story.sourceName}
                     </span>
                 </div>
 
-                <span className="text-[10px] text-slate-600 font-mono shrink-0 hidden sm:block">
+                <span className="text-[10px] font-mono shrink-0 hidden sm:block" style={{ color: 'var(--text-muted)' }}>
                     {(currentIndex % stories.length) + 1}/{stories.length}
                 </span>
             </div>

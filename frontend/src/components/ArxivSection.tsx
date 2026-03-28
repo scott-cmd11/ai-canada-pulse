@@ -3,17 +3,36 @@
 import { useState, useCallback } from "react"
 import type { ResearchPaper } from "@/lib/research-client"
 import { usePolling } from "@/hooks/usePolling"
+import SourceAttribution from '@/components/SourceAttribution'
+import { SkeletonTable } from '@/components/Skeleton'
 
-export default function ArxivSection() {
+interface ArxivSectionProps {
+    // When provided, only display papers whose institutions list contains at least
+    // one entry matching (case-insensitive substring) any name in this filter.
+    institutionFilter?: string[]
+}
+
+export default function ArxivSection({ institutionFilter }: ArxivSectionProps = {}) {
     const transform = useCallback((json: Record<string, unknown>) => {
         const papers = json.papers as ResearchPaper[] | undefined
         return papers && papers.length > 0 ? papers : null
     }, [])
 
-    const { data: papers, loading } = usePolling<ResearchPaper[]>("/api/v1/research", {
+    const { data: rawPapers, loading, lastUpdated } = usePolling<ResearchPaper[]>("/api/v1/research", {
         intervalMs: 600_000, // 10 minutes — research data changes slowly
         transform,
     })
+
+    // Apply institution filter when provided
+    const papers = rawPapers && institutionFilter && institutionFilter.length > 0
+        ? rawPapers.filter((paper) =>
+            paper.institutions.some((inst) =>
+                institutionFilter.some((f) =>
+                    inst.toLowerCase().includes(f.toLowerCase())
+                )
+            )
+        )
+        : rawPapers
 
     return (
         <section>
@@ -27,9 +46,7 @@ export default function ArxivSection() {
             </div>
 
             {loading && (
-                <div className="saas-card p-8 text-center">
-                    <div className="animate-pulse text-sm text-slate-500">Loading Canadian AI research...</div>
-                </div>
+                <div className="saas-card p-6"><SkeletonTable rows={4} /></div>
             )}
 
             {!loading && papers && papers.length > 0 && (
@@ -42,9 +59,10 @@ export default function ArxivSection() {
 
             {!loading && (!papers || papers.length === 0) && (
                 <div className="saas-card p-6 text-center">
-                    <p className="text-sm text-slate-500">Unable to fetch research data at this time.</p>
+                    <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Unable to fetch research data at this time.</p>
                 </div>
             )}
+            <SourceAttribution sourceId="arxiv" lastUpdated={lastUpdated} />
         </section >
     )
 }
@@ -53,31 +71,34 @@ function PaperCard({ paper }: { paper: ResearchPaper }) {
     const url = paper.openAccessUrl || paper.doiUrl || "#"
 
     return (
-        <article className="saas-card bg-white p-4 border-l-4 border-l-purple-600">
+        <article className="saas-card p-4 border-l-4 border-l-purple-600">
             <a
                 href={url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-sm font-bold text-slate-900 hover:text-indigo-700 hover:underline leading-snug block mb-2"
+                className="text-sm font-bold hover:underline leading-snug block mb-2"
+                style={{ color: 'var(--text-primary)' }}
+                onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--accent-primary)')}
+                onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--text-primary)')}
             >
                 {paper.title}
             </a>
 
             {paper.summary && (
-                <p className="text-xs text-slate-600 mb-2 leading-relaxed line-clamp-2">
+                <p className="text-xs mb-2 leading-relaxed line-clamp-2" style={{ color: 'var(--text-secondary)' }}>
                     {paper.summary}
                 </p>
             )}
 
-            <div className="flex flex-wrap items-center gap-2 text-[11px] text-slate-500">
+            <div className="flex flex-wrap items-center gap-2 text-[11px]" style={{ color: 'var(--text-muted)' }}>
                 <span className="font-medium">
                     {paper.authors.slice(0, 3).join(", ")}{paper.authors.length > 3 ? " et al." : ""}
                 </span>
-                <span className="text-slate-300">•</span>
+                <span style={{ color: 'var(--border-subtle)' }}>•</span>
                 <span>{paper.publicationDate}</span>
                 {paper.citationCount > 0 && (
                     <>
-                        <span className="text-slate-300">•</span>
+                        <span style={{ color: 'var(--border-subtle)' }}>•</span>
                         <span className="font-semibold text-amber-700">{paper.citationCount.toLocaleString()} citations</span>
                     </>
                 )}
@@ -86,7 +107,7 @@ function PaperCard({ paper }: { paper: ResearchPaper }) {
             {/* Institution + journal badges */}
             <div className="flex flex-wrap items-center gap-1.5 mt-2">
                 {paper.institutions.slice(0, 2).map((inst) => (
-                    <span key={inst} className="text-[10px] uppercase tracking-wider font-semibold px-1.5 py-0.5 rounded bg-indigo-50 text-indigo-700 border border-indigo-200">
+                    <span key={inst} className="text-[10px] uppercase tracking-wider font-semibold px-1.5 py-0.5 rounded border" style={{ backgroundColor: 'color-mix(in srgb, var(--accent-primary) 8%, transparent)', color: 'var(--accent-primary)', borderColor: 'color-mix(in srgb, var(--accent-primary) 20%, transparent)' }}>
                         {inst}
                     </span>
                 ))}

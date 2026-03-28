@@ -1,8 +1,18 @@
 import type { Story } from "@/lib/mock-data"
 import { relativeTime } from "@/lib/relative-time"
+import AILabel from '@/components/AILabel'
 
 interface Props {
   story: Story
+}
+
+const categoryColors: Record<string, string> = {
+  "Policy & Regulation": "var(--cat-policy)",
+  "Industry & Startups": "var(--cat-markets)",
+  "Research": "var(--cat-research)",
+  "Research & Development": "var(--cat-research)",
+  "Funding & Investment": "var(--cat-funding)",
+  "Global AI Race": "var(--cat-geopolitics)",
 }
 
 export default function StoryCard({ story }: Props) {
@@ -14,22 +24,36 @@ export default function StoryCard({ story }: Props) {
         ? "Geopolitics"
         : story.category
 
+  const catColor = categoryColors[story.category] || "var(--accent-primary)"
+
   return (
-    <article className="saas-card flex flex-col gap-4 bg-white/92 p-5 sm:flex-row sm:gap-5">
+    <article
+      className="saas-card flex flex-col gap-4 p-5 sm:flex-row sm:gap-5"
+      style={{ transition: 'border-color 0.2s ease, box-shadow 0.2s ease' }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.borderColor = 'var(--accent-primary)'
+        e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.06)'
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.borderColor = ''
+        e.currentTarget.style.boxShadow = ''
+      }}
+    >
       <div className="mt-0.5 flex shrink-0 gap-3 sm:w-32 sm:flex-col sm:gap-2">
-        <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-400">
+        <span className="text-[11px] font-semibold uppercase tracking-[0.14em]" style={{ color: 'var(--text-muted)' }}>
           {relativeTime(story.publishedAt)}
         </span>
-        <span className="self-start rounded-full border border-indigo-100 bg-indigo-50 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-indigo-700">
+        <span className="self-start rounded-full border px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.12em]" style={{ borderColor: `color-mix(in srgb, ${catColor} 25%, transparent)`, backgroundColor: `color-mix(in srgb, ${catColor} 10%, transparent)`, color: catColor }}>
           {categoryLabel}
         </span>
+        <AILabel level="classification" />
       </div>
 
       <div className="min-w-0 flex-1">
         <div className="space-y-2.5">
-          <h3 className="text-lg font-semibold leading-snug text-slate-950">
+          <h3 className="text-lg font-semibold leading-snug" style={{ color: 'var(--text-primary)' }}>
             {story.sourceUrl ? (
-              <a href={story.sourceUrl} target="_blank" rel="noopener noreferrer" className="hover:text-indigo-700 hover:underline">
+              <a href={story.sourceUrl} target="_blank" rel="noopener noreferrer" className="hover:underline focus-visible:underline focus-visible:outline-none" style={{ color: 'var(--accent-primary)', transition: 'opacity 0.15s ease' }}>
                 {story.headline}
               </a>
             ) : (
@@ -38,18 +62,20 @@ export default function StoryCard({ story }: Props) {
           </h3>
 
           {story.aiSummary ? (
-            <p className="text-sm leading-7 text-slate-700">
-              <span className="mr-1 text-xs text-indigo-500">*</span>
-              {story.aiSummary}
-            </p>
+            <div>
+              <AILabel level="summary" sourceUrl={story.sourceUrl} sourceName={story.sourceName} />
+              <p className="text-sm leading-7" style={{ color: 'var(--text-secondary)' }}>
+                {story.aiSummary}
+              </p>
+            </div>
           ) : story.summary && !story.headline.startsWith(story.summary.split("  ")[0]) ? (
-            <p className="text-sm leading-7 text-slate-600">
+            <p className="text-sm leading-7" style={{ color: 'var(--text-secondary)' }}>
               {story.summary}
             </p>
           ) : null}
         </div>
 
-        <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-slate-100 pt-3 text-[11px] font-medium uppercase tracking-[0.12em] text-slate-400">
+        <div className="mt-4 flex flex-wrap items-center gap-2 border-t pt-3 text-[11px] font-medium uppercase tracking-[0.12em]" style={{ borderColor: 'var(--border-subtle)', color: 'var(--text-muted)' }}>
           {story.sourceName && <span>{story.sourceName}</span>}
           {story.sourceName && <span>|</span>}
           <span>{story.region}</span>

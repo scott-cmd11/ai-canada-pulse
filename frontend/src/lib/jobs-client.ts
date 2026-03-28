@@ -34,7 +34,7 @@ const SEARCH_QUERIES = [
   { term: "generative AI", query: "generative+AI" },
 ]
 
-async function _fetchAIJobMarket(): Promise<JobMarketData | null> {
+async function _fetchAIJobMarket(province?: string): Promise<JobMarketData | null> {
   try {
     const sampleJobs: JobMarketData["sampleJobs"] = []
     const locationCounts: Record<string, number> = {}
@@ -44,7 +44,8 @@ async function _fetchAIJobMarket(): Promise<JobMarketData | null> {
     for (const { term, query } of SEARCH_QUERIES) {
       try {
         // Indeed Canada RSS feed — free, no API key
-        const feedUrl = `https://ca.indeed.com/rss?q=${query}&l=Canada&sort=date`
+        const location = province ? encodeURIComponent(province) : "Canada"
+        const feedUrl = `https://ca.indeed.com/rss?q=${query}&l=${location}&sort=date`
         const feed = await parser.parseURL(feedUrl)
         const items = feed.items || []
         const count = items.length
@@ -178,8 +179,11 @@ function categorizeJob(title: string): string {
   return "AI / ML General"
 }
 
-export const fetchAIJobMarket = unstable_cache(
-  _fetchAIJobMarket,
-  ["indeed-canada-ai-jobs"],
-  { revalidate: 21600 } // 6 hours
-)
+export function fetchAIJobMarket(province?: string): Promise<JobMarketData | null> {
+  const cacheKey = province ? `indeed-canada-ai-jobs-${province}` : "indeed-canada-ai-jobs"
+  return unstable_cache(
+    () => _fetchAIJobMarket(province),
+    [cacheKey],
+    { revalidate: 21600 } // 6 hours
+  )()
+}

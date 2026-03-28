@@ -1,5 +1,5 @@
+import type { Metadata } from "next"
 import Header from "@/components/Header"
-import HeroBanner from "@/components/HeroBanner"
 import BriefingCard from "@/components/BriefingCard"
 import ExecutiveBriefSection from "@/components/ExecutiveBriefSection"
 import IndicatorsSection from "@/components/IndicatorsSection"
@@ -10,19 +10,37 @@ import StocksSection from "@/components/StocksSection"
 import ComputeStatusSection from "@/components/ComputeStatusSection"
 import TrendsInsightsSection from "@/components/TrendsInsightsSection"
 import LabFeedsSection from "@/components/LabFeedsSection"
-import METRHeroChart from "@/components/METRHeroChart"
+import ResearchSection from "@/components/ResearchSection"
+import OpenSourceSection from "@/components/OpenSourceSection"
+import EpochAISection from "@/components/EpochAISection"
+import HuggingFaceSection from "@/components/HuggingFaceSection"
+import JobMarketSection from "@/components/JobMarketSection"
+import ParliamentSection from "@/components/ParliamentSection"
+import GovRegistrySection from "@/components/GovRegistrySection"
+import OecdSection from "@/components/OecdSection"
+import TalentEducationSection from "@/components/TalentEducationSection"
+import EcosystemSection from "@/components/EcosystemSection"
+import RegulatorySection from "@/components/RegulatorySection"
+import ProvinceIndex from '@/components/ProvinceIndex'
 import SectionNav from "@/components/SectionNav"
 import ScrollToTop from "@/components/ScrollToTop"
 import ScrollReveal from "@/components/ScrollReveal"
 import DashboardFooter from "@/components/DashboardFooter"
+import SectionErrorBoundary from "@/components/SectionErrorBoundary"
+import KeyboardShortcuts from "@/components/KeyboardShortcuts"
 import { StoriesProvider } from "@/hooks/useStories"
 
-function SectionTitle({ eyebrow, title, description }: { eyebrow: string; title: string; description: string }) {
+export const metadata: Metadata = {
+  title: "Dashboard",
+  description: "Real-time Canadian AI intelligence dashboard. Track policy, research, industry, market, and job signals from 17+ public data sources.",
+}
+
+function SectionTitle({ eyebrow, title, description, dark }: { eyebrow: string; title: string; description: string; dark?: boolean }) {
   return (
     <div className="mb-4 sm:mb-5">
-      <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">{eyebrow}</p>
-      <h2 className="mt-1 text-2xl font-bold text-slate-900">{title}</h2>
-      <p className="mt-2 max-w-3xl text-sm leading-relaxed text-slate-600">{description}</p>
+      <p className="text-[11px] font-semibold uppercase tracking-[0.18em]" style={{ color: dark ? 'var(--accent-on-invert)' : 'var(--accent-primary)' }}>{eyebrow}</p>
+      <h2 className="mt-1 text-2xl font-bold sm:text-3xl" style={{ fontFamily: 'var(--font-display)', color: dark ? 'var(--text-on-invert)' : 'var(--text-primary)', fontWeight: 600 }}>{title}</h2>
+      <p className="mt-2 max-w-3xl text-sm leading-relaxed" style={{ color: dark ? 'var(--text-on-invert-secondary)' : 'var(--text-secondary)' }}>{description}</p>
     </div>
   )
 }
@@ -30,107 +48,200 @@ function SectionTitle({ eyebrow, title, description }: { eyebrow: string; title:
 export default function DashboardPage() {
   return (
     <StoriesProvider>
-    <div className="min-h-screen bg-slate-50 text-slate-900">
+    <div className="min-h-screen" style={{ background: 'var(--bg-page)', color: 'var(--text-primary)' }}>
       <Header />
 
-      <main className="mx-auto flex w-full max-w-[1480px] flex-col gap-6 px-4 py-4 sm:px-6 lg:px-8 lg:py-6">
-        <div className="relative overflow-hidden rounded-2xl">
-          <div
-            className="absolute inset-0"
-            style={{
-              background: "linear-gradient(135deg, #0f172a 0%, #1e1b4b 25%, #312e81 50%, #1e1b4b 75%, #0f172a 100%)",
-              backgroundSize: "400% 400%",
-              animation: "gradientShift 12s ease infinite",
-            }}
-          />
-          <div
-            className="absolute inset-0 opacity-[0.07]"
-            style={{
-              backgroundImage:
-                "url(\"data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%23fff' stroke-width='0.5'%3E%3Cpath d='M0 30h60M30 0v60'/%3E%3C/g%3E%3C/svg%3E\")",
-            }}
-          />
-          <div className="absolute -top-32 -right-32 h-[500px] w-[500px] rounded-full bg-indigo-500/25 blur-[120px] animate-pulse" />
-          <div className="absolute -bottom-24 -left-24 h-96 w-96 rounded-full bg-violet-600/20 blur-[100px]" />
-
-          <div className="grid grid-cols-1 overflow-hidden rounded-2xl lg:grid-cols-[1.15fr_0.85fr]">
-            <div className="relative z-10">
-              <HeroBanner embedded />
-            </div>
-            <div className="relative z-10 border-t border-white/5 bg-white/0 p-5 lg:border-l lg:border-t-0 lg:p-6">
-              <div className="mb-3 flex items-center justify-between">
-                <div>
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-indigo-200">Capability benchmark</p>
-                  <h2 className="mt-1 text-lg font-bold text-white">Why the pace of AI capability matters now</h2>
-                  <p className="mt-2 max-w-md text-sm leading-relaxed text-indigo-100/65">A condensed METR benchmark anchors the dashboard with the clearest external evidence that frontier models are advancing fast enough to reshape the Canadian signal environment.</p>
-                </div>
-              </div>
-              <METRHeroChart />
-            </div>
-          </div>
-        </div>
+      <main id="main-content" className="mx-auto flex w-full max-w-[1480px] flex-col gap-6 px-4 py-4 sm:px-6 lg:px-8 lg:py-6">
+        <section id="provinces">
+          <ProvinceIndex />
+        </section>
 
         <SectionNav />
 
-        <section id="acceleration" className="rounded-2xl border border-slate-200 bg-white/60 p-5 sm:p-6">
+        <section id="acceleration" className="saas-card rounded-2xl p-5 sm:p-6">
           <SectionTitle
             eyebrow="Acceleration Signals"
             title="The shortest path to the Canadian story"
             description="Start with the highest-priority Canada development, then move to the machine-assisted synthesis and the curated signal stream beneath it."
           />
 
+
           <div className="grid gap-4 xl:grid-cols-[1.05fr_0.95fr]">
-            <BriefingCard />
-            <ExecutiveBriefSection />
+            <SectionErrorBoundary sectionName="Lead Signal">
+              <BriefingCard />
+            </SectionErrorBoundary>
+            <SectionErrorBoundary sectionName="Executive Brief">
+              <ExecutiveBriefSection />
+            </SectionErrorBoundary>
           </div>
 
           <div className="mt-4">
-            <StoryFeed />
+            <SectionErrorBoundary sectionName="Story Feed">
+              <StoryFeed />
+            </SectionErrorBoundary>
           </div>
         </section>
 
+        <hr className="section-divider" />
+
         <ScrollReveal>
-          <section id="capacity" className="rounded-2xl border border-slate-200 bg-white/60 p-5 sm:p-6">
+          <section id="capacity" className="section-dark rounded-2xl p-5 sm:p-6">
             <SectionTitle
               eyebrow="Canada Capacity"
               title="Evidence that the ecosystem is building"
               description="These modules answer whether Canada is adding capability through adoption, compute availability, and lab activity rather than just generating headlines."
+              dark
             />
 
             <div className="grid gap-4 xl:grid-cols-2">
-              <TrendsSection />
-              <TrendsInsightsSection />
+              <SectionErrorBoundary sectionName="AI Adoption Trends">
+                <TrendsSection />
+              </SectionErrorBoundary>
+              <SectionErrorBoundary sectionName="Provincial Search Interest">
+                <TrendsInsightsSection />
+              </SectionErrorBoundary>
             </div>
 
             <div className="mt-4 grid gap-4 xl:grid-cols-[0.95fr_1.05fr]">
-              <ComputeStatusSection />
-              <LabFeedsSection />
+              <SectionErrorBoundary sectionName="Compute Infrastructure">
+                <ComputeStatusSection />
+              </SectionErrorBoundary>
+              <SectionErrorBoundary sectionName="Lab Activity">
+                <LabFeedsSection />
+              </SectionErrorBoundary>
             </div>
           </section>
         </ScrollReveal>
 
+        <hr className="section-divider" />
+
         <ScrollReveal>
-          <section id="impact" className="rounded-2xl border border-slate-200 bg-white/60 p-5 sm:p-6">
+          <section id="research" className="saas-card rounded-2xl p-5 sm:p-6">
+            <SectionTitle
+              eyebrow="Research & Innovation"
+              title="What Canadian AI labs are producing"
+              description="Track research output, open-source contributions, and frontier model progress from Canadian institutions and the global AI research ecosystem."
+            />
+
+            <div className="grid gap-4 xl:grid-cols-2">
+              <SectionErrorBoundary sectionName="Fundamental Research">
+                <ResearchSection />
+              </SectionErrorBoundary>
+              <SectionErrorBoundary sectionName="Open Source Activity">
+                <OpenSourceSection />
+              </SectionErrorBoundary>
+            </div>
+
+            <div className="mt-4 grid gap-4 xl:grid-cols-2">
+              <SectionErrorBoundary sectionName="AI Capability Tracker">
+                <EpochAISection />
+              </SectionErrorBoundary>
+              <SectionErrorBoundary sectionName="Canadian AI Models">
+                <HuggingFaceSection />
+              </SectionErrorBoundary>
+            </div>
+          </section>
+        </ScrollReveal>
+
+        <hr className="section-divider" />
+
+        <ScrollReveal>
+          <section id="talent" className="section-dark rounded-2xl p-5 sm:p-6">
+            <SectionTitle
+              eyebrow="Talent & Education"
+              title="Building Canada's AI workforce"
+              description="Track tech immigration trends, federal research funding, and the university programs producing Canada's next generation of AI researchers."
+              dark
+            />
+
+            <SectionErrorBoundary sectionName="Talent & Education">
+              <TalentEducationSection />
+            </SectionErrorBoundary>
+          </section>
+        </ScrollReveal>
+
+        <hr className="section-divider" />
+
+        <ScrollReveal>
+          <section id="ecosystem" className="saas-card rounded-2xl p-5 sm:p-6">
+            <SectionTitle
+              eyebrow="Ecosystem & Community"
+              title="Startups, funding, and community"
+              description="Map the Canadian AI startup landscape, track funding signals from the news, and find upcoming conferences and meetups."
+            />
+
+            <SectionErrorBoundary sectionName="Ecosystem & Community">
+              <EcosystemSection />
+            </SectionErrorBoundary>
+          </section>
+        </ScrollReveal>
+
+        <hr className="section-divider" />
+
+        <ScrollReveal>
+          <section id="impact" className="section-dark rounded-2xl p-5 sm:p-6">
             <SectionTitle
               eyebrow="Market And Policy Impact"
               title="Where acceleration is already visible"
               description="Focus on the areas where Canadian AI momentum is already showing up in market tone, public-company exposure, and economic indicators."
+              dark
             />
 
             <div className="grid gap-4 xl:grid-cols-[0.9fr_1.1fr]">
-              <SentimentSection />
-              <StocksSection />
+              <SectionErrorBoundary sectionName="Media Sentiment">
+                <SentimentSection />
+              </SectionErrorBoundary>
+              <SectionErrorBoundary sectionName="Market Performance">
+                <StocksSection />
+              </SectionErrorBoundary>
             </div>
 
             <div className="mt-4">
-              <IndicatorsSection />
+              <SectionErrorBoundary sectionName="Pulse Indicators">
+                <IndicatorsSection />
+              </SectionErrorBoundary>
             </div>
+
+            <div className="mt-4 grid gap-4 xl:grid-cols-2">
+              <SectionErrorBoundary sectionName="Labour Demand">
+                <JobMarketSection />
+              </SectionErrorBoundary>
+              <SectionErrorBoundary sectionName="Parliament Activity">
+                <ParliamentSection />
+              </SectionErrorBoundary>
+            </div>
+
+            <div className="mt-4 grid gap-4 xl:grid-cols-2">
+              <SectionErrorBoundary sectionName="Federal AI Registry">
+                <GovRegistrySection />
+              </SectionErrorBoundary>
+              <SectionErrorBoundary sectionName="OECD Policy Tracker">
+                <OecdSection />
+              </SectionErrorBoundary>
+            </div>
+          </section>
+        </ScrollReveal>
+
+        <hr className="section-divider" />
+
+        <ScrollReveal>
+          <section id="regulatory" className="saas-card rounded-2xl p-5 sm:p-6">
+            <SectionTitle
+              eyebrow="Regulatory & Global Standing"
+              title="Where Canada stands on AI governance"
+              description="Track AI legislation, privacy commissioner rulings, international rankings, and patent activity to understand Canada's regulatory and competitive position."
+            />
+
+            <SectionErrorBoundary sectionName="Regulatory & Global Standing">
+              <RegulatorySection />
+            </SectionErrorBoundary>
           </section>
         </ScrollReveal>
       </main>
 
       <DashboardFooter />
       <ScrollToTop />
+      <KeyboardShortcuts />
     </div>
     </StoriesProvider>
   )

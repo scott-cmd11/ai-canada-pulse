@@ -1,85 +1,110 @@
 @import "tailwindcss";
 
 :root {
-  --bg-page: #eef2f8;
-  --bg-page-accent: rgba(79, 70, 229, 0.12);
-  --bg-page-warm: rgba(245, 158, 11, 0.08);
+  --bg-page: #faf8f4;
+  --bg-page-accent: rgba(194, 65, 12, 0.08);
+  --bg-page-warm: rgba(234, 88, 12, 0.06);
 
-  --surface-primary: rgba(255, 255, 255, 0.9);
-  --surface-elevated: rgba(255, 255, 255, 0.96);
-  --surface-muted: rgba(248, 250, 252, 0.88);
-  --surface-dark: #0f172a;
+  --surface-primary: #ffffff;
+  --surface-elevated: #ffffff;
+  --surface-muted: rgba(250, 248, 244, 0.88);
+  --surface-secondary: #f5f5f4;
+  --surface-dark: #1c1917;
 
-  --text-primary: #0f172a;
-  --text-secondary: #334155;
-  --text-muted: #64748b;
+  /* Inversion zone surfaces (for dark section bands) */
+  --surface-invert: #1c1917;
+  --text-on-invert: #fafaf9;
+  --text-on-invert-secondary: #d6d3d1;
+  --text-on-invert-muted: #a8a29e;
+  --border-on-invert: #44403c;
+  --accent-on-invert: #f97316;
 
-  --border-subtle: rgba(148, 163, 184, 0.18);
-  --border-strong: rgba(100, 116, 139, 0.28);
-  --divider: rgba(148, 163, 184, 0.14);
+  --text-primary: #1c1917;
+  --text-secondary: #44403c;
+  --text-muted: #78716c;
 
-  --accent-primary: #4f46e5;
-  --accent-secondary: #0f766e;
-  --accent-glow: rgba(79, 70, 229, 0.18);
-  --accent-surface: rgba(238, 242, 255, 0.85);
+  --border-subtle: #e7e5e4;
+  --border-strong: #d6d3d1;
+  --divider: #e7e5e4;
 
-  --status-positive: #15803d;
+  --accent-primary: #c2410c;
+  --accent-secondary: #ea580c;
+  --accent-glow: rgba(194, 65, 12, 0.08);
+  --accent-surface: rgba(194, 65, 12, 0.04);
+
+  --status-positive: #166534;
   --status-negative: #dc2626;
   --status-gold: #b45309;
 
-  --shadow-soft: 0 10px 30px rgba(15, 23, 42, 0.06);
-  --shadow-elevated: 0 18px 42px rgba(15, 23, 42, 0.1);
-  --radius-card: 20px;
+  /* Category colors */
+  --cat-policy: #3b82f6;
+  --cat-markets: #10b981;
+  --cat-research: #8b5cf6;
+  --cat-funding: #f59e0b;
+  --cat-geopolitics: #ec4899;
+
+  /* Multi-layer compound shadows */
+  --shadow-soft: 0 1px 2px rgba(28, 25, 23, 0.04), 0 2px 8px rgba(28, 25, 23, 0.06);
+  --shadow-elevated: 0 2px 4px rgba(28, 25, 23, 0.05), 0 8px 24px rgba(28, 25, 23, 0.1);
+  --radius-card: 12px;
   --radius-pill: 999px;
 
-  --bg-gradient-start: #f7f9fc;
+  --bg-gradient-start: #faf8f4;
   --card-gradient-top: rgba(255, 255, 255, 0.94);
-  --card-gradient-bottom: rgba(248, 250, 252, 0.9);
+  --card-gradient-bottom: rgba(250, 248, 244, 0.9);
   --card-sheen: rgba(255, 255, 255, 0.5);
-  --header-bg: rgba(255, 255, 255, 0.7);
-  --header-border: rgba(255, 255, 255, 0.5);
-  --scrollbar-thumb: rgba(148, 163, 184, 0.5);
-  --scrollbar-thumb-hover: rgba(100, 116, 139, 0.65);
+  --header-bg: rgba(250, 248, 244, 0.65);
+  --header-border: #e7e5e4;
+  --scrollbar-thumb: rgba(120, 113, 108, 0.4);
+  --scrollbar-thumb-hover: rgba(68, 64, 60, 0.5);
 }
 
 [data-theme="dark"] {
-  --bg-page: #0b1120;
-  --bg-page-accent: rgba(79, 70, 229, 0.08);
-  --bg-page-warm: rgba(245, 158, 11, 0.04);
+  --bg-page: #1c1917;
+  --bg-page-accent: rgba(194, 65, 12, 0.08);
+  --bg-page-warm: rgba(234, 88, 12, 0.04);
 
-  --surface-primary: rgba(15, 23, 42, 0.9);
-  --surface-elevated: rgba(15, 23, 42, 0.96);
-  --surface-muted: rgba(15, 23, 42, 0.88);
-  --surface-dark: #e2e8f0;
+  --surface-primary: #292524;
+  --surface-elevated: #312e2b;
+  --surface-muted: rgba(41, 37, 36, 0.88);
+  --surface-secondary: #1c1917;
+  --surface-dark: #fafaf9;
 
-  --text-primary: #e2e8f0;
-  --text-secondary: #94a3b8;
-  --text-muted: #64748b;
+  --surface-invert: #0c0a09;
+  --text-on-invert: #fafaf9;
+  --text-on-invert-secondary: #d6d3d1;
+  --text-on-invert-muted: #78716c;
+  --border-on-invert: #292524;
+  --accent-on-invert: #fb923c;
 
-  --border-subtle: rgba(148, 163, 184, 0.12);
-  --border-strong: rgba(148, 163, 184, 0.22);
-  --divider: rgba(148, 163, 184, 0.1);
+  --text-primary: #fafaf9;
+  --text-secondary: #d6d3d1;
+  --text-muted: #c8c3be;
 
-  --accent-primary: #818cf8;
-  --accent-secondary: #2dd4bf;
-  --accent-glow: rgba(129, 140, 248, 0.15);
-  --accent-surface: rgba(30, 27, 75, 0.6);
+  --border-subtle: #44403c;
+  --border-strong: #57534e;
+  --divider: #44403c;
 
-  --status-positive: #34d399;
+  --accent-primary: #ea580c;
+  --accent-secondary: #f97316;
+  --accent-glow: rgba(234, 88, 12, 0.15);
+  --accent-surface: rgba(234, 88, 12, 0.08);
+
+  --status-positive: #22c55e;
   --status-negative: #f87171;
   --status-gold: #fbbf24;
 
-  --shadow-soft: 0 10px 30px rgba(0, 0, 0, 0.3);
-  --shadow-elevated: 0 18px 42px rgba(0, 0, 0, 0.45);
+  --shadow-soft: 0 1px 2px rgba(0, 0, 0, 0.2), 0 2px 8px rgba(0, 0, 0, 0.25);
+  --shadow-elevated: 0 2px 4px rgba(0, 0, 0, 0.2), 0 8px 24px rgba(0, 0, 0, 0.4);
 
-  --bg-gradient-start: #0d1526;
-  --card-gradient-top: rgba(15, 23, 42, 0.94);
-  --card-gradient-bottom: rgba(11, 17, 32, 0.9);
-  --card-sheen: rgba(255, 255, 255, 0.03);
-  --header-bg: rgba(11, 17, 32, 0.85);
-  --header-border: rgba(148, 163, 184, 0.1);
-  --scrollbar-thumb: rgba(100, 116, 139, 0.4);
-  --scrollbar-thumb-hover: rgba(148, 163, 184, 0.5);
+  --bg-gradient-start: #1c1917;
+  --card-gradient-top: rgba(41, 37, 36, 0.94);
+  --card-gradient-bottom: rgba(28, 25, 23, 0.9);
+  --card-sheen: rgba(255, 255, 255, 0.02);
+  --header-bg: rgba(28, 25, 23, 0.65);
+  --header-border: #44403c;
+  --scrollbar-thumb: rgba(87, 83, 78, 0.6);
+  --scrollbar-thumb-hover: rgba(120, 113, 108, 0.7);
 }
 
 * {
@@ -101,6 +126,17 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Paper noise texture overlay */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0.022;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
 h1,
 h2 {
   font-family: var(--font-display), Georgia, serif;
@@ -119,33 +155,45 @@ button {
   transition: color 180ms ease, background-color 180ms ease, border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
 }
 
+/* ── Card system ── */
+
 .glass-card,
 .saas-card {
   position: relative;
-  overflow: hidden;
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-card);
-  background:
-    linear-gradient(180deg, var(--card-gradient-top) 0%, var(--card-gradient-bottom) 100%);
+  background: var(--surface-primary);
   box-shadow: var(--shadow-soft);
-  backdrop-filter: blur(18px);
+  transition: border-color 0.2s, box-shadow 0.2s;
+  overflow: hidden;
 }
 
-.glass-card::before,
+/* Accent hover line — left edge, fades in */
 .saas-card::before {
   content: "";
   position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background: linear-gradient(180deg, var(--card-sheen), transparent 28%);
+  left: 0;
+  top: 12px;
+  bottom: 12px;
+  width: 2px;
+  border-radius: 2px;
+  background: linear-gradient(180deg, transparent, var(--accent-primary) 30%, var(--accent-primary) 70%, transparent);
+  opacity: 0;
+  transition: opacity 0.3s;
+  z-index: 1;
+}
+
+.saas-card:hover::before {
+  opacity: 1;
 }
 
 .glass-card:hover,
 .saas-card:hover {
   border-color: var(--border-strong);
   box-shadow: var(--shadow-elevated);
-  transform: translateY(-1px);
 }
+
+/* ── Tabs ── */
 
 .tab-active {
   color: var(--accent-primary);
@@ -166,10 +214,24 @@ button {
   border-bottom-color: var(--border-strong);
 }
 
+/* ── Section headers ── */
+
 .section-header {
   margin-bottom: 12px;
-  padding-bottom: 8px;
-  border-bottom: 1px solid var(--divider);
+  padding-bottom: 12px;
+  border-bottom: none;
+  position: relative;
+}
+
+.section-header::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 48px;
+  height: 2px;
+  background: var(--accent-primary);
+  border-radius: 1px;
 }
 
 .section-header h2 {
@@ -178,6 +240,71 @@ button {
   line-height: 1.3;
   color: var(--text-primary);
 }
+
+/* ── Dark section bands (Signal Noir alternating rhythm) ── */
+
+.section-dark {
+  background: var(--surface-invert);
+  border-radius: var(--radius-card);
+}
+
+.section-dark .section-header::after,
+.section-dark h2.section-header::after,
+.section-dark h3.section-header::after {
+  background: var(--accent-on-invert);
+}
+
+.section-dark .section-header h2,
+.section-dark h2.section-header,
+.section-dark h3.section-header {
+  color: var(--text-on-invert);
+}
+
+/* Cards inside dark sections keep their own surface */
+.section-dark .saas-card {
+  border-color: var(--border-on-invert);
+}
+
+/* ── Animated gradient divider ── */
+
+.section-divider {
+  height: 1px;
+  border: none;
+  background: linear-gradient(90deg, transparent, var(--accent-primary), transparent);
+  background-size: 200% 100%;
+  animation: gradientShift 4s ease infinite;
+}
+
+/* ── Gradient accent left border ── */
+
+.accent-border-left {
+  position: relative;
+  border-left: none !important;
+}
+
+.accent-border-left::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  border-radius: 3px 0 0 3px;
+  background: linear-gradient(180deg, var(--accent-primary) 0%, var(--accent-secondary) 50%, transparent 100%);
+  z-index: 1;
+}
+
+/* ── Table row hover with accent bar ── */
+
+.saas-card tr:hover td {
+  background: color-mix(in srgb, var(--accent-primary) 4%, var(--surface-primary));
+}
+
+.saas-card tr:hover td:first-child {
+  box-shadow: inset 3px 0 0 var(--accent-primary);
+}
+
+/* ── Scrollbar ── */
 
 ::-webkit-scrollbar {
   width: 8px;
@@ -202,6 +329,8 @@ button {
   scrollbar-color: var(--scrollbar-thumb) transparent;
 }
 
+/* ── Keyframes ── */
+
 @keyframes gradientShift {
   0% {
     background-position: 0% 50%;
@@ -213,17 +342,5 @@ button {
 
   100% {
     background-position: 0% 50%;
-  }
-}
-
-@keyframes riseIn {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
   }
 }

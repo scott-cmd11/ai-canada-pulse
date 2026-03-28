@@ -4,10 +4,13 @@ import { useState, useEffect } from "react"
 import { indicators as defaultIndicators } from "@/lib/indicators-data"
 import type { Indicator } from "@/lib/indicators-data"
 import IndicatorChart from "./IndicatorChart"
+import SourceAttribution from '@/components/SourceAttribution'
+import { SectionSkeleton } from '@/components/Skeleton'
 
 export default function IndicatorsSection() {
   const [data, setData] = useState<Indicator[]>(defaultIndicators)
   const [loading, setLoading] = useState(true)
+  const [lastUpdated, setLastUpdated] = useState<string | null>(null)
 
   useEffect(() => {
     fetch("/api/v1/indicators", { cache: "no-cache" })
@@ -15,6 +18,7 @@ export default function IndicatorsSection() {
       .then((json) => {
         if (Array.isArray(json) && json.length > 0) {
           setData(json)
+          setLastUpdated(new Date().toLocaleTimeString())
         }
       })
       .catch((err) => console.warn("[IndicatorsSection] fetch failed:", err))
@@ -40,11 +44,8 @@ export default function IndicatorsSection() {
           />
         ))}
       </div>
-      {loading && (
-        <p className="text-sm font-medium text-slate-500 mt-4">
-          Retrieving baseline economic data...
-        </p>
-      )}
+      {loading && <SectionSkeleton title="Pulse Indicators" variant="chart" />}
+      <SourceAttribution sourceId="stocks" lastUpdated={lastUpdated} />
     </section>
   )
 }

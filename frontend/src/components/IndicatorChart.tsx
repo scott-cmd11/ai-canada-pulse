@@ -46,10 +46,10 @@ export default function IndicatorChart({ title, data, unit, description, sourceL
   if (data.length === 0) {
     return (
       <div className="saas-card p-5 border-t-4 border-t-indigo-700">
-        <h3 className="text-base font-bold text-slate-900">{title}</h3>
-        <p className="text-sm mt-1 mb-4 text-slate-600">{description}</p>
-        <div className="flex items-center justify-center h-[200px] bg-slate-50 rounded border border-dashed border-slate-200">
-          <p className="text-sm font-medium text-slate-500">Connecting to data source...</p>
+        <h3 className="text-base font-bold" style={{ color: 'var(--text-primary)' }}>{title}</h3>
+        <p className="text-sm mt-1 mb-4" style={{ color: 'var(--text-secondary)' }}>{description}</p>
+        <div className="flex items-center justify-center h-[200px] rounded border border-dashed" style={{ backgroundColor: 'var(--surface-secondary)', borderColor: 'var(--border-subtle)' }}>
+          <p className="text-sm font-medium" style={{ color: 'var(--text-muted)' }}>Connecting to data source...</p>
         </div>
       </div>
     )
@@ -131,17 +131,17 @@ export default function IndicatorChart({ title, data, unit, description, sourceL
   return (
     <div className="saas-card p-5 border-t-4 border-t-indigo-700 flex flex-col h-full">
       <div className="flex items-start justify-between mb-2">
-        <h3 className="text-lg font-bold text-slate-900 leading-snug pr-4">{title}</h3>
+        <h3 className="text-lg font-bold leading-snug pr-4" style={{ color: 'var(--text-primary)' }}>{title}</h3>
         <div className="flex flex-col items-end shrink-0">
-          <span className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 leading-none mb-1">
+          <span className="text-xl sm:text-2xl font-bold tracking-tight leading-none mb-1" style={{ color: 'var(--text-primary)' }}>
             {formatValue(latest, unit)}
           </span>
-          <span className={`text-xs font-bold px-1.5 py-0.5 rounded ${delta > 0 ? "bg-red-50 text-red-700" : delta < 0 ? "bg-green-50 text-green-700" : "bg-slate-100 text-slate-600"}`}>
+          <span className={`text-xs font-bold px-1.5 py-0.5 rounded ${delta > 0 ? "bg-red-50 text-red-700" : delta < 0 ? "bg-green-50 text-green-700" : ""}`} style={delta === 0 ? { backgroundColor: 'var(--surface-secondary)', color: 'var(--text-secondary)' } : {}}>
             {deltaFormatted}
           </span>
         </div>
       </div>
-      <p className="text-sm text-slate-600 mb-6 leading-relaxed flex-grow">{description}</p>
+      <p className="text-sm mb-6 leading-relaxed flex-grow" style={{ color: 'var(--text-secondary)' }}>{description}</p>
 
       {/* Use min-h instead of fixed height so it can flex in grid */}
       <div className="min-h-[220px] w-full mt-auto">
@@ -149,9 +149,9 @@ export default function IndicatorChart({ title, data, unit, description, sourceL
       </div>
 
       {sourceLabel && (
-        <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 mt-4 pt-4 border-t border-slate-100">
+        <p className="text-[11px] font-semibold uppercase tracking-wider mt-4 pt-4 border-t" style={{ color: 'var(--text-muted)', borderColor: 'var(--border-subtle)' }}>
           SOURCE: {sourceUrl ? (
-            <a href={sourceUrl} target="_blank" rel="noopener noreferrer" className="hover:text-indigo-600 hover:underline">{sourceLabel}</a>
+            <a href={sourceUrl} target="_blank" rel="noopener noreferrer" className="hover:underline" style={{ color: 'var(--text-muted)' }}>{sourceLabel}</a>
           ) : sourceLabel}
         </p>
       )}

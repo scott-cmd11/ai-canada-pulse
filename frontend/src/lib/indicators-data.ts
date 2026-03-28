@@ -29,6 +29,9 @@ export const indicators: Indicator[] = [
     frequency: "monthly",
     source: "statscan",
     sourceLabel: "Statistics Canada, Labour Force Survey",
+    // Stats Canada Table 14-10-0287-03 — Labour Force Survey estimates (LFS), by sex and detailed age group
+    // Note: pid=1410028703 resolves to table 14-10-0287-03 (age/sex breakdown). Table 14-10-0287-01
+    // is the national summary; both are from the same LFS release. Using -03 for richer age breakdowns.
     sourceUrl: "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1410028703",
     data: [],
   },
@@ -41,6 +44,7 @@ export const indicators: Indicator[] = [
     frequency: "monthly",
     source: "statscan",
     sourceLabel: "Statistics Canada, Labour Force Survey",
+    // Stats Canada Table 14-10-0287-03 — LFS estimates by sex and detailed age group (includes 15-24 cohort)
     sourceUrl: "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1410028703",
     data: [],
   },
@@ -53,6 +57,7 @@ export const indicators: Indicator[] = [
     frequency: "monthly",
     source: "statscan",
     sourceLabel: "Statistics Canada, Labour Force Survey",
+    // Stats Canada Table 14-10-0287-03 — LFS estimates by sex and detailed age group
     sourceUrl: "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1410028703",
     data: [],
   },
@@ -65,6 +70,7 @@ export const indicators: Indicator[] = [
     frequency: "monthly",
     source: "statscan",
     sourceLabel: "Statistics Canada, Labour Force Survey",
+    // Stats Canada Table 14-10-0287-03 — LFS estimates by sex and detailed age group
     sourceUrl: "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1410028703",
     data: [],
   },
@@ -76,7 +82,8 @@ export const indicators: Indicator[] = [
     description: "CPI all-items (2002=100). Inflation context for AI infrastructure costs and technology spending",
     frequency: "monthly",
     source: "statscan",
-    sourceLabel: "Statistics Canada, Table 18-10-0004",
+    sourceLabel: "Statistics Canada, Table 18-10-0004-01",
+    // Stats Canada Table 18-10-0004-01 — Consumer Price Index, monthly, not seasonally adjusted
     sourceUrl: "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1810000401",
     data: [],
   },
@@ -88,7 +95,10 @@ export const indicators: Indicator[] = [
     description: "Monthly GDP at basic prices (chained 2017 dollars). Measures total economic output and the broader environment for AI investment and commercialization",
     frequency: "monthly",
     source: "statscan",
-    sourceLabel: "Statistics Canada, Table 36-10-0434",
+    sourceLabel: "Statistics Canada, Table 36-10-0434-01",
+    // Stats Canada Table 36-10-0434-01 — Gross domestic product (GDP) at basic prices, by industry, monthly
+    // Note: pid=3610043401 resolves to 36-10-0434-01 (monthly GDP by industry at basic prices, chained 2017$).
+    // This differs from 36-10-0104-01 (annual GDP by expenditure). Monthly by-industry table is correct here.
     sourceUrl: "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3610043401",
     data: [],
   },

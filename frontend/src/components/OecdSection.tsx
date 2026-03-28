@@ -3,6 +3,8 @@
 import { useState, useEffect } from "react"
 import dynamic from "next/dynamic"
 import type { OecdData } from "@/lib/oecd-client"
+import SourceAttribution from '@/components/SourceAttribution'
+import { SectionSkeleton } from '@/components/Skeleton'
 import echarts from "@/lib/echarts-custom"
 
 const ReactECharts = dynamic(() => import("echarts-for-react/lib/core"), { ssr: false })
@@ -19,14 +21,7 @@ export default function OecdSection() {
     }, [])
 
     if (loading) {
-        return (
-            <section>
-                <h2 className="section-header mb-4">Global AI Comparison</h2>
-                <div className="saas-card p-8 text-center">
-                    <div className="animate-pulse text-sm text-slate-500">Loading OECD data...</div>
-                </div>
-            </section>
-        )
+        return <SectionSkeleton title="OECD Policy Tracker" variant="table" />
     }
 
     if (!data) return null
@@ -76,14 +71,14 @@ export default function OecdSection() {
         <section>
             <div className="flex items-center justify-between mb-4">
                 <h2 className="section-header">Global AI Comparison</h2>
-                <span className="text-xs font-bold text-slate-600 bg-slate-100 border border-slate-200 px-2.5 py-1 rounded-full">
+                <span className="text-xs font-bold px-2.5 py-1 rounded-full border" style={{ color: 'var(--text-secondary)', backgroundColor: 'var(--surface-secondary)', borderColor: 'var(--border-subtle)' }}>
                     Canada ranks #{data.canadaRank}
                 </span>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 <div className="saas-card p-5">
-                    <p className="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-3">
+                    <p className="text-xs font-semibold uppercase tracking-wider mb-3" style={{ color: 'var(--text-muted)' }}>
                         AI Publications by Country
                     </p>
                     <ReactECharts
@@ -94,7 +89,7 @@ export default function OecdSection() {
                 </div>
 
                 <div className="saas-card p-5">
-                    <p className="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-3">
+                    <p className="text-xs font-semibold uppercase tracking-wider mb-3" style={{ color: 'var(--text-muted)' }}>
                         National AI Policies
                     </p>
                     <div className="flex flex-col gap-2">
@@ -104,31 +99,32 @@ export default function OecdSection() {
                             const pct = (c.policies / maxPolicies) * 100
                             return (
                                 <div key={c.country} className="flex items-center gap-3">
-                                    <span className={`text-xs w-[90px] shrink-0 ${isCanada ? "font-bold text-indigo-700" : "text-slate-600"}`}>
+                                    <span
+                                        className={`text-xs w-[90px] shrink-0 ${isCanada ? "font-bold" : ""}`}
+                                        style={{ color: isCanada ? 'var(--accent-primary)' : 'var(--text-secondary)' }}
+                                    >
                                         {c.country}
                                     </span>
-                                    <div className="flex-1 h-5 bg-slate-100 rounded-full overflow-hidden">
+                                    <div className="flex-1 h-5 rounded-full overflow-hidden" style={{ backgroundColor: 'var(--surface-secondary)' }}>
                                         <div
-                                            className={`h-full rounded-full transition-all ${isCanada ? "bg-indigo-600" : "bg-slate-300"}`}
-                                            style={{ width: `${pct}%` }}
+                                            className="h-full rounded-full transition-all"
+                                            style={{ width: `${pct}%`, backgroundColor: isCanada ? 'var(--accent-primary)' : 'var(--border-subtle)' }}
                                         />
                                     </div>
-                                    <span className={`text-xs font-bold w-[30px] text-right ${isCanada ? "text-indigo-700" : "text-slate-600"}`}>
+                                    <span className="text-xs font-bold w-[30px] text-right" style={{ color: isCanada ? 'var(--accent-primary)' : 'var(--text-secondary)' }}>
                                         {c.policies}
                                     </span>
                                 </div>
                             )
                         })}
                     </div>
-                    <p className="text-[10px] text-slate-400 mt-3">
+                    <p className="text-[10px] mt-3" style={{ color: 'var(--text-muted)' }}>
                         Total global AI policies tracked: {data.totalGlobalPolicies}
                     </p>
                 </div>
             </div>
 
-            <p className="mt-3 text-[11px] font-semibold uppercase tracking-wider text-slate-400 text-right">
-                Source: <a href="https://oecd.ai" target="_blank" rel="noopener noreferrer" className="hover:text-indigo-600 hover:underline">OECD AI Policy Observatory</a>
-            </p>
+            <SourceAttribution sourceId="oecd" />
         </section>
     )
 }
