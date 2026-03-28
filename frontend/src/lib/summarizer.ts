@@ -2,8 +2,8 @@
  * AI Summarizer for AI Canada Pulse
  *
  * Uses OpenAI for AI enrichment with a cheap split:
- * - gpt-5-nano for per-item summaries
- * - gpt-5-mini for dashboard briefs
+ * - gpt-4o-mini for per-item summaries
+ * - gpt-4o-mini for dashboard briefs
  *
  * Includes in-memory caching to minimize duplicate calls within a single runtime.
  * Falls back gracefully when the API is unavailable.
@@ -11,8 +11,8 @@
 
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY ?? ""
 const OPENAI_BASE_URL = "https://api.openai.com/v1/chat/completions"
-const OPENAI_ARTICLE_MODEL = process.env.OPENAI_ARTICLE_MODEL ?? "gpt-5-nano"
-const OPENAI_BRIEF_MODEL = process.env.OPENAI_BRIEF_MODEL ?? "gpt-5-mini"
+const OPENAI_ARTICLE_MODEL = process.env.OPENAI_ARTICLE_MODEL ?? "gpt-4o-mini"
+const OPENAI_BRIEF_MODEL = process.env.OPENAI_BRIEF_MODEL ?? "gpt-4o-mini"
 
 const TIMEOUT_MS = 25_000
 

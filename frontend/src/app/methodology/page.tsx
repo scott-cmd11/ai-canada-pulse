@@ -318,7 +318,7 @@ export default function MethodologyPage() {
                   Executive Brief
                 </h3>
                 <p className="mt-2 text-xs leading-relaxed" style={{ color: "var(--text-secondary)" }}>
-                  <strong>gpt-5-mini</strong> — generates the daily Canada executive brief
+                  <strong>gpt-4o-mini</strong> — generates the daily Canada executive brief
                 </p>
               </div>
             </div>
