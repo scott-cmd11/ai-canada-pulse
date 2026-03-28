@@ -251,6 +251,126 @@ export default function MethodologyPage() {
           </div>
         </section>
 
+        {/* Manually Curated Data */}
+        <section className="mt-10" id="curated-data">
+          <div className="mb-6">
+            <p
+              className="text-[11px] font-semibold uppercase tracking-[0.18em]"
+              style={{ color: "var(--text-muted)" }}
+            >
+              Manually maintained
+            </p>
+            <h2 className="mt-1 text-2xl font-bold" style={{ color: "var(--text-primary)" }}>
+              Manually Curated Datasets
+            </h2>
+            <p className="mt-2 max-w-3xl text-sm leading-relaxed" style={{ color: "var(--text-secondary)" }}>
+              Some data on this platform is maintained by hand rather than fetched from live APIs. These datasets are
+              periodically reviewed for accuracy, but may lag real-world changes between review cycles. Counts and
+              details reflect the most recently verified snapshot.
+            </p>
+          </div>
+
+          <div
+            className="overflow-hidden rounded-2xl"
+            style={{
+              borderColor: "var(--border-subtle)",
+              borderWidth: "1px",
+              borderStyle: "solid",
+            }}
+          >
+            <table className="w-full text-sm">
+              <thead>
+                <tr
+                  style={{
+                    backgroundColor: "var(--surface-secondary)",
+                    borderBottomColor: "var(--border-subtle)",
+                    borderBottomWidth: "1px",
+                    borderBottomStyle: "solid",
+                  }}
+                >
+                  <th
+                    className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider"
+                    style={{ color: "var(--text-muted)" }}
+                  >
+                    Dataset
+                  </th>
+                  <th
+                    className="hidden px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider sm:table-cell"
+                    style={{ color: "var(--text-muted)" }}
+                  >
+                    Records
+                  </th>
+                  <th
+                    className="hidden px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider md:table-cell"
+                    style={{ color: "var(--text-muted)" }}
+                  >
+                    Last Verified
+                  </th>
+                  <th
+                    className="hidden px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider lg:table-cell"
+                    style={{ color: "var(--text-muted)" }}
+                  >
+                    Review Schedule
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {[
+                  { dataset: "Canadian AI Startups", records: "41 companies", lastVerified: "March 28, 2026", reviewSchedule: "Every 6 months" },
+                  { dataset: "University AI Programs", records: "29 programs", lastVerified: "March 28, 2026", reviewSchedule: "Annually" },
+                  { dataset: "Province & Territory Profiles", records: "13 regions", lastVerified: "March 28, 2026", reviewSchedule: "Annually" },
+                  { dataset: "AI Events & Conferences", records: "13 events", lastVerified: "March 28, 2026", reviewSchedule: "Every 3 months" },
+                ].map((row, idx) => (
+                  <tr
+                    key={row.dataset}
+                    style={{
+                      backgroundColor: "var(--surface-primary)",
+                      borderTopColor: idx > 0 ? "var(--border-subtle)" : "transparent",
+                      borderTopWidth: idx > 0 ? "1px" : "0",
+                      borderTopStyle: "solid",
+                    }}
+                  >
+                    <td className="px-4 py-3 align-top">
+                      <span className="font-semibold" style={{ color: "var(--text-primary)" }}>
+                        {row.dataset}
+                      </span>
+                      <div className="mt-1 flex flex-wrap gap-1 sm:hidden">
+                        <span
+                          className="rounded-full px-2 py-0.5 text-[10px] font-semibold"
+                          style={{
+                            backgroundColor: "var(--surface-secondary)",
+                            color: "var(--text-muted)",
+                          }}
+                        >
+                          {row.records}
+                        </span>
+                      </div>
+                    </td>
+                    <td
+                      className="hidden px-4 py-3 align-top text-xs leading-relaxed sm:table-cell"
+                      style={{ color: "var(--text-secondary)" }}
+                    >
+                      {row.records}
+                    </td>
+                    <td
+                      className="hidden px-4 py-3 align-top text-xs md:table-cell"
+                      style={{ color: "var(--text-secondary)" }}
+                    >
+                      {row.lastVerified}
+                    </td>
+                    <td
+                      className="hidden px-4 py-3 align-top text-xs lg:table-cell"
+                      style={{ color: "var(--text-muted)" }}
+                    >
+                      {row.reviewSchedule}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
+
         {/* AI Processing */}
         <section className="mt-10" id="ai-processing">
           <div
