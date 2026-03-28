@@ -36,6 +36,7 @@ export interface ProvinceConfig {
   neighborSlugs: string[]
   /** Only present for the Northern Territories aggregate entry */
   subRegions?: string[]
+  lastVerified: string  // ISO date, e.g. "2026-03-28"
 }
 
 // ─── Province Data ───────────────────────────────────────────────────────────

@@ -15,6 +15,7 @@ export interface UniversityProgram {
   provinceSlug: string
   url: string
   notable?: string
+  lastVerified: string  // ISO date, e.g. "2026-03-28"
 }
 
 export const UNIVERSITY_PROGRAMS: UniversityProgram[] = [

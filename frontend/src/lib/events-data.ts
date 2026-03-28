@@ -22,6 +22,7 @@ export interface AIEvent {
   url: string
   description: string
   recurring?: boolean
+  lastVerified: string  // ISO date, e.g. "2026-03-28"
 }
 
 export const AI_EVENTS: AIEvent[] = [
