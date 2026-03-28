@@ -38,6 +38,7 @@ const CANADIAN_AI_TICKERS = [
   { symbol: "DCBO.TO", name: "Docebo", provinceHQ: "ontario" },
   { symbol: "LSPD.TO", name: "Lightspeed Commerce", provinceHQ: "quebec" },
   { symbol: "THNK.V", name: "Think Research", provinceHQ: "ontario" },
+  // TODO: MNDM.TO is Mandalay Resources — a gold/silver mining company, not an AI company. Replace with a relevant Canadian AI ticker.
   { symbol: "MNDM.TO", name: "Mandalay Resources", provinceHQ: "ontario" },
 ]
 

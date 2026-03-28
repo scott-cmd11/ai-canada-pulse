@@ -1,3 +1,7 @@
+// RSS feed aggregator for Canadian AI news
+// Sources: Google News RSS (AI Canada search), BetaKit (betakit.com/feed/), CBC Technology (cbc.ca/webfeed/rss/rss-technology)
+// No API key required; filters AI-relevant items via keyword regex
+
 import Parser from "rss-parser"
 import { unstable_cache } from "next/cache"
 import type { Story, Category, PulseData } from "./mock-data"

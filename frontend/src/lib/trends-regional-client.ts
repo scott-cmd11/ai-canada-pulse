@@ -1,6 +1,8 @@
 /**
  * Google Trends Regional Client
  * Fetches AI search interest by Canadian province/territory.
+ * Source: Google Trends via unofficial `google-trends-api` npm package (geo: CA, resolution: PROVINCE)
+ * Note: May be blocked on Vercel serverless — falls back to empty array (no static fallback defined here).
  */
 
 import { unstable_cache } from "next/cache"

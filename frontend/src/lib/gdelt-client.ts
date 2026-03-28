@@ -1,4 +1,8 @@
 // GDELT types for Canadian AI media sentiment
+// NOTE: GDELT API is no longer used. The /api/v1/sentiment route was rewritten to
+// derive sentiment from the RSS story feed (rss-client.ts) due to frequent GDELT unavailability.
+// This file is retained for type compatibility with SentimentSection.tsx.
+// Source (original): https://api.gdeltproject.org/api/v2/doc/doc (now unused)
 
 export interface GdeltArticle {
   url: string

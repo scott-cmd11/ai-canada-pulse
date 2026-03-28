@@ -7,6 +7,11 @@
  * The download endpoint (CSV/ZIP) is not parseable client-side and Stats Canada's
  * WDS JSON API requires server-side access to avoid CORS restrictions.
  *
+ * ACTIVE vs. LEGACY: This file (statcan-sdmx-client.ts) is the ACTIVE client for AI
+ * adoption data — it returns curated static figures. The separate statscan-client.ts
+ * is the live WDS client for macroeconomic indicators (unemployment, CPI, GDP) and
+ * is also active. Both are in use; neither is legacy.
+ *
  * TODO: If live data is needed, move this fetch to a Next.js API route at
  *       /api/v1/adoption and call the WDS endpoint:
  *       https://www150.statcan.gc.ca/t1/tbl1/en/dtl/getDataFromCubePidCoordAndLatestNPeriods/3310100001/{coord}/4
