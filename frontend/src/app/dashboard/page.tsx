@@ -124,7 +124,7 @@ export default function DashboardPage() {
               </div>
             </CollapsibleSection>
 
-            <CollapsibleSection title="Research &amp; Open Source">
+            <CollapsibleSection title="Research & Open Source">
               <div className="grid gap-4 xl:grid-cols-2">
                 <SectionErrorBoundary sectionName="Fundamental Research">
                   <ResearchSection />
@@ -135,13 +135,13 @@ export default function DashboardPage() {
               </div>
             </CollapsibleSection>
 
-            <CollapsibleSection title="Ecosystem &amp; Startups">
+            <CollapsibleSection title="Ecosystem & Startups">
               <SectionErrorBoundary sectionName="Ecosystem & Community">
                 <EcosystemSection />
               </SectionErrorBoundary>
             </CollapsibleSection>
 
-            <CollapsibleSection title="Regulatory &amp; Global Standing">
+            <CollapsibleSection title="Regulatory & Global Standing">
               <SectionErrorBoundary sectionName="Regulatory & Global Standing">
                 <RegulatorySection />
               </SectionErrorBoundary>
