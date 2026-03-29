@@ -1,27 +1,19 @@
 import type { Metadata } from "next"
 import Header from "@/components/Header"
 import BriefingCard from "@/components/BriefingCard"
-import ExecutiveBriefSection from "@/components/ExecutiveBriefSection"
 import IndicatorsSection from "@/components/IndicatorsSection"
 import TrendsSection from "@/components/TrendsSection"
 import StoryFeed from "@/components/StoryFeed"
 import SentimentSection from "@/components/SentimentSection"
 import StocksSection from "@/components/StocksSection"
-import ComputeStatusSection from "@/components/ComputeStatusSection"
 import TrendsInsightsSection from "@/components/TrendsInsightsSection"
-import LabFeedsSection from "@/components/LabFeedsSection"
 import ResearchSection from "@/components/ResearchSection"
 import OpenSourceSection from "@/components/OpenSourceSection"
-import EpochAISection from "@/components/EpochAISection"
-import HuggingFaceSection from "@/components/HuggingFaceSection"
 import JobMarketSection from "@/components/JobMarketSection"
 import ParliamentSection from "@/components/ParliamentSection"
-import GovRegistrySection from "@/components/GovRegistrySection"
-import OecdSection from "@/components/OecdSection"
-import TalentEducationSection from "@/components/TalentEducationSection"
 import EcosystemSection from "@/components/EcosystemSection"
 import RegulatorySection from "@/components/RegulatorySection"
-import ProvinceIndex from '@/components/ProvinceIndex'
+import CollapsibleSection from "@/components/CollapsibleSection"
 import SectionNav from "@/components/SectionNav"
 import ScrollToTop from "@/components/ScrollToTop"
 import ScrollReveal from "@/components/ScrollReveal"
@@ -52,26 +44,18 @@ export default function DashboardPage() {
       <Header />
 
       <main id="main-content" className="mx-auto flex w-full max-w-[1480px] flex-col gap-6 px-4 py-4 sm:px-6 lg:px-8 lg:py-6">
-        <section id="provinces">
-          <ProvinceIndex />
-        </section>
-
         <SectionNav />
 
         <section id="acceleration" className="saas-card rounded-2xl p-5 sm:p-6">
           <SectionTitle
             eyebrow="Acceleration Signals"
             title="The shortest path to the Canadian story"
-            description="Start with the highest-priority Canada development, then move to the machine-assisted synthesis and the curated signal stream beneath it."
+            description="Start with the highest-priority Canada development, then move to the curated signal stream beneath it."
           />
 
-
-          <div className="grid gap-4 xl:grid-cols-[1.05fr_0.95fr]">
+          <div className="mt-4">
             <SectionErrorBoundary sectionName="Lead Signal">
               <BriefingCard />
-            </SectionErrorBoundary>
-            <SectionErrorBoundary sectionName="Executive Brief">
-              <ExecutiveBriefSection />
             </SectionErrorBoundary>
           </div>
 
@@ -81,100 +65,6 @@ export default function DashboardPage() {
             </SectionErrorBoundary>
           </div>
         </section>
-
-        <hr className="section-divider" />
-
-        <ScrollReveal>
-          <section id="capacity" className="section-dark rounded-2xl p-5 sm:p-6">
-            <SectionTitle
-              eyebrow="Canada Capacity"
-              title="Evidence that the ecosystem is building"
-              description="These modules answer whether Canada is adding capability through adoption, compute availability, and lab activity rather than just generating headlines."
-              dark
-            />
-
-            <div className="grid gap-4 xl:grid-cols-2">
-              <SectionErrorBoundary sectionName="AI Adoption Trends">
-                <TrendsSection />
-              </SectionErrorBoundary>
-              <SectionErrorBoundary sectionName="Provincial Search Interest">
-                <TrendsInsightsSection />
-              </SectionErrorBoundary>
-            </div>
-
-            <div className="mt-4 grid gap-4 xl:grid-cols-[0.95fr_1.05fr]">
-              <SectionErrorBoundary sectionName="Compute Infrastructure">
-                <ComputeStatusSection />
-              </SectionErrorBoundary>
-              <SectionErrorBoundary sectionName="Lab Activity">
-                <LabFeedsSection />
-              </SectionErrorBoundary>
-            </div>
-          </section>
-        </ScrollReveal>
-
-        <hr className="section-divider" />
-
-        <ScrollReveal>
-          <section id="research" className="saas-card rounded-2xl p-5 sm:p-6">
-            <SectionTitle
-              eyebrow="Research & Innovation"
-              title="What Canadian AI labs are producing"
-              description="Track research output, open-source contributions, and frontier model progress from Canadian institutions and the global AI research ecosystem."
-            />
-
-            <div className="grid gap-4 xl:grid-cols-2">
-              <SectionErrorBoundary sectionName="Fundamental Research">
-                <ResearchSection />
-              </SectionErrorBoundary>
-              <SectionErrorBoundary sectionName="Open Source Activity">
-                <OpenSourceSection />
-              </SectionErrorBoundary>
-            </div>
-
-            <div className="mt-4 grid gap-4 xl:grid-cols-2">
-              <SectionErrorBoundary sectionName="AI Capability Tracker">
-                <EpochAISection />
-              </SectionErrorBoundary>
-              <SectionErrorBoundary sectionName="Canadian AI Models">
-                <HuggingFaceSection />
-              </SectionErrorBoundary>
-            </div>
-          </section>
-        </ScrollReveal>
-
-        <hr className="section-divider" />
-
-        <ScrollReveal>
-          <section id="talent" className="section-dark rounded-2xl p-5 sm:p-6">
-            <SectionTitle
-              eyebrow="Talent & Education"
-              title="Building Canada's AI workforce"
-              description="Track tech immigration trends, federal research funding, and the university programs producing Canada's next generation of AI researchers."
-              dark
-            />
-
-            <SectionErrorBoundary sectionName="Talent & Education">
-              <TalentEducationSection />
-            </SectionErrorBoundary>
-          </section>
-        </ScrollReveal>
-
-        <hr className="section-divider" />
-
-        <ScrollReveal>
-          <section id="ecosystem" className="saas-card rounded-2xl p-5 sm:p-6">
-            <SectionTitle
-              eyebrow="Ecosystem & Community"
-              title="Startups, funding, and community"
-              description="Map the Canadian AI startup landscape, track funding signals from the news, and find upcoming conferences and meetups."
-            />
-
-            <SectionErrorBoundary sectionName="Ecosystem & Community">
-              <EcosystemSection />
-            </SectionErrorBoundary>
-          </section>
-        </ScrollReveal>
 
         <hr className="section-divider" />
 
@@ -210,31 +100,52 @@ export default function DashboardPage() {
                 <ParliamentSection />
               </SectionErrorBoundary>
             </div>
-
-            <div className="mt-4 grid gap-4 xl:grid-cols-2">
-              <SectionErrorBoundary sectionName="Federal AI Registry">
-                <GovRegistrySection />
-              </SectionErrorBoundary>
-              <SectionErrorBoundary sectionName="OECD Policy Tracker">
-                <OecdSection />
-              </SectionErrorBoundary>
-            </div>
           </section>
         </ScrollReveal>
 
         <hr className="section-divider" />
 
         <ScrollReveal>
-          <section id="regulatory" className="saas-card rounded-2xl p-5 sm:p-6">
+          <section id="more" className="saas-card rounded-2xl p-5 sm:p-6">
             <SectionTitle
-              eyebrow="Regulatory & Global Standing"
-              title="Where Canada stands on AI governance"
-              description="Track AI legislation, privacy commissioner rulings, international rankings, and patent activity to understand Canada's regulatory and competitive position."
+              eyebrow="More Signals"
+              title="Deeper data on demand"
+              description="Expand any section below to explore research output, adoption trends, ecosystem activity, and regulatory standing."
             />
 
-            <SectionErrorBoundary sectionName="Regulatory & Global Standing">
-              <RegulatorySection />
-            </SectionErrorBoundary>
+            <CollapsibleSection title="AI Adoption Trends">
+              <div className="grid gap-4 xl:grid-cols-2">
+                <SectionErrorBoundary sectionName="AI Adoption Trends">
+                  <TrendsSection />
+                </SectionErrorBoundary>
+                <SectionErrorBoundary sectionName="Provincial Search Interest">
+                  <TrendsInsightsSection />
+                </SectionErrorBoundary>
+              </div>
+            </CollapsibleSection>
+
+            <CollapsibleSection title="Research &amp; Open Source">
+              <div className="grid gap-4 xl:grid-cols-2">
+                <SectionErrorBoundary sectionName="Fundamental Research">
+                  <ResearchSection />
+                </SectionErrorBoundary>
+                <SectionErrorBoundary sectionName="Open Source Activity">
+                  <OpenSourceSection />
+                </SectionErrorBoundary>
+              </div>
+            </CollapsibleSection>
+
+            <CollapsibleSection title="Ecosystem &amp; Startups">
+              <SectionErrorBoundary sectionName="Ecosystem & Community">
+                <EcosystemSection />
+              </SectionErrorBoundary>
+            </CollapsibleSection>
+
+            <CollapsibleSection title="Regulatory &amp; Global Standing">
+              <SectionErrorBoundary sectionName="Regulatory & Global Standing">
+                <RegulatorySection />
+              </SectionErrorBoundary>
+            </CollapsibleSection>
           </section>
         </ScrollReveal>
       </main>
