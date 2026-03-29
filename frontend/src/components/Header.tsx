@@ -1,9 +1,20 @@
 "use client"
 
 import Link from "next/link"
+import { usePathname } from "next/navigation"
 import LiveTicker from "./LiveTicker"
 import ThemeToggle from "./ThemeToggle"
+
+const navLinks = [
+  { label: "Digest", href: "/" },
+  { label: "Dashboard", href: "/dashboard" },
+  { label: "Deep Dives", href: "/blog" },
+  { label: "Provinces", href: "/dashboard#provinces", anchor: true },
+  { label: "Methodology", href: "/methodology" },
+]
+
 export default function Header() {
+  const pathname = usePathname()
   const today = new Date().toLocaleDateString("en-CA", {
     weekday: "short",
     year: "numeric",
@@ -44,20 +55,26 @@ export default function Header() {
 
           <div className="flex flex-wrap items-center gap-2 sm:gap-3">
             <ThemeToggle />
-            <Link
-              href="/dashboard#provinces"
-              className="rounded-full border px-3.5 py-2 text-xs font-semibold shadow-sm"
-              style={{ borderColor: "var(--border-strong)", color: "var(--text-secondary)", background: "var(--surface-primary)" }}
-            >
-              Provinces
-            </Link>
-            <Link
-              href="/methodology"
-              className="rounded-full border px-3.5 py-2 text-xs font-semibold shadow-sm"
-              style={{ borderColor: "var(--border-strong)", color: "var(--text-secondary)", background: "var(--surface-primary)" }}
-            >
-              Sources
-            </Link>
+            {navLinks.map(({ label, href, anchor }) => {
+              const isActive = !anchor && (
+                href === "/" ? pathname === "/" : pathname === href || (href === "/blog" && pathname.startsWith("/blog"))
+              )
+              return (
+                <Link
+                  key={href}
+                  href={href}
+                  className="rounded-full border px-3.5 py-2 text-xs shadow-sm"
+                  style={{
+                    borderColor: "var(--border-strong)",
+                    color: isActive ? "var(--accent-primary)" : "var(--text-secondary)",
+                    fontWeight: isActive ? 700 : 600,
+                    background: "var(--surface-primary)",
+                  }}
+                >
+                  {label}
+                </Link>
+              )
+            })}
           </div>
         </div>
       </div>
