@@ -27,7 +27,7 @@ export interface DailyDigest {
   }[]                    // max 3
   deepDiveSlug?: string  // set if a deep-dive was generated today
   generatedAt: string    // ISO timestamp
-  error?: boolean        // sentinel: cron ran but generation failed
+  error?: true           // sentinel: only ever set to true; cron ran but generation failed
 }
 
 export interface DeepDive {
