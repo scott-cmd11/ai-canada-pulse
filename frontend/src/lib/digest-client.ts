@@ -48,11 +48,16 @@ export async function generateDigest(
   stories: { headline: string; summary: string; sourceName: string; sourceUrl: string; category: string }[],
   date: string
 ): Promise<DailyDigest | null> {
+  if (!process.env.OPENAI_API_KEY) {
+    console.warn('[digest-client] No OPENAI_API_KEY configured')
+    return null
+  }
+
   const top = stories.slice(0, 10)
   if (top.length === 0) return null
 
   const storiesText = top
-    .map((s, i) => `${i + 1}. [${s.sourceName}] ${s.headline}\n   ${s.summary}`)
+    .map((s, i) => `${i + 1}. [${s.sourceName}] ${s.headline}\n   URL: ${s.sourceUrl}\n   ${s.summary}`)
     .join('\n\n')
 
   const systemPrompt = `You are an editorial analyst for AI Canada Pulse, a site tracking AI developments in Canada.
@@ -107,15 +112,22 @@ Rules:
     clearTimeout(timer)
 
     if (!response.ok) {
-      console.error('[digest-client] OpenAI error:', response.status)
+      const errText = await response.text().catch(() => 'unknown')
+      console.error(`[digest-client] OpenAI error ${response.status}: ${errText.slice(0, 200)}`)
       return null
     }
 
     const data = await response.json()
     const content = data?.choices?.[0]?.message?.content
-    if (!content) return null
+    if (!content || typeof content !== 'string') return null
 
     const parsed = JSON.parse(content)
+
+    // Validate required fields before constructing digest
+    if (!parsed.headline || !parsed.intro || !Array.isArray(parsed.developments)) {
+      console.error('[digest-client] LLM response missing required fields')
+      return null
+    }
 
     // Derive unique tags from developments
     const tags: DigestTag[] = Array.from(new Set(parsed.developments.map((d: { tag: DigestTag }) => d.tag)))
