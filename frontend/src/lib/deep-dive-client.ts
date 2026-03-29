@@ -105,8 +105,8 @@ async function uniqueSlug(base: string): Promise<string> {
   let counter = 2
   // eslint-disable-next-line no-constant-condition
   while (true) {
-    const exists = await redis.zscore(DEEP_DIVE_INDEX_KEY, slug)
-    if (exists === null) return slug
+    const exists = await redis.exists(`deepdive:${slug}`)
+    if (!exists) return slug
     slug = `${base}-${counter}`
     counter++
   }
@@ -150,8 +150,7 @@ Write a deep-dive analysis post as JSON:
 {
   "title": "Punchy, specific title (not a question)",
   "body": "400–600 words of analytical prose in markdown. Use paragraphs. Include one blockquote callout prefixed with > for the key insight.",
-  "tags": ["Policy|Research|Funding|Markets|Regulation|Talent"],
-  "pullQuote": "The single most important sentence from the body (for the callout box)"
+  "tags": ["Policy|Research|Funding|Markets|Regulation|Talent"]
 }
 
 Rules:
