@@ -40,7 +40,7 @@ The current dashboard is overwhelming for daily visitors — 18 panels of dense 
 Date label + "Today in Canadian AI" heading
 2–3 sentence AI-written intro paragraph (sets narrative tone for the day)
 Key Developments (3–5 bullet points, 1–2 sentences each)
-Topic tags (Policy / Research / Talent / Markets / Regulation — whichever apply)
+Topic tags (Policy / Research / Talent / Markets / Regulation / Funding — whichever apply)
 Top Stories (3 headline links only, no summaries, linking to external sources)
 Deep Dive callout (appears only when a deep-dive was auto-generated for the day)
 Archive navigation (← Yesterday / Tomorrow →)
@@ -79,13 +79,16 @@ Analytical, not journalistic. The post should explain *implications* for Canadia
 
 ### Significance Thresholds (auto-trigger criteria)
 A deep-dive is generated when any of the following are detected in the day's RSS/signals:
-- Canadian AI funding round ≥ $50M mentioned in ≥ 2 sources
-- New federal bill introduced with AI in the title or summary
+- Canadian AI funding round ≥ $50M mentioned in a story headline or summary
+- New federal bill introduced with AI in the title or summary (detected via existing parliament-client keywords)
 - A Parliament vote on AI-related legislation
-- An arXiv paper from a Canadian institution with unusually high engagement signals
-- A story appearing across all 3 RSS sources simultaneously (Google News + BetaKit + CBC)
+- An arXiv paper from a Canadian institution appearing in the top 3 results by recency
 
-At most **one deep-dive per day** is generated. If multiple thresholds are crossed, the highest-signal story wins. This keeps the site from feeling like a spam bot.
+Note: The "story appearing in all 3 sources" threshold is removed — after deduplication in the RSS pipeline, multi-source attribution on a single story object is lost. The remaining thresholds are detectable from single story objects post-deduplication.
+
+At most **one deep-dive per day** is generated. If multiple thresholds are crossed, the highest-signal story wins (funding > parliament > arxiv). This keeps the site from feeling like a spam bot.
+
+**Slug collision handling:** If a generated slug already exists in `deepdive:index`, append `-2`, `-3` etc. until unique. In practice this is rare since one deep-dive per day means at most one slug per date.
 
 ### Archive
 `/blog` lists all deep-dives and past digest editions in reverse chronological order, filterable by tag.
@@ -134,7 +137,9 @@ Collapsed panels render as a single-line accordion row with the panel title and 
 
 ### Generation Flow (extends existing cron)
 
-The daily cron job at `/api/v1/ai-refresh` (runs 12:00 UTC) gains two new steps:
+The daily cron job at `/api/v1/ai-refresh` (runs 12:00 UTC) gains two new steps. The route's `maxDuration` must be increased from 60s to 300s to accommodate the additional OpenAI calls (each ~25s) on top of the existing enrichment work.
+
+Alternatively, if 300s is not available on the current Vercel plan, digest and deep-dive generation can be extracted into a separate `/api/v1/digest-refresh` route called by the cron, leaving the existing route's duration unchanged.
 
 **Step 1 — Digest generation**
 ```
@@ -161,15 +166,19 @@ Storage: Redis key deepdive:{slug} (no TTL — permanent)
 | `/api/v1/deep-dives` | GET | Paginated list of deep-dives (`?limit=10&cursor=`) |
 | `/api/v1/deep-dives/[slug]` | GET | Single deep-dive post |
 
-All routes use `unstable_cache` with 6h revalidation (matching existing pattern).
+The new API routes read directly from Redis (which is itself a cache) — they do **not** wrap with `unstable_cache`. Reading from Redis directly is fast (~5ms) and avoids the stale-cache problem where a pre-cron request at 11:59 UTC would cache a "miss" response for 6h, suppressing today's digest after the cron runs at 12:00 UTC.
 
 ### New Pages
+All new pages are **Server Components** (SSR). They fetch from Redis server-side at request time — no client-side polling, no skeleton loading states required. Each page wraps its content in a React `<Suspense>` boundary so Next.js can stream the shell while the Redis read completes.
+
 | Route | Component | Data source |
 |---|---|---|
-| `/` | `DigestPage` | `/api/v1/digest` |
-| `/digest/[date]` | `DigestPage` | `/api/v1/digest?date=` |
-| `/blog` | `BlogIndexPage` | `/api/v1/deep-dives` |
-| `/blog/[slug]` | `DeepDivePage` | `/api/v1/deep-dives/[slug]` |
+| `/` | `DigestPage` | `digest-client.ts` direct Redis read |
+| `/digest/[date]` | `DigestPage` | `digest-client.ts` direct Redis read |
+| `/blog` | `BlogIndexPage` | `deep-dive-client.ts` index read |
+| `/blog/[slug]` | `DeepDivePage` | `deep-dive-client.ts` direct Redis read |
+
+Each page exports `generateMetadata()` for basic OG tags (`og:title`, `og:description`, `og:type`). For deep-dive pages, `og:title` = post title, `og:description` = first sentence of body. Social card images (OG images) are out of scope.
 
 ### New Library Files
 | File | Purpose |
@@ -200,7 +209,7 @@ interface DailyDigest {
     text: string                  // 1-2 sentence bullet
     tag: 'Policy' | 'Research' | 'Funding' | 'Markets' | 'Regulation' | 'Talent'
   }[]                             // 3-5 items
-  tags: string[]                  // unique tags from developments
+  tags: ('Policy' | 'Research' | 'Funding' | 'Markets' | 'Regulation' | 'Talent')[]  // unique tags from developments
   topStories: {
     headline: string
     url: string
@@ -217,7 +226,7 @@ interface DeepDive {
   slug: string
   title: string
   body: string                    // 400-600 words markdown
-  tags: string[]
+  tags: ('Policy' | 'Research' | 'Funding' | 'Markets' | 'Regulation' | 'Talent')[]
   sources: { headline: string; url: string; source: string }[]
   triggeredBy: string             // human-readable reason (e.g. "Funding round ≥ $50M: Cohere Series D")
   readingTimeMinutes: number      // computed from body length
@@ -230,10 +239,11 @@ interface DeepDive {
 
 ## Error Handling & Fallbacks
 
-- **Digest generation fails:** Show a "digest unavailable" placeholder with a link to `/dashboard`. Never show a blank page.
+- **Redis key missing (pre-cron / day one):** If `digest:YYYY-MM-DD` doesn't exist in Redis (cron hasn't run yet, or it's the first day), the digest page displays a "Today's digest is being prepared — check back after 12:00 UTC" message with a link to `/dashboard`. This is a distinct state from a Redis error.
+- **Digest generation fails:** If the cron runs but gpt-4o-mini fails, the cron logs the error and stores a sentinel value `digest:YYYY-MM-DD = { error: true }`. The page detects this and shows a "digest unavailable" placeholder. Never show a blank page.
 - **No stories today:** Digest still generates but developments section says "No significant Canadian AI developments detected today." (rare — RSS usually has content)
 - **Deep-dive quality check:** After generation, a simple validation checks that the body is ≥ 300 words and contains ≥ 2 of the source headlines. If it fails, the deep-dive is discarded silently (today shows no Deep Dive callout).
-- **Redis unavailable:** Digest page falls back to fetching stories directly and rendering a simplified view without AI prose.
+- **Redis unavailable:** Digest page falls back to fetching stories directly from the RSS API route and rendering a simplified view (headlines only, no AI prose).
 
 ---
 
@@ -248,6 +258,6 @@ interface DeepDive {
 
 **Out of scope (future work):**
 - RSS feed for digest/blog (could be added later)
-- Social sharing metadata per deep-dive (basic OG tags only)
+- Social card images (OG images) — basic `og:title`/`og:description` tags ARE in scope; image generation is not
 - Search across digest archive
 - Deep-dive quality scoring / human review queue
