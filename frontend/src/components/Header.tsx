@@ -9,7 +9,7 @@ const navLinks = [
   { label: "Digest", href: "/" },
   { label: "Dashboard", href: "/dashboard" },
   { label: "Deep Dives", href: "/blog" },
-  { label: "Provinces", href: "/dashboard#provinces", anchor: true },
+  { label: "Provinces", href: "/provinces/ontario" },
   { label: "Methodology", href: "/methodology" },
 ]
 
@@ -55,10 +55,12 @@ export default function Header() {
 
           <div className="flex flex-wrap items-center gap-2 sm:gap-3">
             <ThemeToggle />
-            {navLinks.map(({ label, href, anchor }) => {
-              const isActive = !anchor && (
-                href === "/" ? pathname === "/" : pathname === href || (href === "/blog" && pathname.startsWith("/blog"))
-              )
+            {navLinks.map(({ label, href }) => {
+              const isActive =
+                href === "/" ? pathname === "/" :
+                href === "/blog" ? pathname.startsWith("/blog") :
+                href === "/provinces/ontario" ? pathname.startsWith("/provinces") :
+                pathname === href
               return (
                 <Link
                   key={href}

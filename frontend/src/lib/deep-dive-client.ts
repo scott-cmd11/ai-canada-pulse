@@ -103,13 +103,13 @@ function slugify(text: string): string {
 async function uniqueSlug(base: string): Promise<string> {
   let slug = base
   let counter = 2
-  // eslint-disable-next-line no-constant-condition
-  while (true) {
+  while (counter <= 10) {
     const exists = await redis.exists(`deepdive:${slug}`)
     if (!exists) return slug
     slug = `${base}-${counter}`
     counter++
   }
+  throw new Error(`Could not generate unique slug for base: ${base}`)
 }
 
 // ---------------------------------------------------------------------------
