@@ -152,7 +152,7 @@ async function fetchSingleFeed(config: FeedConfig): Promise<Story[]> {
         const cleanSummary = description.replace(/<[^>]*>/g, "").trim().slice(0, 300)
 
         return {
-          id: `rss-${Buffer.from(item.link || item.guid || `${config.name}-${index}`).toString("base64url").slice(0, 16)}`,
+          id: `rss-${Buffer.from(item.link || item.guid || `${config.name}-${index}`).toString("base64url").slice(-24)}`,
           headline: title.replace(/ - [^-]+$/, "").trim(),
           summary: cleanSummary || "No summary available.",
           category: assignCategory(title, cleanSummary),

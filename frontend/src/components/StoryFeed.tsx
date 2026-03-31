@@ -111,7 +111,7 @@ export default function StoryFeed({ region }: StoryFeedProps = {}) {
 
       <div className="mt-4 flex flex-col gap-4">
         {visible.map((story) => (
-          <StoryCard key={story.id} story={story} />
+          <StoryCard key={story.sourceUrl || story.id} story={story} />
         ))}
       </div>
 
