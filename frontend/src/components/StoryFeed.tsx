@@ -40,11 +40,12 @@ export default function StoryFeed({ region }: StoryFeedProps = {}) {
   const regionTransform = useCallback((json: Record<string, unknown>) => {
     return (json.stories as Story[] | undefined) ?? []
   }, [])
+  const regionIsEmpty = useCallback((d: Story[]) => Array.isArray(d) && d.length === 0, [])
   const regionResult = usePolling<Story[]>(regionUrl, {
     intervalMs: 120_000,
     transform: regionTransform,
     fallbackUrl: region ? '/api/v1/stories' : undefined,
-    isEmpty: (d) => Array.isArray(d) && d.length === 0,
+    isEmpty: regionIsEmpty,
   })
 
   const stories = region ? (regionResult.data ?? []) : sharedCtx.stories
