@@ -23,12 +23,14 @@ export default function DashboardFooter() {
             <p className="text-[11px] font-semibold uppercase tracking-[0.18em]" style={{ color: 'var(--text-muted)' }}>AI Canada Pulse</p>
             <p className="text-base font-semibold" style={{ color: 'var(--text-primary)' }}>Canada-focused monitoring for an accelerating AI era</p>
             <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
-              v3.0 | Dynamic AI Data Architecture | <span className="font-semibold text-amber-700">Work in Progress</span>
+              A project by <a href="https://scotthazlitt.ai" target="_blank" rel="noopener noreferrer" className="font-semibold hover:underline" style={{ color: 'var(--accent-primary)' }}>Scott Hazlitt</a>
             </p>
             <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
-              Contact: <a href="mailto:scott.hazlitt@gmail.com" className="font-semibold hover:underline" style={{ color: 'var(--accent-primary)' }}>scott.hazlitt@gmail.com</a>
+              <a href="mailto:scott.hazlitt@gmail.com" className="hover:underline" style={{ color: 'var(--accent-primary)' }}>scott.hazlitt@gmail.com</a>
               <span className="mx-2" style={{ color: 'var(--text-muted)' }}>|</span>
-              <a href="https://www.linkedin.com/in/scott-hazlitt/" target="_blank" rel="noopener noreferrer" className="font-semibold hover:underline" style={{ color: 'var(--accent-primary)' }}>LinkedIn</a>
+              <a href="https://www.linkedin.com/in/scott-hazlitt/" target="_blank" rel="noopener noreferrer" className="hover:underline" style={{ color: 'var(--accent-primary)' }}>LinkedIn</a>
+              <span className="mx-2" style={{ color: 'var(--text-muted)' }}>|</span>
+              <Link href="/legal" className="hover:underline" style={{ color: 'var(--accent-primary)' }}>Privacy & Legal</Link>
             </p>
           </div>
 
@@ -105,6 +107,10 @@ export default function DashboardFooter() {
               </div>
             )}
           </div>
+        </div>
+
+        <div className="mt-4 border-t pt-4 text-center text-xs" style={{ borderColor: 'var(--border-subtle)', color: 'var(--text-muted)' }}>
+          <p>&copy; {new Date().getFullYear()} AI Canada Pulse. AI-generated content is clearly labelled and may contain errors.</p>
         </div>
       </div>
     </footer>
