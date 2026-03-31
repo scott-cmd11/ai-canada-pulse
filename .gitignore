@@ -53,3 +53,7 @@ next-env.d.ts
 # windows artifacts
 nul
 .env*.local
+
+# tool artefacts
+.playwright-mcp/
+.superpowers/
