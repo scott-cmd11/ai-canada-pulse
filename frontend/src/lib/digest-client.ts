@@ -33,8 +33,11 @@ export async function saveDigest(digest: DailyDigest): Promise<void> {
   await redis.set(redisKey(digest.date), digest, { ex: DIGEST_TTL_SECONDS })
 }
 
-/** Store an error sentinel so pages know the cron ran but failed. */
+/** Store an error sentinel so pages know the cron ran but failed.
+ *  Never overwrites a previously successful digest for the same day. */
 export async function saveDigestError(date: string): Promise<void> {
+  const existing = await redis.get<DailyDigest>(redisKey(date))
+  if (existing && !existing.error) return // keep the good digest
   const sentinel: Partial<DailyDigest> = { date, error: true, generatedAt: new Date().toISOString() }
   await redis.set(redisKey(date), sentinel, { ex: DIGEST_TTL_SECONDS })
 }
