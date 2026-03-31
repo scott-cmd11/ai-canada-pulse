@@ -335,7 +335,10 @@ export async function listDeepDives(
     const raw = await redis.zrange(DEEP_DIVE_INDEX_KEY, offset, offset + limit - 1, {
       rev: true,
     })
-    return raw.map((r) => JSON.parse(r as string) as DeepDiveIndexEntry)
+    // Upstash auto-parses JSON values — handle both string and pre-parsed object
+    return raw.map((r) =>
+      (typeof r === 'string' ? JSON.parse(r) : r) as DeepDiveIndexEntry
+    )
   } catch {
     return []
   }
