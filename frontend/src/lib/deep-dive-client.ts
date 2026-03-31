@@ -119,7 +119,8 @@ async function uniqueSlug(base: string): Promise<string> {
 async function generateDeepDive(
   sig: SignificantStory,
   allStories: Story[],
-  date: string
+  date: string,
+  skipQualityChecks = false
 ): Promise<DeepDive | null> {
   if (!process.env.OPENAI_API_KEY) {
     console.warn('[deep-dive-client] No OPENAI_API_KEY configured')
@@ -208,15 +209,16 @@ Rules:
     }
 
     // Quality check 2: body must reference ≥ 2 of the source headlines
-    // Uses the first 25 characters of each headline as a fingerprint to avoid
-    // false negatives when the LLM paraphrases slightly.
-    const sourceContext = [sig.story, ...related]
-    const headlineMatches = sourceContext.filter((s) =>
-      parsed.body.toLowerCase().includes(s.headline.slice(0, 25).toLowerCase())
-    ).length
-    if (headlineMatches < 2) {
-      console.warn(`[deep-dive-client] Body references only ${headlineMatches} source headline(s), discarding`)
-      return null
+    // Skipped in force/seed mode since we bypass threshold selection.
+    if (!skipQualityChecks) {
+      const sourceContext = [sig.story, ...related]
+      const headlineMatches = sourceContext.filter((s) =>
+        parsed.body.toLowerCase().includes(s.headline.slice(0, 25).toLowerCase())
+      ).length
+      if (headlineMatches < 2) {
+        console.warn(`[deep-dive-client] Body references only ${headlineMatches} source headline(s), discarding`)
+        return null
+      }
     }
 
     const readingTimeMinutes = Math.ceil(wordCount / 200)
@@ -265,7 +267,7 @@ export async function forceGenerateDeepDive(
     priority: 0,
   }
 
-  const deepDive = await generateDeepDive(sig, stories, date)
+  const deepDive = await generateDeepDive(sig, stories, date, true)
   if (!deepDive) return null
 
   await redis.set(`deepdive:${deepDive.slug}`, deepDive)
