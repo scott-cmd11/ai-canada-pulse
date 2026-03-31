@@ -75,7 +75,11 @@ export default async function ProvincePage({
       <div className="mx-auto max-w-[1080px] px-4 sm:px-6 lg:px-10">
         <ProvinceHero
           province={province}
-          heroStat={{ value: '—', unit: 'AI positions', change: 'Loading...' }}
+          heroStat={{
+            value: province.institutions.length > 0 ? String(province.institutions.length) : '—',
+            unit: province.institutions.length === 1 ? 'Key institution' : 'Key institutions',
+            change: province.region === 'North' ? 'Northern Canada' : `${province.region} Canada`,
+          }}
         />
       </div>
 
@@ -88,15 +92,14 @@ export default async function ProvincePage({
             {
               label: 'Search Interest',
               value: '—',
-              note: 'Loading...',
-              isPositive: false,
+              note: province.sections.trends ? 'See trends section below' : 'Not tracked',
             },
             {
               label: 'AI Institutes',
               value: instituteCount > 0
                 ? province.institutions.filter(i => i.type === 'institute').map(i => i.name).join(', ')
                 : '—',
-              note: instituteNames,
+              note: instituteCount > 0 ? instituteNames : 'University-based research only',
             },
             {
               label: 'Capital',
