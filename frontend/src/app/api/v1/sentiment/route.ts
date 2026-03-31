@@ -1,12 +1,16 @@
 import { NextResponse } from "next/server"
 import { CANADA_DASHBOARD_STORY_LIMIT, fetchAllStories } from "@/lib/rss-client"
+import { checkRateLimit } from "@/lib/rate-limit"
 
 // Derive sentiment analysis from our already-working RSS story feed
 // instead of relying on the frequently-unavailable GDELT API.
 
 export const dynamic = "force-dynamic"
 
-export async function GET() {
+export async function GET(request: Request) {
+  const limited = await checkRateLimit(request, 'standard')
+  if (limited) return limited
+
   try {
     const stories = await fetchAllStories()
 

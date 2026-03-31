@@ -2,11 +2,14 @@ import { NextResponse } from "next/server"
 import { fetchAllStories, derivePulseFromStories, filterStoriesByRegion } from "@/lib/rss-client"
 import { hydrateCanadaStories } from "@/lib/dashboard-enrichment"
 import { getProvinceBySlug } from "@/lib/provinces-config"
+import { checkRateLimit } from "@/lib/rate-limit"
 
 export const dynamic = "force-dynamic"
 export const maxDuration = 30
 
 export async function GET(request: Request) {
+  const limited = await checkRateLimit(request, 'loose')
+  if (limited) return limited
   const { searchParams } = new URL(request.url)
   const regionSlug = searchParams.get('region')
   const regionName = regionSlug ? (getProvinceBySlug(regionSlug)?.name ?? regionSlug) : null

@@ -1,7 +1,10 @@
 import { NextResponse } from "next/server"
 import { fetchEventsData } from "@/lib/events-client"
+import { checkRateLimit } from "@/lib/rate-limit"
 
 export async function GET(request: Request) {
+  const limited = await checkRateLimit(request, 'loose')
+  if (limited) return limited
   try {
     const { searchParams } = new URL(request.url)
     const region = searchParams.get("region") || undefined

@@ -1,7 +1,10 @@
 import { NextResponse } from "next/server"
 import { fetchCanadianAIStocks, filterStocksByProvince } from "@/lib/stocks-client"
+import { checkRateLimit } from "@/lib/rate-limit"
 
 export async function GET(request: Request) {
+  const limited = await checkRateLimit(request, 'loose')
+  if (limited) return limited
   const { searchParams } = new URL(request.url)
   const region = searchParams.get('region')
 

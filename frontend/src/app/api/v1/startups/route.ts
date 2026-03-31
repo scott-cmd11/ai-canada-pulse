@@ -1,7 +1,10 @@
 import { NextResponse } from "next/server"
 import { fetchStartupSignals } from "@/lib/startup-signals-client"
+import { checkRateLimit } from "@/lib/rate-limit"
 
-export async function GET() {
+export async function GET(request: Request) {
+  const limited = await checkRateLimit(request, 'loose')
+  if (limited) return limited
   try {
     const data = await fetchStartupSignals()
 

@@ -1,7 +1,10 @@
 import { NextResponse } from "next/server"
 import { fetchGovAIRegistry } from "@/lib/gov-ai-registry-client"
+import { checkRateLimit } from "@/lib/rate-limit"
 
-export async function GET() {
+export async function GET(request: Request) {
+  const limited = await checkRateLimit(request, 'loose')
+  if (limited) return limited
   try {
     const systems = await fetchGovAIRegistry()
 

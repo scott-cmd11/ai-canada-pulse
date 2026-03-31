@@ -1,11 +1,15 @@
 import { NextResponse } from "next/server"
 import { fetchArxivData } from "@/lib/arxiv-client"
 import { summarizeArxivPapers } from "@/lib/summarizer"
+import { checkRateLimit } from "@/lib/rate-limit"
 
 export const dynamic = "force-dynamic"
 export const revalidate = 21600 // 6 hours
 
-export async function GET() {
+export async function GET(request: Request) {
+    const limited = await checkRateLimit(request, 'strict')
+    if (limited) return limited
+
     try {
         const data = await fetchArxivData()
 

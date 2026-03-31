@@ -1,9 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getDigest } from '@/lib/digest-client'
+import { checkRateLimit } from '@/lib/rate-limit'
 
 export const dynamic = 'force-dynamic'
 
 export async function GET(request: NextRequest) {
+  const limited = await checkRateLimit(request, 'loose')
+  if (limited) return limited
   const date =
     request.nextUrl.searchParams.get('date') ??
     new Date().toISOString().split('T')[0]

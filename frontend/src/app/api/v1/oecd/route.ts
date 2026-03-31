@@ -1,10 +1,12 @@
 import { NextResponse } from "next/server"
 import { fetchOecdData } from "@/lib/oecd-client"
+import { checkRateLimit } from "@/lib/rate-limit"
 
-export const dynamic = "force-static"
-export const revalidate = 86400 // 24 hours
+export const dynamic = "force-dynamic"
 
-export async function GET() {
+export async function GET(request: Request) {
+    const limited = await checkRateLimit(request, 'loose')
+    if (limited) return limited
     try {
         const data = await fetchOecdData()
         return NextResponse.json({ data })

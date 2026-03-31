@@ -1,10 +1,12 @@
 import { NextResponse } from "next/server"
 import { fetchAllianceStatus } from "@/lib/alliance-client"
+import { checkRateLimit } from "@/lib/rate-limit"
 
-export const dynamic = "force-static"
-export const revalidate = 300 // 5 min
+export const dynamic = "force-dynamic"
 
-export async function GET() {
+export async function GET(request: Request) {
+    const limited = await checkRateLimit(request, 'loose')
+    if (limited) return limited
     try {
         const data = await fetchAllianceStatus()
         return NextResponse.json({ data })

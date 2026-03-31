@@ -1,10 +1,12 @@
 import { NextResponse } from "next/server"
 import { fetchHuggingFaceData } from "@/lib/huggingface-client"
+import { checkRateLimit } from "@/lib/rate-limit"
 
-export const dynamic = "force-static"
-export const revalidate = 1800 // 30 min
+export const dynamic = "force-dynamic"
 
-export async function GET() {
+export async function GET(request: Request) {
+    const limited = await checkRateLimit(request, 'loose')
+    if (limited) return limited
     try {
         const data = await fetchHuggingFaceData()
         return NextResponse.json({ data })
