@@ -250,6 +250,38 @@ Rules:
 // Public API
 // ---------------------------------------------------------------------------
 
+/** Force generation from the best available story, bypassing the significance threshold. */
+export async function forceGenerateDeepDive(
+  stories: Story[],
+  date: string
+): Promise<string | null> {
+  if (stories.length === 0) return null
+
+  // Pick the first Research story, or fall back to the first story overall
+  const best = stories.find((s) => s.category === 'Research') ?? stories[0]
+  const sig: SignificantStory = {
+    story: best,
+    reason: `Seeded: ${best.headline}`,
+    priority: 0,
+  }
+
+  const deepDive = await generateDeepDive(sig, stories, date)
+  if (!deepDive) return null
+
+  await redis.set(`deepdive:${deepDive.slug}`, deepDive)
+  const entry: DeepDiveIndexEntry = {
+    slug: deepDive.slug,
+    title: deepDive.title,
+    tags: deepDive.tags,
+    date: deepDive.date,
+    triggeredBy: deepDive.triggeredBy,
+    readingTimeMinutes: deepDive.readingTimeMinutes,
+  }
+  await redis.zadd(DEEP_DIVE_INDEX_KEY, { score: Date.now(), member: JSON.stringify(entry) })
+
+  return deepDive.slug
+}
+
 /** Run significance detection + optional generation. Returns slug if generated, null otherwise. */
 export async function detectAndGenerateDeepDive(
   stories: Story[],

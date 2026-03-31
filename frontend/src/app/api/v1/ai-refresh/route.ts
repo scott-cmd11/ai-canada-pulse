@@ -4,7 +4,7 @@ import { timingSafeEqual } from 'crypto'
 import { refreshDashboardEnrichmentBundle } from '@/lib/dashboard-enrichment'
 import { fetchAllStories } from '@/lib/rss-client'
 import { generateDigest, saveDigest, saveDigestError, getDigest } from '@/lib/digest-client'
-import { detectAndGenerateDeepDive } from '@/lib/deep-dive-client'
+import { detectAndGenerateDeepDive, forceGenerateDeepDive } from '@/lib/deep-dive-client'
 
 export const dynamic = 'force-dynamic'
 export const maxDuration = 300 // bumped from 60 to accommodate digest + deep-dive generation
@@ -76,8 +76,10 @@ export async function GET(request: NextRequest) {
   }
 
   // Step 4: Check significance + conditionally generate deep-dive
+  const seed = request.nextUrl.searchParams.get('seed') === 'true'
   try {
-    const slug = await detectAndGenerateDeepDive(
+    const generate = seed ? forceGenerateDeepDive : detectAndGenerateDeepDive
+    const slug = await generate(
       stories.map((s) => ({
         headline: s.headline,
         summary: s.summary ?? '',
