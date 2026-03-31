@@ -109,11 +109,23 @@ function assignCategory(title: string, description: string): Category {
 // ─── Region detection ───────────────────────────────────────────────────────
 
 const REGION_RULES: { pattern: RegExp; region: string }[] = [
-  { pattern: /\b(Toronto|Ontario|Waterloo|Kitchener)\b/i, region: "Ontario" },
-  { pattern: /\b(Montreal|Montr[eé]al|Quebec|Mila|Laval)\b/i, region: "Quebec" },
-  { pattern: /\b(Vancouver|British Columbia|B\.?C\.)\b/i, region: "British Columbia" },
-  { pattern: /\b(Alberta|Edmonton|Calgary)\b/i, region: "Alberta" },
-  { pattern: /\b(federal|Canada|national|government|Ottawa|parliament|minister)\b/i, region: "Federal" },
+  // Provinces — ordered large to small so more-specific matches win first
+  { pattern: /\b(Toronto|Ontario|Waterloo|Kitchener|Hamilton|Windsor)\b/i,                        region: "Ontario" },
+  { pattern: /\b(Montreal|Montr[eé]al|Qu[eé]bec|Mila|Laval|Sherbrooke|Gatineau)\b/i,            region: "Quebec" },
+  { pattern: /\b(Vancouver|Victoria|British Columbia|B\.?C\.|Surrey|Burnaby|Kelowna)\b/i,         region: "British Columbia" },
+  { pattern: /\b(Alberta|Edmonton|Calgary|Red Deer|Lethbridge|Amii)\b/i,                          region: "Alberta" },
+  { pattern: /\b(Saskatchewan|Regina|Saskatoon)\b/i,                                              region: "Saskatchewan" },
+  { pattern: /\b(Manitoba|Winnipeg|Brandon)\b/i,                                                  region: "Manitoba" },
+  { pattern: /\b(Nova Scotia|Halifax|Cape Breton|Dalhousie)\b/i,                                  region: "Nova Scotia" },
+  { pattern: /\b(New Brunswick|Fredericton|Moncton|Saint John)\b/i,                               region: "New Brunswick" },
+  { pattern: /\b(Newfoundland|Labrador|St\.?\s*John[''s]*|Memorial University)\b/i,               region: "Newfoundland & Labrador" },
+  { pattern: /\b(Prince Edward Island|P\.?E\.?I\.?|Charlottetown|UPEI)\b/i,                      region: "Prince Edward Island" },
+  // Territories
+  { pattern: /\b(Yukon|Whitehorse)\b/i,                                                           region: "Yukon" },
+  { pattern: /\b(Northwest Territories|N\.?W\.?T\.?|Yellowknife)\b/i,                            region: "Northwest Territories" },
+  { pattern: /\b(Nunavut|Iqaluit)\b/i,                                                            region: "Nunavut" },
+  // Federal — broad terms that don't imply a specific province
+  { pattern: /\b(federal|national|government|Ottawa|parliament|minister|ISED|NRC|CIFAR)\b/i,      region: "Federal" },
 ]
 
 function detectRegion(title: string, description: string): string {
