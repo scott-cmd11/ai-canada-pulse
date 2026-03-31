@@ -36,7 +36,7 @@ export default function SectionNav() {
   const scrollTo = (id: string) => {
     const el = document.getElementById(id)
     if (el) {
-      const y = el.getBoundingClientRect().top + window.scrollY - 88
+      const y = el.getBoundingClientRect().top + window.scrollY - 168
       window.scrollTo({ top: y, behavior: "smooth" })
     }
   }
