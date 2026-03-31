@@ -13,6 +13,7 @@ import StocksSection from '@/components/StocksSection';
 import ArxivSection from '@/components/ArxivSection';
 import TalentEducationSection from '@/components/TalentEducationSection';
 import EcosystemSection from '@/components/EcosystemSection';
+import ProvinceDataNotes from '@/components/ProvinceDataNotes';
 import ScrollToTop from '@/components/ScrollToTop';
 import DashboardFooter from '@/components/DashboardFooter';
 
@@ -198,6 +199,11 @@ export default async function ProvincePage({
           <EcosystemSection provinceFilter={province.slug} />
         </section>
       )}
+
+      {/* Data notes */}
+      <div className="mx-auto max-w-[1080px] px-4 sm:px-6 lg:px-10">
+        <ProvinceDataNotes province={province} />
+      </div>
 
       {/* Footer nav */}
       <footer
