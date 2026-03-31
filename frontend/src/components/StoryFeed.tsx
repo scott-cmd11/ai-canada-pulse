@@ -9,6 +9,7 @@ import type { Category, Story } from "@/lib/mock-data"
 import StoryCard from "./StoryCard"
 import { useStories } from "@/hooks/useStories"
 import { usePolling } from "@/hooks/usePolling"
+import SectionSummary from '@/components/SectionSummary'
 
 const ALL = "All Signals"
 const PAGE_SIZE = 4
@@ -37,7 +38,9 @@ export default function StoryFeed({ region }: StoryFeedProps = {}) {
   const regionUrl = region
     ? `/api/v1/stories?region=${encodeURIComponent(region)}`
     : "/api/v1/stories"
+  const [regionSummary, setRegionSummary] = useState<string | null>(null)
   const regionTransform = useCallback((json: Record<string, unknown>) => {
+    setRegionSummary((json.summary as string | undefined) ?? null)
     return (json.stories as Story[] | undefined) ?? []
   }, [])
   const regionIsEmpty = useCallback((d: Story[]) => Array.isArray(d) && d.length === 0, [])
@@ -50,6 +53,7 @@ export default function StoryFeed({ region }: StoryFeedProps = {}) {
 
   const stories = region ? (regionResult.data ?? []) : sharedCtx.stories
   const loading = region ? regionResult.loading : sharedCtx.loading
+  const summary = region ? regionSummary : sharedCtx.summary
   const { isFallback, lastUpdated } = regionResult
 
   const feedStories = stories.filter((story) => !story.isBriefingTop)
@@ -82,6 +86,8 @@ export default function StoryFeed({ region }: StoryFeedProps = {}) {
           <ScopeLabel provinceName={region} isFallback={isFallback} dataType="stories" />
         </div>
       )}
+
+      {!region && <SectionSummary summary={summary} />}
 
       <div className="mt-4 flex flex-wrap gap-2">
         {CATEGORIES.map((category) => (

@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import type { ProvinceInterest } from "@/lib/trends-regional-client"
 import SourceAttribution from '@/components/SourceAttribution'
 import { SkeletonTable } from '@/components/Skeleton'
+import SectionSummary from '@/components/SectionSummary'
 
 interface TrendsInsightsSectionProps {
     highlightProvince?: string // Province code to visually highlight, e.g. "ON"
@@ -13,6 +14,7 @@ export default function TrendsInsightsSection({ highlightProvince }: TrendsInsig
     const [provinces, setProvinces] = useState<ProvinceInterest[]>([])
     const [loading, setLoading] = useState(true)
     const [lastUpdated, setLastUpdated] = useState<string | null>(null)
+    const [summary, setSummary] = useState<string | null>(null)
 
     useEffect(() => {
         fetch("/api/v1/trends-regional")
@@ -22,6 +24,7 @@ export default function TrendsInsightsSection({ highlightProvince }: TrendsInsig
                     setProvinces(json.data.provinces)
                     setLastUpdated(new Date().toLocaleTimeString())
                 }
+                setSummary(json.summary ?? null)
             })
             .finally(() => setLoading(false))
     }, [])
@@ -38,6 +41,8 @@ export default function TrendsInsightsSection({ highlightProvince }: TrendsInsig
                     LIVE
                 </span>
             </div>
+
+            <SectionSummary summary={summary} />
 
             {/* Provincial Breakdown */}
             <div className="saas-card p-5">

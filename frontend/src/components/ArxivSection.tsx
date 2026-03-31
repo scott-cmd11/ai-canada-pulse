@@ -5,6 +5,7 @@ import type { ResearchPaper } from "@/lib/research-client"
 import { usePolling } from "@/hooks/usePolling"
 import SourceAttribution from '@/components/SourceAttribution'
 import { SkeletonTable } from '@/components/Skeleton'
+import SectionSummary from '@/components/SectionSummary'
 
 interface ArxivSectionProps {
     // When provided, only display papers whose institutions list contains at least
@@ -13,7 +14,10 @@ interface ArxivSectionProps {
 }
 
 export default function ArxivSection({ institutionFilter }: ArxivSectionProps = {}) {
+    const [summary, setSummary] = useState<string | null>(null)
+
     const transform = useCallback((json: Record<string, unknown>) => {
+        setSummary((json.summary as string | undefined) ?? null)
         const papers = json.papers as ResearchPaper[] | undefined
         return papers && papers.length > 0 ? papers : null
     }, [])
@@ -44,6 +48,8 @@ export default function ArxivSection({ institutionFilter }: ArxivSectionProps = 
                     </span>
                 )}
             </div>
+
+            <SectionSummary summary={summary} />
 
             {loading && (
                 <div className="saas-card p-6"><SkeletonTable rows={4} /></div>

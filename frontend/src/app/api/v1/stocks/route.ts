@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import { fetchCanadianAIStocks, filterStocksByProvince } from "@/lib/stocks-client"
 import { checkRateLimit } from "@/lib/rate-limit"
+import { getSectionSummary } from "@/lib/section-summaries-client"
 
 export async function GET(request: Request) {
   const limited = await checkRateLimit(request, 'loose')
@@ -11,9 +12,10 @@ export async function GET(request: Request) {
   try {
     const data = await fetchCanadianAIStocks()
     const filtered = region && data ? filterStocksByProvince(data, region) : data
+    const summary = await getSectionSummary('stocks')
 
     return NextResponse.json(
-      { data: filtered },
+      { data: filtered, summary },
       {
         headers: {
           "Cache-Control": "public, max-age=1800, stale-while-revalidate=600",
@@ -22,6 +24,6 @@ export async function GET(request: Request) {
     )
   } catch (err) {
     console.warn("[api/stocks] Failed:", err)
-    return NextResponse.json({ data: null })
+    return NextResponse.json({ data: null, summary: null })
   }
 }

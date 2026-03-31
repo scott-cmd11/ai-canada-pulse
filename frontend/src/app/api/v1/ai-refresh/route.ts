@@ -5,6 +5,7 @@ import { refreshDashboardEnrichmentBundle } from '@/lib/dashboard-enrichment'
 import { fetchAllStories } from '@/lib/rss-client'
 import { generateDigest, saveDigest, saveDigestError, getDigest } from '@/lib/digest-client'
 import { detectAndGenerateDeepDive, forceGenerateDeepDive } from '@/lib/deep-dive-client'
+import { generateAndSaveSectionSummaries } from '@/lib/section-summaries-client'
 
 export const dynamic = 'force-dynamic'
 export const maxDuration = 300 // bumped from 60 to accommodate digest + deep-dive generation
@@ -106,6 +107,23 @@ export async function GET(request: NextRequest) {
   } catch (err) {
     console.error('[ai-refresh] Deep-dive generation failed:', err)
     results.deepDive = 'error'
+  }
+
+  // Step 5: Generate section summaries for all 6 signal domains
+  try {
+    const summaries = await generateAndSaveSectionSummaries(
+      stories.map((s) => ({
+        headline: s.headline,
+        summary: s.summary ?? '',
+        category: s.category,
+        region: s.region ?? 'Canada',
+      })),
+      today
+    )
+    results.sectionSummaries = summaries ? 'generated' : 'skipped'
+  } catch (err) {
+    console.error('[ai-refresh] Section summaries failed:', err)
+    results.sectionSummaries = 'error'
   }
 
   return NextResponse.json({ ok: true, generatedAt: new Date().toISOString(), ...results })

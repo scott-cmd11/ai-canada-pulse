@@ -7,6 +7,7 @@ import { useChartTheme } from "@/hooks/useChartTheme"
 import SourceAttribution from '@/components/SourceAttribution'
 import { SectionSkeleton } from '@/components/Skeleton'
 import echarts from "@/lib/echarts-custom"
+import SectionSummary from '@/components/SectionSummary'
 
 const ReactECharts = dynamic(() => import("echarts-for-react/lib/core"), { ssr: false })
 
@@ -17,6 +18,7 @@ interface JobMarketSectionProps {
 export default function JobMarketSection({ region }: JobMarketSectionProps = {}) {
   const [data, setData] = useState<JobMarketData | null>(null)
   const [loading, setLoading] = useState(true)
+  const [summary, setSummary] = useState<string | null>(null)
   const ct = useChartTheme()
 
   useEffect(() => {
@@ -27,6 +29,7 @@ export default function JobMarketSection({ region }: JobMarketSectionProps = {})
       .then((res) => res.json())
       .then((json) => {
         if (json.data) setData(json.data)
+        setSummary(json.summary ?? null)
       })
       .catch((err) => console.warn("[JobMarketSection] fetch failed:", err))
       .finally(() => setLoading(false))
@@ -115,6 +118,8 @@ export default function JobMarketSection({ region }: JobMarketSectionProps = {})
           </span>
         )}
       </div>
+
+      <SectionSummary summary={summary} />
 
       {/* KPI Row — stacks on narrow viewports */}
       <div className="saas-card mb-6 grid grid-cols-1 sm:grid-cols-2">

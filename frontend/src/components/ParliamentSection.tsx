@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import type { ParliamentMention, ParliamentData } from "@/lib/parliament-client"
 import SourceAttribution from '@/components/SourceAttribution'
+import SectionSummary from '@/components/SectionSummary'
 
 import type { CSSProperties } from "react"
 
@@ -18,12 +19,14 @@ const DEFAULT_PARTY_STYLE: CSSProperties = { backgroundColor: 'var(--surface-sec
 export default function ParliamentSection() {
   const [data, setData] = useState<ParliamentData | null>(null)
   const [loading, setLoading] = useState(true)
+  const [summary, setSummary] = useState<string | null>(null)
 
   useEffect(() => {
     fetch("/api/v1/parliament", { cache: "no-store" })
       .then((res) => res.json())
       .then((json) => {
         if (json.data) setData(json.data)
+        setSummary(json.summary ?? null)
       })
       .catch((err) => console.warn("[ParliamentSection] fetch failed:", err))
       .finally(() => setLoading(false))
@@ -34,6 +37,7 @@ export default function ParliamentSection() {
       <div className="section-header">
         <h2>Parliamentary Records</h2>
       </div>
+      <SectionSummary summary={summary} />
       <p className="text-sm mb-4 max-w-3xl leading-relaxed" style={{ color: 'var(--text-on-invert-muted)' }}>
         Recent mentions of artificial intelligence in House of Commons debates and committee proceedings, sourced from OpenParliament.ca. Tracks which MPs and parties are engaging with AI policy and the tone of their discourse.
       </p>

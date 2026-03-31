@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import type { StocksData, StockQuote } from "@/lib/stocks-client"
 import SourceAttribution from '@/components/SourceAttribution'
 import { SectionSkeleton } from '@/components/Skeleton'
+import SectionSummary from '@/components/SectionSummary'
 
 interface StocksSectionProps {
   region?: string
@@ -12,6 +13,7 @@ interface StocksSectionProps {
 export default function StocksSection({ region }: StocksSectionProps = {}) {
   const [data, setData] = useState<StocksData | null>(null)
   const [loading, setLoading] = useState(true)
+  const [summary, setSummary] = useState<string | null>(null)
 
   useEffect(() => {
     const url = region
@@ -21,6 +23,7 @@ export default function StocksSection({ region }: StocksSectionProps = {}) {
       .then((res) => res.json())
       .then((json) => {
         if (json.data) setData(json.data)
+        setSummary(json.summary ?? null)
       })
       .catch((err) => console.warn("[StocksSection] fetch failed:", err))
       .finally(() => setLoading(false))
@@ -60,6 +63,8 @@ export default function StocksSection({ region }: StocksSectionProps = {}) {
           )}
         </h2>
       </div>
+
+      <SectionSummary summary={summary} />
 
       <div className="saas-card mb-4 flex flex-col md:flex-row">
         <div className="p-4 sm:p-5 flex-1 flex flex-col justify-center border-b md:border-b-0 md:border-r" style={{ borderColor: 'var(--border-subtle)' }}>

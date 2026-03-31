@@ -3,6 +3,7 @@ import { fetchAllStories, derivePulseFromStories, filterStoriesByRegion } from "
 import { hydrateCanadaStories } from "@/lib/dashboard-enrichment"
 import { getProvinceBySlug } from "@/lib/provinces-config"
 import { checkRateLimit } from "@/lib/rate-limit"
+import { getSectionSummary } from "@/lib/section-summaries-client"
 
 export const dynamic = "force-dynamic"
 export const maxDuration = 30
@@ -20,8 +21,10 @@ export async function GET(request: Request) {
     const pulse = derivePulseFromStories(filteredStories)
     const { stories: enrichedStories, executiveBrief } = await hydrateCanadaStories(filteredStories)
 
+    const summary = await getSectionSummary('stories')
+
     return NextResponse.json(
-      { stories: enrichedStories, pulse, executiveBrief },
+      { stories: enrichedStories, pulse, executiveBrief, summary },
       {
         headers: {
           "Cache-Control": "public, max-age=600, stale-while-revalidate=1800",
@@ -39,6 +42,7 @@ export async function GET(request: Request) {
         updatedAt: new Date().toISOString(),
       },
       executiveBrief: null,
+      summary: null,
     })
   }
 }

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server"
 import { fetchAIJobMarket } from "@/lib/jobs-client"
 import { getProvinceBySlug } from "@/lib/provinces-config"
 import { checkRateLimit } from "@/lib/rate-limit"
+import { getSectionSummary } from "@/lib/section-summaries-client"
 
 export async function GET(request: Request) {
   const limited = await checkRateLimit(request, 'loose')
@@ -12,9 +13,10 @@ export async function GET(request: Request) {
 
   try {
     const data = await fetchAIJobMarket(province)
+    const summary = await getSectionSummary('jobs')
 
     return NextResponse.json(
-      { data },
+      { data, summary },
       {
         headers: {
           "Cache-Control": "public, max-age=21600, stale-while-revalidate=3600",
@@ -23,6 +25,6 @@ export async function GET(request: Request) {
     )
   } catch (err) {
     console.warn("[api/jobs] Failed:", err)
-    return NextResponse.json({ data: null })
+    return NextResponse.json({ data: null, summary: null })
   }
 }
