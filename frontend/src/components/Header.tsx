@@ -9,7 +9,7 @@ const navLinks = [
   { label: "Digest", href: "/" },
   { label: "Dashboard", href: "/dashboard" },
   { label: "Deep Dives", href: "/blog" },
-  { label: "Provinces", href: "/provinces/ontario" },
+  { label: "Provinces", href: "/provinces" },
   { label: "Methodology", href: "/methodology" },
 ]
 

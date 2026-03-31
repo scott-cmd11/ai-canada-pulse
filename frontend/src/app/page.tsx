@@ -23,6 +23,52 @@ export async function generateMetadata() {
   }
 }
 
+async function fetchHeadlines() {
+  try {
+    const raw = await fetchAllStories()
+    return raw.slice(0, 8).map((s) => ({
+      headline: s.headline,
+      sourceUrl: s.sourceUrl ?? '',
+      sourceName: s.sourceName ?? '',
+    }))
+  } catch {
+    return []
+  }
+}
+
+function HeadlinesFallback({
+  message,
+  stories,
+}: {
+  message: string
+  stories: { headline: string; sourceUrl: string; sourceName: string }[]
+}) {
+  return (
+    <div style={{ maxWidth: '680px', margin: '0 auto', padding: '32px 20px' }}>
+      <p style={{ fontSize: '14px', color: 'var(--text-muted)', marginBottom: '20px' }}>{message}</p>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
+        {stories.map((s, i) => (
+          <div key={i}>
+            {i > 0 && <div style={{ height: '1px', background: 'var(--border-subtle)' }} />}
+            <a
+              href={s.sourceUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', textDecoration: 'none', color: 'var(--text-primary)', fontSize: '13px' }}
+            >
+              <span>{s.headline}</span>
+              <span style={{ color: 'var(--text-muted)', fontSize: '11px', marginLeft: '12px', whiteSpace: 'nowrap' }}>{s.sourceName} →</span>
+            </a>
+          </div>
+        ))}
+      </div>
+      <a href="/dashboard" style={{ display: 'block', marginTop: '20px', color: 'var(--accent-primary)', fontSize: '13px' }}>
+        View the live dashboard →
+      </a>
+    </div>
+  )
+}
+
 async function DigestContent() {
   const today = new Date().toISOString().split('T')[0]
 
@@ -37,58 +83,25 @@ async function DigestContent() {
     redisDown = true
   }
 
-  // Fallback: Redis is unavailable — fetch stories directly and show headlines only
+  // Fallback: Redis is unavailable — show latest headlines
   if (redisDown) {
-    let stories: { headline: string; sourceUrl: string; sourceName: string }[] = []
-    try {
-      const raw = await fetchAllStories()
-      stories = raw.slice(0, 8).map((s) => ({
-        headline: s.headline,
-        sourceUrl: s.sourceUrl ?? '',
-        sourceName: s.sourceName ?? '',
-      }))
-    } catch {
-      // If RSS also fails, stories stays empty
-    }
+    const stories = await fetchHeadlines()
     return (
-      <div style={{ maxWidth: '680px', margin: '0 auto', padding: '32px 20px' }}>
-        <p style={{ fontSize: '14px', color: 'var(--text-muted)', marginBottom: '20px' }}>
-          The digest is temporarily unavailable. Here are today&apos;s latest headlines:
-        </p>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
-          {stories.map((s, i) => (
-            <div key={i}>
-              {i > 0 && <div style={{ height: '1px', background: 'var(--border-subtle)' }} />}
-              <a
-                href={s.sourceUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', textDecoration: 'none', color: 'var(--text-primary)', fontSize: '13px' }}
-              >
-                <span>{s.headline}</span>
-                <span style={{ color: 'var(--text-muted)', fontSize: '11px', marginLeft: '12px', whiteSpace: 'nowrap' }}>{s.sourceName} →</span>
-              </a>
-            </div>
-          ))}
-        </div>
-        <a href="/dashboard" style={{ display: 'block', marginTop: '20px', color: 'var(--accent-primary)', fontSize: '13px' }}>
-          View the live dashboard →
-        </a>
-      </div>
+      <HeadlinesFallback
+        message="The digest is temporarily unavailable. Here are today's latest headlines:"
+        stories={stories}
+      />
     )
   }
 
-  // Pending: cron hasn't run yet today
+  // Pending: cron hasn't run yet today — show headlines so the page isn't empty
   if (!digest) {
+    const stories = await fetchHeadlines()
     return (
-      <div style={{ maxWidth: '680px', margin: '0 auto', padding: '60px 20px', textAlign: 'center' }}>
-        <p style={{ fontSize: '15px', color: 'var(--text-secondary)', marginBottom: '16px' }}>
-          Today&apos;s digest is being prepared — check back after 12:00 UTC.
-        </p>
-        <a href="/dashboard" style={{ color: 'var(--accent-primary)', fontSize: '14px' }}>
-          View the live dashboard →
-        </a>
-      </div>
+      <HeadlinesFallback
+        message={`Today's digest is being prepared (publishes after 12:00 UTC).${stories.length > 0 ? " In the meantime, here are today's latest headlines:" : ''}`}
+        stories={stories}
+      />
     )
   }
 

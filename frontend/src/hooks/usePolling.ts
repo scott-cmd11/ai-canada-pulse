@@ -35,7 +35,14 @@ export function usePolling<T>(
         const checkEmpty = isEmpty ?? defaultIsEmpty
         try {
             if (isInitial) setLoading(true)
-            const res = await fetch(url)
+            const controller = new AbortController()
+            const timer = setTimeout(() => controller.abort(), 15_000) // 15s client-side timeout
+            let res: Response
+            try {
+                res = await fetch(url, { signal: controller.signal })
+            } finally {
+                clearTimeout(timer)
+            }
             if (!res.ok) throw new Error(`HTTP ${res.status}`)
             const json = await res.json()
             if (!mountedRef.current) return

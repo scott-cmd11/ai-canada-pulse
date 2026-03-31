@@ -6,10 +6,11 @@ import { relativeTime } from "@/lib/relative-time"
 import { SkeletonBar } from '@/components/Skeleton'
 
 export default function BriefingCard() {
-  const { stories } = useStories()
+  const { stories, loading } = useStories()
 
   const topStory: Story | undefined = stories.find((s) => s.isBriefingTop) || stories[0]
-  if (!topStory) {
+
+  if (loading) {
     return (
       <article className="saas-card accent-border-left flex flex-col gap-5 p-6 sm:p-8">
         <SkeletonBar width="80px" height="22px" />
@@ -19,6 +20,16 @@ export default function BriefingCard() {
           <SkeletonBar width="70%" height="12px" />
         </div>
         <SkeletonBar width="120px" height="12px" />
+      </article>
+    )
+  }
+
+  if (!topStory) {
+    return (
+      <article className="saas-card accent-border-left flex flex-col gap-5 p-6 sm:p-8">
+        <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
+          Unable to load stories — check back shortly.
+        </p>
       </article>
     )
   }

@@ -3,6 +3,10 @@
         {
             "path": "/api/v1/ai-refresh",
             "schedule": "0 12 * * *"
+        },
+        {
+            "path": "/api/v1/stories",
+            "schedule": "*/30 * * * *"
         }
     ]
 }

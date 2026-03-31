@@ -127,7 +127,7 @@ function detectRegion(title: string, description: string): string {
 // ─── RSS parser instance ────────────────────────────────────────────────────
 
 const parser = new Parser({
-  timeout: 10000,
+  timeout: 5000,
   headers: { "User-Agent": "AICanadaPulse/1.0 (news aggregator)" },
 })
 
@@ -173,9 +173,14 @@ async function fetchSingleFeed(config: FeedConfig): Promise<Story[]> {
 // ─── Public: fetch all stories with cache + fallback ────────────────────────
 
 async function _fetchAllStories(): Promise<Story[]> {
-  const feedResults = await Promise.allSettled(
-    FEED_REGISTRY.map((config) => fetchSingleFeed(config))
+  // Hard cap: never wait more than 6s total, even if individual feeds hit their 5s timeout
+  const timeout = new Promise<PromiseSettledResult<Story[]>[]>((resolve) =>
+    setTimeout(() => resolve(FEED_REGISTRY.map(() => ({ status: "fulfilled" as const, value: [] }))), 6000)
   )
+  const feedResults = await Promise.race([
+    Promise.allSettled(FEED_REGISTRY.map((config) => fetchSingleFeed(config))),
+    timeout,
+  ])
 
   let allStories = feedResults
     .filter((r): r is PromiseFulfilledResult<Story[]> => r.status === "fulfilled")
@@ -209,7 +214,7 @@ async function _fetchAllStories(): Promise<Story[]> {
 export const fetchAllStories = unstable_cache(
   _fetchAllStories,
   ["rss-stories-canada-ai"],
-  { revalidate: 1800 } // 30 minutes
+  { revalidate: 3600 } // 60 minutes
 )
 
 // ─── Public: filter stories by region display name ──────────────────────────

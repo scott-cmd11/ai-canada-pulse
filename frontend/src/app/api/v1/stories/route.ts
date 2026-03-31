@@ -21,7 +21,7 @@ export async function GET(request: Request) {
       { stories: enrichedStories, pulse, executiveBrief },
       {
         headers: {
-          "Cache-Control": "public, max-age=120, stale-while-revalidate=300",
+          "Cache-Control": "public, max-age=600, stale-while-revalidate=1800",
         },
       }
     )

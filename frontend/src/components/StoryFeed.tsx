@@ -121,7 +121,13 @@ export default function StoryFeed({ region }: StoryFeedProps = {}) {
         </div>
       )}
 
-      {!loading && filtered.length === 0 && (
+      {!loading && stories.length === 0 && (
+        <div className="py-8 text-center">
+          <p className="text-sm font-medium" style={{ color: 'var(--text-muted)' }}>Unable to load stories — check back shortly.</p>
+        </div>
+      )}
+
+      {!loading && stories.length > 0 && filtered.length === 0 && (
         <div className="py-8 text-center">
           <p className="text-sm font-medium" style={{ color: 'var(--text-muted)' }}>No signals in this view right now.</p>
         </div>
