@@ -75,7 +75,7 @@ export const AI_EVENTS: AIEvent[] = [
     type: "Conference",
     organizer: "Scale AI",
     url: "https://allinevent.ai",
-    description: "Canada's premier applied AI conference, organized by Scale AI supercluster. Focus on AI adoption in industry.",
+    description: "Canada's premier applied AI conference, organised by Scale AI supercluster. Focus on AI adoption in industry.",
     lastVerified: "2026-03-28",
   },
   {

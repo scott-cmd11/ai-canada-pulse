@@ -239,7 +239,7 @@ Requirements:
 - Do not recap articles one by one
 - Do not use filler framing like "The article/report/story"
 - Do not mention feed metadata or source taxonomy
-- Use crisp, plain language optimized for quick scanning
+- Use crisp, plain language optimised for quick scanning
 
 Output only the sentence.`
 
@@ -525,7 +525,7 @@ export async function generateExecutiveBrief(
 
     const systemPrompt = `You are an expert intelligence analyst producing an executive briefing about AI developments in Canada.
 
-Write 3-5 bullets optimized for fast dashboard scanning.
+Write 3-5 bullets optimised for fast dashboard scanning.
 
 Rules:
 - Each bullet must be exactly 1 sentence
