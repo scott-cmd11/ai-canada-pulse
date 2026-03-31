@@ -1,116 +1,79 @@
 "use client"
 
-import { useId, useState } from "react"
 import Link from "next/link"
 
 export default function DashboardFooter() {
-  const [showDisclaimer, setShowDisclaimer] = useState(false)
-  const [showTechStack, setShowTechStack] = useState(false)
-  const disclaimerId = useId()
-  const techStackId = useId()
-
   return (
     <footer
-      className="mt-8 border-t backdrop-blur-xl"
+      className="mt-8 border-t"
       style={{
         borderColor: 'var(--border-subtle)',
         backgroundColor: 'var(--surface-primary)',
       }}
     >
-      <div className="mx-auto w-full max-w-[1600px] px-4 py-6 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 gap-4 text-sm md:grid-cols-2 md:items-start">
-          <div className="space-y-2">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.18em]" style={{ color: 'var(--text-muted)' }}>AI Canada Pulse</p>
-            <p className="text-base font-semibold" style={{ color: 'var(--text-primary)' }}>Canada-focused monitoring for an accelerating AI era</p>
-            <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
-              A project by <a href="https://scotthazlitt.ai" target="_blank" rel="noopener noreferrer" className="font-semibold hover:underline" style={{ color: 'var(--accent-primary)' }}>Scott Hazlitt</a>
-            </p>
-            <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
-              <a href="mailto:scott.hazlitt@gmail.com" className="hover:underline" style={{ color: 'var(--accent-primary)' }}>scott.hazlitt@gmail.com</a>
-              <span className="mx-2" style={{ color: 'var(--text-muted)' }}>|</span>
-              <a href="https://www.linkedin.com/in/scott-hazlitt/" target="_blank" rel="noopener noreferrer" className="hover:underline" style={{ color: 'var(--accent-primary)' }}>LinkedIn</a>
-              <span className="mx-2" style={{ color: 'var(--text-muted)' }}>|</span>
-              <Link href="/legal" className="hover:underline" style={{ color: 'var(--accent-primary)' }}>Privacy & Legal</Link>
-            </p>
+      <div className="mx-auto w-full max-w-[1600px] px-4 py-5 sm:px-6 lg:px-8">
+        {/* Top row: branding + social icons */}
+        <div className="flex flex-col items-center gap-3 sm:flex-row sm:justify-between">
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm" style={{ color: 'var(--text-secondary)' }}>
+            <span className="font-semibold" style={{ color: 'var(--text-primary)' }}>AI Canada Pulse</span>
+            <span style={{ color: 'var(--text-muted)' }}>·</span>
+            <span>
+              A project by{' '}
+              <a href="https://scotthazlitt.ai" target="_blank" rel="noopener noreferrer" className="font-semibold hover:underline" style={{ color: 'var(--accent-primary)' }}>
+                Scott Hazlitt
+              </a>
+            </span>
           </div>
 
-          <div className="space-y-2 md:text-right">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.18em]" style={{ color: 'var(--text-muted)' }}>Transparency</p>
-            <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
-              5+ public sources powering Canada signals, benchmarks, market context, and research monitoring.
-            </p>
-            <Link href="/methodology" className="inline-flex text-sm font-semibold hover:underline" style={{ color: 'var(--accent-primary)' }}>
-              View sources and methodology
-            </Link>
+          <div className="flex items-center gap-3">
+            <a
+              href="https://scotthazlitt.ai"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Website"
+              className="transition-opacity hover:opacity-70"
+              style={{ color: 'var(--text-muted)' }}
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10" />
+                <path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+              </svg>
+            </a>
+            <a
+              href="https://www.linkedin.com/in/scott-hazlitt/"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="LinkedIn"
+              className="transition-opacity hover:opacity-70"
+              style={{ color: 'var(--text-muted)' }}
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
+              </svg>
+            </a>
+            <a
+              href="https://github.com/scott-cmd11"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="GitHub"
+              className="transition-opacity hover:opacity-70"
+              style={{ color: 'var(--text-muted)' }}
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12" />
+              </svg>
+            </a>
           </div>
         </div>
 
-        <div className="mt-5 space-y-2 border-t pt-4" style={{ borderColor: 'var(--border-subtle)' }}>
-          <div>
-            <button
-              type="button"
-              aria-expanded={showDisclaimer}
-              aria-controls={disclaimerId}
-              onClick={() => setShowDisclaimer((open) => !open)}
-              className="inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.14em] shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-1"
-              style={{
-                borderColor: 'var(--border-subtle)',
-                backgroundColor: 'var(--surface-primary)',
-                color: 'var(--text-muted)',
-              }}
-            >
-              <span>{showDisclaimer ? "Hide" : "Show"}</span>
-              <span>AI and data disclaimer</span>
-            </button>
-            {showDisclaimer && (
-              <div id={disclaimerId} className="mt-3 max-w-4xl text-xs leading-relaxed" style={{ color: 'var(--text-muted)' }}>
-                <p>
-                  <strong style={{ color: 'var(--text-secondary)' }}>AI Disclaimer:</strong> This platform uses artificial intelligence models to generate article summaries, executive briefs, and sentiment analysis. AI-generated content is marked with a * symbol and should not be treated as authoritative analysis. Market data is delayed and should not be used for trading decisions. Always verify critical information with primary sources.
-                </p>
-                <p className="mt-2 italic">
-                  This is a personal project created on personal time and resources. It does not represent the views of, and is not affiliated with, the Government of Canada or any government department.
-                </p>
-              </div>
-            )}
-          </div>
-
-          <div>
-            <button
-              type="button"
-              aria-expanded={showTechStack}
-              aria-controls={techStackId}
-              onClick={() => setShowTechStack((open) => !open)}
-              className="inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.14em] shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-1"
-              style={{
-                borderColor: 'var(--border-subtle)',
-                backgroundColor: 'var(--surface-primary)',
-                color: 'var(--text-muted)',
-              }}
-            >
-              <span>{showTechStack ? "Hide" : "Show"}</span>
-              <span>Tech stack</span>
-            </button>
-            {showTechStack && (
-              <div id={techStackId} className="mt-3 flex flex-wrap items-center gap-x-1.5 gap-y-1 text-xs" style={{ color: 'var(--text-muted)' }}>
-                <span className="font-semibold uppercase tracking-[0.12em]" style={{ color: 'var(--text-muted)' }}>Built with</span>
-                <a href="https://docs.anthropic.com/en/docs/claude-code" target="_blank" rel="noopener noreferrer" className="hover:underline" style={{ color: 'var(--text-secondary)' }}>Claude Code</a>
-                <span>|</span>
-                <a href="https://github.com/google-gemini/gemini-cli" target="_blank" rel="noopener noreferrer" className="hover:underline" style={{ color: 'var(--text-secondary)' }}>Gemini CLI</a>
-                <span>|</span>
-                <a href="https://nextjs.org" target="_blank" rel="noopener noreferrer" className="hover:underline" style={{ color: 'var(--text-secondary)' }}>Next.js</a>
-                <span>|</span>
-                <a href="https://vercel.com" target="_blank" rel="noopener noreferrer" className="hover:underline" style={{ color: 'var(--text-secondary)' }}>Vercel</a>
-                <span>|</span>
-                <a href="https://tailwindcss.com" target="_blank" rel="noopener noreferrer" className="hover:underline" style={{ color: 'var(--text-secondary)' }}>Tailwind CSS</a>
-                <span>|</span>
-                <a href="https://echarts.apache.org" target="_blank" rel="noopener noreferrer" className="hover:underline" style={{ color: 'var(--text-secondary)' }}>ECharts</a>
-              </div>
-            )}
-          </div>
-        </div>
-
-        <div className="mt-4 border-t pt-4 text-center text-xs" style={{ borderColor: 'var(--border-subtle)', color: 'var(--text-muted)' }}>
+        {/* Bottom row: copyright + links */}
+        <div className="mt-3 flex flex-col items-center gap-2 border-t pt-3 text-xs sm:flex-row sm:justify-between" style={{ borderColor: 'var(--border-subtle)', color: 'var(--text-muted)' }}>
           <p>&copy; {new Date().getFullYear()} AI Canada Pulse. AI-generated content is clearly labelled and may contain errors.</p>
+          <div className="flex items-center gap-3">
+            <Link href="/legal" className="hover:underline" style={{ color: 'var(--text-muted)' }}>Privacy & Legal</Link>
+            <span>·</span>
+            <Link href="/methodology" className="hover:underline" style={{ color: 'var(--text-muted)' }}>Methodology</Link>
+          </div>
         </div>
       </div>
     </footer>
