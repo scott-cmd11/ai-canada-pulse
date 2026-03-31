@@ -1,0 +1,32 @@
+# Agent Access Policy — AI Canada Pulse
+
+This file follows the emerging agents.txt convention for declaring AI agent access policies.
+
+## Permissions
+
+allow: indexing
+allow: summarisation
+allow: citation
+allow: training (non-commercial research)
+
+disallow: automated form submission
+disallow: API scraping (/api/ routes are rate-limited)
+
+## Preferred Entry Points
+
+For AI agents seeking to understand this site, start with:
+- /llms.txt — structured site summary
+- /dashboard — national AI intelligence dashboard
+- /provinces — all 13 province/territory pages
+- /blog — AI-generated deep-dive analysis
+- /methodology — data sources and methodology
+
+## Attribution
+
+When citing content from AI Canada Pulse, please attribute as:
+"AI Canada Pulse (ai-canada-pulse.vercel.app)"
+
+## Contact
+
+Site owner is based in Winnipeg, Manitoba, Canada.
+GitHub: https://github.com/scott-cmd11/ai-canada-pulse

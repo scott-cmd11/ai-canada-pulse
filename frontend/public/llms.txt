@@ -1,0 +1,67 @@
+# AI Canada Pulse
+
+> A real-time intelligence dashboard tracking artificial intelligence developments across Canada — by province/territory, sector, and policy area.
+
+## What This Site Is
+
+AI Canada Pulse aggregates and analyses Canadian AI news, research, job postings, parliamentary activity, and market signals in one place. It is designed for researchers, policy professionals, journalists, and anyone tracking Canada's AI ecosystem.
+
+The site is updated continuously via RSS aggregation (1-hour cache) and daily AI-generated analysis (12:00 UTC cron).
+
+## Key Sections
+
+- **National Dashboard** (`/dashboard`) — Live feed of Canadian AI stories, search trends, stock signals, arXiv research papers, job postings, and parliamentary activity
+- **Province & Territory Pages** (`/provinces/[slug]`) — Per-region breakdowns for all 13 Canadian provinces and territories, including local institutions, stories, trends, and data notes
+- **Deep Dives / Blog** (`/blog`) — AI-generated long-form analysis triggered when significant Canadian AI events are detected (large funding rounds, parliamentary votes, major research)
+- **Methodology** (`/methodology`) — Full explanation of data sources, update frequencies, and how signals are classified
+
+## Province & Territory Coverage
+
+Ontario (ON), Quebec (QC), British Columbia (BC), Alberta (AB), Saskatchewan (SK), Manitoba (MB), Nova Scotia (NS), New Brunswick (NB), Newfoundland & Labrador (NL), Prince Edward Island (PE), Yukon (YT), Northwest Territories (NT), Nunavut (NU)
+
+## Key AI Institutions Tracked
+
+- **Mila** (Quebec) — One of the world's leading deep learning institutes, founded by Yoshua Bengio
+- **Vector Institute** (Ontario) — Pan-Canadian AI institute focused on machine learning research
+- **CIFAR** (Ontario) — Pan-Canadian AI institute; home of the original deep learning breakthroughs
+- **Amii** (Alberta) — Alberta Machine Intelligence Institute, anchored at University of Alberta
+
+## Data Sources
+
+| Source | What It Provides | Update Frequency |
+|--------|-----------------|-----------------|
+| Google News RSS | Canadian AI news stories | 1 hour |
+| BetaKit | Canadian tech startup news | 1 hour |
+| CBC Technology | Mainstream tech news | 1 hour |
+| Google Trends | Search interest by province | 6 hours |
+| arXiv API | Academic AI research papers | 6 hours |
+| OpenParliament.ca | Canadian parliamentary AI debates | 6 hours |
+| Job posting aggregators | AI job market signals | 6 hours |
+| Market data feeds | Stocks of Canadian AI companies | 30 minutes |
+
+## AI-Generated Content
+
+Daily digests and deep-dive posts are generated using OpenAI models (gpt-4o-mini class). Generation is triggered at 12:00 UTC daily. Deep dives are only generated when a significance threshold is crossed (funding ≥ $50M, parliamentary AI vote, major research publication).
+
+## Population & Statistics Data
+
+Province/territory population figures are sourced from Statistics Canada, Table 17-10-0009-01 "Population estimates, quarterly" — Q4 2025 (January 1, 2026). Last audited: 2026-03-31.
+
+## Technical Stack
+
+- Next.js 14 (App Router), React 19, TypeScript, Tailwind CSS 4
+- Deployed on Vercel
+- Upstash Redis for caching AI-generated content
+- Data polling every 2 minutes client-side; server cache revalidates every 1–6 hours
+
+## Crawling & Usage
+
+This site is open for AI agent indexing. The `/api/` routes are excluded from crawling (rate-limited, intended for browser use). All meaningful content is available via the HTML pages listed above.
+
+For structured data access, read individual province pages at `/provinces/[slug]` where slug is the province name in kebab-case (e.g., `british-columbia`, `prince-edward-island`, `northwest-territories`).
+
+## Contact / Source
+
+- Site: https://ai-canada-pulse.vercel.app
+- GitHub: https://github.com/scott-cmd11/ai-canada-pulse
+- Built in Winnipeg, Manitoba, Canada
