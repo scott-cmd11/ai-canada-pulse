@@ -4,6 +4,9 @@ import Link from 'next/link'
 import { listDeepDives } from '@/lib/deep-dive-client'
 import Header from '@/components/Header'
 
+// Must be dynamic — content comes from Redis and updates throughout the day
+export const dynamic = 'force-dynamic'
+
 export async function generateMetadata() {
   return {
     title: 'Deep Dives — AI Canada Pulse',

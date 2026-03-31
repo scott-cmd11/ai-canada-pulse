@@ -5,6 +5,9 @@ import { getDeepDive } from '@/lib/deep-dive-client'
 import DeepDiveView from '@/components/DeepDiveView'
 import Header from '@/components/Header'
 
+// Dynamic — slugs are generated at runtime by the cron, not known at build time
+export const dynamic = 'force-dynamic'
+
 interface Props {
   params: { slug: string }
 }
