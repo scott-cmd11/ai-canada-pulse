@@ -1,7 +1,7 @@
 interface StatItem {
   label: string
   value: string
-  note: string
+  note?: string
   isPositive?: boolean
 }
 

@@ -101,7 +101,13 @@ export default async function ProvincePage({
             {
               label: 'Capital',
               value: province.capital,
-              note: `Pop. ${province.population}`,
+            },
+            {
+              label: `${province.name} population`,
+              value: province.population >= 1
+                ? `${province.population.toFixed(1)}M`
+                : `${Math.round(province.population * 1000)}K`,
+              note: province.populationAsOf,
             },
           ]}
         />

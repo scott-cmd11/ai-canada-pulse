@@ -3,7 +3,9 @@
 // component, and API filtering.
 /**
  * Last audited: 2026-03-31
- * Sources: Stats Canada Q4 2025 population estimates, institutional websites
+ * Population source: Statistics Canada, Table 17-10-0009-01
+ *   "Population estimates, quarterly" — Q4 2025 (January 1, 2026)
+ *   Released March 18, 2026. https://www150.statcan.gc.ca/n1/daily-quotidien/260318/dq260318b-eng.htm
  * Next review recommended: 2027-03-31 (12 months)
  */
 
@@ -32,8 +34,10 @@ export interface ProvinceConfig {
   name: string
   abbreviation: string
   capital: string
-  /** Population in millions */
+  /** Province/territory population in millions (not capital city) */
   population: number
+  /** Source date for population figure, e.g. "Jan 1, 2026 (Stats Canada Q4 2025)" */
+  populationAsOf: string
   /** Geographic region grouping */
   region: ProvinceRegion
   /** 1-2 sentence editorial blurb */
@@ -55,7 +59,8 @@ export const PROVINCES: ProvinceConfig[] = [
     name: "Ontario",
     abbreviation: "ON",
     capital: "Toronto",
-    population: 15.9,
+    population: 16.1,
+    populationAsOf: "Jan 1, 2026 (Stats Canada Q4 2025)",
     region: "Central",
     description:
       "Canada's most populous province. Home to Vector Institute and CIFAR — two of the three Pan-Canadian AI institutes.",
@@ -81,6 +86,7 @@ export const PROVINCES: ProvinceConfig[] = [
     abbreviation: "QC",
     capital: "Quebec City",
     population: 9.0,
+    populationAsOf: "Jan 1, 2026 (Stats Canada Q4 2025)",
     region: "Central",
     description:
       "Home to Mila — one of the world's leading academic deep-learning research institutes, founded by Turing Award winner Yoshua Bengio.",
@@ -103,7 +109,8 @@ export const PROVINCES: ProvinceConfig[] = [
     name: "Alberta",
     abbreviation: "AB",
     capital: "Edmonton",
-    population: 4.8,
+    population: 5.0,
+    populationAsOf: "Jan 1, 2026 (Stats Canada Q4 2025)",
     region: "Prairies",
     description:
       "Home to Amii, the third Pan-Canadian AI institute, anchored at the University of Alberta — a global leader in reinforcement learning research.",
@@ -124,7 +131,8 @@ export const PROVINCES: ProvinceConfig[] = [
     name: "Saskatchewan",
     abbreviation: "SK",
     capital: "Regina",
-    population: 1.2,
+    population: 1.3,
+    populationAsOf: "Jan 1, 2026 (Stats Canada Q4 2025)",
     region: "Prairies",
     description:
       "The University of Saskatchewan leads AI research programmes focused on agriculture, precision farming, and natural resource management.",
@@ -144,7 +152,8 @@ export const PROVINCES: ProvinceConfig[] = [
     name: "Manitoba",
     abbreviation: "MB",
     capital: "Winnipeg",
-    population: 1.4,
+    population: 1.5,
+    populationAsOf: "Jan 1, 2026 (Stats Canada Q4 2025)",
     region: "Prairies",
     description:
       "The University of Manitoba has growing AI and data science research programmes, with strengths in health informatics and Indigenous data sovereignty.",
@@ -165,7 +174,8 @@ export const PROVINCES: ProvinceConfig[] = [
     name: "British Columbia",
     abbreviation: "BC",
     capital: "Victoria",
-    population: 5.6,
+    population: 5.7,
+    populationAsOf: "Jan 1, 2026 (Stats Canada Q4 2025)",
     region: "Pacific",
     description:
       "Home to D-Wave Systems — a global leader in quantum computing — and two major research universities driving AI innovation in Vancouver.",
@@ -189,6 +199,7 @@ export const PROVINCES: ProvinceConfig[] = [
     abbreviation: "NS",
     capital: "Halifax",
     population: 1.1,
+    populationAsOf: "Jan 1, 2026 (Stats Canada Q4 2025)",
     region: "Atlantic",
     description:
       "Dalhousie University leads AI research in Atlantic Canada with strengths in ocean technology, health AI, and marine data science.",
@@ -208,7 +219,8 @@ export const PROVINCES: ProvinceConfig[] = [
     name: "New Brunswick",
     abbreviation: "NB",
     capital: "Fredericton",
-    population: 0.84,
+    population: 0.87,
+    populationAsOf: "Jan 1, 2026 (Stats Canada Q4 2025)",
     region: "Atlantic",
     description:
       "The University of New Brunswick hosts the Canadian Institute for Cybersecurity, a national centre for AI-driven security research.",
@@ -228,7 +240,8 @@ export const PROVINCES: ProvinceConfig[] = [
     name: "Newfoundland & Labrador",
     abbreviation: "NL",
     capital: "St. John's",
-    population: 0.54,
+    population: 0.55,
+    populationAsOf: "Jan 1, 2026 (Stats Canada Q4 2025)",
     region: "Atlantic",
     description:
       "Memorial University conducts AI research applied to ocean science, offshore energy, and remote health delivery across coastal communities.",
@@ -249,6 +262,7 @@ export const PROVINCES: ProvinceConfig[] = [
     abbreviation: "PE",
     capital: "Charlottetown",
     population: 0.18,
+    populationAsOf: "Jan 1, 2026 (Stats Canada Q4 2025)",
     region: "Atlantic",
     description:
       "UPEI's School of Mathematical and Computational Sciences has emerging data science and AI programmes supporting the province's digital economy.",
@@ -269,7 +283,8 @@ export const PROVINCES: ProvinceConfig[] = [
     name: "Yukon",
     abbreviation: "YT",
     capital: "Whitehorse",
-    population: 0.044,
+    population: 0.048,
+    populationAsOf: "Jan 1, 2026 (Stats Canada Q4 2025)",
     region: "North",
     description:
       "Yukon University — Canada's newest university — is building capacity in digital technology and AI to support remote communities and the resource sector.",
@@ -289,7 +304,8 @@ export const PROVINCES: ProvinceConfig[] = [
     name: "Northwest Territories",
     abbreviation: "NT",
     capital: "Yellowknife",
-    population: 0.045,
+    population: 0.046,
+    populationAsOf: "Jan 1, 2026 (Stats Canada Q4 2025)",
     region: "North",
     description:
       "The NWT is investing in broadband connectivity and digital infrastructure to bring AI-assisted services to 33 remote communities across 1.3 million km².",
@@ -307,7 +323,8 @@ export const PROVINCES: ProvinceConfig[] = [
     name: "Nunavut",
     abbreviation: "NU",
     capital: "Iqaluit",
-    population: 0.040,
+    population: 0.042,
+    populationAsOf: "Jan 1, 2026 (Stats Canada Q4 2025)",
     region: "North",
     description:
       "Nunavut is deploying digital infrastructure to connect its 25 remote communities, with growing interest in AI-assisted health diagnostics and Inuktitut language preservation.",

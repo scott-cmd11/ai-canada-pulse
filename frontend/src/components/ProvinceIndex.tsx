@@ -73,7 +73,10 @@ function ProvinceCard({ province }: { province: ProvinceConfig }) {
         <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontFamily: 'var(--font-ui)' }}>
           🏛 {province.capital}
         </span>
-        <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontFamily: 'var(--font-ui)' }}>
+        <span
+          title={`Province/territory population — ${province.populationAsOf}`}
+          style={{ fontSize: '11px', color: 'var(--text-muted)', fontFamily: 'var(--font-ui)', cursor: 'help' }}
+        >
           👥 {popDisplay}
         </span>
       </div>
