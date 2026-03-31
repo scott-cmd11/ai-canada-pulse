@@ -34,7 +34,7 @@ export default function ParliamentSection() {
       <div className="section-header">
         <h2>Parliamentary Records</h2>
       </div>
-      <p className="text-sm mb-4 max-w-3xl leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
+      <p className="text-sm mb-4 max-w-3xl leading-relaxed" style={{ color: 'var(--text-on-invert-muted)' }}>
         Recent mentions of artificial intelligence in House of Commons debates and committee proceedings, sourced from OpenParliament.ca. Tracks which MPs and parties are engaging with AI policy and the tone of their discourse.
       </p>
 
