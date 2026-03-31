@@ -4,7 +4,7 @@ import { timingSafeEqual } from 'crypto'
 import { refreshDashboardEnrichmentBundle } from '@/lib/dashboard-enrichment'
 import { fetchAllStories } from '@/lib/rss-client'
 import { generateDigest, saveDigest, saveDigestError, getDigest } from '@/lib/digest-client'
-import { detectAndGenerateDeepDive, forceGenerateDeepDive } from '@/lib/deep-dive-client'
+import { detectAndGenerateDeepDive, forceGenerateDeepDive, listDeepDives } from '@/lib/deep-dive-client'
 import { generateAndSaveSectionSummaries } from '@/lib/section-summaries-client'
 
 export const dynamic = 'force-dynamic'
@@ -77,9 +77,13 @@ export async function GET(request: NextRequest) {
   }
 
   // Step 4: Check significance + conditionally generate deep-dive
-  const seed = request.nextUrl.searchParams.get('seed') === 'true'
+  // Auto-seed: if the blog has no posts yet, force-generate regardless of threshold.
+  // This means the blog is never empty after the first cron run.
+  const manualSeed = request.nextUrl.searchParams.get('seed') === 'true'
+  const existingPostCount = await listDeepDives(1, 0).then(r => r.length).catch(() => 0)
+  const shouldSeed = manualSeed || existingPostCount === 0
   try {
-    const generate = seed ? forceGenerateDeepDive : detectAndGenerateDeepDive
+    const generate = shouldSeed ? forceGenerateDeepDive : detectAndGenerateDeepDive
     const slug = await generate(
       stories.map((s) => ({
         headline: s.headline,
@@ -90,7 +94,9 @@ export async function GET(request: NextRequest) {
       })),
       today
     )
-    results.deepDive = slug ? `generated: ${slug}` : 'no threshold crossed'
+    results.deepDive = slug
+      ? `generated: ${slug}`
+      : shouldSeed ? 'seed attempted but failed' : 'no threshold crossed'
 
     // Write the deep-dive slug back to today's digest so the homepage callout renders
     if (slug && results.digest === 'generated') {
