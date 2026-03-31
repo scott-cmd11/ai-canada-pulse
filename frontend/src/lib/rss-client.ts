@@ -17,7 +17,11 @@ interface FeedConfig {
 
 export const CANADA_DASHBOARD_STORY_LIMIT = 20
 
+// Internal limit before province filtering — larger pool so smaller provinces get stories
+const INTERNAL_STORY_LIMIT = 50
+
 const FEED_REGISTRY: FeedConfig[] = [
+  // ── National feeds ──
   {
     url: "https://news.google.com/rss/search?q=artificial+intelligence+Canada&hl=en-CA&gl=CA&ceid=CA:en",
     name: "Google News",
@@ -32,6 +36,47 @@ const FEED_REGISTRY: FeedConfig[] = [
     url: "https://www.cbc.ca/webfeed/rss/rss-technology",
     name: "CBC Technology",
     aiOnly: false,
+  },
+  // ── Province-targeted feeds — surfaces stories the national query misses ──
+  {
+    url: "https://news.google.com/rss/search?q=AI+Manitoba+OR+Winnipeg+artificial+intelligence&hl=en-CA&gl=CA&ceid=CA:en",
+    name: "Google News",
+    aiOnly: true,
+  },
+  {
+    url: "https://news.google.com/rss/search?q=AI+Saskatchewan+OR+Regina+OR+Saskatoon+artificial+intelligence&hl=en-CA&gl=CA&ceid=CA:en",
+    name: "Google News",
+    aiOnly: true,
+  },
+  {
+    url: "https://news.google.com/rss/search?q=AI+%22Nova+Scotia%22+OR+Halifax+artificial+intelligence&hl=en-CA&gl=CA&ceid=CA:en",
+    name: "Google News",
+    aiOnly: true,
+  },
+  {
+    url: "https://news.google.com/rss/search?q=AI+%22New+Brunswick%22+OR+Fredericton+OR+Moncton+artificial+intelligence&hl=en-CA&gl=CA&ceid=CA:en",
+    name: "Google News",
+    aiOnly: true,
+  },
+  {
+    url: "https://news.google.com/rss/search?q=AI+Newfoundland+OR+Labrador+OR+%22St+Johns%22+artificial+intelligence&hl=en-CA&gl=CA&ceid=CA:en",
+    name: "Google News",
+    aiOnly: true,
+  },
+  {
+    url: "https://news.google.com/rss/search?q=AI+%22Prince+Edward+Island%22+OR+PEI+OR+Charlottetown+artificial+intelligence&hl=en-CA&gl=CA&ceid=CA:en",
+    name: "Google News",
+    aiOnly: true,
+  },
+  {
+    url: "https://news.google.com/rss/search?q=AI+Alberta+OR+Edmonton+OR+Calgary+artificial+intelligence+Amii&hl=en-CA&gl=CA&ceid=CA:en",
+    name: "Google News",
+    aiOnly: true,
+  },
+  {
+    url: "https://news.google.com/rss/search?q=AI+%22British+Columbia%22+OR+Vancouver+OR+Victoria+artificial+intelligence&hl=en-CA&gl=CA&ceid=CA:en",
+    name: "Google News",
+    aiOnly: true,
   },
 ]
 
@@ -212,8 +257,9 @@ async function _fetchAllStories(): Promise<Story[]> {
     (a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime()
   )
 
-  // Limit to the story count surfaced by the Canada dashboard/feed.
-  allStories = allStories.slice(0, CANADA_DASHBOARD_STORY_LIMIT)
+  // Keep a larger pool internally so province filtering has enough to work with.
+  // The dashboard UI applies its own CANADA_DASHBOARD_STORY_LIMIT display cap.
+  allStories = allStories.slice(0, INTERNAL_STORY_LIMIT)
 
   // Mark the most recent story as the briefing top
   if (allStories.length > 0) {
