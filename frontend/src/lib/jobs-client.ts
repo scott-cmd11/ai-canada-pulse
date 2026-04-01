@@ -16,6 +16,10 @@ const CKAN_API = `https://open.canada.ca/data/api/3/action/package_show?id=${DAT
 const CACHE_TTL = 24 * 60 * 60 // 24 hours
 const FETCH_TIMEOUT_MS = 60_000
 
+// Fallback CSV URL — used when CKAN discovery fails (e.g. blocked on Vercel's network).
+// Update this monthly when the new CSV is published. Format: -en-{mon}{year}.csv
+const FALLBACK_CSV_URL = 'https://open.canada.ca/data/dataset/ea639e28-c0fc-48bf-b5dd-b8899bd43072/resource/e8c27948-6a40-452b-8d7d-2e1b799ca8aa/download/job-bank-open-data-all-job-postings-en-feb2026.csv'
+
 export interface JobMarketData {
   totalAIJobs: number
   averageSalary: number | null
@@ -224,10 +228,10 @@ async function parseCsvStats(csvUrl: string): Promise<Omit<JobMarketData, 'sourc
  * The 39MB CSV is too large to stream within a regular serverless function timeout.
  */
 export async function refreshJobBankStats(): Promise<JobMarketData | null> {
-  const resource = await discoverCsvUrl()
+  let resource = await discoverCsvUrl()
   if (!resource) {
-    console.warn('[jobs-client] Could not discover Job Bank CSV URL')
-    return null
+    console.warn('[jobs-client] CKAN discovery failed — falling back to hardcoded CSV URL')
+    resource = { url: FALLBACK_CSV_URL, name: 'fallback' }
   }
 
   const monthMatch = resource.url.match(/-en-([a-z]+)(\d{4})\.csv$/i)
