@@ -6,6 +6,29 @@ interface Props {
   story: Story
 }
 
+function isSummaryRedundant(headline: string, summary: string): boolean {
+  const norm = (s: string) => s.toLowerCase().replace(/[^a-z0-9 ]/g, '').trim()
+  const h = norm(headline)
+  const s = norm(summary)
+
+  // Too short to add value
+  if (s.length < 20) return true
+
+  // One contains the other
+  if (s.startsWith(h) || h.startsWith(s)) return true
+
+  // Word-level Jaccard similarity — redundant if >60% overlap
+  const hWords = h.split(/\s+/)
+  const sWords = s.split(/\s+/)
+  const sWordSet = new Set(sWords)
+  let overlap = 0
+  hWords.forEach(w => { if (sWordSet.has(w)) overlap++ })
+  const allWords = new Set(hWords.concat(sWords))
+  if (allWords.size > 0 && overlap / allWords.size > 0.6) return true
+
+  return false
+}
+
 const categoryColors: Record<string, string> = {
   "Policy & Regulation": "var(--cat-policy)",
   "Industry & Startups": "var(--cat-markets)",
@@ -68,7 +91,7 @@ export default function StoryCard({ story }: Props) {
                 {story.aiSummary}
               </p>
             </div>
-          ) : story.summary && !story.headline.startsWith(story.summary.split("  ")[0]) ? (
+          ) : story.summary && !isSummaryRedundant(story.headline, story.summary) ? (
             <p className="text-sm leading-7" style={{ color: 'var(--text-secondary)' }}>
               {story.summary}
             </p>

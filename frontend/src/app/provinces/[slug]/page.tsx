@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import { getProvinceBySlug, getAllProvinceSlugs } from '@/lib/provinces-config';
+import { fetchRegionalInterest, getProvinceInterest } from '@/lib/trends-regional-client';
 import Header from '@/components/Header';
 import ProvinceHero from '@/components/ProvinceHero';
 import ProvinceStatsRibbon from '@/components/ProvinceStatsRibbon';
@@ -54,6 +55,14 @@ export default async function ProvincePage({
     .map((i) => i.name)
     .join(' · ');
 
+  // Fetch search interest ranking for this province
+  const trendsData = province.sections.trends ? await fetchRegionalInterest() : null;
+  const provinceInterest = trendsData ? getProvinceInterest(trendsData, province.abbreviation) : null;
+  const searchRank = provinceInterest && trendsData
+    ? trendsData.provinces.findIndex(p => p.code.toUpperCase() === province.abbreviation.toUpperCase()) + 1
+    : null;
+  const totalRegions = trendsData?.provinces.length ?? 13;
+
   return (
     <div style={{ background: 'var(--bg-page)', color: 'var(--text-primary)' }}>
       <Header />
@@ -90,9 +99,11 @@ export default async function ProvincePage({
         <ProvinceStatsRibbon
           stats={[
             {
-              label: 'Search Interest',
-              value: '—',
-              note: province.sections.trends ? 'See trends section below' : 'Not tracked',
+              label: 'AI Search Interest',
+              value: searchRank ? `#${searchRank} of ${totalRegions}` : '—',
+              note: searchRank
+                ? 'Rank among provinces & territories · Google Trends'
+                : province.sections.trends ? 'Data unavailable' : 'Not tracked',
             },
             {
               label: 'AI Institutes',
