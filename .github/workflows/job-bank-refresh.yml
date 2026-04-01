@@ -19,8 +19,8 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Install csv-parse
-        run: npm install csv-parse
+      - name: Install csv-parse and iconv-lite
+        run: npm install csv-parse iconv-lite
         working-directory: .github/scripts
 
       # csv-parse needs a package.json to be importable as CJS via createRequire

@@ -16,6 +16,7 @@ import { Readable } from 'stream'
 
 const require = createRequire(import.meta.url)
 const { parse } = require('csv-parse')
+const iconv = require('iconv-lite')
 
 const CKAN_API = 'https://open.canada.ca/data/api/3/action/package_show?id=ea639e28-c0fc-48bf-b5dd-b8899bd43072'
 const CACHE_KEY = 'jobbank-csv-stats'
@@ -170,7 +171,8 @@ async function parseCsvStats(csvUrl) {
     })
 
     parser.on('error', reject)
-    nodeStream.pipe(parser)
+    // The Job Bank CSV is UTF-16 LE encoded (BOM \xff\xfe) — decode to UTF-8 before parsing
+    nodeStream.pipe(iconv.decodeStream('utf-16le')).pipe(parser)
   })
 }
 
