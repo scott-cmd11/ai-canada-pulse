@@ -1,0 +1,34 @@
+name: Job Bank CSV Refresh
+
+on:
+  schedule:
+    # Run daily at 11:00 UTC — one hour before the Vercel cron (12:00 UTC)
+    # so Redis has fresh data when the dashboard enrichment runs
+    - cron: '0 11 * * *'
+  workflow_dispatch: # Allow manual trigger from GitHub UI
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install csv-parse
+        run: npm install csv-parse
+        working-directory: .github/scripts
+
+      # csv-parse needs a package.json to be importable as CJS via createRequire
+      - name: Create package.json for script
+        run: echo '{"type":"module"}' > .github/scripts/package.json
+
+      - name: Run Job Bank refresh
+        env:
+          UPSTASH_REDIS_REST_URL: ${{ secrets.UPSTASH_REDIS_REST_URL }}
+          UPSTASH_REDIS_REST_TOKEN: ${{ secrets.UPSTASH_REDIS_REST_TOKEN }}
+        run: node .github/scripts/refresh-job-bank.mjs
