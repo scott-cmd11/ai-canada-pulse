@@ -92,6 +92,34 @@ function normalizeProvince(raw: string): string {
   return map[p] ?? p
 }
 
+/**
+ * Resolve the final download URL for a CSV resource.
+ * open.canada.ca redirects to a time-limited Azure Blob SAS URL.
+ * We follow the redirect (HEAD request) to get the actual Azure URL,
+ * which Vercel can reach even if open.canada.ca is blocked.
+ */
+async function resolveDownloadUrl(catalogUrl: string): Promise<string> {
+  try {
+    const controller = new AbortController()
+    const timer = setTimeout(() => controller.abort(), 10_000)
+    const res = await fetch(catalogUrl, {
+      method: 'HEAD',
+      signal: controller.signal,
+      redirect: 'follow',
+      headers: { 'User-Agent': 'AICanadaPulse/1.0 (open data research)' },
+    })
+    clearTimeout(timer)
+    // After following redirects, res.url is the final resolved URL
+    if (res.ok && res.url && res.url !== catalogUrl) {
+      console.log(`[jobs-client] Resolved CSV URL: ${res.url.slice(0, 80)}...`)
+      return res.url
+    }
+  } catch (err) {
+    console.warn('[jobs-client] URL resolution failed, using original:', err)
+  }
+  return catalogUrl
+}
+
 /** Discover latest English CSV URL via CKAN API. Returns null on failure. */
 async function discoverCsvUrl(): Promise<{ url: string; name: string } | null> {
   try {
@@ -112,8 +140,11 @@ async function discoverCsvUrl(): Promise<{ url: string; name: string } | null> {
     const enCSVs = resources.filter(
       (r) => r.url.includes('-en-') && r.url.endsWith('.csv')
     )
-    console.log(`[jobs-client] Discovered ${enCSVs.length} English CSVs, using: ${enCSVs[0]?.url}`)
-    return enCSVs[0] ?? null
+    if (!enCSVs[0]) return null
+    // Resolve redirect to get direct Azure Blob URL (avoids open.canada.ca on each fetch)
+    const resolvedUrl = await resolveDownloadUrl(enCSVs[0].url)
+    console.log(`[jobs-client] Discovered ${enCSVs.length} English CSVs, using resolved URL`)
+    return { url: resolvedUrl, name: enCSVs[0].name }
   } catch (err) {
     console.warn('[jobs-client] CKAN API discovery failed:', err)
     return null
@@ -231,7 +262,8 @@ export async function refreshJobBankStats(): Promise<JobMarketData | null> {
   let resource = await discoverCsvUrl()
   if (!resource) {
     console.warn('[jobs-client] CKAN discovery failed — falling back to hardcoded CSV URL')
-    resource = { url: FALLBACK_CSV_URL, name: 'fallback' }
+    const resolvedFallback = await resolveDownloadUrl(FALLBACK_CSV_URL)
+    resource = { url: resolvedFallback, name: 'fallback' }
   }
 
   const monthMatch = resource.url.match(/-en-([a-z]+)(\d{4})\.csv$/i)
