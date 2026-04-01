@@ -6,6 +6,17 @@
 
 const TIMEOUT_MS = 15_000
 
+function githubHeaders(): Record<string, string> {
+    const headers: Record<string, string> = {
+        Accept: "application/vnd.github.v3+json",
+        "User-Agent": "AICanadaPulse/1.0",
+    }
+    if (process.env.GITHUB_TOKEN) {
+        headers["Authorization"] = `Bearer ${process.env.GITHUB_TOKEN}`
+    }
+    return headers
+}
+
 export interface GitHubRepo {
     name: string
     fullName: string
@@ -75,10 +86,7 @@ async function fetchRepos(): Promise<{
                     const res = await fetch(
                         `https://api.github.com/search/repositories?q=${encoded}&sort=stars&order=desc&per_page=10`,
                         {
-                            headers: {
-                                Accept: "application/vnd.github.v3+json",
-                                "User-Agent": "AICanadaPulse/1.0",
-                            },
+                            headers: githubHeaders(),
                             signal: controller.signal,
                         }
                     )
@@ -141,10 +149,7 @@ async function fetchReadmeExcerpt(fullName: string): Promise<string | null> {
         const timer = setTimeout(() => controller.abort(), 8000)
 
         const res = await fetch(`https://api.github.com/repos/${fullName}/readme`, {
-            headers: {
-                Accept: "application/vnd.github.v3+json",
-                "User-Agent": "AICanadaPulse/1.0",
-            },
+            headers: githubHeaders(),
             signal: controller.signal,
         })
         clearTimeout(timer)
@@ -219,10 +224,7 @@ async function fetchDeveloperCount(): Promise<number> {
         const res = await fetch(
             `https://api.github.com/search/users?q=${query}&per_page=1`,
             {
-                headers: {
-                    Accept: "application/vnd.github.v3+json",
-                    "User-Agent": "AICanadaPulse/1.0",
-                },
+                headers: githubHeaders(),
                 signal: controller.signal,
             }
         )
