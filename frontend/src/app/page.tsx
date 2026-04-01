@@ -94,8 +94,34 @@ async function DigestContent() {
     )
   }
 
-  // Pending: cron hasn't run yet today — show headlines so the page isn't empty
+  // Pending: cron hasn't run yet today — try yesterday's digest before falling back to headlines
   if (!digest) {
+    const yesterday = new Date(Date.UTC(
+      parseInt(today.slice(0, 4)),
+      parseInt(today.slice(5, 7)) - 1,
+      parseInt(today.slice(8, 10)) - 1,
+    )).toISOString().split('T')[0]
+
+    let previousDigest = null
+    try {
+      previousDigest = await getDigest(yesterday)
+    } catch {
+      // ignore — fall through to headlines
+    }
+
+    if (previousDigest && !previousDigest.error) {
+      return (
+        <>
+          <div style={{ maxWidth: '680px', margin: '0 auto', padding: '12px 20px', borderBottom: '1px solid var(--border-subtle)' }}>
+            <p style={{ fontSize: '13px', color: 'var(--text-muted)', margin: 0 }}>
+              Today&apos;s digest is being prepared — publishes after 12:00 UTC.
+            </p>
+          </div>
+          <DigestView digest={previousDigest} isToday={false} />
+        </>
+      )
+    }
+
     const stories = await fetchHeadlines()
     return (
       <HeadlinesFallback
