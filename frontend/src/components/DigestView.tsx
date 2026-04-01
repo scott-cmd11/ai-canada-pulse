@@ -6,27 +6,18 @@
 import Link from 'next/link'
 import type { DailyDigest } from '@/lib/digest-types'
 
-const TAG_COLORS: Record<string, string> = {
-  Policy: '#3b82f6',
-  Research: '#8b5cf6',
-  Funding: '#10b981',
-  Markets: '#f59e0b',
-  Regulation: '#ef4444',
-  Talent: '#06b6d4',
-}
-
 function TagBadge({ tag }: { tag: string }) {
-  const color = TAG_COLORS[tag] ?? '#6b7280'
   return (
     <span
       style={{
-        backgroundColor: `color-mix(in srgb, ${color} 12%, var(--surface-primary))`,
-        color,
-        border: `1px solid color-mix(in srgb, ${color} 20%, var(--surface-primary))`,
+        backgroundColor: 'var(--surface-secondary, var(--surface-primary))',
+        color: 'var(--text-muted)',
+        border: '1px solid var(--border-subtle)',
         borderRadius: '4px',
         padding: '2px 8px',
         fontSize: '11px',
         fontWeight: 600,
+        letterSpacing: '0.03em',
       }}
     >
       {tag}
@@ -121,7 +112,6 @@ export default function DigestView({ digest, isToday }: Props) {
         </p>
         <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '12px' }}>
           {digest.developments.map((dev, i) => {
-            const color = TAG_COLORS[dev.tag] ?? '#6b7280'
             return (
               <li key={i} style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
                 <span
@@ -129,7 +119,7 @@ export default function DigestView({ digest, isToday }: Props) {
                     width: '6px',
                     height: '6px',
                     borderRadius: '50%',
-                    background: color,
+                    background: 'var(--text-muted)',
                     marginTop: '8px',
                     flexShrink: 0,
                   }}
