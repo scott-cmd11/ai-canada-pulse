@@ -45,6 +45,10 @@ const PARTY_MAP: Record<string, string> = {
   independent: 'Independent',
 }
 
+// Content relevance check — filters out false positives from "intelligence" matching
+// security/espionage contexts rather than artificial intelligence
+const AI_RELEVANT = /\b(artificial intelligence|machine learning|intelligence artificielle|apprentissage (automatique|profond)|deep learning|neural network|generative ai|IA générative|LLM|large language model|AIDA|chatgpt|openai|algorithmic)\b/i
+
 // Queries run in parallel — covers English and French Hansard
 const SEARCH_QUERIES = [
   'artificial intelligence',
@@ -56,6 +60,9 @@ function parseIsoDate(text: string): string {
   // "March 26th, 2026" → "2026-03-26"
   const match = text.match(/(\w+)\s+(\d+)[a-z]*,\s+(\d{4})/i)
   if (!match) return ''
+  const year = parseInt(match[3])
+  // Sanity-check year — committee HTML occasionally has numeric noise
+  if (year < 1994 || year > 2035) return ''
   const month = MONTH_MAP[match[1]] ?? '00'
   return `${match[3]}-${month}-${match[2].padStart(2, '0')}`
 }
@@ -108,7 +115,8 @@ function parseSearchHtml(html: string): ParliamentMention[] {
     const dateTextMatch = block.match(/<p>([A-Z][a-z]+ \d+[a-z]*, \d{4})/)
     const date = dateTextMatch ? parseIsoDate(dateTextMatch[1]) : ''
 
-    if (excerpt.length > 10) {
+    // Only include if the excerpt or topic contains recognisable AI terminology
+    if (excerpt.length > 10 && (AI_RELEVANT.test(excerpt) || AI_RELEVANT.test(topic))) {
       mentions.push({ url: speechUrl, date, speaker, party, topic, excerpt })
     }
   }
