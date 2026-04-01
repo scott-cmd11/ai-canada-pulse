@@ -1,5 +1,5 @@
 /**
- * Last audited: 2026-03-28
+ * Last audited: 2026-04-01
  * Sources: Conference websites, Mila/Vector event pages
  * Next review recommended: 2026-06-28 (3 months — events change frequently)
  *
@@ -74,7 +74,7 @@ export const AI_EVENTS: AIEvent[] = [
     provinceSlug: "quebec",
     type: "Conference",
     organizer: "Scale AI",
-    url: "https://allinevent.ai/en",
+    url: "https://allinevent.ai/",
     description: "Canada's premier applied AI conference, organised by Scale AI supercluster. Focus on AI adoption in industry.",
     lastVerified: "2026-03-28",
   },
@@ -88,7 +88,7 @@ export const AI_EVENTS: AIEvent[] = [
     provinceSlug: "british-columbia",
     type: "Conference",
     organizer: "Canadian Artificial Intelligence Association",
-    url: "https://www.caiac.ca/en/conferences/canadai-2026/home",
+    url: "https://caiac.ca/conferences/",
     description: "Annual conference of the Canadian AI Association at SFU Burnaby, featuring academic papers, industry talks, and graduate student symposium.",
     lastVerified: "2026-03-28",
   },
@@ -209,7 +209,7 @@ export const AI_EVENTS: AIEvent[] = [
     provinceSlug: "saskatchewan",
     type: "Summit",
     organizer: "University of Saskatchewan",
-    url: "https://www.cs.usask.ca/events/",
+    url: "https://www.usask.ca/events/",
     description: "Regional summit on AI applications in agriculture, natural resources, and public services in the Prairie provinces.",
     lastVerified: "2026-03-28",
   },
