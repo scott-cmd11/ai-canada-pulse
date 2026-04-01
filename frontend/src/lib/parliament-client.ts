@@ -1,7 +1,8 @@
 // OpenParliament.ca API client
-// Tracks AI-related mentions in House of Commons debates
+// Tracks AI-related mentions in the federal House of Commons (Hansard).
 // Source: OpenParliament.ca — https://api.openparliament.ca/
 // Data originates from Hansard (official transcripts), bilingual (EN + FR).
+// NOTE: Federal Parliament only — does not cover the Senate or provincial/territorial legislatures.
 // Docs: https://api.openparliament.ca/
 
 const OPENPARL_BASE = "https://api.openparliament.ca"
@@ -28,9 +29,75 @@ interface CacheEntry {
 
 let cache: CacheEntry | null = null
 
-// Bilingual keyword filter — Parliament debates are in both English and French.
-// French equivalents added for key terms to capture Hansard entries in either official language.
+// Bilingual keyword filter — used to verify content relevance after a search result is returned.
 const AI_KEYWORDS = /artificial intelligence|machine learning|generative ai|aida|algorithmic|deep learning|large language model|chatgpt|openai|AI\s+regulation|AI\s+act|intelligence artificielle|apprentissage automatique|apprentissage profond|modèle de langage|IA générative|réglementation.*IA|loi.*IA/i
+
+// Search queries sent to OpenParliament.ca's full-text search API.
+// Multiple targeted queries are run in parallel and deduplicated — this covers all of Hansard history,
+// not just the 5 most recent debates.
+const SEARCH_QUERIES = [
+  "artificial intelligence",
+  "intelligence artificielle",
+  "machine learning",
+  "generative AI",
+]
+
+/** Extract date from a speech object returned by the search API. */
+function extractDate(speech: Record<string, unknown>): string {
+  // Nested debate/document object
+  const debate = speech.debate ?? speech.document
+  if (debate && typeof debate === "object") {
+    const d = (debate as Record<string, unknown>).date
+    if (typeof d === "string") return d
+  }
+  // Direct date field (some API variants)
+  if (typeof speech.date === "string") return speech.date
+  // Parse from URL pattern e.g. /debates/2024-11-20/ embedded in speech.url
+  const url = typeof speech.url === "string" ? speech.url : ""
+  const dateMatch = url.match(/\d{4}-\d{2}-\d{2}/)
+  if (dateMatch) return dateMatch[0]
+  return ""
+}
+
+/** Run a single search query against OpenParliament.ca and return matching mentions. */
+async function searchParliament(query: string): Promise<ParliamentMention[]> {
+  const url = `${OPENPARL_BASE}/search/?q=${encodeURIComponent(query)}&format=json&limit=20&sort=date`
+  let res: Response
+  try {
+    res = await fetch(url, {
+      headers: { "Accept": "application/json", "User-Agent": "AICanadaPulse/1.0" },
+      signal: AbortSignal.timeout(12_000),
+    })
+    if (!res.ok) return []
+  } catch {
+    return []
+  }
+
+  const json = await res.json()
+  const objects: Record<string, unknown>[] = json.objects ?? []
+
+  return objects.flatMap((speech) => {
+    const contentEn = (speech.content as Record<string, string> | undefined)?.en ?? ""
+    const textContent = contentEn.replace(/<[^>]+>/g, "")
+
+    // Content relevance check — skip speeches that matched the query but are off-topic
+    if (!AI_KEYWORDS.test(textContent)) return []
+
+    const attribution = (speech.attribution as Record<string, string> | undefined)?.en ?? ""
+    const { name, party } = parseAttribution(attribution)
+    const h2 = (speech.h2 as Record<string, string> | undefined)?.en
+    const h1 = (speech.h1 as Record<string, string> | undefined)?.en
+
+    return [{
+      url: `https://openparliament.ca${speech.url as string}`,
+      date: extractDate(speech),
+      speaker: name || "Unknown",
+      party,
+      topic: h2 || h1 || "House Debate",
+      excerpt: extractAIExcerpt(textContent, 250),
+    }]
+  })
+}
 
 export async function fetchParliamentAIMentions(): Promise<ParliamentData> {
   if (cache && Date.now() - cache.fetchedAt < CACHE_TTL) {
@@ -38,50 +105,24 @@ export async function fetchParliamentAIMentions(): Promise<ParliamentData> {
   }
 
   try {
-    // Step 1: Get recent debate dates
-    const debatesRes = await fetch(`${OPENPARL_BASE}/debates/?format=json&limit=10`, {
-      headers: { "Accept": "application/json", "User-Agent": "AICanadaPulse/1.0" },
-      signal: AbortSignal.timeout(10_000),
-    })
-    if (!debatesRes.ok) return cache?.data ?? { mentions: [], totalCount: 0 }
+    // Run all search queries in parallel — searches across all of Hansard history
+    const results = await Promise.allSettled(SEARCH_QUERIES.map(searchParliament))
 
-    const debatesJson = await debatesRes.json()
-    const debates: Array<{ date: string; url: string }> = debatesJson.objects ?? []
-
-    // Step 2: For each recent debate, fetch speeches and search for AI mentions
+    // Merge and deduplicate by URL, then sort newest-first
+    const seen = new Set<string>()
     const allMentions: ParliamentMention[] = []
 
-    // Check up to 5 recent debates
-    for (const debate of debates.slice(0, 5)) {
-      const speechesUrl = `${OPENPARL_BASE}/speeches/?document=${encodeURIComponent(debate.url)}&format=json&limit=100`
-      const speechesRes = await fetch(speechesUrl, {
-        headers: { "Accept": "application/json", "User-Agent": "AICanadaPulse/1.0" },
-        signal: AbortSignal.timeout(8_000),
-      })
-      if (!speechesRes.ok) continue
-
-      const speechesJson = await speechesRes.json()
-      const speeches = speechesJson.objects ?? []
-
-      for (const speech of speeches) {
-        const contentEn = speech.content?.en || ""
-        const textContent = contentEn.replace(/<[^>]+>/g, "")
-
-        if (AI_KEYWORDS.test(textContent)) {
-          const attribution = speech.attribution?.en || ""
-          const { name, party } = parseAttribution(attribution)
-
-          allMentions.push({
-            url: `https://openparliament.ca${speech.url}`,
-            date: debate.date,
-            speaker: name || "Unknown",
-            party,
-            topic: speech.h2?.en || speech.h1?.en || "House Debate",
-            excerpt: extractAIExcerpt(textContent, 250),
-          })
+    for (const result of results) {
+      if (result.status === "rejected") continue
+      for (const mention of result.value) {
+        if (!seen.has(mention.url)) {
+          seen.add(mention.url)
+          allMentions.push(mention)
         }
       }
     }
+
+    allMentions.sort((a, b) => b.date.localeCompare(a.date))
 
     const data: ParliamentData = {
       mentions: allMentions.slice(0, 15),

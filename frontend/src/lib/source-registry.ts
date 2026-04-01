@@ -45,7 +45,7 @@ export const SOURCES: DataSource[] = [
     id: "openparliament",
     name: "OpenParliament.ca",
     url: "https://openparliament.ca",
-    description: "Mentions of artificial intelligence in Canadian parliamentary proceedings (Hansard)",
+    description: "AI mentions in the federal House of Commons (Hansard). Federal Parliament only — does not cover Senate or provincial/territorial legislatures.",
     type: "government",
     refreshInterval: "24h",
     clientFile: "parliament-client.ts",
