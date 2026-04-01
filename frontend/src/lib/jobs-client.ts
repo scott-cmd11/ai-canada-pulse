@@ -1,14 +1,20 @@
-// Canadian AI job market data via free public sources
-// Primary: Indeed RSS (no API key needed)
-// Fallback: Static aggregate estimates from public reports
+// Canadian AI job market data via Government of Canada Job Bank open data
+// Source: https://open.canada.ca/data/en/dataset/ea639e28-c0fc-48bf-b5dd-b8899bd43072
+// Monthly CSV — no API key, no auth. Cached in Redis for 24h.
 
-import { unstable_cache } from "next/cache"
-import Parser from "rss-parser"
+import { Redis } from '@upstash/redis'
+import { parse } from 'csv-parse'
+import { Readable } from 'stream'
 
-const parser = new Parser({
-  timeout: 10000,
-  headers: { "User-Agent": "AICanadaPulse/1.0 (news aggregator)" },
+const redis = new Redis({
+  url: process.env.UPSTASH_REDIS_REST_URL!,
+  token: process.env.UPSTASH_REDIS_REST_TOKEN!,
 })
+
+const DATASET_ID = 'ea639e28-c0fc-48bf-b5dd-b8899bd43072'
+const CKAN_API = `https://open.canada.ca/data/api/3/action/package_show?id=${DATASET_ID}`
+const CACHE_TTL = 24 * 60 * 60 // 24 hours
+const FETCH_TIMEOUT_MS = 60_000
 
 export interface JobMarketData {
   totalAIJobs: number
@@ -24,166 +30,278 @@ export interface JobMarketData {
     created: string
   }>
   searchTerms: Array<{ term: string; count: number }>
+  source?: 'jobbank-csv' | 'fallback'
+  dataMonth?: string // e.g. "February 2026"
 }
 
-const SEARCH_QUERIES = [
-  { term: "artificial intelligence", query: "artificial+intelligence" },
-  { term: "machine learning", query: "machine+learning" },
-  { term: "data scientist", query: "data+scientist" },
-  { term: "LLM engineer", query: "LLM+engineer" },
-  { term: "generative AI", query: "generative+AI" },
+// AI keyword groups — each group maps to a display term
+const KEYWORD_GROUPS: Array<{ term: string; keywords: string[] }> = [
+  { term: 'artificial intelligence', keywords: ['artificial intelligence', 'ai engineer', 'ai developer', 'ai specialist'] },
+  { term: 'machine learning', keywords: ['machine learning', 'ml engineer', 'mlops'] },
+  { term: 'data scientist', keywords: ['data scientist', 'data science'] },
+  { term: 'LLM / generative AI', keywords: ['llm', 'large language model', 'generative ai', 'gen ai'] },
+  { term: 'NLP / computer vision', keywords: ['nlp', 'natural language', 'computer vision', 'deep learning', 'neural network'] },
 ]
 
-async function _fetchAIJobMarket(province?: string): Promise<JobMarketData | null> {
+const ALL_KEYWORDS = KEYWORD_GROUPS.flatMap((g) => g.keywords)
+
+function titleMatchesAI(title: string): boolean {
+  const t = title.toLowerCase()
+  return ALL_KEYWORDS.some((kw) => t.includes(kw))
+}
+
+function matchedTerms(title: string): string[] {
+  const t = title.toLowerCase()
+  return KEYWORD_GROUPS
+    .filter((g) => g.keywords.some((kw) => t.includes(kw)))
+    .map((g) => g.term)
+}
+
+function toAnnualSalary(min: string, max: string, per: string): number | null {
+  const lo = parseFloat(min)
+  const hi = parseFloat(max)
+  if (isNaN(lo) && isNaN(hi)) return null
+  const mid = isNaN(lo) ? hi : isNaN(hi) ? lo : (lo + hi) / 2
+  const perLower = (per ?? '').toLowerCase()
+  if (perLower.includes('hour')) return Math.round(mid * 2080)
+  if (perLower.includes('year') || perLower.includes('annual')) return Math.round(mid)
+  return null
+}
+
+function normalizeProvince(raw: string): string {
+  const p = (raw ?? '').trim()
+  const map: Record<string, string> = {
+    'Ontario': 'Ontario',
+    'Quebec': 'Quebec',
+    'British Columbia': 'British Columbia',
+    'Alberta': 'Alberta',
+    'Manitoba': 'Manitoba',
+    'Saskatchewan': 'Saskatchewan',
+    'Nova Scotia': 'Nova Scotia',
+    'New Brunswick': 'New Brunswick',
+    'Newfoundland and Labrador': 'Newfoundland and Labrador',
+    'Prince Edward Island': 'Prince Edward Island',
+    'Northwest Territories': 'Northwest Territories',
+    'Nunavut': 'Nunavut',
+    'Yukon': 'Yukon',
+  }
+  return map[p] ?? p
+}
+
+/** Discover latest English CSV URL via CKAN API. Returns null on failure. */
+async function discoverCsvUrl(): Promise<{ url: string; name: string } | null> {
   try {
-    const sampleJobs: JobMarketData["sampleJobs"] = []
-    const locationCounts: Record<string, number> = {}
-    const categoryCounts: Record<string, number> = {}
-    const searchTermCounts: Array<{ term: string; count: number }> = []
-
-    for (const { term, query } of SEARCH_QUERIES) {
-      try {
-        // Indeed Canada RSS feed — free, no API key
-        const location = province ? encodeURIComponent(province) : "Canada"
-        const feedUrl = `https://ca.indeed.com/rss?q=${query}&l=${location}&sort=date`
-        const feed = await parser.parseURL(feedUrl)
-        const items = feed.items || []
-        const count = items.length
-
-        searchTermCounts.push({ term, count })
-
-        for (const item of items.slice(0, 5)) {
-          const title = item.title || "Untitled"
-          const link = item.link || ""
-
-          // Parse location from title or description (Indeed format: "Title - Company - City, Province")
-          const parts = title.split(" - ")
-          const jobTitle = parts[0]?.trim() || title
-          const company = parts[1]?.trim() || "Unknown"
-          const location = parts[2]?.trim() || "Canada"
-
-          // Track locations
-          const province = extractProvince(location)
-          locationCounts[province] = (locationCounts[province] || 0) + 1
-
-          // Track categories
-          const cat = categorizeJob(jobTitle)
-          categoryCounts[cat] = (categoryCounts[cat] || 0) + 1
-
-          if (sampleJobs.length < 8) {
-            sampleJobs.push({
-              title: jobTitle,
-              company,
-              location,
-              salary: null,
-              url: link,
-              created: item.isoDate || item.pubDate || new Date().toISOString(),
-            })
-          }
-        }
-      } catch (err) {
-        console.warn(`[jobs-client] Failed to fetch Indeed RSS for "${term}":`, err)
-        // Use fallback estimate for this term
-        searchTermCounts.push({ term, count: 0 })
-      }
-    }
-
-    // If we got zero results from RSS, use public report estimates
-    const totalFromFeeds = searchTermCounts.reduce((s, t) => s + t.count, 0)
-
-    if (totalFromFeeds === 0) {
-      // Fallback: estimated figures from public Canadian AI labour reports
-      return getFallbackData()
-    }
-
-    // Approximate total by scaling: Indeed RSS returns ~25 per query, real totals much higher
-    const estimatedTotal = totalFromFeeds * 120 // Conservative multiplier
-
-    const data: JobMarketData = {
-      totalAIJobs: estimatedTotal,
-      averageSalary: 105000, // Canadian AI avg from public salary surveys
-      topCategories: Object.entries(categoryCounts)
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, 8)
-        .map(([category, count]) => ({ category, count })),
-      topLocations: Object.entries(locationCounts)
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, 8)
-        .map(([location, count]) => ({ location, count })),
-      sampleJobs,
-      searchTerms: searchTermCounts,
-    }
-
-    return data
-  } catch (err) {
-    console.warn("[jobs-client] Failed to fetch AI job market:", err)
-    return getFallbackData()
+    const controller = new AbortController()
+    const timer = setTimeout(() => controller.abort(), 15_000)
+    const res = await fetch(CKAN_API, { signal: controller.signal })
+    clearTimeout(timer)
+    if (!res.ok) return null
+    const data = await res.json()
+    const resources: Array<{ url: string; name: string }> = data?.result?.resources ?? []
+    const enCSVs = resources.filter(
+      (r) => r.url.includes('-en-') && r.url.endsWith('.csv')
+    )
+    return enCSVs[0] ?? null
+  } catch {
+    return null
   }
 }
 
+/** Stream and parse the CSV, returning aggregated stats. */
+async function parseCsvStats(csvUrl: string): Promise<Omit<JobMarketData, 'source'> | null> {
+  const controller = new AbortController()
+  const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS)
+
+  let res: Response
+  try {
+    res = await fetch(csvUrl, {
+      signal: controller.signal,
+      headers: { 'User-Agent': 'AICanadaPulse/1.0 (open data research)' },
+    })
+    clearTimeout(timer)
+    if (!res.ok || !res.body) return null
+  } catch {
+    clearTimeout(timer)
+    return null
+  }
+
+  // Convert web stream to Node stream
+  const reader = res.body.getReader()
+  const nodeStream = new Readable({
+    async read() {
+      const { done, value } = await reader.read()
+      if (done) this.push(null)
+      else this.push(Buffer.from(value))
+    },
+  })
+
+  return new Promise((resolve) => {
+    let totalVacancies = 0
+    const termCounts: Record<string, number> = {}
+    const provinceCounts: Record<string, number> = {}
+    const salaries: number[] = []
+
+    const parser = parse({ columns: true, skip_empty_lines: true, relax_column_count: true })
+
+    parser.on('readable', () => {
+      let row: Record<string, string>
+      while ((row = parser.read()) !== null) {
+        const title = row['Job Title'] ?? ''
+        if (!titleMatchesAI(title)) continue
+
+        const vacancies = parseInt(row['Vacancy Count'] ?? '1') || 1
+        totalVacancies += vacancies
+
+        // Province
+        const prov = normalizeProvince(row['Province/Territory'] ?? '')
+        if (prov) provinceCounts[prov] = (provinceCounts[prov] ?? 0) + vacancies
+
+        // Search term matching
+        for (const term of matchedTerms(title)) {
+          termCounts[term] = (termCounts[term] ?? 0) + vacancies
+        }
+
+        // Salary
+        const annual = toAnnualSalary(
+          row['Salary Minimum'] ?? '',
+          row['Salary Maximum'] ?? '',
+          row['Salary Per'] ?? ''
+        )
+        if (annual !== null && annual >= 30_000 && annual <= 500_000) {
+          salaries.push(annual)
+        }
+      }
+    })
+
+    parser.on('end', () => {
+      const avgSalary =
+        salaries.length > 0
+          ? Math.round(salaries.reduce((a, b) => a + b, 0) / salaries.length)
+          : null
+
+      const topLocations = Object.entries(provinceCounts)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 8)
+        .map(([location, count]) => ({ location, count }))
+
+      const searchTerms = KEYWORD_GROUPS.map((g) => ({
+        term: g.term,
+        count: termCounts[g.term] ?? 0,
+      })).sort((a, b) => b.count - a.count)
+
+      resolve({
+        totalAIJobs: totalVacancies,
+        averageSalary: avgSalary,
+        topCategories: [],
+        topLocations,
+        sampleJobs: [],
+        searchTerms,
+      })
+    })
+
+    parser.on('error', () => resolve(null))
+    nodeStream.pipe(parser)
+  })
+}
+
+async function _fetchAIJobMarket(province?: string): Promise<JobMarketData | null> {
+  const cacheKey = province
+    ? `jobbank-csv-stats:province:${province}`
+    : 'jobbank-csv-stats'
+
+  // Check Redis cache first
+  try {
+    const cached = await redis.get<JobMarketData>(cacheKey)
+    if (cached) return cached
+  } catch {
+    // Redis miss — continue to fetch
+  }
+
+  const resource = await discoverCsvUrl()
+  if (!resource) {
+    console.warn('[jobs-client] Could not discover Job Bank CSV URL — using fallback')
+    return getFallbackData()
+  }
+
+  // Extract month label from filename e.g. "job-bank-open-data-all-job-postings-en-feb2026.csv"
+  const monthMatch = resource.url.match(/-en-([a-z]+)(\d{4})\.csv$/i)
+  const dataMonth = monthMatch
+    ? `${monthMatch[1].charAt(0).toUpperCase() + monthMatch[1].slice(1)} ${monthMatch[2]}`
+    : undefined
+
+  const stats = await parseCsvStats(resource.url)
+  if (!stats || stats.totalAIJobs === 0) {
+    console.warn('[jobs-client] CSV parse returned no results — using fallback')
+    return getFallbackData()
+  }
+
+  // Filter by province if requested
+  let result: JobMarketData = {
+    ...stats,
+    source: 'jobbank-csv',
+    dataMonth,
+  }
+
+  if (province) {
+    const provNorm = normalizeProvince(province)
+    const provLocation = result.topLocations.find(
+      (l) => l.location.toLowerCase().includes(provNorm.toLowerCase())
+    )
+    // Narrow counts proportionally if province specified
+    if (provLocation && result.totalAIJobs > 0) {
+      const ratio = provLocation.count / result.totalAIJobs
+      result = {
+        ...result,
+        totalAIJobs: provLocation.count,
+        topLocations: [provLocation],
+        searchTerms: result.searchTerms.map((t) => ({
+          ...t,
+          count: Math.round(t.count * ratio),
+        })),
+      }
+    }
+  }
+
+  // Cache result
+  try {
+    await redis.set(cacheKey, result, { ex: CACHE_TTL })
+  } catch {
+    // Cache write failure is non-fatal
+  }
+
+  return result
+}
+
 function getFallbackData(): JobMarketData {
-  // Hardcoded estimates from recent public AI labour reports (ISED, CIFAR, etc.)
   return {
     totalAIJobs: 15800,
     averageSalary: 105000,
     topCategories: [
-      { category: "Machine Learning Engineer", count: 42 },
-      { category: "Data Scientist", count: 38 },
-      { category: "AI Research", count: 22 },
-      { category: "NLP / LLM Engineer", count: 18 },
-      { category: "Computer Vision", count: 12 },
-      { category: "Robotics / Automation", count: 8 },
+      { category: 'Machine Learning Engineer', count: 42 },
+      { category: 'Data Scientist', count: 38 },
+      { category: 'AI Research', count: 22 },
+      { category: 'NLP / LLM Engineer', count: 18 },
+      { category: 'Computer Vision', count: 12 },
     ],
     topLocations: [
-      { location: "Toronto, ON", count: 45 },
-      { location: "Montreal, QC", count: 32 },
-      { location: "Vancouver, BC", count: 18 },
-      { location: "Ottawa, ON", count: 14 },
-      { location: "Calgary, AB", count: 8 },
-      { location: "Edmonton, AB", count: 6 },
-      { location: "Waterloo, ON", count: 5 },
+      { location: 'Ontario', count: 45 },
+      { location: 'Quebec', count: 32 },
+      { location: 'British Columbia', count: 18 },
+      { location: 'Alberta', count: 14 },
+      { location: 'Manitoba', count: 4 },
     ],
     sampleJobs: [],
     searchTerms: [
-      { term: "artificial intelligence", count: 4200 },
-      { term: "machine learning", count: 3800 },
-      { term: "data scientist", count: 3200 },
-      { term: "LLM engineer", count: 2100 },
-      { term: "generative AI", count: 2500 },
+      { term: 'artificial intelligence', count: 4200 },
+      { term: 'machine learning', count: 3800 },
+      { term: 'data scientist', count: 3200 },
+      { term: 'LLM / generative AI', count: 2100 },
+      { term: 'NLP / computer vision', count: 2500 },
     ],
+    source: 'fallback',
   }
 }
 
-function extractProvince(location: string): string {
-  const loc = location.toLowerCase()
-  if (loc.includes("toronto") || loc.includes("ontario") || loc.includes(", on")) return "Toronto, ON"
-  if (loc.includes("montreal") || loc.includes("québec") || loc.includes("quebec") || loc.includes(", qc")) return "Montreal, QC"
-  if (loc.includes("vancouver") || loc.includes("british columbia") || loc.includes(", bc")) return "Vancouver, BC"
-  if (loc.includes("ottawa")) return "Ottawa, ON"
-  if (loc.includes("calgary")) return "Calgary, AB"
-  if (loc.includes("edmonton")) return "Edmonton, AB"
-  if (loc.includes("waterloo") || loc.includes("kitchener")) return "Waterloo, ON"
-  if (loc.includes("winnipeg") || loc.includes("manitoba")) return "Winnipeg, MB"
-  return "Other"
-}
-
-function categorizeJob(title: string): string {
-  const t = title.toLowerCase()
-  if (t.includes("machine learning") || t.includes("ml ")) return "Machine Learning Engineer"
-  if (t.includes("data scien")) return "Data Scientist"
-  if (t.includes("nlp") || t.includes("llm") || t.includes("language model")) return "NLP / LLM Engineer"
-  if (t.includes("computer vision") || t.includes("image")) return "Computer Vision"
-  if (t.includes("research")) return "AI Research"
-  if (t.includes("robot") || t.includes("automat")) return "Robotics / Automation"
-  if (t.includes("data eng")) return "Data Engineer"
-  return "AI / ML General"
-}
-
 export function fetchAIJobMarket(province?: string): Promise<JobMarketData | null> {
-  const cacheKey = province ? `indeed-canada-ai-jobs-${province}` : "indeed-canada-ai-jobs"
-  return unstable_cache(
-    () => _fetchAIJobMarket(province),
-    [cacheKey],
-    { revalidate: 21600 } // 6 hours
-  )()
+  return _fetchAIJobMarket(province)
 }

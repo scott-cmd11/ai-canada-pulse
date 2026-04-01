@@ -54,8 +54,7 @@ export default function JobMarketSection({ region }: JobMarketSectionProps = {})
     )
   }
 
-  // Check if this is fallback data (no sampleJobs means static estimates)
-  const isFallback = !data.sampleJobs || data.sampleJobs.length === 0
+  const isFallback = data.source === 'fallback' || !data.source
 
   const locationOption = {
     grid: { top: 12, right: 40, bottom: 12, left: 4, containLabel: true },
