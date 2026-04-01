@@ -93,16 +93,25 @@ async function discoverCsvUrl(): Promise<{ url: string; name: string } | null> {
   try {
     const controller = new AbortController()
     const timer = setTimeout(() => controller.abort(), 15_000)
-    const res = await fetch(CKAN_API, { signal: controller.signal })
+    const res = await fetch(CKAN_API, {
+      signal: controller.signal,
+      redirect: 'follow',
+      headers: { 'User-Agent': 'AICanadaPulse/1.0 (open data research)' },
+    })
     clearTimeout(timer)
-    if (!res.ok) return null
+    if (!res.ok) {
+      console.warn(`[jobs-client] CKAN API returned ${res.status}`)
+      return null
+    }
     const data = await res.json()
     const resources: Array<{ url: string; name: string }> = data?.result?.resources ?? []
     const enCSVs = resources.filter(
       (r) => r.url.includes('-en-') && r.url.endsWith('.csv')
     )
+    console.log(`[jobs-client] Discovered ${enCSVs.length} English CSVs, using: ${enCSVs[0]?.url}`)
     return enCSVs[0] ?? null
-  } catch {
+  } catch (err) {
+    console.warn('[jobs-client] CKAN API discovery failed:', err)
     return null
   }
 }
@@ -116,12 +125,17 @@ async function parseCsvStats(csvUrl: string): Promise<Omit<JobMarketData, 'sourc
   try {
     res = await fetch(csvUrl, {
       signal: controller.signal,
+      redirect: 'follow',
       headers: { 'User-Agent': 'AICanadaPulse/1.0 (open data research)' },
     })
     clearTimeout(timer)
-    if (!res.ok || !res.body) return null
-  } catch {
+    if (!res.ok || !res.body) {
+      console.warn(`[jobs-client] CSV fetch returned ${res.status} for ${csvUrl}`)
+      return null
+    }
+  } catch (err) {
     clearTimeout(timer)
+    console.warn('[jobs-client] CSV fetch failed:', err)
     return null
   }
 
