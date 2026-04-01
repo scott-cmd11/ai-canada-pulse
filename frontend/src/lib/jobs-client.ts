@@ -218,26 +218,18 @@ async function parseCsvStats(csvUrl: string): Promise<Omit<JobMarketData, 'sourc
   })
 }
 
-async function _fetchAIJobMarket(province?: string): Promise<JobMarketData | null> {
-  const cacheKey = province
-    ? `jobbank-csv-stats:province:${province}`
-    : 'jobbank-csv-stats'
-
-  // Check Redis cache first
-  try {
-    const cached = await redis.get<JobMarketData>(cacheKey)
-    if (cached) return cached
-  } catch {
-    // Redis miss — continue to fetch
-  }
-
+/**
+ * Refresh job stats from Job Bank CSV and store in Redis.
+ * Called by the daily cron (maxDuration: 300s) — NOT by the API route directly.
+ * The 39MB CSV is too large to stream within a regular serverless function timeout.
+ */
+export async function refreshJobBankStats(): Promise<JobMarketData | null> {
   const resource = await discoverCsvUrl()
   if (!resource) {
-    console.warn('[jobs-client] Could not discover Job Bank CSV URL — using fallback')
-    return getFallbackData()
+    console.warn('[jobs-client] Could not discover Job Bank CSV URL')
+    return null
   }
 
-  // Extract month label from filename e.g. "job-bank-open-data-all-job-postings-en-feb2026.csv"
   const monthMatch = resource.url.match(/-en-([a-z]+)(\d{4})\.csv$/i)
   const dataMonth = monthMatch
     ? `${monthMatch[1].charAt(0).toUpperCase() + monthMatch[1].slice(1)} ${monthMatch[2]}`
@@ -245,45 +237,53 @@ async function _fetchAIJobMarket(province?: string): Promise<JobMarketData | nul
 
   const stats = await parseCsvStats(resource.url)
   if (!stats || stats.totalAIJobs === 0) {
-    console.warn('[jobs-client] CSV parse returned no results — using fallback')
-    return getFallbackData()
+    console.warn('[jobs-client] CSV parse returned no results')
+    return null
   }
 
-  // Filter by province if requested
-  let result: JobMarketData = {
-    ...stats,
-    source: 'jobbank-csv',
-    dataMonth,
-  }
+  const result: JobMarketData = { ...stats, source: 'jobbank-csv', dataMonth }
 
-  if (province) {
-    const provNorm = normalizeProvince(province)
-    const provLocation = result.topLocations.find(
-      (l) => l.location.toLowerCase().includes(provNorm.toLowerCase())
-    )
-    // Narrow counts proportionally if province specified
-    if (provLocation && result.totalAIJobs > 0) {
-      const ratio = provLocation.count / result.totalAIJobs
-      result = {
-        ...result,
-        totalAIJobs: provLocation.count,
-        topLocations: [provLocation],
-        searchTerms: result.searchTerms.map((t) => ({
-          ...t,
-          count: Math.round(t.count * ratio),
-        })),
-      }
-    }
-  }
-
-  // Cache result
   try {
-    await redis.set(cacheKey, result, { ex: CACHE_TTL })
-  } catch {
-    // Cache write failure is non-fatal
+    await redis.set('jobbank-csv-stats', result, { ex: CACHE_TTL })
+    console.log(`[jobs-client] Cached Job Bank stats: ${result.totalAIJobs} vacancies (${dataMonth})`)
+  } catch (err) {
+    console.warn('[jobs-client] Redis cache write failed:', err)
   }
 
   return result
+}
+
+async function _fetchAIJobMarket(province?: string): Promise<JobMarketData | null> {
+  // Always read from Redis cache — populated by the daily cron via refreshJobBankStats()
+  try {
+    const cached = await redis.get<JobMarketData>('jobbank-csv-stats')
+    if (cached) {
+      if (!province) return cached
+
+      // Narrow to province if requested
+      const provNorm = normalizeProvince(province)
+      const provLocation = cached.topLocations.find(
+        (l) => l.location.toLowerCase().includes(provNorm.toLowerCase())
+      )
+      if (provLocation && cached.totalAIJobs > 0) {
+        const ratio = provLocation.count / cached.totalAIJobs
+        return {
+          ...cached,
+          totalAIJobs: provLocation.count,
+          topLocations: [provLocation],
+          searchTerms: cached.searchTerms.map((t) => ({
+            ...t,
+            count: Math.round(t.count * ratio),
+          })),
+        }
+      }
+      return cached
+    }
+  } catch {
+    // Redis unavailable — fall through to static fallback
+  }
+
+  return getFallbackData()
 }
 
 function getFallbackData(): JobMarketData {

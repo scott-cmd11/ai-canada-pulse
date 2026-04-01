@@ -6,6 +6,7 @@ import { fetchAllStories } from '@/lib/rss-client'
 import { generateDigest, saveDigest, saveDigestError, getDigest } from '@/lib/digest-client'
 import { detectAndGenerateDeepDive, forceGenerateDeepDive, listDeepDives } from '@/lib/deep-dive-client'
 import { generateAndSaveSectionSummaries } from '@/lib/section-summaries-client'
+import { refreshJobBankStats } from '@/lib/jobs-client'
 
 export const dynamic = 'force-dynamic'
 export const maxDuration = 300 // bumped from 60 to accommodate digest + deep-dive generation
@@ -115,7 +116,16 @@ export async function GET(request: NextRequest) {
     results.deepDive = 'error'
   }
 
-  // Step 5: Generate section summaries for all 6 signal domains
+  // Step 5: Refresh Job Bank CSV stats (39MB CSV — only feasible in the cron's 300s window)
+  try {
+    const jobStats = await refreshJobBankStats()
+    results.jobBank = jobStats ? `cached: ${jobStats.totalAIJobs} vacancies (${jobStats.dataMonth})` : 'failed'
+  } catch (err) {
+    console.error('[ai-refresh] Job Bank refresh failed:', err)
+    results.jobBank = 'error'
+  }
+
+  // Step 6: Generate section summaries for all 6 signal domains
   try {
     const summaries = await generateAndSaveSectionSummaries(
       stories.map((s) => ({
