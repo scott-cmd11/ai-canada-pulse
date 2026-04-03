@@ -54,7 +54,14 @@ function LegislationTracker() {
 
       {/* Key Regulations */}
       <div className="flex flex-col gap-2">
-        {directRegulations.slice(0, 4).map((reg: RegulationItem) => (
+        {[...directRegulations]
+          .sort((a, b) => {
+            if (!a.effectiveDate && !b.effectiveDate) return 0
+            if (!a.effectiveDate) return 1
+            if (!b.effectiveDate) return -1
+            return new Date(b.effectiveDate).getTime() - new Date(a.effectiveDate).getTime()
+          })
+          .slice(0, 4).map((reg: RegulationItem) => (
           <div
             key={reg.id}
             className="saas-card p-3"
@@ -96,7 +103,13 @@ function LegislationTracker() {
         ))}
 
         {/* Bills from LEGISinfo */}
-        {data && data.bills.slice(0, 3).map((bill: BillInfo) => (
+        {data && [...data.bills]
+          .sort((a, b) => {
+            const da = a.statusDate ? new Date(a.statusDate).getTime() : 0
+            const db = b.statusDate ? new Date(b.statusDate).getTime() : 0
+            return db - da
+          })
+          .slice(0, 3).map((bill: BillInfo) => (
           <div
             key={bill.id}
             className="saas-card p-3"
