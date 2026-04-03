@@ -13,13 +13,15 @@ const TYPE_LABELS: Record<string, string> = {
   registry: "Registries",
 }
 
-const SOURCE_TYPES = ["news", "research", "government", "jobs", "market", "trends", "registry"] as const
+const SOURCE_TYPES = ["news", "research", "government", "jobs", "market", "registry"] as const
 
 const limits = [
-  "AI summaries are produced from headlines and short context snippets. They can miss nuance, omit background, or flatten uncertainty. They should be treated as navigation aids, not authoritative analysis.",
+  "AI summaries, digests, and deep dives are produced from headlines and short context snippets. They can miss nuance, omit background, or flatten uncertainty. They should be treated as navigation aids, not authoritative analysis.",
+  "The daily digest publishes once at 12:00 UTC. Before that time the previous day's digest is shown. If generation fails, the site falls back to live headlines.",
+  "Deep Dives are triggered automatically by a significance threshold (funding ≥$50M, parliamentary AI votes, notable research). Significant stories that don't match these rules may not generate a Deep Dive.",
   "Public feeds can change structure, publish duplicates, or omit context. The app deduplicates and filters aggressively, but false positives and missed stories remain possible.",
   "Market and macro indicators are contextual signals only. They are not investment advice, economic forecasts, or causal evidence about AI effects.",
-  "Some secondary or legacy endpoints still exist in the codebase, but this page documents the current live /dashboard experience only.",
+  "Global AI ranking indices are updated annually by their publishers. The figures shown reflect the most recently published edition and may not reflect changes made since.",
 ]
 
 const FETCH_METHOD_LABELS: Record<string, string> = {
@@ -320,6 +322,8 @@ export default function MethodologyPage() {
                   { dataset: "University AI Programs", records: "29 programs", lastVerified: "March 28, 2026", reviewSchedule: "Annually" },
                   { dataset: "Province & Territory Profiles", records: "13 regions", lastVerified: "March 28, 2026", reviewSchedule: "Annually" },
                   { dataset: "AI Events & Conferences", records: "13 events", lastVerified: "March 28, 2026", reviewSchedule: "Every 3 months" },
+                  { dataset: "Global AI Standing Indices", records: "3 indices (Tortoise, Stanford HAI, Oxford Insights)", lastVerified: "April 3, 2026", reviewSchedule: "Annually (as new editions publish)" },
+                  { dataset: "AI Legislation & Regulation", records: "Federal + 13 provincial/territorial", lastVerified: "April 3, 2026", reviewSchedule: "As legislation progresses" },
                 ].map((row, idx) => (
                   <tr
                     key={row.dataset}
@@ -391,7 +395,7 @@ export default function MethodologyPage() {
               AI does not run on normal user page requests.
             </p>
 
-            <div className="mt-5 grid gap-3 sm:grid-cols-3">
+            <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               <div
                 className="rounded-2xl p-4"
                 style={{
@@ -405,8 +409,7 @@ export default function MethodologyPage() {
                   Classification
                 </h3>
                 <p className="mt-2 text-xs leading-relaxed" style={{ color: "var(--text-secondary)" }}>
-                  <strong>gpt-4o-mini</strong> — categorizes stories by province, topic, and sentiment using keyword
-                  matching and regex rules
+                  Categorizes stories by province, topic, and sentiment using keyword matching and regex rules. No AI model involved — fully deterministic.
                 </p>
               </div>
               <div
@@ -422,7 +425,7 @@ export default function MethodologyPage() {
                   Summarization
                 </h3>
                 <p className="mt-2 text-xs leading-relaxed" style={{ color: "var(--text-secondary)" }}>
-                  <strong>gpt-4o-mini</strong> — generates brief summaries (max 150 words) of news articles
+                  <strong>gpt-4o-mini</strong> — generates brief summaries (max 150 words) of news articles, cached in Upstash Redis.
                 </p>
               </div>
               <div
@@ -438,7 +441,55 @@ export default function MethodologyPage() {
                   Executive Brief
                 </h3>
                 <p className="mt-2 text-xs leading-relaxed" style={{ color: "var(--text-secondary)" }}>
-                  <strong>gpt-4o-mini</strong> — generates the daily Canada executive brief
+                  <strong>gpt-4o-mini</strong> — generates the daily Canada executive brief from top stories. Runs once daily via cron.
+                </p>
+              </div>
+              <div
+                className="rounded-2xl p-4"
+                style={{
+                  backgroundColor: "var(--surface-secondary)",
+                  borderColor: "var(--border-subtle)",
+                  borderWidth: "1px",
+                  borderStyle: "solid",
+                }}
+              >
+                <h3 className="text-sm font-bold" style={{ color: "var(--text-primary)" }}>
+                  Daily Digest
+                </h3>
+                <p className="mt-2 text-xs leading-relaxed" style={{ color: "var(--text-secondary)" }}>
+                  <strong>gpt-4o-mini</strong> — synthesizes the top 10 stories into a headline, 2–3 sentence intro, 3–5 key developments, and top story links. Generated once daily at 12:00 UTC and stored in Redis for 90 days.
+                </p>
+              </div>
+              <div
+                className="rounded-2xl p-4"
+                style={{
+                  backgroundColor: "var(--surface-secondary)",
+                  borderColor: "var(--border-subtle)",
+                  borderWidth: "1px",
+                  borderStyle: "solid",
+                }}
+              >
+                <h3 className="text-sm font-bold" style={{ color: "var(--text-primary)" }}>
+                  Deep Dives
+                </h3>
+                <p className="mt-2 text-xs leading-relaxed" style={{ color: "var(--text-secondary)" }}>
+                  <strong>gpt-4o-mini</strong> — generates 400–600 word analytical articles when a story crosses a significance threshold: funding rounds ≥$50M, parliamentary AI legislation, or notable research. One per day maximum.
+                </p>
+              </div>
+              <div
+                className="rounded-2xl p-4"
+                style={{
+                  backgroundColor: "var(--surface-secondary)",
+                  borderColor: "var(--border-subtle)",
+                  borderWidth: "1px",
+                  borderStyle: "solid",
+                }}
+              >
+                <h3 className="text-sm font-bold" style={{ color: "var(--text-primary)" }}>
+                  Section Summaries
+                </h3>
+                <p className="mt-2 text-xs leading-relaxed" style={{ color: "var(--text-secondary)" }}>
+                  <strong>gpt-4o-mini</strong> — generates short narrative summaries for 6 signal domains (Policy, Research, Funding, Markets, Regulation, Talent) shown at the top of each dashboard section.
                 </p>
               </div>
             </div>
@@ -520,10 +571,11 @@ export default function MethodologyPage() {
             Disclaimer
           </h2>
           <p className="mt-3 text-sm leading-relaxed" style={{ color: "var(--text-secondary)" }}>
-            AI Canada Pulse is an informational monitoring product. It does not provide financial, legal, regulatory, or
-            policy advice. AI-generated summaries and briefs are generated from public-source headlines and short context
-            snippets and may contain omissions or phrasing errors. Market data may be delayed. Always verify important
-            claims with primary sources.
+            AI Canada Pulse is an independent informational monitoring product with no affiliation to the Government of
+            Canada or any federal or provincial agency. It does not provide financial, legal, regulatory, or policy
+            advice. AI-generated summaries, digests, and deep dives are produced from public-source headlines and short
+            context snippets and may contain omissions or phrasing errors. Market data may be delayed. Always verify
+            important claims with primary sources.
           </p>
         </div>
       </main>
