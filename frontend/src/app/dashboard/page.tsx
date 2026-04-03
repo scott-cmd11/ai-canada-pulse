@@ -2,10 +2,8 @@ import type { Metadata } from "next"
 import Header from "@/components/Header"
 import BriefingCard from "@/components/BriefingCard"
 import IndicatorsSection from "@/components/IndicatorsSection"
-import TrendsSection from "@/components/TrendsSection"
 import StoryFeed from "@/components/StoryFeed"
 import SentimentSection from "@/components/SentimentSection"
-import TrendsInsightsSection from "@/components/TrendsInsightsSection"
 import ResearchSection from "@/components/ResearchSection"
 import ParliamentSection from "@/components/ParliamentSection"
 import EcosystemSection from "@/components/EcosystemSection"
@@ -103,17 +101,6 @@ export default function DashboardPage() {
               title="Deeper data on demand"
               description="Expand any section below to explore research output, adoption trends, ecosystem activity, and regulatory standing."
             />
-
-            <CollapsibleSection title="AI Adoption Trends">
-              <div className="grid gap-4 xl:grid-cols-2">
-                <SectionErrorBoundary sectionName="AI Adoption Trends">
-                  <TrendsSection />
-                </SectionErrorBoundary>
-                <SectionErrorBoundary sectionName="Provincial Search Interest">
-                  <TrendsInsightsSection />
-                </SectionErrorBoundary>
-              </div>
-            </CollapsibleSection>
 
             <CollapsibleSection title="Research">
               <SectionErrorBoundary sectionName="Fundamental Research">
