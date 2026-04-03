@@ -58,7 +58,7 @@ export default function BriefingCard() {
 
       <div className="space-y-3">
         <h3
-          className="max-w-3xl text-2xl font-semibold leading-tight sm:text-[2rem]"
+          className="text-2xl font-semibold leading-tight sm:text-[2rem]"
           style={{ color: 'var(--text-primary)' }}
         >
           {topStory.headline}
@@ -66,7 +66,7 @@ export default function BriefingCard() {
 
         {topStory.aiSummary ? (
           <p
-            className="max-w-3xl text-sm leading-7 sm:text-[15px]"
+            className="text-sm leading-7 sm:text-[15px]"
             style={{ color: 'var(--text-secondary)' }}
           >
             <span className="mr-1 text-xs" style={{ color: 'var(--accent-primary)' }}>*</span>
@@ -74,7 +74,7 @@ export default function BriefingCard() {
           </p>
         ) : (
           <p
-            className="max-w-3xl text-sm leading-7 sm:text-[15px]"
+            className="text-sm leading-7 sm:text-[15px]"
             style={{ color: 'var(--text-secondary)' }}
           >
             {topStory.summary}
