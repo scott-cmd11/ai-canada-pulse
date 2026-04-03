@@ -5,11 +5,8 @@ import IndicatorsSection from "@/components/IndicatorsSection"
 import TrendsSection from "@/components/TrendsSection"
 import StoryFeed from "@/components/StoryFeed"
 import SentimentSection from "@/components/SentimentSection"
-import StocksSection from "@/components/StocksSection"
 import TrendsInsightsSection from "@/components/TrendsInsightsSection"
 import ResearchSection from "@/components/ResearchSection"
-import OpenSourceSection from "@/components/OpenSourceSection"
-import JobMarketSection from "@/components/JobMarketSection"
 import ParliamentSection from "@/components/ParliamentSection"
 import EcosystemSection from "@/components/EcosystemSection"
 import RegulatorySection from "@/components/RegulatorySection"
@@ -46,12 +43,18 @@ export default function DashboardPage() {
       <main id="main-content" className="mx-auto flex w-full max-w-[1480px] flex-col gap-6 px-4 py-4 sm:px-6 lg:px-8 lg:py-6">
         <SectionNav />
 
-        <section id="acceleration" className="saas-card rounded-2xl p-5 sm:p-6">
+        <section id="acceleration" className="saas-card rounded-2xl p-5 sm:p-6 max-w-4xl mx-auto w-full">
           <SectionTitle
             eyebrow="Acceleration Signals"
             title="The shortest path to the Canadian story"
             description="Start with the highest-priority Canada development, then move to the curated signal stream beneath it."
           />
+
+          <div className="mt-4">
+            <SectionErrorBoundary sectionName="Media Sentiment">
+              <SentimentSection />
+            </SectionErrorBoundary>
+          </div>
 
           <div className="mt-4">
             <SectionErrorBoundary sectionName="Lead Signal">
@@ -73,29 +76,17 @@ export default function DashboardPage() {
             <SectionTitle
               eyebrow="Market And Policy Impact"
               title="Where acceleration is already visible"
-              description="Focus on the areas where Canadian AI momentum is already showing up in market tone, public-company exposure, and economic indicators."
+              description="Economic indicators and parliamentary activity tracking Canadian AI momentum."
               dark
             />
 
-            <div className="grid gap-4 xl:grid-cols-[0.9fr_1.1fr]">
-              <SectionErrorBoundary sectionName="Media Sentiment">
-                <SentimentSection />
-              </SectionErrorBoundary>
-              <SectionErrorBoundary sectionName="Market Performance">
-                <StocksSection />
-              </SectionErrorBoundary>
-            </div>
-
-            <div className="mt-4">
+            <div>
               <SectionErrorBoundary sectionName="Pulse Indicators">
                 <IndicatorsSection />
               </SectionErrorBoundary>
             </div>
 
-            <div className="mt-4 grid gap-4 xl:grid-cols-2">
-              <SectionErrorBoundary sectionName="Labour Demand">
-                <JobMarketSection />
-              </SectionErrorBoundary>
+            <div className="mt-4">
               <SectionErrorBoundary sectionName="Parliament Activity">
                 <ParliamentSection />
               </SectionErrorBoundary>
@@ -124,15 +115,10 @@ export default function DashboardPage() {
               </div>
             </CollapsibleSection>
 
-            <CollapsibleSection title="Research & Open Source">
-              <div className="grid gap-4 xl:grid-cols-2">
-                <SectionErrorBoundary sectionName="Fundamental Research">
-                  <ResearchSection />
-                </SectionErrorBoundary>
-                <SectionErrorBoundary sectionName="Open Source Activity">
-                  <OpenSourceSection />
-                </SectionErrorBoundary>
-              </div>
+            <CollapsibleSection title="Research">
+              <SectionErrorBoundary sectionName="Fundamental Research">
+                <ResearchSection />
+              </SectionErrorBoundary>
             </CollapsibleSection>
 
             <CollapsibleSection title="Ecosystem & Startups">

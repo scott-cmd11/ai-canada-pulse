@@ -9,8 +9,6 @@ import ProvinceInstitutions from '@/components/ProvinceInstitutions';
 import ParliamentSection from '@/components/ParliamentSection';
 import StoryFeed from '@/components/StoryFeed';
 import TrendsInsightsSection from '@/components/TrendsInsightsSection';
-import JobMarketSection from '@/components/JobMarketSection';
-import StocksSection from '@/components/StocksSection';
 import ArxivSection from '@/components/ArxivSection';
 import TalentEducationSection from '@/components/TalentEducationSection';
 import EcosystemSection from '@/components/EcosystemSection';
@@ -161,20 +159,6 @@ export default async function ProvincePage({
       {province.sections.trends && (
         <section className="mx-auto max-w-[1080px] px-4 pb-8 sm:px-6 sm:pb-10 lg:px-10">
           <TrendsInsightsSection highlightProvince={province.abbreviation} />
-        </section>
-      )}
-
-      {/* Jobs */}
-      {province.sections.jobs && (
-        <section className="mx-auto max-w-[1080px] px-4 pb-8 sm:px-6 sm:pb-10 lg:px-10">
-          <JobMarketSection region={province.slug} />
-        </section>
-      )}
-
-      {/* Stocks */}
-      {province.sections.stocks && (
-        <section className="mx-auto max-w-[1080px] px-4 pb-8 sm:px-6 sm:pb-10 lg:px-10">
-          <StocksSection region={province.slug} />
         </section>
       )}
 

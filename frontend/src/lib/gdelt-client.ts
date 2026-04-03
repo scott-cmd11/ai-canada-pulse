@@ -21,4 +21,6 @@ export interface SentimentData {
   sentimentLabel: "positive" | "neutral" | "negative"
   toneDistribution: { positive: number; neutral: number; negative: number }
   topSources: Array<{ source: string; count: number }>
+  total: number
+  scannedAt: string
 }

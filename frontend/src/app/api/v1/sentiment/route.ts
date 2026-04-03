@@ -56,6 +56,8 @@ export async function GET(request: Request) {
       .map(([source, count]) => ({ source, count }))
 
     const data = {
+      total,
+      scannedAt: new Date().toISOString(),
       articles: stories.slice(0, CANADA_DASHBOARD_STORY_LIMIT).map((s) => ({
         url: s.sourceUrl || "",
         title: s.headline,

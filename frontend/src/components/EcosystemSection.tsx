@@ -3,7 +3,6 @@
 import { useState, useEffect, useMemo } from "react"
 import { STARTUPS, getStartupStats, type CanadianStartup, type StartupSector } from "@/lib/startups-data"
 import type { StartupSignalsData, StartupSignal } from "@/lib/startup-signals-client"
-import { getUpcomingEvents, type AIEvent } from "@/lib/events-data"
 
 // ─── Startup Map Panel ──────────────────────────────────────────────────────────
 
@@ -271,133 +270,13 @@ function StartupSignalsPanel() {
   )
 }
 
-// ─── Events Panel ───────────────────────────────────────────────────────────────
-
-function EventsPanel({ provinceFilter }: { provinceFilter?: string }) {
-  const events: AIEvent[] = useMemo(() => {
-    const upcoming = getUpcomingEvents()
-    return provinceFilter ? upcoming.filter((e) => e.provinceSlug === provinceFilter) : upcoming
-  }, [provinceFilter])
-
-  const TYPE_COLORS: Record<string, { bg: string; color: string; border: string }> = {
-    Conference: { bg: 'color-mix(in srgb, #6366f1 12%, var(--surface-primary))', color: '#6366f1', border: '1px solid color-mix(in srgb, #6366f1 20%, var(--surface-primary))' },
-    Seminar: { bg: 'color-mix(in srgb, #3b82f6 12%, var(--surface-primary))', color: '#3b82f6', border: '1px solid color-mix(in srgb, #3b82f6 20%, var(--surface-primary))' },
-    Workshop: { bg: 'color-mix(in srgb, #14b8a6 12%, var(--surface-primary))', color: '#14b8a6', border: '1px solid color-mix(in srgb, #14b8a6 20%, var(--surface-primary))' },
-    Meetup: { bg: 'color-mix(in srgb, #22c55e 12%, var(--surface-primary))', color: '#22c55e', border: '1px solid color-mix(in srgb, #22c55e 20%, var(--surface-primary))' },
-    "Public Consultation": { bg: 'color-mix(in srgb, #f59e0b 12%, var(--surface-primary))', color: '#f59e0b', border: '1px solid color-mix(in srgb, #f59e0b 20%, var(--surface-primary))' },
-    Hackathon: { bg: 'color-mix(in srgb, #8b5cf6 12%, var(--surface-primary))', color: '#8b5cf6', border: '1px solid color-mix(in srgb, #8b5cf6 20%, var(--surface-primary))' },
-    Summit: { bg: 'color-mix(in srgb, #f43f5e 12%, var(--surface-primary))', color: '#f43f5e', border: '1px solid color-mix(in srgb, #f43f5e 20%, var(--surface-primary))' },
-  }
-
-  const formatDate = (d: string) => {
-    try {
-      return new Date(d + "T00:00:00").toLocaleDateString("en-CA", { month: "short", day: "numeric" })
-    } catch {
-      return d
-    }
-  }
-
-  return (
-    <section>
-      <div className="section-header">
-        <h2 className="flex justify-between items-baseline">
-          <span>AI Events & Community</span>
-          <span className="text-sm font-medium" style={{ color: 'var(--text-muted)' }}>
-            {events.length} upcoming
-          </span>
-        </h2>
-      </div>
-      <p className="text-sm mb-4 leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
-        Conferences, meetups, and public consultations across Canada.
-      </p>
-
-      {events.length === 0 && (
-        <p className="text-sm py-4" style={{ color: 'var(--text-muted)' }}>No upcoming events found.</p>
-      )}
-
-      <div className="grid gap-2.5 sm:grid-cols-2 xl:grid-cols-3">
-        {events.slice(0, 6).map((event) => (
-          <div
-            key={event.id}
-            className="saas-card p-3"
-            style={{ transition: 'transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease' }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'translateY(-1px)'
-              e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.08)'
-              e.currentTarget.style.borderColor = 'var(--accent-primary)'
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = ''
-              e.currentTarget.style.boxShadow = ''
-              e.currentTarget.style.borderColor = ''
-            }}
-          >
-            <div className="flex items-start gap-3">
-              <div className="text-center shrink-0 w-12 rounded-lg p-1.5" style={{ background: 'color-mix(in srgb, var(--accent-primary) 10%, transparent)' }}>
-                <p className="text-[10px] font-bold uppercase" style={{ color: 'var(--accent-primary)' }}>
-                  {formatDate(event.date).split(" ")[0]}
-                </p>
-                <p className="text-lg font-bold leading-none" style={{ color: 'var(--accent-primary)', fontFamily: 'var(--font-display)' }}>
-                  {formatDate(event.date).split(" ")[1]}
-                </p>
-              </div>
-              <div className="flex-1 min-w-0">
-                <a
-                  href={event.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-xs font-bold hover:underline line-clamp-1"
-                  style={{ color: 'var(--text-primary)' }}
-                >
-                  {event.name}
-                </a>
-                <div className="flex items-center gap-1.5 mt-0.5 text-[10px]" style={{ color: 'var(--text-muted)' }}>
-                  <span>{event.city}, {event.province}</span>
-                  {event.recurring && (
-                    <>
-                      <span style={{ color: 'var(--border-subtle)' }}>•</span>
-                      <span>Recurring</span>
-                    </>
-                  )}
-                </div>
-                <div className="flex items-center gap-1.5 mt-1.5">
-                  <span
-                    className="px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider rounded"
-                    style={TYPE_COLORS[event.type] ? {
-                      backgroundColor: TYPE_COLORS[event.type].bg,
-                      color: TYPE_COLORS[event.type].color,
-                      border: TYPE_COLORS[event.type].border,
-                    } : {
-                      backgroundColor: 'color-mix(in srgb, var(--text-muted) 12%, var(--surface-primary))',
-                      color: 'var(--text-muted)',
-                      border: '1px solid color-mix(in srgb, var(--text-muted) 20%, var(--surface-primary))',
-                    }}
-                  >
-                    {event.type}
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-    </section>
-  )
-}
-
 // ─── Main Section ───────────────────────────────────────────────────────────────
 
 export default function EcosystemSection({ provinceFilter }: { provinceFilter?: string }) {
   return (
-    <div>
-      <div className="grid gap-4 xl:grid-cols-2">
-        <StartupMapPanel provinceFilter={provinceFilter} />
-        <StartupSignalsPanel />
-      </div>
-
-      <div className="mt-4">
-        <EventsPanel provinceFilter={provinceFilter} />
-      </div>
+    <div className="grid gap-4 xl:grid-cols-2">
+      <StartupMapPanel provinceFilter={provinceFilter} />
+      <StartupSignalsPanel />
     </div>
   )
 }
