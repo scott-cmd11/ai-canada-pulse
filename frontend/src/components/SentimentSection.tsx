@@ -89,11 +89,11 @@ export default function SentimentSection({ region }: SentimentSectionProps = {})
         <div style={{ width: `${pctCrit}%`, background: TONE_CONFIG.negative.barColor }} />
       </div>
 
-      {/* Breakdown labels */}
-      <div className="flex gap-4 mb-3 text-[11px] font-semibold">
-        <span style={{ color: TONE_CONFIG.positive.textColor }}>{pctFav}% Favorable</span>
-        <span style={{ color: TONE_CONFIG.neutral.textColor  }}>{pctNeut}% Neutral</span>
-        <span style={{ color: TONE_CONFIG.negative.textColor }}>{pctCrit}% Critical</span>
+      {/* Breakdown labels — aligned to bar segments */}
+      <div className="relative mb-3 text-[11px] font-semibold" style={{ height: '1.2em' }}>
+        <span style={{ color: TONE_CONFIG.positive.textColor, position: 'absolute', left: 0 }}>{pctFav}% Favorable</span>
+        <span style={{ color: TONE_CONFIG.neutral.textColor,  position: 'absolute', left: `${pctFav}%` }}>{pctNeut}% Neutral</span>
+        <span style={{ color: TONE_CONFIG.negative.textColor, position: 'absolute', right: 0 }}>{pctCrit}% Critical</span>
       </div>
 
       {/* Methodology note */}
