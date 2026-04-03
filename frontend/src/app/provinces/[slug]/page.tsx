@@ -10,6 +10,7 @@ import StoryFeed from '@/components/StoryFeed';
 import ArxivSection from '@/components/ArxivSection';
 import TalentEducationSection from '@/components/TalentEducationSection';
 import EcosystemSection from '@/components/EcosystemSection';
+import ProvinceRegulatorySection from '@/components/ProvinceRegulatorySection';
 import ProvinceDataNotes from '@/components/ProvinceDataNotes';
 import ScrollToTop from '@/components/ScrollToTop';
 import DashboardFooter from '@/components/DashboardFooter';
@@ -151,6 +152,13 @@ export default async function ProvincePage({
       {province.sections.parliament && (
         <section className="mx-auto max-w-[1080px] px-4 pb-8 sm:px-6 sm:pb-10 lg:px-10">
           <ParliamentSection />
+        </section>
+      )}
+
+      {/* Legislation & Regulation */}
+      {province.sections.regulation && (
+        <section className="mx-auto max-w-[1080px] px-4 pb-8 sm:px-6 sm:pb-10 lg:px-10">
+          <ProvinceRegulatorySection provinceSlug={province.slug} provinceName={province.name} />
         </section>
       )}
 
