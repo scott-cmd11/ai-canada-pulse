@@ -6,7 +6,7 @@ import type { StartupSignalsData, StartupSignal } from "@/lib/startup-signals-cl
 
 // ─── Startup Map Panel ──────────────────────────────────────────────────────────
 
-function StartupMapPanel({ provinceFilter }: { provinceFilter?: string }) {
+function StartupMapPanel({ provinceFilter, liveSignals }: { provinceFilter?: string; liveSignals: StartupSignal[] }) {
   const [sectorFilter, setSectorFilter] = useState<StartupSector | "All">("All")
 
   const startups = useMemo(() => {
@@ -20,6 +20,16 @@ function StartupMapPanel({ provinceFilter }: { provinceFilter?: string }) {
     .sort(([, a], [, b]) => b - a)
     .slice(0, 6)
 
+  // Build a map of company name → most recent live signal
+  const signalByCompany = useMemo(() => {
+    const map = new Map<string, StartupSignal>()
+    for (const signal of liveSignals) {
+      const key = signal.companyName.toLowerCase()
+      if (!map.has(key)) map.set(key, signal) // already sorted newest-first
+    }
+    return map
+  }, [liveSignals])
+
   const STAGE_COLORS: Record<string, { bg: string; color: string; border: string }> = {
     Seed: { bg: 'color-mix(in srgb, #10b981 12%, var(--surface-primary))', color: '#10b981', border: '1px solid color-mix(in srgb, #10b981 20%, var(--surface-primary))' },
     "Series A": { bg: 'color-mix(in srgb, #3b82f6 12%, var(--surface-primary))', color: '#3b82f6', border: '1px solid color-mix(in srgb, #3b82f6 20%, var(--surface-primary))' },
@@ -30,6 +40,12 @@ function StartupMapPanel({ provinceFilter }: { provinceFilter?: string }) {
     Acquired: { bg: 'color-mix(in srgb, #64748b 12%, var(--surface-primary))', color: '#64748b', border: '1px solid color-mix(in srgb, #64748b 20%, var(--surface-primary))' },
     Growth: { bg: 'color-mix(in srgb, #14b8a6 12%, var(--surface-primary))', color: '#14b8a6', border: '1px solid color-mix(in srgb, #14b8a6 20%, var(--surface-primary))' },
   }
+
+  // Most recent lastVerified date across all startups
+  const lastVerified = STARTUPS.reduce((latest, s) => s.lastVerified > latest ? s.lastVerified : latest, "")
+  const lastVerifiedFormatted = lastVerified
+    ? new Date(lastVerified + "T00:00:00").toLocaleDateString("en-CA", { month: "short", day: "numeric", year: "numeric" })
+    : null
 
   return (
     <section>
@@ -43,6 +59,7 @@ function StartupMapPanel({ provinceFilter }: { provinceFilter?: string }) {
       </div>
       <p className="text-sm mb-3 leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
         Notable AI companies across Canada, from early-stage startups to public companies.
+        Cards marked <span className="font-semibold" style={{ color: '#16a34a' }}>Live</span> have recent news signals.
       </p>
 
       {/* Sector Filter Chips */}
@@ -76,63 +93,111 @@ function StartupMapPanel({ provinceFilter }: { provinceFilter?: string }) {
 
       {/* Startup Grid */}
       <div className="grid gap-2.5 sm:grid-cols-2">
-        {startups.slice(0, 8).map((startup: CanadianStartup) => (
-          <div
-            key={startup.name}
-            className="saas-card p-3"
-            style={{ transition: 'transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease' }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'translateY(-1px)'
-              e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.08)'
-              e.currentTarget.style.borderColor = 'var(--accent-primary)'
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = ''
-              e.currentTarget.style.boxShadow = ''
-              e.currentTarget.style.borderColor = ''
-            }}
-          >
-            <div className="flex items-start justify-between gap-2 mb-1">
-              <a
-                href={startup.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-sm font-bold hover:underline focus-visible:underline focus-visible:outline-none truncate"
-                style={{ color: 'var(--text-primary)' }}
-              >
-                {startup.name}
-              </a>
-              <span
-                className="px-2 py-0.5 text-[9px] font-semibold uppercase tracking-wider rounded shrink-0"
-                style={{
-                  backgroundColor: (STAGE_COLORS[startup.stage] || STAGE_COLORS.Growth).bg,
-                  color: (STAGE_COLORS[startup.stage] || STAGE_COLORS.Growth).color,
-                  border: (STAGE_COLORS[startup.stage] || STAGE_COLORS.Growth).border,
-                }}
-              >
-                {startup.stage}
-              </span>
+        {startups.slice(0, 8).map((startup: CanadianStartup) => {
+          const liveSignal = signalByCompany.get(startup.name.toLowerCase())
+          return (
+            <div
+              key={startup.name}
+              className="saas-card p-3"
+              style={{
+                transition: 'transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease',
+                borderColor: liveSignal ? 'color-mix(in srgb, #16a34a 30%, var(--border-subtle))' : undefined,
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'translateY(-1px)'
+                e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.08)'
+                e.currentTarget.style.borderColor = 'var(--accent-primary)'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = ''
+                e.currentTarget.style.boxShadow = ''
+                e.currentTarget.style.borderColor = liveSignal ? 'color-mix(in srgb, #16a34a 30%, var(--border-subtle))' : ''
+              }}
+            >
+              <div className="flex items-start justify-between gap-2 mb-1">
+                <div className="flex items-center gap-1.5 min-w-0">
+                  <a
+                    href={startup.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm font-bold hover:underline focus-visible:underline focus-visible:outline-none truncate"
+                    style={{ color: 'var(--text-primary)' }}
+                  >
+                    {startup.name}
+                  </a>
+                  {liveSignal && (
+                    <span
+                      className="shrink-0 text-[8px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded"
+                      style={{ background: 'color-mix(in srgb, #16a34a 12%, var(--surface-primary))', color: '#15803d', border: '1px solid color-mix(in srgb, #16a34a 25%, var(--surface-primary))' }}
+                    >
+                      Live
+                    </span>
+                  )}
+                </div>
+                <span
+                  className="px-2 py-0.5 text-[9px] font-semibold uppercase tracking-wider rounded shrink-0"
+                  style={{
+                    backgroundColor: (STAGE_COLORS[startup.stage] || STAGE_COLORS.Growth).bg,
+                    color: (STAGE_COLORS[startup.stage] || STAGE_COLORS.Growth).color,
+                    border: (STAGE_COLORS[startup.stage] || STAGE_COLORS.Growth).border,
+                  }}
+                >
+                  {startup.stage}
+                </span>
+              </div>
+
+              <div className="flex items-center gap-1.5 text-[10px] mb-1.5" style={{ color: 'var(--text-muted)' }}>
+                <span>{startup.city}, {startup.province}</span>
+                <span style={{ color: 'var(--border-subtle)' }}>•</span>
+                <span>Est. {startup.foundedYear}</span>
+                {startup.totalFunding && (
+                  <>
+                    <span style={{ color: 'var(--border-subtle)' }}>•</span>
+                    <span className="font-semibold tabular-nums" style={{ color: 'var(--text-secondary)' }}>{startup.totalFunding}</span>
+                  </>
+                )}
+              </div>
+
+              <p className="text-xs leading-relaxed line-clamp-2" style={{ color: 'var(--text-secondary)' }}>
+                {startup.description}
+              </p>
+
+              {/* Live signal strip */}
+              {liveSignal && (
+                <a
+                  href={liveSignal.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1.5 mt-2 pt-2 text-[10px] hover:underline"
+                  style={{ borderTop: '1px solid color-mix(in srgb, #16a34a 20%, var(--border-subtle))', color: '#15803d' }}
+                >
+                  <span className="font-semibold uppercase tracking-wider">{liveSignal.signalType}</span>
+                  {liveSignal.amount && <span className="font-bold">{liveSignal.amount}</span>}
+                  <span className="truncate" style={{ color: 'var(--text-muted)' }}>— {liveSignal.headline}</span>
+                </a>
+              )}
+
+              {!liveSignal && (
+                <div className="mt-1.5">
+                  <span className="text-[9px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded" style={{ background: 'color-mix(in srgb, var(--accent-primary) 10%, transparent)', color: 'var(--accent-primary)' }}>
+                    {startup.sector}
+                  </span>
+                </div>
+              )}
             </div>
-            <div className="flex items-center gap-1.5 text-[10px] mb-1.5" style={{ color: 'var(--text-muted)' }}>
-              <span>{startup.city}, {startup.province}</span>
-              <span style={{ color: 'var(--border-subtle)' }}>•</span>
-              <span>Est. {startup.foundedYear}</span>
-            </div>
-            <p className="text-xs leading-relaxed line-clamp-2" style={{ color: 'var(--text-secondary)' }}>
-              {startup.description}
-            </p>
-            <div className="mt-1.5">
-              <span className="text-[9px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded" style={{ background: 'color-mix(in srgb, var(--accent-primary) 10%, transparent)', color: 'var(--accent-primary)' }}>
-                {startup.sector}
-              </span>
-            </div>
-          </div>
-        ))}
+          )
+        })}
       </div>
 
       {startups.length > 8 && (
         <p className="text-xs mt-2" style={{ color: 'var(--text-muted)' }}>
           +{startups.length - 8} more companies
+        </p>
+      )}
+
+      {lastVerifiedFormatted && (
+        <p className="text-[10px] mt-3" style={{ color: 'var(--text-muted)' }}>
+          Directory last verified {lastVerifiedFormatted} · Sources: Crunchbase, BetaKit, company websites
         </p>
       )}
     </section>
@@ -141,18 +206,7 @@ function StartupMapPanel({ provinceFilter }: { provinceFilter?: string }) {
 
 // ─── Startup Signals Panel ──────────────────────────────────────────────────────
 
-function StartupSignalsPanel() {
-  const [data, setData] = useState<StartupSignalsData | null>(null)
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    fetch("/api/v1/startups")
-      .then((res) => res.json())
-      .then((json) => { if (json.signals) setData(json) })
-      .catch((err) => console.warn("[StartupSignalsPanel] fetch failed:", err))
-      .finally(() => setLoading(false))
-  }, [])
-
+function StartupSignalsPanel({ signals, loading }: { signals: StartupSignal[]; loading: boolean }) {
   const SIGNAL_ICONS: Record<string, string> = {
     Funding: "💰",
     Acquisition: "🤝",
@@ -176,9 +230,9 @@ function StartupSignalsPanel() {
       <div className="section-header">
         <h2 className="flex justify-between items-baseline">
           <span>Funding & Startup Signals</span>
-          {!loading && data && (
+          {!loading && signals.length > 0 && (
             <span className="text-sm font-medium" style={{ color: 'var(--text-muted)' }}>
-              {data.totalSignals} signals
+              {signals.length} signals
             </span>
           )}
         </h2>
@@ -195,13 +249,13 @@ function StartupSignalsPanel() {
         </div>
       )}
 
-      {!loading && (!data || data.signals.length === 0) && (
+      {!loading && signals.length === 0 && (
         <p className="text-sm py-4" style={{ color: 'var(--text-muted)' }}>No recent startup signals detected.</p>
       )}
 
-      {!loading && data && data.signals.length > 0 && (
+      {!loading && signals.length > 0 && (
         <div className="flex flex-col gap-2.5">
-          {data.signals.slice(0, 6).map((signal: StartupSignal) => (
+          {signals.slice(0, 6).map((signal: StartupSignal) => (
             <div
               key={signal.id}
               className="saas-card p-3"
@@ -273,10 +327,21 @@ function StartupSignalsPanel() {
 // ─── Main Section ───────────────────────────────────────────────────────────────
 
 export default function EcosystemSection({ provinceFilter }: { provinceFilter?: string }) {
+  const [signals, setSignals] = useState<StartupSignal[]>([])
+  const [signalsLoading, setSignalsLoading] = useState(true)
+
+  useEffect(() => {
+    fetch("/api/v1/startups")
+      .then((res) => res.json())
+      .then((json: StartupSignalsData) => { if (json.signals) setSignals(json.signals) })
+      .catch((err) => console.warn("[EcosystemSection] fetch failed:", err))
+      .finally(() => setSignalsLoading(false))
+  }, [])
+
   return (
     <div className="grid gap-4 xl:grid-cols-2">
-      <StartupMapPanel provinceFilter={provinceFilter} />
-      <StartupSignalsPanel />
+      <StartupMapPanel provinceFilter={provinceFilter} liveSignals={signals} />
+      <StartupSignalsPanel signals={signals} loading={signalsLoading} />
     </div>
   )
 }
