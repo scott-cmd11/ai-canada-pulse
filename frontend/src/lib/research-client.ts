@@ -103,7 +103,7 @@ async function _fetchCanadianAIResearch(): Promise<ResearchResult> {
     const params = new URLSearchParams({
       search: "artificial intelligence machine learning deep learning neural network",
       filter: `${CANADIAN_INSTITUTION_FILTER},from_publication_date:${fromDate},to_publication_date:${today},type:article|preprint`,
-      sort: "relevance_score:desc",
+      sort: "publication_date:desc",
       per_page: "15",
       select: "id,title,publication_date,cited_by_count,primary_location,open_access,doi,authorships,concepts,abstract_inverted_index",
     })
