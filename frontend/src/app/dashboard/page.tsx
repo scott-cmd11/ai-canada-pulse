@@ -43,7 +43,7 @@ export default function DashboardPage() {
       <main id="main-content" className="mx-auto flex w-full max-w-[1480px] flex-col gap-6 px-4 py-4 sm:px-6 lg:px-8 lg:py-6">
         <SectionNav />
 
-        <section id="acceleration" className="saas-card rounded-2xl p-5 sm:p-6 max-w-4xl mx-auto w-full">
+        <section id="acceleration" className="saas-card rounded-2xl p-5 sm:p-6">
           <SectionTitle
             eyebrow="Acceleration Signals"
             title="The shortest path to the Canadian story"
