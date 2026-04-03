@@ -49,7 +49,7 @@ export default function LegalPage() {
               Contact
             </h3>
             <p>
-              For privacy enquiries, contact <a href="mailto:scott.hazlitt@gmail.com" className="font-semibold hover:underline" style={{ color: 'var(--accent-primary)' }}>scott.hazlitt@gmail.com</a>.
+              For privacy enquiries, contact <a href="mailto:scott@scotthazlitt.ai" className="font-semibold hover:underline" style={{ color: 'var(--accent-primary)' }}>scott@scotthazlitt.ai</a>.
             </p>
           </section>
 
@@ -106,7 +106,7 @@ export default function LegalPage() {
               <li>arXiv (academic preprints)</li>
             </ul>
             <p className="mt-3">
-              All stories link back to their original source. If you are a content owner and have concerns about how your content is displayed, please contact <a href="mailto:scott.hazlitt@gmail.com" className="font-semibold hover:underline" style={{ color: 'var(--accent-primary)' }}>scott.hazlitt@gmail.com</a>.
+              All stories link back to their original source. If you are a content owner and have concerns about how your content is displayed, please contact <a href="mailto:scott@scotthazlitt.ai" className="font-semibold hover:underline" style={{ color: 'var(--accent-primary)' }}>scott@scotthazlitt.ai</a>.
             </p>
             <p className="mt-3">
               Population data is sourced from Statistics Canada, Table 17-10-0009-01, &ldquo;Population estimates, quarterly&rdquo; (Q4 2025, January 1, 2026).
@@ -119,7 +119,7 @@ export default function LegalPage() {
               Accessibility
             </h2>
             <p>
-              We are committed to making AI Canada Pulse accessible to all users, in alignment with the <em>Accessibility for Manitobans Act</em> (AMA) and the <em>Accessible Canada Act</em>. The site targets WCAG 2.1 AA compliance. If you encounter accessibility barriers, please contact us at <a href="mailto:scott.hazlitt@gmail.com" className="font-semibold hover:underline" style={{ color: 'var(--accent-primary)' }}>scott.hazlitt@gmail.com</a>.
+              We are committed to making AI Canada Pulse accessible to all users, in alignment with the <em>Accessibility for Manitobans Act</em> (AMA) and the <em>Accessible Canada Act</em>. The site targets WCAG 2.1 AA compliance. If you encounter accessibility barriers, please contact us at <a href="mailto:scott@scotthazlitt.ai" className="font-semibold hover:underline" style={{ color: 'var(--accent-primary)' }}>scott@scotthazlitt.ai</a>.
             </p>
           </section>
 
