@@ -131,21 +131,86 @@ async function DigestContent() {
     )
   }
 
-  // Error sentinel: cron ran but generation failed
+  // Error sentinel: cron ran but generation failed — try yesterday before falling back to headlines
   if (digest.error) {
+    const yesterday = new Date(Date.UTC(
+      parseInt(today.slice(0, 4)),
+      parseInt(today.slice(5, 7)) - 1,
+      parseInt(today.slice(8, 10)) - 1,
+    )).toISOString().split('T')[0]
+
+    let previousDigest = null
+    try {
+      previousDigest = await getDigest(yesterday)
+    } catch {
+      // ignore — fall through to headlines
+    }
+
+    if (previousDigest && !previousDigest.error) {
+      return (
+        <>
+          <div style={{ maxWidth: '680px', margin: '0 auto', padding: '12px 20px', borderBottom: '1px solid var(--border-subtle)' }}>
+            <p style={{ fontSize: '13px', color: 'var(--text-muted)', margin: 0 }}>
+              Today&apos;s digest generation encountered an issue. Showing yesterday&apos;s edition.
+            </p>
+          </div>
+          <DigestView digest={previousDigest} isToday={false} />
+        </>
+      )
+    }
+
+    const stories = await fetchHeadlines()
     return (
-      <div style={{ maxWidth: '680px', margin: '0 auto', padding: '60px 20px', textAlign: 'center' }}>
-        <p style={{ fontSize: '15px', color: 'var(--text-secondary)', marginBottom: '16px' }}>
-          Today&apos;s digest is temporarily unavailable.
-        </p>
-        <a href="/dashboard" style={{ color: 'var(--accent-primary)', fontSize: '14px' }}>
-          View the live dashboard →
-        </a>
-      </div>
+      <HeadlinesFallback
+        message="Today's digest is temporarily unavailable. Here are the latest headlines:"
+        stories={stories}
+      />
     )
   }
 
   return <DigestView digest={digest} isToday={true} />
+}
+
+function SiteAbout() {
+  return (
+    <div
+      style={{
+        maxWidth: '680px',
+        margin: '0 auto',
+        padding: '32px 20px 0',
+        borderBottom: '1px solid var(--border-subtle)',
+        paddingBottom: '24px',
+        marginBottom: '0',
+      }}
+    >
+      <h1
+        style={{
+          fontSize: '22px',
+          fontWeight: 700,
+          color: 'var(--text-primary)',
+          marginBottom: '8px',
+          fontFamily: 'var(--font-display)',
+          letterSpacing: '-0.02em',
+        }}
+      >
+        AI Canada Pulse
+      </h1>
+      <p style={{ fontSize: '14px', lineHeight: '1.7', color: 'var(--text-secondary)', marginBottom: '10px' }}>
+        An independent, open-source dashboard tracking artificial intelligence developments across Canada —
+        news, research, legislation, jobs, and financial signals — updated continuously from public sources.
+        Built to help Canadian professionals, researchers, and policymakers stay informed without wading through noise.
+      </p>
+      <p style={{ fontSize: '12px', lineHeight: '1.6', color: 'var(--text-muted)' }}>
+        <strong style={{ color: 'var(--text-secondary)' }}>No government affiliation.</strong>{' '}
+        This project is independent and has no connection to the Government of Canada or any federal agency.
+        Content is aggregated and AI-summarized from public sources and may contain errors or omissions —
+        always verify important information with the primary source.{' '}
+        <a href="/methodology" style={{ color: 'var(--accent-primary)', textDecoration: 'none' }}>
+          How this works →
+        </a>
+      </p>
+    </div>
+  )
 }
 
 export default function HomePage() {
@@ -153,8 +218,9 @@ export default function HomePage() {
     <div style={{ minHeight: '100vh', backgroundColor: 'var(--bg-page)' }}>
       <Header />
       <main style={{ paddingBottom: '60px' }}>
+        <SiteAbout />
         <Suspense fallback={
-          <div style={{ maxWidth: '680px', margin: '60px auto', padding: '0 20px', color: 'var(--text-muted)', fontSize: '14px' }}>
+          <div style={{ maxWidth: '680px', margin: '40px auto', padding: '0 20px', color: 'var(--text-muted)', fontSize: '14px' }}>
             Loading today&apos;s digest…
           </div>
         }>
