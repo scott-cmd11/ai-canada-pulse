@@ -10,7 +10,7 @@ export interface DataSource {
   name: string
   url: string
   description: string
-  type: "news" | "research" | "government" | "jobs" | "registry" | "talent" | "startup" | "benchmark" | "regulatory"
+  type: "news" | "research" | "government" | "jobs" | "registry" | "startup" | "benchmark" | "regulatory"
   refreshInterval: string
   clientFile: string
   dataScope: "national" | "provincial" | "both"
@@ -99,44 +99,6 @@ export const SOURCES: DataSource[] = [
     dataScope: "national",
     reliability: "primary",
     fetchMethod: "api",
-  },
-
-  // ─── Talent & Immigration ─────────────────────────────────────────────────
-  {
-    id: "ircc-immigration",
-    name: "IRCC Open Data",
-    url: "https://open.canada.ca",
-    description: "Tech work permit and immigration data from Immigration, Refugees and Citizenship Canada",
-    type: "talent",
-    refreshInterval: "24h",
-    clientFile: "ircc-client.ts",
-    dataScope: "national",
-    reliability: "primary",
-    fetchMethod: "api",
-  },
-  {
-    id: "nserc-grants",
-    name: "NSERC Open Data",
-    url: "https://open.canada.ca",
-    description: "Discovery Grant awards for AI and machine learning research at Canadian universities",
-    type: "talent",
-    refreshInterval: "24h",
-    clientFile: "nserc-client.ts",
-    dataScope: "national",
-    reliability: "primary",
-    fetchMethod: "api",
-  },
-  {
-    id: "university-programs",
-    name: "Canadian University Programs",
-    url: "https://www.univcan.ca",
-    description: "Graduate and undergraduate AI, ML, and data science programs at Canadian universities",
-    type: "talent",
-    refreshInterval: "quarterly",
-    clientFile: "university-programs-data.ts",
-    dataScope: "both",
-    reliability: "aggregated",
-    fetchMethod: "manual",
   },
 
   // ─── Regulatory ───────────────────────────────────────────────────────────
