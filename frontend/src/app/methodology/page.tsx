@@ -8,13 +8,11 @@ const TYPE_LABELS: Record<string, string> = {
   research: "Research",
   government: "Government",
   jobs: "Jobs",
-  market: "Market Data",
   registry: "Data Registries",
   talent: "Talent & Immigration",
   regulatory: "Regulatory",
   startup: "Startups & Ecosystem",
   benchmark: "Benchmarks & Rankings",
-  community: "Community & Events",
 }
 
 const SOURCE_TYPES = [
@@ -22,13 +20,11 @@ const SOURCE_TYPES = [
   "research",
   "government",
   "jobs",
-  "market",
   "registry",
   "talent",
   "regulatory",
   "startup",
   "benchmark",
-  "community",
 ] as const
 
 const limits = [

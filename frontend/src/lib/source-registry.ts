@@ -2,13 +2,15 @@
 // Central registry of every data source the platform uses.
 // The methodology page auto-generates from this. SourceAttribution components
 // read from this. Nothing renders without being traceable here.
+//
+// Only sources that are actively rendered on the site should be listed here.
 
 export interface DataSource {
   id: string
   name: string
   url: string
   description: string
-  type: "news" | "research" | "government" | "jobs" | "market" | "trends" | "registry" | "talent" | "startup" | "benchmark" | "community" | "regulatory"
+  type: "news" | "research" | "government" | "jobs" | "registry" | "talent" | "startup" | "benchmark" | "regulatory"
   refreshInterval: string
   clientFile: string
   dataScope: "national" | "provincial" | "both"
@@ -17,6 +19,7 @@ export interface DataSource {
 }
 
 export const SOURCES: DataSource[] = [
+  // ─── News ─────────────────────────────────────────────────────────────────
   {
     id: "rss-news",
     name: "Canadian News Feeds",
@@ -29,6 +32,8 @@ export const SOURCES: DataSource[] = [
     reliability: "aggregated",
     fetchMethod: "rss",
   },
+
+  // ─── Research ─────────────────────────────────────────────────────────────
   {
     id: "arxiv",
     name: "arXiv.org",
@@ -37,114 +42,6 @@ export const SOURCES: DataSource[] = [
     type: "research",
     refreshInterval: "12h",
     clientFile: "arxiv-client.ts",
-    dataScope: "national",
-    reliability: "primary",
-    fetchMethod: "api",
-  },
-  {
-    id: "openparliament",
-    name: "OpenParliament.ca",
-    url: "https://openparliament.ca",
-    description: "AI mentions in the federal House of Commons (Hansard). Federal Parliament only — does not cover Senate or provincial/territorial legislatures.",
-    type: "government",
-    refreshInterval: "24h",
-    clientFile: "parliament-client.ts",
-    dataScope: "national",
-    reliability: "primary",
-    fetchMethod: "api",
-  },
-  {
-    id: "google-trends",
-    name: "Google Trends",
-    url: "https://trends.google.com",
-    description: "Search interest for AI-related terms across Canadian provinces",
-    type: "trends",
-    refreshInterval: "12h",
-    clientFile: "trends-regional-client.ts",
-    dataScope: "both",
-    reliability: "aggregated",
-    fetchMethod: "api",
-  },
-  {
-    id: "github",
-    name: "GitHub",
-    url: "https://github.com",
-    description: "Trending open-source AI repositories and Canadian developer activity",
-    type: "research",
-    refreshInterval: "12h",
-    clientFile: "github-client.ts",
-    dataScope: "national",
-    reliability: "primary",
-    fetchMethod: "api",
-  },
-  {
-    id: "jobs",
-    name: "Government of Canada Job Bank",
-    url: "https://open.canada.ca/data/en/dataset/ea639e28-c0fc-48bf-b5dd-b8899bd43072",
-    description: "Monthly AI job postings from Canada's National Job Bank open data (no API key required)",
-    type: "jobs",
-    refreshInterval: "24h",
-    clientFile: "jobs-client.ts",
-    dataScope: "both",
-    reliability: "primary",
-    fetchMethod: "api",
-  },
-  {
-    id: "stocks",
-    name: "Yahoo Finance",
-    url: "https://finance.yahoo.com",
-    description: "Stock performance for Canadian AI-related public companies",
-    type: "market",
-    refreshInterval: "6h",
-    clientFile: "stocks-client.ts",
-    dataScope: "national",
-    reliability: "primary",
-    fetchMethod: "api",
-  },
-  {
-    id: "huggingface",
-    name: "Hugging Face",
-    url: "https://huggingface.co",
-    description: "AI model repository activity and Canadian-affiliated model releases",
-    type: "research",
-    refreshInterval: "24h",
-    clientFile: "huggingface-client.ts",
-    dataScope: "national",
-    reliability: "primary",
-    fetchMethod: "api",
-  },
-  {
-    id: "epoch-ai",
-    name: "Epoch AI",
-    url: "https://epochai.org",
-    description: "AI model benchmarks and compute trend data",
-    type: "research",
-    refreshInterval: "weekly",
-    clientFile: "epoch-client.ts",
-    dataScope: "national",
-    reliability: "primary",
-    fetchMethod: "api",
-  },
-  {
-    id: "alliance-compute",
-    name: "Digital Research Alliance of Canada",
-    url: "https://alliancecan.ca",
-    description: "National research compute cluster status and availability",
-    type: "research",
-    refreshInterval: "6h",
-    clientFile: "alliance-client.ts",
-    dataScope: "national",
-    reliability: "primary",
-    fetchMethod: "api",
-  },
-  {
-    id: "statcan",
-    name: "Statistics Canada",
-    url: "https://www.statcan.gc.ca",
-    description: "Labour force and economic data related to AI-sector employment",
-    type: "registry",
-    refreshInterval: "weekly",
-    clientFile: "statscan-client.ts",
     dataScope: "national",
     reliability: "primary",
     fetchMethod: "api",
@@ -161,31 +58,50 @@ export const SOURCES: DataSource[] = [
     reliability: "primary",
     fetchMethod: "api",
   },
+
+  // ─── Government ───────────────────────────────────────────────────────────
   {
-    id: "gov-ai-registry",
-    name: "Government of Canada AI Registry",
-    url: "https://open.canada.ca/data/en/dataset/fcbc0200-79ba-4fa4-94a6-00e32facea6b",
-    description: "Federal inventory of AI and automated decision systems in government use",
+    id: "openparliament",
+    name: "OpenParliament.ca",
+    url: "https://openparliament.ca",
+    description: "AI mentions in the federal House of Commons (Hansard). Federal Parliament only — does not cover Senate or provincial/territorial legislatures.",
     type: "government",
-    refreshInterval: "weekly",
-    clientFile: "gov-ai-registry-client.ts",
+    refreshInterval: "24h",
+    clientFile: "parliament-client.ts",
     dataScope: "national",
     reliability: "primary",
     fetchMethod: "api",
   },
+
+  // ─── Jobs ─────────────────────────────────────────────────────────────────
   {
-    id: "oecd",
-    name: "OECD AI Observatory",
-    url: "https://oecd.ai",
-    description: "AI publications and policy tracker comparing Canada with peer nations",
-    type: "research",
+    id: "jobs",
+    name: "Government of Canada Job Bank",
+    url: "https://open.canada.ca/data/en/dataset/ea639e28-c0fc-48bf-b5dd-b8899bd43072",
+    description: "Monthly AI job postings from Canada's National Job Bank open data (no API key required)",
+    type: "jobs",
+    refreshInterval: "24h",
+    clientFile: "jobs-client.ts",
+    dataScope: "both",
+    reliability: "primary",
+    fetchMethod: "api",
+  },
+
+  // ─── Data Registries ──────────────────────────────────────────────────────
+  {
+    id: "statcan",
+    name: "Statistics Canada",
+    url: "https://www.statcan.gc.ca",
+    description: "Labour force and economic data related to AI-sector employment",
+    type: "registry",
     refreshInterval: "weekly",
-    clientFile: "oecd-client.ts",
+    clientFile: "statscan-client.ts",
     dataScope: "national",
     reliability: "primary",
     fetchMethod: "api",
   },
-  // ─── New Data Sources (Comprehensive Expansion) ─────────────────────────────
+
+  // ─── Talent & Immigration ─────────────────────────────────────────────────
   {
     id: "ircc-immigration",
     name: "IRCC Open Data",
@@ -222,6 +138,8 @@ export const SOURCES: DataSource[] = [
     reliability: "aggregated",
     fetchMethod: "manual",
   },
+
+  // ─── Regulatory ───────────────────────────────────────────────────────────
   {
     id: "legisinfo",
     name: "LEGISinfo",
@@ -235,18 +153,6 @@ export const SOURCES: DataSource[] = [
     fetchMethod: "api",
   },
   {
-    id: "opc-privacy",
-    name: "Office of the Privacy Commissioner",
-    url: "https://www.priv.gc.ca",
-    description: "AI-related privacy findings, guidance, and reports from the OPC",
-    type: "regulatory",
-    refreshInterval: "24h",
-    clientFile: "opc-client.ts",
-    dataScope: "national",
-    reliability: "primary",
-    fetchMethod: "rss",
-  },
-  {
     id: "provincial-regulation",
     name: "Provincial AI Regulation",
     url: "https://www.canada.ca/en/government/system/digital-government.html",
@@ -258,6 +164,8 @@ export const SOURCES: DataSource[] = [
     reliability: "aggregated",
     fetchMethod: "manual",
   },
+
+  // ─── Benchmarks & Rankings ────────────────────────────────────────────────
   {
     id: "global-ai-index",
     name: "Global AI Index",
@@ -270,18 +178,8 @@ export const SOURCES: DataSource[] = [
     reliability: "primary",
     fetchMethod: "manual",
   },
-  {
-    id: "wipo-patents",
-    name: "WIPO IP Statistics",
-    url: "https://www3.wipo.int/ipstats/",
-    description: "AI patent filings and grants by country from the World Intellectual Property Organization",
-    type: "benchmark",
-    refreshInterval: "annually",
-    clientFile: "wipo-patents-data.ts",
-    dataScope: "national",
-    reliability: "primary",
-    fetchMethod: "manual",
-  },
+
+  // ─── Startups & Ecosystem ─────────────────────────────────────────────────
   {
     id: "startups",
     name: "Canadian AI Startups",
@@ -293,18 +191,6 @@ export const SOURCES: DataSource[] = [
     dataScope: "both",
     reliability: "aggregated",
     fetchMethod: "rss",
-  },
-  {
-    id: "ai-events",
-    name: "Canadian AI Events",
-    url: "https://cifar.ca",
-    description: "Conferences, meetups, and public consultations across Canada's AI community",
-    type: "community",
-    refreshInterval: "quarterly",
-    clientFile: "events-data.ts",
-    dataScope: "both",
-    reliability: "aggregated",
-    fetchMethod: "manual",
   },
 ]
 
