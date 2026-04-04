@@ -177,38 +177,46 @@ function SiteAbout() {
       style={{
         maxWidth: '680px',
         margin: '0 auto',
-        padding: '32px 20px 0',
+        padding: '28px 20px 20px',
         borderBottom: '1px solid var(--border-subtle)',
-        paddingBottom: '24px',
-        marginBottom: '0',
       }}
     >
       <h1
         style={{
-          fontSize: '22px',
+          fontSize: '20px',
           fontWeight: 700,
           color: 'var(--text-primary)',
-          marginBottom: '8px',
+          marginBottom: '6px',
           fontFamily: 'var(--font-display)',
           letterSpacing: '-0.02em',
         }}
       >
         AI Canada Pulse
       </h1>
-      <p style={{ fontSize: '14px', lineHeight: '1.7', color: 'var(--text-secondary)', marginBottom: '10px' }}>
-        An independent, open-source dashboard tracking artificial intelligence developments across Canada —
-        news, research, legislation, jobs, and financial signals — updated continuously from public sources.
-        Built to help Canadian professionals, researchers, and policymakers stay informed without wading through noise.
+      <p style={{ fontSize: '13px', lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '10px' }}>
+        Independent Canadian AI monitoring — news, research, legislation, jobs, and market signals from public sources.
       </p>
-      <p style={{ fontSize: '12px', lineHeight: '1.6', color: 'var(--text-muted)' }}>
-        <strong style={{ color: 'var(--text-secondary)' }}>No government affiliation.</strong>{' '}
-        This project is independent and has no connection to the Government of Canada or any federal agency.
-        Content is aggregated and AI-summarized from public sources and may contain errors or omissions —
-        always verify important information with the primary source.{' '}
-        <a href="/methodology" style={{ color: 'var(--accent-primary)', textDecoration: 'none' }}>
-          How this works →
-        </a>
-      </p>
+      <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '8px' }}>
+        <span
+          style={{
+            fontSize: '11px',
+            fontWeight: 600,
+            color: 'var(--accent-secondary, #b45309)',
+            background: 'color-mix(in srgb, var(--accent-secondary, #b45309) 10%, transparent)',
+            border: '1px solid color-mix(in srgb, var(--accent-secondary, #b45309) 25%, transparent)',
+            borderRadius: '999px',
+            padding: '2px 8px',
+          }}
+        >
+          Early access · more data coming
+        </span>
+        <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
+          No gov. affiliation · may contain errors ·{' '}
+          <a href="/methodology" style={{ color: 'var(--accent-primary)', textDecoration: 'none' }}>
+            how this works →
+          </a>
+        </span>
+      </div>
     </div>
   )
 }

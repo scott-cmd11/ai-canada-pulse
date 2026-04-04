@@ -1,16 +1,16 @@
 // LEGISinfo bill tracking client
 // Fetches AI-related bills from Parliament of Canada
-// Source: LEGISinfo XML feed — https://www.parl.ca/legisinfo/en/bills/xml
+// Source: LEGISinfo JSON API — https://www.parl.ca/legisinfo/en/bills/json
 // Docs: https://www.parl.ca/legisinfo/
 //
-// Key tracked bills:
-//   C-27  — Digital Charter Implementation Act, 2022 (includes AIDA). Died on the order paper
-//            when Parliament was prorogued on 2026-01-06 (44th Parliament, 1st Session ended).
-//   C-63  — Online Harms Act (AI-generated content). Also died 2026-01-06.
-// New bills in the 45th Parliament (opened March 2025) should be picked up automatically
-// by the live XML feed once introduced and matched by AI_KEYWORDS_RE.
+// Current parliament: 45th Parliament, 1st Session (45-1), opened May 26, 2025
+//
+// Key previous bills (44th Parliament, died on prorogation 2026-01-06):
+//   C-27  — Digital Charter Implementation Act, 2022 (includes AIDA)
+//   C-63  — Online Harms Act (AI-generated content)
 
 const CACHE_TTL = 12 * 60 * 60 * 1000 // 12 hours
+const CURRENT_SESSION = "45-1"
 
 export interface BillInfo {
   id: string
@@ -37,7 +37,23 @@ interface CacheEntry {
 
 let cache: CacheEntry | null = null
 
-const AI_KEYWORDS_RE = /artificial intelligence|algorithmic|machine learning|automated decision|AIDA|facial recognition|biometric|deepfake|generative ai|data protection|digital charter/i
+// Broader keyword set to catch more AI-adjacent bills
+const AI_KEYWORDS_RE =
+  /artificial intelligence|algorithmic|machine learning|automated decision|AIDA|facial recognition|biometric|deepfake|generative|data protection|digital charter|online harms|surveillance|privacy|cybersecurity|digital safety|platform|autonomous|robotics|data governance/i
+
+const DIRECT_RE = /artificial intelligence|AIDA|algorithmic|automated decision|machine learning|generative|deepfake/i
+
+// Shape of a single bill object returned by the LEGISinfo JSON API
+interface LegisBill {
+  BillNumberFormatted?: string
+  LongTitleEn?: string
+  ShortTitleEn?: string
+  CurrentStatusEn?: string
+  LatestActivityDateTime?: string
+  SponsorEn?: string
+  ParlSessionCode?: string
+  [key: string]: unknown
+}
 
 export async function fetchLegislationData(): Promise<LegislationData> {
   if (cache && Date.now() - cache.fetchedAt < CACHE_TTL) {
@@ -45,16 +61,19 @@ export async function fetchLegislationData(): Promise<LegislationData> {
   }
 
   try {
-    // LEGISinfo provides XML feeds for bills
-    const res = await fetch("https://www.parl.ca/legisinfo/en/bills/xml", {
-      headers: { "User-Agent": "AICanadaPulse/1.0", Accept: "application/xml, text/xml" },
+    const url = `https://www.parl.ca/legisinfo/en/bills/json?parlsession=${CURRENT_SESSION}`
+    const res = await fetch(url, {
+      headers: { "User-Agent": "AICanadaPulse/1.0", Accept: "application/json" },
       signal: AbortSignal.timeout(20000),
     })
 
-    if (!res.ok) return getFallbackData()
+    if (!res.ok) {
+      console.warn(`[legisinfo-client] HTTP ${res.status} from LEGISinfo JSON API`)
+      return cache?.data ?? getFallbackData()
+    }
 
-    const xmlText = await res.text()
-    const data = parseBillsXml(xmlText)
+    const json: LegisBill[] = await res.json()
+    const data = parseBillsJson(json)
     cache = { data, fetchedAt: Date.now() }
     return data
   } catch (err) {
@@ -63,50 +82,44 @@ export async function fetchLegislationData(): Promise<LegislationData> {
   }
 }
 
-function parseBillsXml(xml: string): LegislationData {
-  const bills: BillInfo[] = []
+function parseBillsJson(bills: LegisBill[]): LegislationData {
+  const matched: BillInfo[] = []
 
-  // Simple regex-based XML parsing (no DOM parser needed server-side)
-  const billMatches = xml.match(/<Bill[^>]*>[\s\S]*?<\/Bill>/gi) || []
+  for (const bill of bills) {
+    const number = bill.BillNumberFormatted ?? ""
+    const title = bill.LongTitleEn ?? bill.ShortTitleEn ?? ""
+    const status = bill.CurrentStatusEn ?? ""
+    const statusDate = (bill.LatestActivityDateTime ?? "").slice(0, 10)
+    const sponsor = bill.SponsorEn ?? ""
+    const session = bill.ParlSessionCode ?? CURRENT_SESSION
 
-  for (const billXml of billMatches) {
-    const number = extractTag(billXml, "NumberCode") || extractTag(billXml, "Number") || ""
-    const title = extractTag(billXml, "LongTitleEn") || extractTag(billXml, "ShortTitleEn") || ""
-    const status = extractTag(billXml, "StatusNameEn") || ""
-    const statusDate = extractTag(billXml, "StatusDate") || ""
-    const sponsor = extractTag(billXml, "SponsorPersonOfficialFirstName")
-      ? `${extractTag(billXml, "SponsorPersonOfficialFirstName")} ${extractTag(billXml, "SponsorPersonOfficialLastName")}`
-      : extractTag(billXml, "SponsorAffiliationTitleEn") || ""
-    const session = extractTag(billXml, "ParliamentSession") || ""
+    if (!number || !title) continue
 
-    // Check if bill is AI-related
     if (AI_KEYWORDS_RE.test(title)) {
-      bills.push({
-        id: number || `bill-${bills.length}`,
+      matched.push({
+        id: number.toLowerCase(),
         number,
         title: truncate(title, 200),
         status,
-        statusDate: statusDate.slice(0, 10),
+        statusDate,
         sponsor,
         session,
-        url: `https://www.parl.ca/legisinfo/en/bill/${session.replace(" ", "-")}/${number.toLowerCase()}`,
-        aiRelevance: /artificial intelligence|AIDA|algorithmic|automated decision/i.test(title) ? "Direct" : "Indirect",
+        url: `https://www.parl.ca/legisinfo/en/bill/${session}/${number.toLowerCase()}`,
+        aiRelevance: DIRECT_RE.test(title) ? "Direct" : "Indirect",
       })
     }
   }
 
-  if (bills.length === 0) return getFallbackData()
+  if (matched.length === 0) {
+    console.warn("[legisinfo-client] No AI-related bills found in JSON response — using fallback")
+    return getFallbackData()
+  }
 
   return {
-    bills: bills.sort((a, b) => b.statusDate.localeCompare(a.statusDate)),
-    totalAIBills: bills.length,
+    bills: matched.sort((a, b) => b.statusDate.localeCompare(a.statusDate)),
+    totalAIBills: matched.length,
     lastUpdated: new Date().toISOString().slice(0, 10),
   }
-}
-
-function extractTag(xml: string, tag: string): string {
-  const match = xml.match(new RegExp(`<${tag}[^>]*>([^<]*)</${tag}>`, "i"))
-  return match ? match[1].trim() : ""
 }
 
 function truncate(str: string, len: number): string {
@@ -115,54 +128,34 @@ function truncate(str: string, len: number): string {
 }
 
 function getFallbackData(): LegislationData {
+  // Placeholder fallback — 45th Parliament bills as of April 2026
+  // These are shown only when the live API is unreachable
   return {
     bills: [
       {
-        id: "c-27",
+        id: "c-27-45",
         number: "C-27",
-        title: "Digital Charter Implementation Act, 2022 (includes AIDA — Artificial Intelligence and Data Act)",
-        status: "Died on the Order Paper",
-        statusDate: "2026-01-06",
-        sponsor: "François-Philippe Champagne",
-        session: "44-1",
-        url: "https://www.parl.ca/legisinfo/en/bill/44-1/c-27",
+        title: "Digital Charter Implementation Act (45th Parliament reintroduction pending)",
+        status: "Not yet introduced",
+        statusDate: "2025-05-26",
+        sponsor: "Government",
+        session: "45-1",
+        url: "https://www.parl.ca/legisinfo/en/bills?parlsession=45-1",
         aiRelevance: "Direct",
       },
       {
-        id: "c-63",
+        id: "c-63-45",
         number: "C-63",
-        title: "Online Harms Act (AI-generated content provisions)",
-        status: "Died on the Order Paper",
-        statusDate: "2026-01-06",
-        sponsor: "Arif Virani",
-        session: "44-1",
-        url: "https://www.parl.ca/legisinfo/en/bill/44-1/c-63",
-        aiRelevance: "Indirect",
-      },
-      {
-        id: "c-288",
-        number: "C-288",
-        title: "An Act to amend the Telecommunications Act (transparent and accurate broadband services — AI monitoring)",
-        status: "Died on the Order Paper",
-        statusDate: "2026-01-06",
-        sponsor: "Private Member",
-        session: "44-1",
-        url: "https://www.parl.ca/legisinfo/en/bill/44-1/c-288",
-        aiRelevance: "Indirect",
-      },
-      {
-        id: "s-210",
-        number: "S-210",
-        title: "The Protecting Young Persons from Exposure to Pornography Act (age verification AI)",
-        status: "Died on the Order Paper",
-        statusDate: "2026-01-06",
-        sponsor: "Senator Miville-Dechêne",
-        session: "44-1",
-        url: "https://www.parl.ca/legisinfo/en/bill/44-1/s-210",
+        title: "Online Harms Act (45th Parliament reintroduction pending)",
+        status: "Not yet introduced",
+        statusDate: "2025-05-26",
+        sponsor: "Government",
+        session: "45-1",
+        url: "https://www.parl.ca/legisinfo/en/bills?parlsession=45-1",
         aiRelevance: "Indirect",
       },
     ],
-    totalAIBills: 4,
-    lastUpdated: "2026-01-06",
+    totalAIBills: 0, // 0 signals live data unavailable
+    lastUpdated: new Date().toISOString().slice(0, 10),
   }
 }

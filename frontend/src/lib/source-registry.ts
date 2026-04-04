@@ -232,7 +232,7 @@ export const SOURCES: DataSource[] = [
     clientFile: "legisinfo-client.ts",
     dataScope: "national",
     reliability: "primary",
-    fetchMethod: "rss",
+    fetchMethod: "api",
   },
   {
     id: "opc-privacy",

@@ -9,11 +9,27 @@ const TYPE_LABELS: Record<string, string> = {
   government: "Government",
   jobs: "Jobs",
   market: "Market Data",
-  trends: "Trends",
-  registry: "Registries",
+  registry: "Data Registries",
+  talent: "Talent & Immigration",
+  regulatory: "Regulatory",
+  startup: "Startups & Ecosystem",
+  benchmark: "Benchmarks & Rankings",
+  community: "Community & Events",
 }
 
-const SOURCE_TYPES = ["news", "research", "government", "jobs", "market", "registry"] as const
+const SOURCE_TYPES = [
+  "news",
+  "research",
+  "government",
+  "jobs",
+  "market",
+  "registry",
+  "talent",
+  "regulatory",
+  "startup",
+  "benchmark",
+  "community",
+] as const
 
 const limits = [
   "AI summaries, digests, and deep dives are produced from headlines and short context snippets. They can miss nuance, omit background, or flatten uncertainty. They should be treated as navigation aids, not authoritative analysis.",
@@ -438,22 +454,6 @@ export default function MethodologyPage() {
                 }}
               >
                 <h3 className="text-sm font-bold" style={{ color: "var(--text-primary)" }}>
-                  Executive Brief
-                </h3>
-                <p className="mt-2 text-xs leading-relaxed" style={{ color: "var(--text-secondary)" }}>
-                  <strong>gpt-4o-mini</strong> — generates the daily Canada executive brief from top stories. Runs once daily via cron.
-                </p>
-              </div>
-              <div
-                className="rounded-2xl p-4"
-                style={{
-                  backgroundColor: "var(--surface-secondary)",
-                  borderColor: "var(--border-subtle)",
-                  borderWidth: "1px",
-                  borderStyle: "solid",
-                }}
-              >
-                <h3 className="text-sm font-bold" style={{ color: "var(--text-primary)" }}>
                   Daily Digest
                 </h3>
                 <p className="mt-2 text-xs leading-relaxed" style={{ color: "var(--text-secondary)" }}>
@@ -489,7 +489,7 @@ export default function MethodologyPage() {
                   Section Summaries
                 </h3>
                 <p className="mt-2 text-xs leading-relaxed" style={{ color: "var(--text-secondary)" }}>
-                  <strong>gpt-4o-mini</strong> — generates short narrative summaries for 6 signal domains (Policy, Research, Funding, Markets, Regulation, Talent) shown at the top of each dashboard section.
+                  <strong>gpt-4o-mini</strong> — generates one-sentence summaries for 5 signal sections (Stories, Parliament, Research, Jobs, Market Stocks). Displayed at the top of each relevant section on the dashboard and provincial pages.
                 </p>
               </div>
             </div>
