@@ -126,14 +126,14 @@ export default function MethodologyPage() {
                     {TYPE_LABELS[type]}
                   </h3>
                   <div
-                    className="overflow-hidden rounded-2xl"
+                    className="overflow-x-auto rounded-2xl"
                     style={{
                       borderColor: "var(--border-subtle)",
                       borderWidth: "1px",
                       borderStyle: "solid",
                     }}
                   >
-                    <table className="w-full text-sm">
+                    <table className="w-full min-w-[540px] text-sm">
                       <thead>
                         <tr
                           style={{
@@ -283,14 +283,14 @@ export default function MethodologyPage() {
           </div>
 
           <div
-            className="overflow-hidden rounded-2xl"
+            className="overflow-x-auto rounded-2xl"
             style={{
               borderColor: "var(--border-subtle)",
               borderWidth: "1px",
               borderStyle: "solid",
             }}
           >
-            <table className="w-full text-sm">
+            <table className="w-full min-w-[480px] text-sm">
               <thead>
                 <tr
                   style={{

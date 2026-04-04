@@ -9,8 +9,8 @@ const navLinks = [
   { label: "Digest", href: "/" },
   { label: "Dashboard", href: "/dashboard" },
   { label: "Deep Dives", href: "/blog" },
-  { label: "Provinces & Territories", href: "/provinces" },
-  { label: "Methodology", href: "/methodology" },
+  { label: "Provinces", href: "/provinces", fullLabel: "Provinces & Territories" },
+  { label: "Methodology", href: "/methodology", mobileHidden: true },
 ]
 
 export default function Header() {
@@ -55,17 +55,17 @@ export default function Header() {
 
           <div className="flex flex-wrap items-center gap-2 sm:gap-3">
             <ThemeToggle />
-            {navLinks.map(({ label, href }) => {
+            {navLinks.map(({ label, href, mobileHidden }) => {
               const isActive =
                 href === "/" ? pathname === "/" :
                 href === "/blog" ? pathname.startsWith("/blog") :
-                href === "/provinces/ontario" ? pathname.startsWith("/provinces") :
+                href === "/provinces" ? pathname.startsWith("/provinces") :
                 pathname === href
               return (
                 <Link
                   key={href}
                   href={href}
-                  className="rounded-full border px-3.5 py-2 text-xs shadow-sm"
+                  className={`rounded-full border px-3.5 py-2 text-xs shadow-sm min-h-[36px] flex items-center${mobileHidden ? " hidden sm:flex" : ""}`}
                   style={{
                     borderColor: "var(--border-strong)",
                     color: isActive ? "var(--accent-primary)" : "var(--text-secondary)",

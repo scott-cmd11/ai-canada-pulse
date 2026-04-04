@@ -339,7 +339,7 @@ export default function EcosystemSection({ provinceFilter }: { provinceFilter?: 
   }, [])
 
   return (
-    <div className="grid gap-4 xl:grid-cols-2">
+    <div className="grid gap-4 lg:grid-cols-2">
       <StartupMapPanel provinceFilter={provinceFilter} liveSignals={signals} />
       <StartupSignalsPanel signals={signals} loading={signalsLoading} />
     </div>

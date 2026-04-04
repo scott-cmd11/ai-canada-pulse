@@ -97,7 +97,7 @@ export default function StoryFeed({ region }: StoryFeedProps = {}) {
               setActive(category.value)
               setDisplayCount(PAGE_SIZE)
             }}
-            className="rounded-full border px-3 py-1.5 text-xs font-semibold transition-colors"
+            className="min-h-[36px] rounded-full border px-3 py-2 text-xs font-semibold transition-colors"
             style={active === category.value
               ? {
                   borderColor: 'color-mix(in srgb, var(--accent-primary) 20%, transparent)',
