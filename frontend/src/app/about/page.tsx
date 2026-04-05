@@ -42,6 +42,18 @@ export default function AboutPage() {
           </p>
         </header>
 
+        <div
+          className="mt-5 rounded-lg px-4 py-3 text-sm leading-relaxed"
+          style={{
+            backgroundColor: 'color-mix(in srgb, var(--accent-primary) 6%, transparent)',
+            border: '1px solid color-mix(in srgb, var(--accent-primary) 18%, transparent)',
+            color: 'var(--text-secondary)',
+          }}
+        >
+          <strong style={{ color: 'var(--text-primary)' }}>Independent project.</strong>{' '}
+          This site is not an official Government of Canada website and is not affiliated with, endorsed by, or sponsored by the Government of Canada or any federal department. It is a personal project built to improve public access to information that is already openly licensed and publicly available.
+        </div>
+
         <div className="space-y-10 py-8" style={{ color: 'var(--text-secondary)', fontSize: '14px', lineHeight: 1.8 }}>
 
           <Section title="Project Overview">

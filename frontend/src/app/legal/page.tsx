@@ -65,7 +65,7 @@ export default function LegalPage() {
               <li>Content is for informational purposes only and does not constitute professional, financial, or legal advice.</li>
               <li>Market data is delayed and should not be used for trading decisions.</li>
               <li>AI-generated content may contain inaccuracies (see disclosure below).</li>
-              <li>This is a personal project and does not represent the views of, or affiliation with, the Government of Canada or any government department.</li>
+              <li><strong>This site is not an official Government of Canada website and is not affiliated with, endorsed by, or sponsored by the Government of Canada or any federal department.</strong> It is a personal project built to improve public access to information that is already openly licensed and publicly available.</li>
             </ul>
           </section>
 
