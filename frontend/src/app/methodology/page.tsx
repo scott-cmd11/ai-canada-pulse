@@ -88,7 +88,7 @@ export default function MethodologyPage() {
               Methodology
             </h1>
             <p className="mt-4 max-w-3xl text-base leading-relaxed sm:text-lg" style={{ color: "var(--text-secondary)" }}>
-              AI Canada Pulse is a Canada-first monitoring product focused on domestic AI signals. The live dashboard
+              AI Canada Pulse is an independent dashboard focused on AI signals from Canadian sources. The live dashboard
               blends public data feeds, deterministic classification, cached AI-generated summaries, and curated
               institutional references. This page documents every data source and how AI processing works.
             </p>
