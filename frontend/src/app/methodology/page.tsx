@@ -28,7 +28,7 @@ const SOURCE_TYPES = [
 const limits = [
   "AI summaries, digests, and deep dives are produced from headlines and short context snippets. They can miss nuance, omit background, or flatten uncertainty. They should be treated as navigation aids, not authoritative analysis.",
   "The daily digest publishes once at 12:00 UTC. Before that time the previous day's digest is shown. If generation fails, the site falls back to live headlines.",
-  "Deep Dives are triggered automatically by a significance threshold (funding ≥$50M, parliamentary AI votes, notable research). Significant stories that don't match these rules may not generate a Deep Dive.",
+  "Deep Dives are triggered automatically by a significance threshold (funding ≥$50M, parliamentary AI votes, notable research), or auto-generated if no Deep Dive has published in 7+ days. Stories that don't meet the threshold and fall within the weekly window may not generate one.",
   "Public feeds can change structure, publish duplicates, or omit context. The app deduplicates and filters aggressively, but false positives and missed stories remain possible.",
   "Market and macro indicators are contextual signals only. They are not investment advice, economic forecasts, or causal evidence about AI effects.",
   "Global AI ranking indices are updated annually by their publishers. The figures shown reflect the most recently published edition and may not reflect changes made since.",
@@ -435,7 +435,7 @@ export default function MethodologyPage() {
                   Summarization
                 </h3>
                 <p className="mt-2 text-xs leading-relaxed" style={{ color: "var(--text-secondary)" }}>
-                  <strong>gpt-4o-mini</strong> — generates brief summaries (max 150 words) of news articles, cached in Upstash Redis.
+                  <strong>gpt-4o-mini</strong> — generates 3–4 sentence summaries (60–140 words) of news articles, cached in Upstash Redis.
                 </p>
               </div>
               <div
@@ -467,7 +467,7 @@ export default function MethodologyPage() {
                   Deep Dives
                 </h3>
                 <p className="mt-2 text-xs leading-relaxed" style={{ color: "var(--text-secondary)" }}>
-                  <strong>gpt-4o-mini</strong> — generates 400–600 word analytical articles when a story crosses a significance threshold: funding rounds ≥$50M, parliamentary AI legislation, or notable research. One per day maximum.
+                  <strong>gpt-4o-mini</strong> — generates 400–600 word analytical articles when a story crosses a significance threshold: funding rounds ≥$50M, parliamentary AI legislation, or notable research. Also auto-generates at least once per week if no post has been published in 7+ days.
                 </p>
               </div>
               <div
@@ -483,7 +483,7 @@ export default function MethodologyPage() {
                   Section Summaries
                 </h3>
                 <p className="mt-2 text-xs leading-relaxed" style={{ color: "var(--text-secondary)" }}>
-                  <strong>gpt-4o-mini</strong> — generates one-sentence summaries for 5 signal sections (Stories, Parliament, Research, Jobs, Market Stocks). Displayed at the top of each relevant section on the dashboard and provincial pages.
+                  <strong>gpt-4o-mini</strong> — generates one-sentence summaries for 6 signal sections (Stories, Trends, Research, Parliament, Jobs, Stocks). Displayed at the top of each relevant section on the dashboard and provincial pages.
                 </p>
               </div>
             </div>
