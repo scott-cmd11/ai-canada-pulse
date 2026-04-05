@@ -210,12 +210,6 @@ function SiteAbout() {
         >
           Early access · more data coming
         </span>
-        <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
-          No gov. affiliation · may contain errors ·{' '}
-          <a href="/methodology" style={{ color: 'var(--accent-primary)', textDecoration: 'none' }}>
-            how this works →
-          </a>
-        </span>
       </div>
     </div>
   )

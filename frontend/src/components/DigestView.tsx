@@ -94,6 +94,9 @@ export default function DigestView({ digest, isToday }: Props) {
             <TagBadge key={tag} tag={tag} />
           ))}
         </div>
+        <p style={{ marginTop: '14px', fontSize: '11px', color: 'var(--text-muted)' }}>
+          AI-generated digest · may contain errors · verify with linked sources
+        </p>
       </header>
 
       {/* Key Developments */}
