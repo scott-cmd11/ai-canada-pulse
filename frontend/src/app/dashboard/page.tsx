@@ -49,12 +49,6 @@ export default function DashboardPage() {
           />
 
           <div className="mt-4">
-            <SectionErrorBoundary sectionName="Media Sentiment">
-              <SentimentSection />
-            </SectionErrorBoundary>
-          </div>
-
-          <div className="mt-4">
             <SectionErrorBoundary sectionName="Lead Signal">
               <BriefingCard />
             </SectionErrorBoundary>
@@ -65,6 +59,12 @@ export default function DashboardPage() {
               <StoryFeed />
             </SectionErrorBoundary>
           </div>
+
+          <div className="mt-4">
+            <SectionErrorBoundary sectionName="Media Sentiment">
+              <SentimentSection />
+            </SectionErrorBoundary>
+          </div>
         </section>
 
         <hr className="section-divider" />
@@ -73,20 +73,14 @@ export default function DashboardPage() {
           <section id="impact" className="section-dark rounded-2xl p-5 sm:p-6">
             <SectionTitle
               eyebrow="Market And Policy Impact"
-              title="Where acceleration is already visible"
-              description="Economic indicators and parliamentary activity tracking Canadian AI momentum."
+              title="Indicators that may signal AI adoption"
+              description="Macro and market data that could reflect AI-driven shifts in the Canadian economy."
               dark
             />
 
             <div>
               <SectionErrorBoundary sectionName="Pulse Indicators">
                 <IndicatorsSection />
-              </SectionErrorBoundary>
-            </div>
-
-            <div className="mt-4">
-              <SectionErrorBoundary sectionName="Parliament Activity">
-                <ParliamentSection />
               </SectionErrorBoundary>
             </div>
           </section>
@@ -101,6 +95,12 @@ export default function DashboardPage() {
               title="Deeper data on demand"
               description="Expand any section below to explore research output, adoption trends, ecosystem activity, and regulatory standing."
             />
+
+            <CollapsibleSection title="Parliament">
+              <SectionErrorBoundary sectionName="Parliament Activity">
+                <ParliamentSection />
+              </SectionErrorBoundary>
+            </CollapsibleSection>
 
             <CollapsibleSection title="Research">
               <SectionErrorBoundary sectionName="Fundamental Research">

@@ -15,7 +15,7 @@ interface FeedConfig {
   aiOnly: boolean
 }
 
-export const CANADA_DASHBOARD_STORY_LIMIT = 20
+export const CANADA_DASHBOARD_STORY_LIMIT = 50
 
 // Internal limit before province filtering — larger pool so smaller provinces get stories
 const INTERNAL_STORY_LIMIT = 50

@@ -4,6 +4,7 @@ import type { Story } from "@/lib/mock-data"
 import { useStories } from "@/hooks/useStories"
 import { relativeTime } from "@/lib/relative-time"
 import { SkeletonBar } from '@/components/Skeleton'
+import AILabel from '@/components/AILabel'
 
 export default function BriefingCard() {
   const { stories, loading } = useStories()
@@ -51,9 +52,9 @@ export default function BriefingCard() {
         >
           Lead signal
         </span>
-        <span>{topStory.category}</span>
         {topStory.sourceName && <span>| {topStory.sourceName}</span>}
         <span>| {topStory.region}</span>
+        {topStory.aiSummary && <AILabel level="classification" />}
       </div>
 
       <div className="space-y-3">
@@ -64,28 +65,15 @@ export default function BriefingCard() {
           {topStory.headline}
         </h3>
 
-        {topStory.aiSummary ? (
-          <p
-            className="text-sm leading-7 sm:text-[15px]"
-            style={{ color: 'var(--text-secondary)' }}
-          >
-            <span className="mr-1 text-xs" style={{ color: 'var(--accent-primary)' }}>*</span>
-            {topStory.aiSummary}
-          </p>
-        ) : (
-          <p
-            className="text-sm leading-7 sm:text-[15px]"
-            style={{ color: 'var(--text-secondary)' }}
-          >
-            {topStory.summary}
-          </p>
-        )}
+        <p
+          className="line-clamp-3 text-sm leading-6 sm:text-[15px]"
+          style={{ color: 'var(--text-secondary)' }}
+        >
+          {topStory.aiSummary ?? topStory.summary}
+        </p>
       </div>
 
-      <div
-        className="flex flex-wrap items-center gap-4 border-t pt-4"
-        style={{ borderColor: 'var(--border-subtle)' }}
-      >
+      <div className="flex flex-wrap items-center gap-4 pt-1">
         <p
           className="text-xs font-medium uppercase tracking-[0.14em]"
           style={{ color: 'var(--text-muted)' }}
