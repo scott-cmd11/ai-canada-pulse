@@ -124,7 +124,7 @@ export default function LegalPage() {
           </section>
 
           <p className="text-xs pt-4" style={{ color: 'var(--text-muted)', borderTop: '1px solid var(--border-subtle)' }}>
-            Last updated: March 31, 2026
+            Last updated: April 5, 2026
           </p>
         </div>
       </main>

@@ -10,6 +10,7 @@ const navLinks = [
   { label: "Dashboard", href: "/dashboard" },
   { label: "Deep Dives", href: "/blog" },
   { label: "Provinces & Territories", href: "/provinces" },
+  { label: "About", href: "/about", mobileHidden: true },
   { label: "Methodology", href: "/methodology", mobileHidden: true },
 ]
 
