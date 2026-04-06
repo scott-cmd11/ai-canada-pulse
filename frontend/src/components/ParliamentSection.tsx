@@ -55,28 +55,70 @@ export default function ParliamentSection() {
         </div>
       )}
 
-      {/* Remove hidden overflow that was clipping text, let the table flow */}
       {data && data.mentions.length > 0 && (
-        <div className="saas-card overflow-x-auto" style={{ backgroundColor: 'var(--surface-primary)' }}>
-          <table className="w-full text-left border-collapse min-w-[600px]">
-            <thead className="border-b" style={{ backgroundColor: 'var(--surface-secondary)', borderColor: 'var(--border-subtle)' }}>
-              <tr>
-                <th className="py-3 px-4 md:px-6 text-xs font-semibold tracking-wider uppercase w-[110px]" style={{ color: 'var(--text-muted)' }}>Date</th>
-                <th className="py-3 px-4 md:px-6 text-xs font-semibold tracking-wider uppercase min-w-[140px]" style={{ color: 'var(--text-muted)' }}>Member</th>
-                <th className="py-3 px-4 md:px-6 text-xs font-semibold tracking-wider uppercase" style={{ color: 'var(--text-muted)' }}>Excerpt</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y" style={{ borderColor: 'var(--border-subtle)' }}>
-              {data.mentions.map((m, i) => (
-                <MentionRow key={`${m.url}-${i}`} mention={m} />
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <>
+          {/* Mobile card layout */}
+          <div className="sm:hidden flex flex-col gap-3">
+            {data.mentions.map((m, i) => (
+              <MentionCard key={`card-${m.url}-${i}`} mention={m} />
+            ))}
+          </div>
+
+          {/* Desktop table layout */}
+          <div className="hidden sm:block saas-card overflow-x-auto" style={{ backgroundColor: 'var(--surface-primary)' }}>
+            <table className="w-full text-left border-collapse">
+              <thead className="border-b" style={{ backgroundColor: 'var(--surface-secondary)', borderColor: 'var(--border-subtle)' }}>
+                <tr>
+                  <th className="py-3 px-4 md:px-6 text-xs font-semibold tracking-wider uppercase w-[110px]" style={{ color: 'var(--text-muted)' }}>Date</th>
+                  <th className="py-3 px-4 md:px-6 text-xs font-semibold tracking-wider uppercase min-w-[140px]" style={{ color: 'var(--text-muted)' }}>Member</th>
+                  <th className="py-3 px-4 md:px-6 text-xs font-semibold tracking-wider uppercase" style={{ color: 'var(--text-muted)' }}>Excerpt</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y" style={{ borderColor: 'var(--border-subtle)' }}>
+                {data.mentions.map((m, i) => (
+                  <MentionRow key={`${m.url}-${i}`} mention={m} />
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>
       )}
 
       <SourceAttribution sourceId="openparliament" />
     </section>
+  )
+}
+
+function MentionCard({ mention }: { mention: ParliamentMention }) {
+  const partyStyle = PARTY_STYLES[mention.party || ""] || DEFAULT_PARTY_STYLE
+  return (
+    <div className="saas-card p-4" style={{ backgroundColor: 'var(--surface-primary)' }}>
+      <div className="flex items-start justify-between gap-3 mb-2">
+        <div className="flex flex-col gap-1">
+          <span className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>{mention.speaker}</span>
+          {mention.party && (
+            <span className="self-start px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wider rounded" style={partyStyle}>
+              {mention.party}
+            </span>
+          )}
+        </div>
+        <span className="text-xs font-medium whitespace-nowrap" style={{ color: 'var(--text-muted)' }}>{mention.date}</span>
+      </div>
+      {mention.excerpt && (
+        <p className="text-sm italic border-l-2 pl-3 mb-3 leading-relaxed" style={{ color: 'var(--text-secondary)', borderColor: 'var(--border-subtle)' }}>
+          "{mention.excerpt}"
+        </p>
+      )}
+      <a
+        href={mention.url}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="text-xs font-bold uppercase tracking-wider hover:underline"
+        style={{ color: 'var(--accent-primary)' }}
+      >
+        View Transcript &rarr;
+      </a>
+    </div>
   )
 }
 

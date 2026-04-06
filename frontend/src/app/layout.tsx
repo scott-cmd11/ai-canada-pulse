@@ -1,4 +1,4 @@
-import type { Metadata } from "next"
+import type { Metadata, Viewport } from "next"
 import { Fraunces, Manrope } from "next/font/google"
 import "./globals.css"
 
@@ -13,6 +13,11 @@ const fraunces = Fraunces({
   display: "swap",
   variable: "--font-display",
 })
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+}
 
 export const metadata: Metadata = {
   title: {

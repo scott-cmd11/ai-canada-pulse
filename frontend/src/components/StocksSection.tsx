@@ -93,8 +93,16 @@ export default function StocksSection({ region }: StocksSectionProps = {}) {
         </div>
       </div>
 
-      <div className="saas-card overflow-x-auto">
-        <table className="w-full text-left border-collapse min-w-[500px]">
+      {/* Mobile card layout */}
+      <div className="sm:hidden saas-card divide-y" style={{ borderColor: 'var(--border-subtle)' }}>
+        {data.quotes.map((q) => (
+          <StockCard key={q.symbol} quote={q} />
+        ))}
+      </div>
+
+      {/* Desktop table layout */}
+      <div className="hidden sm:block saas-card overflow-x-auto">
+        <table className="w-full text-left border-collapse">
           <thead className="border-b" style={{ backgroundColor: 'var(--surface-secondary)', borderColor: 'var(--border-subtle)' }}>
             <tr>
               <th className="py-3 px-4 sm:px-5 text-xs font-semibold tracking-wider uppercase" style={{ color: 'var(--text-muted)' }}>Ticker</th>
@@ -112,6 +120,28 @@ export default function StocksSection({ region }: StocksSectionProps = {}) {
       </div>
       <SourceAttribution sourceId="stocks" />
     </section>
+  )
+}
+
+function StockCard({ quote }: { quote: StockQuote }) {
+  const isUp = quote.changePercent >= 0
+  const colorClass = isUp ? "text-green-600" : "text-red-600"
+  const ticker = quote.symbol.replace(".TO", "").replace(".V", "")
+
+  return (
+    <div className="flex items-center justify-between px-4 py-3"
+      onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--surface-secondary)')}
+      onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
+    >
+      <div className="flex flex-col gap-0.5 min-w-0">
+        <span className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>{ticker}</span>
+        <span className="text-xs truncate" style={{ color: 'var(--text-secondary)', maxWidth: '180px' }}>{quote.name}</span>
+      </div>
+      <div className="flex flex-col items-end gap-0.5 shrink-0">
+        <span className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>${quote.price.toFixed(2)}</span>
+        <span className={`text-xs font-bold ${colorClass}`}>{isUp ? "+" : ""}{quote.changePercent}%</span>
+      </div>
+    </div>
   )
 }
 

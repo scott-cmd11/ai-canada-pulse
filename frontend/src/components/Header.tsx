@@ -2,6 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
+import { useState } from "react"
 import LiveTicker from "./LiveTicker"
 import ThemeToggle from "./ThemeToggle"
 
@@ -16,6 +17,7 @@ const navLinks = [
 
 export default function Header() {
   const pathname = usePathname()
+  const [menuOpen, setMenuOpen] = useState(false)
   const today = new Date().toLocaleDateString("en-CA", {
     weekday: "short",
     year: "numeric",
@@ -78,8 +80,53 @@ export default function Header() {
                 </Link>
               )
             })}
+            <button
+              className="sm:hidden flex items-center justify-center rounded-full border min-h-[36px] w-9"
+              style={{
+                borderColor: "var(--border-strong)",
+                background: "var(--surface-primary)",
+                color: "var(--text-secondary)",
+              }}
+              onClick={() => setMenuOpen((v) => !v)}
+              aria-label={menuOpen ? "Close menu" : "Open menu"}
+              aria-expanded={menuOpen}
+            >
+              {menuOpen ? (
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                  <path d="M2 2l10 10M12 2L2 12" />
+                </svg>
+              ) : (
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                  <path d="M1 4h12M1 7h12M1 10h12" />
+                </svg>
+              )}
+            </button>
           </div>
         </div>
+
+        {menuOpen && (
+          <div className="sm:hidden flex flex-wrap gap-2 pt-3 pb-2 border-t mt-1" style={{ borderColor: "var(--border-subtle)" }}>
+            {navLinks.filter((l) => l.mobileHidden).map(({ label, href }) => {
+              const isActive = pathname === href
+              return (
+                <Link
+                  key={href}
+                  href={href}
+                  onClick={() => setMenuOpen(false)}
+                  className="rounded-full border px-3.5 py-2 text-xs shadow-sm min-h-[36px] flex items-center"
+                  style={{
+                    borderColor: "var(--border-strong)",
+                    color: isActive ? "var(--accent-primary)" : "var(--text-secondary)",
+                    fontWeight: isActive ? 700 : 600,
+                    background: "var(--surface-primary)",
+                  }}
+                >
+                  {label}
+                </Link>
+              )
+            })}
+          </div>
+        )}
       </div>
     </header>
   )

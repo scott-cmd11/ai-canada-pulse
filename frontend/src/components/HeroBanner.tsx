@@ -55,11 +55,11 @@ export default function HeroBanner({ embedded = false }: { embedded?: boolean })
         </>
       )}
 
-      <div className="absolute bottom-4 right-8 select-none text-[200px] leading-none opacity-[0.04] pointer-events-none">
+      <div className="absolute bottom-4 right-4 sm:right-8 select-none text-[80px] sm:text-[140px] md:text-[200px] leading-none opacity-[0.04] pointer-events-none">
         CA
       </div>
 
-      <div className="relative z-10 px-8 py-10 sm:px-12 sm:py-14">
+      <div className="relative z-10 px-5 py-8 sm:px-8 sm:py-10 md:px-12 md:py-14">
         <div className="flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">
           <div className="max-w-2xl">
             <div className="mb-5 flex items-center gap-4">
@@ -92,7 +92,7 @@ export default function HeroBanner({ embedded = false }: { embedded?: boolean })
           </div>
 
           <div className="flex flex-col items-start gap-2 lg:items-end lg:justify-center">
-            <div className="flex items-center gap-6">
+            <div className="flex items-center gap-4 sm:gap-6">
               <div className="text-center">
                 <p className="text-2xl font-black text-white">
                   <AnimatedNumber value={10} suffix="+" />
