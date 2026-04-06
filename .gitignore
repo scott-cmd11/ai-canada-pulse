@@ -57,3 +57,4 @@ nul
 # tool artefacts
 .playwright-mcp/
 .superpowers/
+.worktrees/
