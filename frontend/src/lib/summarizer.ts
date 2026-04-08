@@ -295,20 +295,19 @@ async function ensureArticleSummaryQuality(
     const systemPrompt = `You are a wire reporter. Write one factual summary for a single ${scope} AI news item.
 
 Requirements:
-- Exactly 3 to 4 sentences
-- 60 to 140 words total
+- 2 to 3 sentences (expand to 3 if the context contains enough facts; 2 is fine if context is thin)
+- 40 to 100 words total
 - Use ONLY facts explicitly stated in the headline/context — do not infer or extrapolate
-- Do not mention feed/source metadata (forbidden: "as reported by", "listed under", "categorized as", "on Google News")
+- Do not mention feed/source metadata (forbidden: "as reported by", "listed under", "categorized as", "on Google News", "as indicated in a media advisory")
 - Do not start with "The article", "The report", "The story", "This article"
 
-BANNED PHRASES — never use these or synonyms of them:
+BANNED PHRASES — never use these or synonyms:
 "indicates", "signals", "suggests", "may impact", "could assist", "could help", "aims to", "seeks to", "is expected to", "marks a shift", "marks a step", "represents a", "this move", "this development", "this gap", "this discovery", "this announcement", "underscores", "highlights the need", "raises questions", "the findings suggest", "the analysis", "paving the way", "positioning", "poised to"
 
 - Sentence flow:
   1) Who did what — lead with the subject and the concrete action
   2) What specifically changed, was announced, published, or deployed
-  3) A factual consequence (funding amount, headcount, timeline, policy scope, or named location) if present in the source
-  4) Optional extra stated fact
+  3) A factual detail (amount, location, timeline, scope) if present in the context
 
 Output only the summary text.`
 
@@ -376,15 +375,15 @@ async function summarizeBatch(
         })
         .join("\n\n")
 
-    const systemPrompt = `You are a wire reporter. For each item, write a clean factual summary in 3-4 sentences (60-140 words).
+    const systemPrompt = `You are a wire reporter. For each item, write a clean factual summary in 2-3 sentences (40-100 words).
 
 Rules:
 - Use ONLY facts explicitly stated in the headline/context — do not infer, extrapolate, or interpret
 - Do NOT mention feed taxonomy, categories, section labels, or metadata
-- Do NOT include phrases like "as reported by", "listed under", "categorized as", or "on Google News"
+- Do NOT include phrases like "as reported by", "listed under", "categorized as", "on Google News", or "as indicated in a media advisory"
 - Do NOT start with "The article", "The report", "The story", or "This article"
 - Use strong concrete verbs (approved, launched, halted, funded, sued, expanded, opened, mandated, published) where factual
-- If context is thin, still produce exactly 3 sentences using only available stated facts
+- Write 2 sentences if context is thin; 3 sentences if the context provides enough facts to fill them
 
 BANNED PHRASES — never use these or synonyms:
 "indicates", "signals", "suggests", "may impact", "could assist", "could help", "aims to", "seeks to", "is expected to", "marks a shift", "marks a step", "represents a", "this move", "this development", "this gap", "this discovery", "this announcement", "underscores", "highlights the need", "raises questions", "the findings suggest", "the analysis", "paving the way", "positioning", "poised to"
