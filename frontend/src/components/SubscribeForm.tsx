@@ -132,7 +132,8 @@ export default function SubscribeForm() {
       )}
 
       <p style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '10px', lineHeight: 1.5 }}>
-        By subscribing, you consent to receiving a weekly email newsletter. Unsubscribe anytime.
+        Your email is used only for this newsletter and is never shared or sold. You can unsubscribe instantly from any email. See our{' '}
+        <a href="/legal" style={{ color: 'var(--text-muted)', textDecoration: 'underline' }}>privacy policy</a>.
       </p>
     </div>
   )

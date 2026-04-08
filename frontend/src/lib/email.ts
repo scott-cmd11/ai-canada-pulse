@@ -66,7 +66,7 @@ export async function sendConfirmationEmail(
       Confirm your subscription
     </h1>
     <p style="font-size: 15px; color: #444; line-height: 1.7; margin-bottom: 24px;">
-      You requested to receive a weekly summary of Canadian AI developments every Monday. Click below to confirm your subscription.
+      You requested to receive a weekly summary of Canadian AI developments every Monday. Your email will only be used for this newsletter — it is never shared, sold, or used for any other purpose. You can unsubscribe instantly from any email.
     </p>
     <a href="${confirmUrl}" style="display: inline-block; padding: 12px 28px; background-color: #c45d3e; color: #ffffff; text-decoration: none; border-radius: 6px; font-size: 14px; font-weight: 600;">
       Confirm Subscription
