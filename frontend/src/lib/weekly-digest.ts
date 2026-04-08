@@ -52,20 +52,41 @@ export async function compileWeeklyDigest(): Promise<WeeklyEmailData | null> {
   // Collect top stories from across the week (fuzzy deduped, max 5)
   const topStoryCandidates: WeeklyTopStory[] = []
 
+  const STOPWORDS = new Set(['the','a','an','and','or','of','to','in','on','for','with','from','by','as','at','is','are','was','its','how','can','may','will','could','should','says','said','new','what','why','who','being','used','add','say'])
+
   function extractKeywords(headline: string): Set<string> {
-    const stopwords = new Set(['the','a','an','and','or','of','to','in','on','for','with','from','by','as','at','is','are','was','its','how','can','may','will','could','should','says','said','new','what','why','who'])
     return new Set(
       headline.toLowerCase().replace(/[^a-z0-9\s]/g, '').split(/\s+/)
-        .filter(w => w.length >= 3 && !stopwords.has(w))
+        .filter(w => w.length >= 3 && !STOPWORDS.has(w))
     )
+  }
+
+  function extractBigrams(headline: string): Set<string> {
+    const words = headline.toLowerCase().replace(/[^a-z0-9\s]/g, '').split(/\s+/)
+      .filter(w => w.length >= 3 && !STOPWORDS.has(w))
+    const bigrams = new Set<string>()
+    for (let i = 0; i < words.length - 1; i++) {
+      bigrams.add(`${words[i]} ${words[i + 1]}`)
+    }
+    return bigrams
   }
 
   function isDuplicateStory(headline: string, existing: WeeklyTopStory[]): boolean {
     const keywords = extractKeywords(headline)
     if (keywords.size === 0) return false
+    const bigrams = extractBigrams(headline)
+
     for (const story of existing) {
       const existingKw = extractKeywords(story.headline)
       if (existingKw.size === 0) continue
+
+      // Layer 1: Bigram match — any shared two-word phrase is a strong duplicate signal
+      const existingBigrams = extractBigrams(story.headline)
+      let bigramOverlap = false
+      Array.from(bigrams).forEach(b => { if (existingBigrams.has(b)) bigramOverlap = true })
+      if (bigramOverlap) return true
+
+      // Layer 2: Keyword overlap (50% of the smaller set)
       let overlap = 0
       Array.from(keywords).forEach(w => { if (existingKw.has(w)) overlap++ })
       const similarity = overlap / Math.min(keywords.size, existingKw.size)
