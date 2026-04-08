@@ -99,15 +99,27 @@ function isFinanceNoise(title: string, description: string): boolean {
 }
 
 // ─── Non-Canadian geography disambiguation ───────────────────────────────────
-// Catches articles that mention Canadian place names but are clearly set in the US or abroad.
-// E.g. "New Brunswick, NJ", "Ontario, California", "London, UK"
 
-const NON_CANADA_GEO =
+// Layer 1: Explicit disambiguation pairs — "New Brunswick, NJ", "Ontario, California" etc.
+const NON_CANADA_GEO_PAIRS =
   /\bNew Brunswick\s*,?\s*(NJ|New Jersey)\b|\bOntario\s*,?\s*(CA|California|Ohio|OH)\b|\bLondon\s*,?\s*(UK|England|United Kingdom)\b|\bVictoria\s*,?\s*(TX|Texas|Australia|AUS)\b|\bWindsor\s*,?\s*(CT|Connecticut)\b|\bCambridge\s*,?\s*(MA|Massachusetts|England|UK)\b/i
+
+// Layer 2: US-only content filter.
+// If an article mentions a US state/location but has NO Canadian signal, it's foreign noise
+// that leaked through Google's gl=CA geo-targeting.
+const US_LOCATION_SIGNALS =
+  /\b(NJ|N\.J\.|New Jersey|New York|NYC|(?<![A-Za-z])NY(?![A-Za-z])|California|Texas|(?<![A-Za-z])TX(?![A-Za-z])|Florida|(?<![A-Za-z])FL(?![A-Za-z])|Illinois|Massachusetts|Virginia|(?<![A-Za-z])VA(?![A-Za-z])|Pennsylvania|Georgia|Michigan|Arizona|Colorado|Oregon|North Carolina|South Carolina|Maryland|Wisconsin|Minnesota|Missouri|Tennessee|Indiana|Connecticut|Iowa|Mississippi|Arkansas|Nevada|Utah|Nebraska|West Virginia|New Mexico|Hawaii|Idaho|Montana|Rhode Island|Delaware|South Dakota|North Dakota|Wyoming|Alaska|Vermont|New Hampshire|Washington\s*D\.?C\.?|Capitol Hill)\b/i
+
+const CANADA_SIGNALS =
+  /\b(Canada|Canadian|Canadians|Ottawa|Toronto|Montréal|Montreal|Vancouver|Calgary|Edmonton|Winnipeg|Quebec|Québec|Alberta|Saskatchewan|Manitoba|Nova Scotia|New Brunswick|Newfoundland|Labrador|Prince Edward Island|PEI|P\.E\.I\.?|British Columbia|Yukon|Northwest Territories|Nunavut|CIFAR|Mila\b|Vector Institute|Cohere|Tenstorrent|BetaKit|CBC|CTV|Globe and Mail|National Post|OSFI|ISED|NRC|NSERC|SSHRC|Shopify|BlackBerry|RBC|TD Bank|CIBC|Scotiabank|BMO)\b/i
 
 function isNonCanadianGeo(title: string, description: string): boolean {
   const text = `${title} ${description}`
-  return NON_CANADA_GEO.test(text)
+  // Explicit disambiguation pairs — always reject
+  if (NON_CANADA_GEO_PAIRS.test(text)) return true
+  // US location signal with no Canadian connection — reject
+  if (US_LOCATION_SIGNALS.test(text) && !CANADA_SIGNALS.test(text)) return true
+  return false
 }
 
 // ─── Sentiment classification ───────────────────────────────────────────────
