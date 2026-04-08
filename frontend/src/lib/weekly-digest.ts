@@ -49,17 +49,37 @@ export async function compileWeeklyDigest(): Promise<WeeklyEmailData | null> {
   )
   const allHeadlines = validDigests.map(d => `[${d.date}] ${d.headline}`)
 
-  // Collect top stories from across the week (deduped by headline, max 5)
-  const seenHeadlines = new Set<string>()
+  // Collect top stories from across the week (fuzzy deduped, max 5)
   const topStoryCandidates: WeeklyTopStory[] = []
+
+  function extractKeywords(headline: string): Set<string> {
+    const stopwords = new Set(['the','a','an','and','or','of','to','in','on','for','with','from','by','as','at','is','are','was','its','how','can','may','will','could','should','says','said','new','what','why','who'])
+    return new Set(
+      headline.toLowerCase().replace(/[^a-z0-9\s]/g, '').split(/\s+/)
+        .filter(w => w.length >= 3 && !stopwords.has(w))
+    )
+  }
+
+  function isDuplicateStory(headline: string, existing: WeeklyTopStory[]): boolean {
+    const keywords = extractKeywords(headline)
+    if (keywords.size === 0) return false
+    for (const story of existing) {
+      const existingKw = extractKeywords(story.headline)
+      if (existingKw.size === 0) continue
+      let overlap = 0
+      Array.from(keywords).forEach(w => { if (existingKw.has(w)) overlap++ })
+      const similarity = overlap / Math.min(keywords.size, existingKw.size)
+      if (similarity >= 0.5) return true
+    }
+    return false
+  }
+
   for (const digest of validDigests) {
     for (const story of digest.topStories) {
-      const normKey = story.headline.toLowerCase().replace(/[^a-z0-9]/g, '')
-      if (!seenHeadlines.has(normKey)) {
-        seenHeadlines.add(normKey)
+      if (!isDuplicateStory(story.headline, topStoryCandidates)) {
         topStoryCandidates.push({
           headline: story.headline,
-          summary: '', // Will be filled by AI
+          summary: '',
           url: story.url,
           source: story.source,
         })
@@ -92,7 +112,7 @@ Given daily digest headlines, tagged developments, and top stories from the past
 2. intro: (2-3 sentences, 40-60 words) What happened this week and why it matters
 3. dominantTheme: (1 sentence, 10-20 words) Name the dominant theme and briefly explain why it emerged — e.g. "Regulatory momentum as three provinces introduced AI governance frameworks"
 4. developments: (5-7 items, each 1 sentence, 15-25 words) The most significant developments ordered by impact, drawn from the tagged developments provided
-5. storySummaries: (array of strings) For each top story headline provided, write a 1-2 sentence summary (20-35 words) explaining what happened and why it matters. Output exactly ${topStoryPool.length} summaries in the same order as the top stories.
+5. storySummaries: (array of strings) For each top story headline provided, write a 2-3 sentence summary (40-60 words) explaining what happened, who is involved, and why it matters for Canadian AI. Output exactly ${topStoryPool.length} summaries in the same order as the top stories.
 
 Output ONLY a JSON object with keys: headline, intro, dominantTheme, developments (array of strings), storySummaries (array of strings).
 Use concrete, specific language. No filler.`
@@ -124,7 +144,7 @@ Synthesize into a weekly summary.`
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt },
         ],
-        max_completion_tokens: 900,
+        max_completion_tokens: 1200,
       }),
       signal: controller.signal,
     })
