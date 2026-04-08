@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.102.1",
     "@svg-maps/canada": "^2.0.0",
     "@upstash/ratelimit": "^2.0.8",
     "@vercel/kv": "^3.0.0",
@@ -21,6 +22,7 @@
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "redis": "^5.11.0",
+    "resend": "^6.10.0",
     "rss-parser": "^3.13.0"
   },
   "devDependencies": {

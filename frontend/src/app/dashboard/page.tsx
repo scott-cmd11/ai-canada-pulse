@@ -12,6 +12,7 @@ import CollapsibleSection from "@/components/CollapsibleSection"
 import SectionNav from "@/components/SectionNav"
 import ScrollToTop from "@/components/ScrollToTop"
 import ScrollReveal from "@/components/ScrollReveal"
+import SubscribeForm from "@/components/SubscribeForm"
 import DashboardFooter from "@/components/DashboardFooter"
 import SectionErrorBoundary from "@/components/SectionErrorBoundary"
 import KeyboardShortcuts from "@/components/KeyboardShortcuts"
@@ -66,6 +67,10 @@ export default function DashboardPage() {
             </SectionErrorBoundary>
           </div>
         </section>
+
+        <div className="mx-auto max-w-xl">
+          <SubscribeForm />
+        </div>
 
         <hr className="section-divider" />
 

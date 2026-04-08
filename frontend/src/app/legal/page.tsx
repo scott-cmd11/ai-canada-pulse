@@ -36,15 +36,22 @@ export default function LegalPage() {
               <li><strong>Analytics:</strong> We use Vercel Analytics, a first-party, privacy-friendly analytics service. It collects anonymised page-view data (no cookies, no personal identifiers). No data is sold or shared with third parties.</li>
               <li><strong>Server logs:</strong> Standard web server logs (IP address, user agent, request URL) are retained by Vercel for operational purposes and automatically purged.</li>
               <li><strong>Local storage:</strong> Your theme preference (light/dark) is stored in your browser&apos;s localStorage. This never leaves your device.</li>
+              <li><strong>Email address (optional):</strong> If you subscribe to our weekly newsletter, we collect your email address with your explicit consent. Your email is stored securely in Supabase (Postgres) and is used solely to send you a weekly summary of Canadian AI developments. We never share, sell, or use your email for any other purpose. You can unsubscribe at any time via the link in every email.</li>
             </ul>
             <h3 style={{ fontWeight: 700, color: 'var(--text-primary)', marginTop: '16px', marginBottom: '4px', fontSize: '14px' }}>
               What we do not collect
             </h3>
             <ul className="list-disc pl-5 space-y-1">
               <li>We do not use tracking cookies or third-party analytics.</li>
-              <li>We do not collect names, email addresses, or any personally identifiable information.</li>
+              <li>We do not collect names or any personally identifiable information beyond the email address you voluntarily provide when subscribing to our newsletter.</li>
               <li>We do not require account creation or login.</li>
             </ul>
+            <h3 style={{ fontWeight: 700, color: 'var(--text-primary)', marginTop: '16px', marginBottom: '4px', fontSize: '14px' }}>
+              CASL Compliance
+            </h3>
+            <p>
+              We comply with Canada&apos;s Anti-Spam Legislation (CASL). We use double opt-in: you must confirm your subscription via email before receiving any newsletters. Every email includes an unsubscribe link that takes effect immediately. We identify ourselves clearly in every communication.
+            </p>
             <h3 style={{ fontWeight: 700, color: 'var(--text-primary)', marginTop: '16px', marginBottom: '4px', fontSize: '14px' }}>
               Contact
             </h3>
@@ -124,7 +131,7 @@ export default function LegalPage() {
           </section>
 
           <p className="text-xs pt-4" style={{ color: 'var(--text-muted)', borderTop: '1px solid var(--border-subtle)' }}>
-            Last updated: April 5, 2026
+            Last updated: April 8, 2026
           </p>
         </div>
       </main>

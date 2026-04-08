@@ -7,6 +7,9 @@ import { generateDigest, saveDigest, saveDigestError, getDigest } from '@/lib/di
 import { detectAndGenerateDeepDive, forceGenerateDeepDive, listDeepDives } from '@/lib/deep-dive-client'
 import { generateAndSaveSectionSummaries } from '@/lib/section-summaries-client'
 import { refreshJobBankStats } from '@/lib/jobs-client'
+import { compileWeeklyDigest } from '@/lib/weekly-digest'
+import { sendWeeklyDigestBatch } from '@/lib/email'
+import { getSupabase } from '@/lib/supabase'
 
 export const dynamic = 'force-dynamic'
 export const maxDuration = 300 // bumped from 60 to accommodate digest + deep-dive generation
@@ -142,6 +145,44 @@ export async function GET(request: NextRequest) {
   } catch (err) {
     console.error('[ai-refresh] Section summaries failed:', err)
     results.sectionSummaries = 'error'
+  }
+
+  // Step 7: Weekly email — on Mondays, compile and send the weekly digest
+  const dayOfWeek = new Date().getUTCDay() // 0 = Sunday, 1 = Monday
+  const forceWeekly = request.nextUrl.searchParams.get('weekly') === 'true'
+  if (dayOfWeek === 1 || forceWeekly) {
+    try {
+      const weeklyData = await compileWeeklyDigest()
+      if (weeklyData) {
+        const supabase = getSupabase()
+        if (supabase) {
+          const { data: subscribers } = await supabase
+            .from('subscribers')
+            .select('email, unsubscribe_token')
+            .eq('status', 'confirmed')
+
+          if (subscribers && subscribers.length > 0) {
+            const emailResults = await sendWeeklyDigestBatch(
+              subscribers.map(s => ({
+                email: s.email,
+                unsubscribeToken: s.unsubscribe_token,
+              })),
+              weeklyData
+            )
+            results.weeklyEmail = `sent: ${emailResults.sent}, failed: ${emailResults.failed} (${subscribers.length} subscribers)`
+          } else {
+            results.weeklyEmail = 'no confirmed subscribers'
+          }
+        } else {
+          results.weeklyEmail = 'skipped (no Supabase)'
+        }
+      } else {
+        results.weeklyEmail = 'skipped (no digest data)'
+      }
+    } catch (err) {
+      console.error('[ai-refresh] Weekly email failed:', err)
+      results.weeklyEmail = 'error'
+    }
   }
 
   return NextResponse.json({ ok: true, generatedAt: new Date().toISOString(), ...results })

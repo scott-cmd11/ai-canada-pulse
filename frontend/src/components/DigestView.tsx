@@ -5,6 +5,8 @@
 
 import Link from 'next/link'
 import type { DailyDigest } from '@/lib/digest-types'
+import ShareButtons from '@/components/ShareButtons'
+import SubscribeForm from '@/components/SubscribeForm'
 
 function TagBadge({ tag }: { tag: string }) {
   return (
@@ -94,9 +96,12 @@ export default function DigestView({ digest, isToday }: Props) {
             <TagBadge key={tag} tag={tag} />
           ))}
         </div>
-        <p style={{ marginTop: '14px', fontSize: '11px', color: 'var(--text-muted)' }}>
-          AI-generated digest · may contain errors · verify with linked sources
-        </p>
+        <div style={{ marginTop: '14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <p style={{ fontSize: '11px', color: 'var(--text-muted)', margin: 0 }}>
+            AI-generated digest · may contain errors · verify with linked sources
+          </p>
+          <ShareButtons url={`/digest/${digest.date}`} title={digest.headline} />
+        </div>
       </header>
 
       {/* Key Developments */}
@@ -179,6 +184,11 @@ export default function DigestView({ digest, isToday }: Props) {
           </div>
         </section>
       )}
+
+      {/* Subscribe CTA */}
+      <section style={{ padding: '24px 0', borderBottom: '1px solid var(--border-subtle)' }}>
+        <SubscribeForm />
+      </section>
 
       {/* Deep Dive callout */}
       {digest.deepDiveSlug && (

@@ -1,6 +1,7 @@
 import type { Story } from "@/lib/mock-data"
 import { relativeTime } from "@/lib/relative-time"
 import AILabel from '@/components/AILabel'
+import ShareButtons from '@/components/ShareButtons'
 
 interface Props {
   story: Story
@@ -99,9 +100,14 @@ export default function StoryCard({ story }: Props) {
         </div>
 
         <div className="mt-4 flex flex-wrap items-center gap-2 border-t pt-3 text-[11px] font-medium uppercase tracking-[0.12em]" style={{ borderColor: 'var(--border-subtle)', color: 'var(--text-muted)' }}>
-          {story.sourceName && <span>{story.sourceName}</span>}
-          {story.sourceName && <span>|</span>}
-          <span>{story.region}</span>
+          <div className="flex flex-1 flex-wrap items-center gap-2">
+            {story.sourceName && <span>{story.sourceName}</span>}
+            {story.sourceName && <span>|</span>}
+            <span>{story.region}</span>
+          </div>
+          {story.sourceUrl && (
+            <ShareButtons url={story.sourceUrl} title={story.headline} />
+          )}
         </div>
       </div>
     </article>
