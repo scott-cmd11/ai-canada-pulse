@@ -1,5 +1,5 @@
 /**
- * AI Summarizer for AI Canada Pulse
+ * AI Summarizer for AI Canada Pulse (v2 — factual prompt)
  *
  * Uses OpenAI for AI enrichment with a cheap split:
  * - gpt-4o-mini for per-item summaries
