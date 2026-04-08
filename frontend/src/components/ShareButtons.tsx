@@ -93,9 +93,9 @@ export default function ShareButtons({ url, title }: Props) {
         </svg>
       </a>
 
-      {/* LinkedIn — shareArticle with explicit title + url */}
+      {/* LinkedIn — feed compose with text pre-filled */}
       <a
-        href={`https://www.linkedin.com/shareArticle?mini=true&url=${encodeURIComponent(fullUrl)}&title=${encodeURIComponent(title)}`}
+        href={`https://www.linkedin.com/feed/?shareActive=true&text=${encodeURIComponent(shareText)}`}
         target="_blank"
         rel="noopener noreferrer"
         title="Share on LinkedIn"
