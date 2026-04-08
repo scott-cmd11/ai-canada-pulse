@@ -163,8 +163,9 @@ const BLAND_PHRASES = [
     "underscores the importance",
 ]
 
-// Interpretive phrases that indicate opinion/analysis rather than factual reporting
-const INTERPRETIVE_PATTERNS = /\b(signals?|suggests?|indicates?|highlights?|emphasiz\w+|underscores?|argues?|aims? to|seeks? to|positions?|represents? a|marks? a (shift|step)|paving the way|poised to|reflects?\b.*\b(impact|importance|commitment)|this move|this development|this gap|the true opportunity|transformative potential|growing importance)\b/i
+// Sentences that start with pure editorializing — "This signals...", "This highlights..." etc.
+// Only match sentence-level patterns, not mid-sentence factual uses like "A survey indicates..."
+const INTERPRETIVE_PATTERNS = /^(this (signals?|suggests?|highlights?|underscores?|marks?|represents?|moves?|development|gap|discovery|announcement)|the (findings?|results?|analysis|report) (suggest|indicate|highlight|show that)|paving the way|poised to)/i
 
 const HEADLINE_STOPWORDS = new Set([
     "the", "a", "an", "and", "or", "of", "to", "in", "on", "for", "with", "from", "by",
@@ -302,7 +303,7 @@ async function ensureArticleSummaryQuality(
     const snippetUseful = article.snippet && !article.headline.startsWith(article.snippet.split("  ")[0])
     const context = snippetUseful ? article.snippet.slice(0, 260) : "No additional context provided"
 
-    const systemPrompt = `Restate the headline as 1-2 plain factual sentences. Add concrete details (who, where, when, how much) from the context if available. Do not interpret, analyze, or add commentary. If only the headline is available, one sentence is fine.
+    const systemPrompt = `Write a 2-3 sentence factual news summary. State who was involved, what happened, and any concrete details (amounts, locations, dates, numbers). If context is thin, add a sentence with relevant background about the organization, sector, or technology. Do not start any sentence with "This signals", "This highlights", "This suggests", "This move", or similar editorial phrases.
 
 Output only the summary text.`
 
@@ -370,11 +371,11 @@ async function summarizeBatch(
         })
         .join("\n\n")
 
-    const systemPrompt = `Restate each headline as 1-2 plain factual sentences. Add concrete details (who, where, when, how much) from the context if available. Do not interpret, analyze, or add commentary. If only the headline is available, one sentence is fine.
+    const systemPrompt = `Write a 2-3 sentence factual news summary for each item. State who was involved, what happened, and any concrete details from the context (amounts, locations, dates, numbers). If context is thin, add a second sentence with relevant background about the organization, sector, or technology mentioned. Do not start any sentence with "This signals", "This highlights", "This suggests", "This move", or similar editorial phrases.
 
 Output ONLY a JSON array of strings, one per item, same order.`
 
-    const userPrompt = `Restate these ${articles.length} headlines as brief factual summaries:\n\n${articleList}\n\nJSON array of ${articles.length} summaries:`
+    const userPrompt = `Write 2-3 sentence factual summaries for these ${articles.length} Canada AI news items:\n\n${articleList}\n\nJSON array of ${articles.length} summaries:`
 
     const raw = await callArticleSummaryModel(systemPrompt, userPrompt)
     if (!raw) return null
