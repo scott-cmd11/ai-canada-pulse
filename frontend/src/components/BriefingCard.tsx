@@ -5,6 +5,7 @@ import { useStories } from "@/hooks/useStories"
 import { relativeTime } from "@/lib/relative-time"
 import { SkeletonBar } from '@/components/Skeleton'
 import AILabel from '@/components/AILabel'
+import ShareButtons from '@/components/ShareButtons'
 
 export default function BriefingCard() {
   const { stories, loading } = useStories()
@@ -92,6 +93,9 @@ export default function BriefingCard() {
           >
             Read primary source
           </a>
+        )}
+        {topStory.sourceUrl && (
+          <ShareButtons url={topStory.sourceUrl} title={topStory.headline} />
         )}
       </div>
     </article>
