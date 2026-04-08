@@ -163,6 +163,9 @@ const BLAND_PHRASES = [
     "underscores the importance",
 ]
 
+// Interpretive phrases that indicate opinion/analysis rather than factual reporting
+const INTERPRETIVE_PATTERNS = /\b(signals?|suggests?|indicates?|highlights?|emphasiz\w+|underscores?|argues?|aims? to|seeks? to|positions?|represents? a|marks? a (shift|step)|paving the way|poised to|reflects?\b.*\b(impact|importance|commitment)|this move|this development|this gap|the true opportunity|transformative potential|growing importance)\b/i
+
 const HEADLINE_STOPWORDS = new Set([
     "the", "a", "an", "and", "or", "of", "to", "in", "on", "for", "with", "from", "by",
     "as", "at", "is", "are", "was", "were", "be", "been", "being", "it", "its", "their",
@@ -180,6 +183,13 @@ function normalizeSummary(text: string | null | undefined): string {
         .replace(/\s+/g, " ")
         .replace(/^[-*\s]+/, "")
         .trim()
+}
+
+/** Strip sentences containing interpretive/editorial language, keep only factual ones */
+function stripInterpretiveSentences(text: string): string {
+    const sentences = text.match(/[^.!?]+[.!?]+/g) || [text]
+    const factual = sentences.filter(s => !INTERPRETIVE_PATTERNS.test(s))
+    return factual.join(' ').trim() || sentences[0]?.trim() || text
 }
 
 function hasMetadataLeak(text: string): boolean {
@@ -284,7 +294,7 @@ async function ensureArticleSummaryQuality(
     article: ArticleForSummary,
     scope: "Canada" | "Global"
 ): Promise<string | null> {
-    const normalizedCandidate = normalizeSummary(candidate)
+    const normalizedCandidate = stripInterpretiveSentences(normalizeSummary(candidate))
     if (isStrongArticleSummary(normalizedCandidate, article.headline)) {
         return normalizedCandidate
     }
@@ -292,25 +302,14 @@ async function ensureArticleSummaryQuality(
     const snippetUseful = article.snippet && !article.headline.startsWith(article.snippet.split("  ")[0])
     const context = snippetUseful ? article.snippet.slice(0, 260) : "No additional context provided"
 
-    const systemPrompt = `You are a wire reporter writing a factual news summary. Write exactly like Reuters or AP — state only confirmed facts.
-
-Write 2-3 sentences (40-100 words). State what happened, who was involved, and any concrete details.
-
-GOOD example:
-Headline: "Ontario invests $50M in AI research hub"
-Summary: "The Ontario government committed $50 million to a new AI research hub at the University of Toronto. The facility will open in 2027 and house 200 researchers."
-
-BAD example (DO NOT write like this):
-"The Ontario government's investment signals a commitment to advancing AI. This move highlights the growing importance of AI research."
-
-The BAD example fails because it interprets instead of reporting. Every sentence must describe a specific event, action, or stated fact — not what it "signals", "suggests", "highlights", or "aims to" do.
+    const systemPrompt = `Restate the headline as 1-2 plain factual sentences. Add concrete details (who, where, when, how much) from the context if available. Do not interpret, analyze, or add commentary. If only the headline is available, one sentence is fine.
 
 Output only the summary text.`
 
     const userPrompt = `Headline: "${article.headline}"\nContext: ${context}\n\nWrite the summary now.`
 
     const revisedRaw = await callAI(OPENAI_BRIEF_MODEL, systemPrompt, userPrompt, 380)
-    const revised = normalizeSummary(revisedRaw)
+    const revised = stripInterpretiveSentences(normalizeSummary(revisedRaw))
 
     if (isStrongArticleSummary(revised, article.headline)) {
         return revised
@@ -371,22 +370,11 @@ async function summarizeBatch(
         })
         .join("\n\n")
 
-    const systemPrompt = `You are a wire reporter writing factual news summaries. Write exactly like a Reuters or AP wire service — state only confirmed facts.
+    const systemPrompt = `Restate each headline as 1-2 plain factual sentences. Add concrete details (who, where, when, how much) from the context if available. Do not interpret, analyze, or add commentary. If only the headline is available, one sentence is fine.
 
-For each item, write 2-3 sentences (40-100 words). State what happened, who was involved, and any concrete details (amounts, dates, locations).
+Output ONLY a JSON array of strings, one per item, same order.`
 
-GOOD example:
-Headline: "Ontario invests $50M in AI research hub at University of Toronto"
-Summary: "The Ontario government committed $50 million to establish a new AI research hub at the University of Toronto. The facility will open in 2027 and house 200 researchers. Funding comes from the province's innovation budget announced in March."
-
-BAD example (DO NOT write like this):
-"The Ontario government's investment signals a commitment to advancing AI. This move highlights the growing importance of AI research. The initiative aims to position Ontario as a leader in the field."
-
-The BAD example fails because it interprets instead of reporting. Every sentence must describe a specific event, action, decision, or stated fact — not what it "signals", "suggests", "highlights", or "aims to" do.
-
-Output ONLY a JSON array of strings, one summary per item, in the same order.`
-
-    const userPrompt = `Write factual wire-style summaries for these ${articles.length} Canada AI items:\n\n${articleList}\n\nJSON array of ${articles.length} summaries:`
+    const userPrompt = `Restate these ${articles.length} headlines as brief factual summaries:\n\n${articleList}\n\nJSON array of ${articles.length} summaries:`
 
     const raw = await callArticleSummaryModel(systemPrompt, userPrompt)
     if (!raw) return null
