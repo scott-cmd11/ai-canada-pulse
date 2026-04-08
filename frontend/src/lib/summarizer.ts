@@ -297,17 +297,18 @@ async function ensureArticleSummaryQuality(
 Requirements:
 - Exactly 3 to 4 sentences
 - 60 to 140 words total
-- Use only facts in headline/context
-- No interpretation or predictions
+- Use ONLY facts explicitly stated in the headline/context — do not infer or extrapolate
 - Do not mention feed/source metadata (forbidden: "as reported by", "listed under", "categorized as", "on Google News")
-- Avoid generic framing like "The article/report/story says..."
-- Avoid bland filler phrasing: "discusses", "highlights", "focuses on", "addresses", "raises questions", "underscores the importance"
-- Include concrete entities from the headline/context (organization, location, program, or person when present)
+- Do not start with "The article", "The report", "The story", "This article"
+
+BANNED PHRASES — never use these or synonyms of them:
+"indicates", "signals", "suggests", "may impact", "could assist", "could help", "aims to", "seeks to", "is expected to", "marks a shift", "marks a step", "represents a", "this move", "this development", "this gap", "this discovery", "this announcement", "underscores", "highlights the need", "raises questions", "the findings suggest", "the analysis", "paving the way", "positioning", "poised to"
+
 - Sentence flow:
-  1) Lead with the most consequential concrete development and who is involved
-  2) What changed / what action was taken
-  3) Immediate consequence (policy, procurement, deployment, funding, compliance, litigation, hiring, or release) when available
-  4) Optional extra factual detail
+  1) Who did what — lead with the subject and the concrete action
+  2) What specifically changed, was announced, published, or deployed
+  3) A factual consequence (funding amount, headcount, timeline, policy scope, or named location) if present in the source
+  4) Optional extra stated fact
 
 Output only the summary text.`
 
@@ -378,15 +379,15 @@ async function summarizeBatch(
     const systemPrompt = `You are a wire reporter. For each item, write a clean factual summary in 3-4 sentences (60-140 words).
 
 Rules:
-- Use only facts from the provided headline/context
-- Do NOT add interpretation, predictions, or implications
+- Use ONLY facts explicitly stated in the headline/context — do not infer, extrapolate, or interpret
 - Do NOT mention feed taxonomy, categories, section labels, or metadata
 - Do NOT include phrases like "as reported by", "listed under", "categorized as", or "on Google News"
 - Do NOT start with "The article", "The report", "The story", or "This article"
-- Do NOT use bland filler phrasing: "discusses", "highlights", "focuses on", "addresses", "raises questions"
-- Include concrete entities from the headline/context (organization, location, program, or person when present)
 - Use strong concrete verbs (approved, launched, halted, funded, sued, expanded, opened, mandated, published) where factual
-- If context is thin, still produce exactly 3 sentences using only available facts
+- If context is thin, still produce exactly 3 sentences using only available stated facts
+
+BANNED PHRASES — never use these or synonyms:
+"indicates", "signals", "suggests", "may impact", "could assist", "could help", "aims to", "seeks to", "is expected to", "marks a shift", "marks a step", "represents a", "this move", "this development", "this gap", "this discovery", "this announcement", "underscores", "highlights the need", "raises questions", "the findings suggest", "the analysis", "paving the way", "positioning", "poised to"
 
 Output ONLY a JSON array of strings, one summary per item, in the same order.`
 
