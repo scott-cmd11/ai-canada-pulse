@@ -2,7 +2,7 @@
 // Compiles the last 7 days of daily digests into a weekly summary for email.
 
 import { getDigest } from './digest-client'
-import type { WeeklyEmailData } from './email'
+import type { WeeklyEmailData, WeeklyTopStory } from './email'
 
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY ?? ''
 const OPENAI_BASE_URL = 'https://api.openai.com/v1/chat/completions'
@@ -43,39 +43,68 @@ export async function compileWeeklyDigest(): Promise<WeeklyEmailData | null> {
   const newestDate = new Date(dates[0] + 'T12:00:00Z')
   const weekRange = `${oldestDate.toLocaleDateString('en-CA', { month: 'long', day: 'numeric', timeZone: 'UTC' })} – ${newestDate.toLocaleDateString('en-CA', { month: 'long', day: 'numeric', year: 'numeric', timeZone: 'UTC' })}`
 
-  // Compile all developments from the week
+  // Compile all developments and headlines from the week
   const allDevelopments = validDigests.flatMap(d =>
-    d.developments.map(dev => `[${d.date}] ${dev.text}`)
+    d.developments.map(dev => `[${d.date}] [${dev.tag}] ${dev.text}`)
   )
-  const allHeadlines = validDigests.map(d => d.headline)
+  const allHeadlines = validDigests.map(d => `[${d.date}] ${d.headline}`)
 
-  // Use OpenAI to synthesize a weekly summary
+  // Collect top stories from across the week (deduped by headline, max 5)
+  const seenHeadlines = new Set<string>()
+  const topStoryCandidates: WeeklyTopStory[] = []
+  for (const digest of validDigests) {
+    for (const story of digest.topStories) {
+      const normKey = story.headline.toLowerCase().replace(/[^a-z0-9]/g, '')
+      if (!seenHeadlines.has(normKey)) {
+        seenHeadlines.add(normKey)
+        topStoryCandidates.push({
+          headline: story.headline,
+          summary: '', // Will be filled by AI
+          url: story.url,
+          source: story.source,
+        })
+      }
+    }
+  }
+  const topStoryPool = topStoryCandidates.slice(0, 5)
+
+  // Use OpenAI to synthesize the weekly summary + story summaries
   if (!OPENAI_API_KEY) {
-    // Fallback without AI
     return {
       headline: `${validDigests.length} days of Canadian AI developments`,
       intro: `Here's what happened in Canadian AI this week across ${allDevelopments.length} developments.`,
-      developments: allDevelopments.slice(0, 7),
+      dominantTheme: 'Multiple themes across the week',
+      developments: allDevelopments.slice(0, 7).map(d => d.replace(/^\[.*?\]\s*\[.*?\]\s*/, '')),
+      topStories: topStoryPool,
       weekRange,
     }
   }
 
+  // Compile the top story headlines for context
+  const topStoryContext = topStoryPool.length > 0
+    ? `\n\nTop stories from the week:\n${topStoryPool.map((s, i) => `${i + 1}. "${s.headline}" (${s.source})`).join('\n')}`
+    : ''
+
   const systemPrompt = `You are a concise intelligence analyst writing a weekly AI briefing for Canada.
 
-Given daily digest headlines and developments from the past week, produce:
-1. A headline (8-14 words) capturing the week's dominant theme
-2. An intro paragraph (2-3 sentences, 40-60 words) summarizing the week's most important patterns
-3. A list of 5-7 key developments (each 1 sentence, 15-25 words) ordered by significance
+Given daily digest headlines, tagged developments, and top stories from the past week, produce:
+1. headline: (8-14 words) A headline capturing the week's most consequential shift or development
+2. intro: (2-3 sentences, 40-60 words) What happened this week and why it matters
+3. dominantTheme: (1 sentence, 10-20 words) Name the dominant theme and briefly explain why it emerged — e.g. "Regulatory momentum as three provinces introduced AI governance frameworks"
+4. developments: (5-7 items, each 1 sentence, 15-25 words) The most significant developments ordered by impact, drawn from the tagged developments provided
+5. storySummaries: (array of strings) For each top story headline provided, write a 1-2 sentence summary (20-35 words) explaining what happened and why it matters. Output exactly ${topStoryPool.length} summaries in the same order as the top stories.
 
-Output ONLY a JSON object with keys: headline, intro, developments (array of strings).
-Do not mention feed metadata or categories. Use concrete, direct language.`
+Output ONLY a JSON object with keys: headline, intro, dominantTheme, developments (array of strings), storySummaries (array of strings).
+Use concrete, specific language. No filler.`
 
   const userPrompt = `Weekly digest data (${validDigests.length} days):
 
-Daily headlines: ${allHeadlines.join(' | ')}
+Daily headlines:
+${allHeadlines.join('\n')}
 
-All developments:
+All developments (tagged by category):
 ${allDevelopments.join('\n')}
+${topStoryContext}
 
 Synthesize into a weekly summary.`
 
@@ -95,7 +124,7 @@ Synthesize into a weekly summary.`
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt },
         ],
-        max_completion_tokens: 600,
+        max_completion_tokens: 900,
       }),
       signal: controller.signal,
     })
@@ -119,10 +148,19 @@ Synthesize into a weekly summary.`
 
     const parsed = JSON.parse(cleaned.slice(start, end + 1))
 
+    // Merge AI-generated summaries into the top stories
+    const storySummaries: string[] = Array.isArray(parsed.storySummaries) ? parsed.storySummaries : []
+    const enrichedTopStories = topStoryPool.map((story, i) => ({
+      ...story,
+      summary: storySummaries[i] || '',
+    }))
+
     return {
-      headline: parsed.headline || `This week in Canadian AI`,
+      headline: parsed.headline || 'This week in Canadian AI',
       intro: parsed.intro || '',
+      dominantTheme: parsed.dominantTheme || '',
       developments: Array.isArray(parsed.developments) ? parsed.developments : [],
+      topStories: enrichedTopStories,
       weekRange,
     }
   } catch (err) {

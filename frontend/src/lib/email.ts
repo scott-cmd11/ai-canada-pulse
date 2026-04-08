@@ -97,10 +97,19 @@ export async function sendConfirmationEmail(
 
 // ─── Weekly digest email ─────────────────────────────────────────────────────
 
+export interface WeeklyTopStory {
+  headline: string
+  summary: string
+  url: string
+  source: string
+}
+
 export interface WeeklyEmailData {
   headline: string
   intro: string
+  dominantTheme: string // e.g. "Regulatory momentum" — explains why this theme was chosen
   developments: string[]
+  topStories: WeeklyTopStory[]
   weekRange: string // e.g. "March 31 – April 6, 2026"
 }
 
@@ -125,6 +134,29 @@ export async function sendWeeklyDigestBatch(
       .map(d => `<li style="margin-bottom: 8px;">${d}</li>`)
       .join('')
 
+    const topStoriesHtml = data.topStories.length > 0
+      ? `
+        <div style="margin-top: 28px; padding-top: 20px; border-top: 1px solid #e5e5e5;">
+          <p style="font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #888; margin-bottom: 16px;">
+            Top Stories This Week
+          </p>
+          ${data.topStories.map(story => `
+            <div style="margin-bottom: 20px;">
+              <a href="${story.url}" style="font-size: 15px; font-weight: 600; color: #c45d3e; text-decoration: none; line-height: 1.4;">
+                ${story.headline}
+              </a>
+              <p style="font-size: 13px; color: #555; line-height: 1.6; margin: 4px 0 0;">
+                ${story.summary}
+              </p>
+              <p style="font-size: 11px; color: #999; margin: 4px 0 0;">
+                ${story.source}
+              </p>
+            </div>
+          `).join('')}
+        </div>
+      `
+      : ''
+
     const html = emailWrapper(`
       <p style="font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #c45d3e; margin-bottom: 8px;">
         WEEKLY BRIEFING · ${data.weekRange}
@@ -132,8 +164,11 @@ export async function sendWeeklyDigestBatch(
       <h1 style="font-size: 22px; font-weight: 700; color: #1a1a1a; margin: 0 0 16px;">
         ${data.headline}
       </h1>
-      <p style="font-size: 15px; color: #444; line-height: 1.7; margin-bottom: 24px;">
+      <p style="font-size: 15px; color: #444; line-height: 1.7; margin-bottom: 6px;">
         ${data.intro}
+      </p>
+      <p style="font-size: 13px; color: #888; line-height: 1.6; margin-bottom: 24px; font-style: italic;">
+        This week's dominant theme: ${data.dominantTheme}
       </p>
       <p style="font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #888; margin-bottom: 12px;">
         Key Developments
@@ -141,6 +176,7 @@ export async function sendWeeklyDigestBatch(
       <ul style="padding-left: 20px; font-size: 14px; color: #333; line-height: 1.7;">
         ${developmentsList}
       </ul>
+      ${topStoriesHtml}
       <div style="margin-top: 28px;">
         <a href="${SITE_URL}" style="display: inline-block; padding: 10px 24px; background-color: #c45d3e; color: #ffffff; text-decoration: none; border-radius: 6px; font-size: 13px; font-weight: 600;">
           View Full Dashboard
