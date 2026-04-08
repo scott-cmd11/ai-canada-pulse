@@ -59,9 +59,11 @@ export async function sendConfirmationEmail(
   const unsubscribeUrl = `${SITE_URL}/api/v1/unsubscribe?token=${unsubscribeToken}`
 
   const html = emailWrapper(`
-    <p style="font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #c45d3e; margin-bottom: 8px;">
-      AI CANADA PULSE
-    </p>
+    <div style="padding-bottom: 20px; margin-bottom: 24px; border-bottom: 2px solid #c45d3e;">
+      <a href="${SITE_URL}" style="text-decoration: none;">
+        <span style="font-size: 13px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: #c45d3e;">AI Canada Pulse</span>
+      </a>
+    </div>
     <h1 style="font-size: 22px; font-weight: 700; color: #1a1a1a; margin: 0 0 16px;">
       Confirm your subscription
     </h1>
@@ -158,6 +160,11 @@ export async function sendWeeklyDigestBatch(
       : ''
 
     const html = emailWrapper(`
+      <div style="padding-bottom: 20px; margin-bottom: 24px; border-bottom: 2px solid #c45d3e;">
+        <a href="${SITE_URL}" style="text-decoration: none;">
+          <span style="font-size: 13px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: #c45d3e;">AI Canada Pulse</span>
+        </a>
+      </div>
       <p style="font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #c45d3e; margin-bottom: 8px;">
         WEEKLY BRIEFING · ${data.weekRange}
       </p>
