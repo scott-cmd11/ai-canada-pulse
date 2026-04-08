@@ -35,6 +35,10 @@ export async function GET(request: NextRequest) {
   const today = new Date().toISOString().split('T')[0]
   const results: Record<string, unknown> = { date: today }
 
+  // Light mode: only run enrichment. Used by the 30-min stories cron so new
+  // stories get AI summaries without running the full heavy pipeline.
+  const lightMode = request.nextUrl.searchParams.get('light') === 'true'
+
   // Step 1: Existing dashboard enrichment (summaries + executive brief)
   try {
     const enrichment = await refreshDashboardEnrichmentBundle()
@@ -45,6 +49,10 @@ export async function GET(request: NextRequest) {
   } catch (err) {
     console.error('[ai-refresh] Dashboard enrichment failed:', err)
     results.enrichmentError = true
+  }
+
+  if (lightMode) {
+    return NextResponse.json({ ok: true, generatedAt: new Date().toISOString(), mode: 'light', ...results })
   }
 
   // Step 2: Fetch stories for digest and deep-dive generation

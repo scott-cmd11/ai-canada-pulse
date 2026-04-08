@@ -5,7 +5,7 @@
             "schedule": "0 12 * * *"
         },
         {
-            "path": "/api/v1/stories",
+            "path": "/api/v1/ai-refresh?light=true",
             "schedule": "*/30 * * * *"
         }
     ]
