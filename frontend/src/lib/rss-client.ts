@@ -98,6 +98,18 @@ function isFinanceNoise(title: string, description: string): boolean {
   return EXCLUSION_KEYWORDS.test(title) || EXCLUSION_KEYWORDS.test(description)
 }
 
+// ─── Non-Canadian geography disambiguation ───────────────────────────────────
+// Catches articles that mention Canadian place names but are clearly set in the US or abroad.
+// E.g. "New Brunswick, NJ", "Ontario, California", "London, UK"
+
+const NON_CANADA_GEO =
+  /\bNew Brunswick\s*,?\s*(NJ|New Jersey)\b|\bOntario\s*,?\s*(CA|California|Ohio|OH)\b|\bLondon\s*,?\s*(UK|England|United Kingdom)\b|\bVictoria\s*,?\s*(TX|Texas|Australia|AUS)\b|\bWindsor\s*,?\s*(CT|Connecticut)\b|\bCambridge\s*,?\s*(MA|Massachusetts|England|UK)\b/i
+
+function isNonCanadianGeo(title: string, description: string): boolean {
+  const text = `${title} ${description}`
+  return NON_CANADA_GEO.test(text)
+}
+
 // ─── Sentiment classification ───────────────────────────────────────────────
 
 const POSITIVE_KEYWORDS =
@@ -200,6 +212,8 @@ async function fetchSingleFeed(config: FeedConfig): Promise<Story[]> {
         const d = item.contentSnippet || item.content || ""
         // Exclude finance/crypto noise FIRST (applies to ALL feeds, including aiOnly)
         if (isFinanceNoise(t, d)) return false
+        // Reject articles that use Canadian place names in a clearly non-Canadian context
+        if (isNonCanadianGeo(t, d)) return false
         if (config.aiOnly) return true
         return isAIRelated(t, d)
       })
