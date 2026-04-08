@@ -7,6 +7,22 @@ import { SkeletonBar } from '@/components/Skeleton'
 import AILabel from '@/components/AILabel'
 import ShareButtons from '@/components/ShareButtons'
 
+function isSummaryRedundant(headline: string, summary: string): boolean {
+  const norm = (s: string) => s.toLowerCase().replace(/[^a-z0-9 ]/g, '').trim()
+  const h = norm(headline)
+  const s = norm(summary)
+  if (s.length < 20) return true
+  if (s.startsWith(h) || h.startsWith(s)) return true
+  const hWords = h.split(/\s+/)
+  const sWords = s.split(/\s+/)
+  const sWordSet = new Set(sWords)
+  let overlap = 0
+  hWords.forEach(w => { if (sWordSet.has(w)) overlap++ })
+  const allWords = new Set(hWords.concat(sWords))
+  if (allWords.size > 0 && overlap / allWords.size > 0.6) return true
+  return false
+}
+
 export default function BriefingCard() {
   const { stories, loading } = useStories()
 
@@ -66,12 +82,21 @@ export default function BriefingCard() {
           {topStory.headline}
         </h3>
 
-        <p
-          className="line-clamp-3 text-sm leading-6 sm:text-[15px]"
-          style={{ color: 'var(--text-secondary)' }}
-        >
-          {topStory.aiSummary ?? topStory.summary}
-        </p>
+        {topStory.aiSummary ? (
+          <p
+            className="line-clamp-3 text-sm leading-6 sm:text-[15px]"
+            style={{ color: 'var(--text-secondary)' }}
+          >
+            {topStory.aiSummary}
+          </p>
+        ) : topStory.summary && !isSummaryRedundant(topStory.headline, topStory.summary) ? (
+          <p
+            className="line-clamp-3 text-sm leading-6 sm:text-[15px]"
+            style={{ color: 'var(--text-secondary)' }}
+          >
+            {topStory.summary}
+          </p>
+        ) : null}
       </div>
 
       <div className="flex flex-wrap items-center gap-4 pt-1">
