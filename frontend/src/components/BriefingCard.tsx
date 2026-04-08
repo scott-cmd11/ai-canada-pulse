@@ -26,7 +26,11 @@ function isSummaryRedundant(headline: string, summary: string): boolean {
 export default function BriefingCard() {
   const { stories, loading } = useStories()
 
-  const topStory: Story | undefined = stories.find((s) => s.isBriefingTop) || stories[0]
+  // Prefer a story with an AI summary for the lead signal — it's the most prominent card
+  const topStory: Story | undefined =
+    stories.find((s) => s.isBriefingTop && s.aiSummary) ||
+    stories.find((s) => s.aiSummary) ||
+    stories[0]
 
   if (loading) {
     return (
