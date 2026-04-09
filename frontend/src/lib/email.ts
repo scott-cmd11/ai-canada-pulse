@@ -5,7 +5,7 @@
 import { Resend } from 'resend'
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://ai-canada-pulse.vercel.app'
-const FROM_ADDRESS = 'AI Canada Pulse <onboarding@resend.dev>' // Use Resend's test domain until custom domain is verified
+const FROM_ADDRESS = 'AI Canada Pulse <hello@aicanadapulse.ca>'
 
 let resendClient: Resend | null = null
 

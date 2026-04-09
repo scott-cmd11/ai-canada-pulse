@@ -87,9 +87,11 @@ export async function POST(request: Request) {
     }
 
     // New subscriber
+    const confirmationToken = crypto.randomUUID()
+    const unsubscribeToken = crypto.randomUUID()
     const { data: newSub } = await supabase
       .from('subscribers')
-      .insert({ email })
+      .insert({ email, confirmation_token: confirmationToken, unsubscribe_token: unsubscribeToken })
       .select('confirmation_token, unsubscribe_token')
       .single()
 
