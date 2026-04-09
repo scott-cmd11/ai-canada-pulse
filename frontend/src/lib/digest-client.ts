@@ -66,6 +66,7 @@ export async function generateDigest(
   const systemPrompt = `You are an editorial analyst for AI Canada Pulse, a site tracking AI developments in Canada.
 Your job is to write a concise daily digest for Canadian professionals who want to scan what happened in Canadian AI today in under 3 minutes.
 Be analytical and specific — name companies, bills, institutions. Avoid vague generalities.
+Use Canadian English spelling (e.g. "centre" not "center", "colour" not "color", "labour" not "labor", "defence" not "defense").
 Respond ONLY with valid JSON matching the schema provided. No markdown, no explanation.`
 
   const userPrompt = `Today's date: ${date}

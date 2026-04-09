@@ -303,7 +303,7 @@ async function ensureArticleSummaryQuality(
     const snippetUseful = article.snippet && !article.headline.startsWith(article.snippet.split("  ")[0])
     const context = snippetUseful ? article.snippet.slice(0, 260) : "No additional context provided"
 
-    const systemPrompt = `Write a 2-3 sentence factual news summary. State who was involved, what happened, and any concrete details (amounts, locations, dates, numbers). If context is thin, add a sentence with relevant background about the organization, sector, or technology. Do not start any sentence with "This signals", "This highlights", "This suggests", "This move", or similar editorial phrases.
+    const systemPrompt = `Write a 2-3 sentence factual news summary. State who was involved, what happened, and any concrete details (amounts, locations, dates, numbers). If context is thin, add a sentence with relevant background about the organization, sector, or technology. Do not start any sentence with "This signals", "This highlights", "This suggests", "This move", or similar editorial phrases. Use Canadian English spelling (e.g. "centre" not "center", "colour" not "color", "labour" not "labor", "defence" not "defense").
 
 Output only the summary text.`
 

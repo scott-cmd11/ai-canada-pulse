@@ -136,7 +136,7 @@ Given daily digest headlines, tagged developments, and top stories from the past
 5. storySummaries: (array of strings) For each top story headline provided, write a 2-3 sentence summary (40-60 words) explaining what happened, who is involved, and why it matters for Canadian AI. Output exactly ${topStoryPool.length} summaries in the same order as the top stories.
 
 Output ONLY a JSON object with keys: headline, intro, dominantTheme, developments (array of strings), storySummaries (array of strings).
-Use concrete, specific language. No filler.`
+Use concrete, specific language. No filler. Use Canadian English spelling (e.g. "centre" not "center", "colour" not "color", "labour" not "labor", "defence" not "defense").`
 
   const userPrompt = `Weekly digest data (${validDigests.length} days):
 
