@@ -109,6 +109,7 @@ Rules:
           { role: 'user', content: userPrompt },
         ],
         max_completion_tokens: 1000,
+        ...(OPENAI_MODEL.startsWith('gpt-5') ? { reasoning_effort: 'minimal' } : {}),
       }),
       signal: controller.signal,
     })
@@ -122,10 +123,33 @@ Rules:
     }
 
     const data = await response.json()
-    const content = data?.choices?.[0]?.message?.content
-    if (!content || typeof content !== 'string') return null
+    let content = data?.choices?.[0]?.message?.content
+    if (!content) return null
 
-    const parsed = JSON.parse(content)
+    if (typeof content !== 'string') {
+      if (Array.isArray(content)) {
+        content = content
+          .map((part: { text?: string } | string) => {
+            if (typeof part === 'string') return part
+            if (typeof part?.text === 'string') return part.text
+            return ''
+          })
+          .join('')
+          .trim()
+        if (!content) return null
+      } else {
+        console.error('[digest-client] Unexpected content type:', typeof content)
+        return null
+      }
+    }
+
+    // Strip markdown code fences if model wraps response (e.g. ```json ... ```)
+    const cleaned = content
+      .replace(/^```(?:json)?\s*/i, '')
+      .replace(/\s*```$/i, '')
+      .trim()
+
+    const parsed = JSON.parse(cleaned)
 
     // Validate required fields before constructing digest
     if (!parsed.headline || !parsed.intro || !Array.isArray(parsed.developments)) {
