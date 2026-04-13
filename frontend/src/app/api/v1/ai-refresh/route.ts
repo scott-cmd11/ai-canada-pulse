@@ -10,6 +10,12 @@ import { refreshJobBankStats } from '@/lib/jobs-client'
 import { compileWeeklyDigest } from '@/lib/weekly-digest'
 import { sendWeeklyDigestBatch } from '@/lib/email'
 import { getSupabase } from '@/lib/supabase'
+import { Redis } from '@upstash/redis'
+
+const redis = new Redis({
+  url: process.env.UPSTASH_REDIS_REST_URL!,
+  token: process.env.UPSTASH_REDIS_REST_TOKEN!,
+})
 
 export const dynamic = 'force-dynamic'
 export const maxDuration = 300 // bumped from 60 to accommodate digest + deep-dive generation
@@ -155,41 +161,50 @@ export async function GET(request: NextRequest) {
     results.sectionSummaries = 'error'
   }
 
-  // Step 7: Weekly email — on Mondays, compile and send the weekly digest
+  // Step 7: Weekly email — on Mondays, compile and send the weekly digest.
+  // Redis dedup key prevents re-sending if the cron or a manual trigger runs more than once today.
   const dayOfWeek = new Date().getUTCDay() // 0 = Sunday, 1 = Monday
   const forceWeekly = request.nextUrl.searchParams.get('weekly') === 'true'
   if (dayOfWeek === 1 || forceWeekly) {
-    try {
-      const weeklyData = await compileWeeklyDigest()
-      if (weeklyData) {
-        const supabase = getSupabase()
-        if (supabase) {
-          const { data: subscribers } = await supabase
-            .from('subscribers')
-            .select('email, unsubscribe_token')
-            .eq('status', 'confirmed')
+    const weeklyDedupeKey = `weekly-email-sent:${today}`
+    const alreadySent = !forceWeekly && await redis.get(weeklyDedupeKey)
+    if (alreadySent) {
+      results.weeklyEmail = 'skipped (already sent today)'
+    } else {
+      try {
+        const weeklyData = await compileWeeklyDigest()
+        if (weeklyData) {
+          const supabase = getSupabase()
+          if (supabase) {
+            const { data: subscribers } = await supabase
+              .from('subscribers')
+              .select('email, unsubscribe_token')
+              .eq('status', 'confirmed')
 
-          if (subscribers && subscribers.length > 0) {
-            const emailResults = await sendWeeklyDigestBatch(
-              subscribers.map(s => ({
-                email: s.email,
-                unsubscribeToken: s.unsubscribe_token,
-              })),
-              weeklyData
-            )
-            results.weeklyEmail = `sent: ${emailResults.sent}, failed: ${emailResults.failed} (${subscribers.length} subscribers)`
+            if (subscribers && subscribers.length > 0) {
+              const emailResults = await sendWeeklyDigestBatch(
+                subscribers.map(s => ({
+                  email: s.email,
+                  unsubscribeToken: s.unsubscribe_token,
+                })),
+                weeklyData
+              )
+              // Mark as sent for the rest of today (TTL: 36h covers any timezone drift)
+              await redis.set(weeklyDedupeKey, '1', { ex: 36 * 60 * 60 })
+              results.weeklyEmail = `sent: ${emailResults.sent}, failed: ${emailResults.failed} (${subscribers.length} subscribers)`
+            } else {
+              results.weeklyEmail = 'no confirmed subscribers'
+            }
           } else {
-            results.weeklyEmail = 'no confirmed subscribers'
+            results.weeklyEmail = 'skipped (no Supabase)'
           }
         } else {
-          results.weeklyEmail = 'skipped (no Supabase)'
+          results.weeklyEmail = 'skipped (no digest data)'
         }
-      } else {
-        results.weeklyEmail = 'skipped (no digest data)'
+      } catch (err) {
+        console.error('[ai-refresh] Weekly email failed:', err)
+        results.weeklyEmail = 'error'
       }
-    } catch (err) {
-      console.error('[ai-refresh] Weekly email failed:', err)
-      results.weeklyEmail = 'error'
     }
   }
 
