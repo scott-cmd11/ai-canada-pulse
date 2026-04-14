@@ -92,7 +92,11 @@ export const STARTUPS: CanadianStartup[] = [
 
   // Atlantic Canada
   { name: "Eigen Innovations", city: "Fredericton", province: "New Brunswick", provinceSlug: "new-brunswick", sector: "Computer Vision", stage: "Series A", foundedYear: 2012, url: "https://eigeninnovations.com", description: "Thermal imaging AI for manufacturing quality control", lastVerified: "2026-03-28" },
-  { name: "Myra Labs", city: "Halifax", province: "Nova Scotia", provinceSlug: "nova-scotia", sector: "Enterprise AI", stage: "Seed", foundedYear: 2020, url: "https://myralabs.com", description: "AI workflow automation for enterprise operations", lastVerified: "2026-03-28" },
+  { name: "Myra Labs",                 city: "Halifax", province: "Nova Scotia", provinceSlug: "nova-scotia", sector: "Enterprise AI",      stage: "Seed",     foundedYear: 2020, url: "https://myralabs.com",      description: "AI workflow automation for enterprise operations.", lastVerified: "2026-03-28" },
+  { name: "Bean AI",                   city: "Halifax",         province: "Nova Scotia", provinceSlug: "nova-scotia", sector: "Conversational AI", stage: "Seed", foundedYear: 2022, url: "https://www.beantheapp.com", description: "AI cooking assistant that eliminates cooking decision fatigue.", lastVerified: "2026-04-14" },
+  { name: "Novastorms Data Analytics", city: "Windsor Junction", province: "Nova Scotia", provinceSlug: "nova-scotia", sector: "Enterprise AI",      stage: "Seed", foundedYear: 2021, url: "https://novastorms.ai",       description: "AI software for on-premise insights from an organisation's proprietary data.", lastVerified: "2026-04-14" },
+  { name: "Pilot X Technologies",      city: "Halifax",         province: "Nova Scotia", provinceSlug: "nova-scotia", sector: "Enterprise AI",      stage: "Seed", foundedYear: 2022, url: "https://pilotx.ca",           description: "AI-powered logistics marketplace connecting businesses, consumers, and drivers for on-demand transportation.", lastVerified: "2026-04-14" },
+  { name: "NovaBrew Solutions",        city: "Halifax",         province: "Nova Scotia", provinceSlug: "nova-scotia", sector: "Enterprise AI",      stage: "Seed", foundedYear: 2022, url: "https://www.novabrewsolutions.com", description: "AI-driven software for automating craft brewery forecasting, production scheduling, and inventory control.", lastVerified: "2026-04-14" },
 ]
 
 export function getStartupsByProvince(provinceSlug: string): CanadianStartup[] {

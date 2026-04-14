@@ -185,7 +185,7 @@ const REGION_RULES: { pattern: RegExp; region: string }[] = [
   { pattern: /\b(Alberta|Edmonton|Calgary|Red Deer|Lethbridge|Amii)\b/i,                          region: "Alberta" },
   { pattern: /\b(Saskatchewan|Regina|Saskatoon)\b/i,                                              region: "Saskatchewan" },
   { pattern: /\b(Manitoba|Winnipeg|Brandon)\b/i,                                                  region: "Manitoba" },
-  { pattern: /\b(Nova Scotia|Halifax|Cape Breton|Dalhousie)\b/i,                                  region: "Nova Scotia" },
+  { pattern: /\b(Nova Scotia|Halifax|Cape Breton|Dalhousie|DeepSense|Invest Nova Scotia|Digital Nova Scotia|Ocean Frontier)\b/i, region: "Nova Scotia" },
   { pattern: /\b(New Brunswick|Fredericton|Moncton|Saint John)\b/i,                               region: "New Brunswick" },
   { pattern: /\b(Newfoundland|Labrador|St\.?\s*John[''s]*|Memorial University)\b/i,               region: "Newfoundland & Labrador" },
   { pattern: /\b(Prince Edward Island|P\.?E\.?I\.?|Charlottetown|UPEI)\b/i,                      region: "Prince Edward Island" },

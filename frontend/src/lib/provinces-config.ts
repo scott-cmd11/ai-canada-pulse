@@ -203,17 +203,22 @@ export const PROVINCES: ProvinceConfig[] = [
     populationAsOf: "Jan 1, 2026 (Stats Canada Q4 2025)",
     region: "Atlantic",
     description:
-      "Dalhousie University leads AI research in Atlantic Canada with strengths in ocean technology, health AI, and marine data science.",
+      "Nova Scotia's AI ecosystem is anchored by Dalhousie University and its ocean-focused research centres — DeepSense and the Ocean Frontier Institute — alongside a growing startup community supported by Invest Nova Scotia and a provincial government AI team established in 2025.",
     googleTrendsGeo: "CA-NS",
     institutions: [
-      { name: "Dalhousie University", type: "university", url: "https://www.dal.ca/faculty/computerscience.html" },
+      { name: "Dalhousie University",     type: "university", url: "https://www.dal.ca/research-and-innovation/research-clusters/ai-and-digital-innovation.html" },
+      { name: "Saint Mary's University",  type: "university", url: "https://www.smu.ca/academics/sobey/data-science.html" },
+      { name: "Acadia University",        type: "university", url: "https://cs.acadiau.ca/" },
+      { name: "NSCC",                     type: "university", url: "https://www.nscc.ca/programs-and-courses/programs/plandescr.aspx?prg=ITAI&pln=AITECHAD" },
+      { name: "DeepSense",                type: "institute",  url: "https://deepsense.ca/" },
+      { name: "Ocean Frontier Institute", type: "institute",  url: "https://oceanfrontierinstitute.com/" },
     ],
     sections: {
-      stories: true, trends: true, stocks: false, research: false,
-      parliament: false, jobs: false, talent: false, startups: false, events: false, regulation: true,
+      stories: true, trends: true, stocks: false, research: true,
+      parliament: false, jobs: false, talent: false, startups: true, events: true, regulation: true,
     },
     neighborSlugs: ["new-brunswick", "prince-edward-island"],
-    lastVerified: "2026-03-31",
+    lastVerified: "2026-04-14",
   },
   {
     slug: "new-brunswick",

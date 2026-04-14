@@ -156,6 +156,32 @@ export const REGULATIONS: RegulationItem[] = [
     url: "https://www.oipc.ab.ca",
     aiRelevance: "Indirect",
   },
+
+  // Nova Scotia
+  {
+    id: "ns-ai-governance-team",
+    name: "Nova Scotia Government AI Team & Responsible AI Framework",
+    jurisdiction: "Nova Scotia",
+    jurisdictionSlug: "nova-scotia",
+    status: "In Force",
+    type: "Framework",
+    description: "The Province of Nova Scotia established a dedicated 5-person AI team in 2025 to guide responsible AI adoption across government departments. The 2026-27 provincial budget allocates $4.4M for AI capabilities development and public service modernisation.",
+    effectiveDate: "2025-01-01",
+    url: "https://novascotia.ca/news/",
+    aiRelevance: "Direct",
+  },
+  {
+    id: "ns-scottie-ai-chatbot",
+    name: "Scottie — Nova Scotia Government AI Assistant",
+    jurisdiction: "Nova Scotia",
+    jurisdictionSlug: "nova-scotia",
+    status: "In Force",
+    type: "Guideline",
+    description: "Nova Scotia launched 'Scottie', an AI-powered chatbot pilot for government services, as part of its AI modernisation agenda. The initiative includes guidelines on responsible AI use in public-facing government services.",
+    effectiveDate: "2025-06-01",
+    url: "https://novascotia.ca/news/",
+    aiRelevance: "Direct",
+  },
 ]
 
 export function getRegulationsByJurisdiction(slug: string): RegulationItem[] {
