@@ -45,6 +45,17 @@ export async function GET(request: NextRequest) {
   // stories get AI summaries without running the full heavy pipeline.
   const lightMode = request.nextUrl.searchParams.get('light') === 'true'
 
+  // Retry mode: 14:00 UTC backup cron. Skips heavy steps if today's digest
+  // already generated successfully — only re-runs if the 12:00 cron missed or errored.
+  const retryMode = request.nextUrl.searchParams.get('retry') === 'true'
+  if (retryMode) {
+    const existingDigest = await getDigest(today).catch(() => null)
+    if (existingDigest && !existingDigest.error) {
+      return NextResponse.json({ ok: true, generatedAt: new Date().toISOString(), mode: 'retry-skipped', date: today })
+    }
+    console.log('[ai-refresh] Retry mode: digest missing or errored, running full pipeline')
+  }
+
   // Step 1: Existing dashboard enrichment (summaries + executive brief)
   try {
     const enrichment = await refreshDashboardEnrichmentBundle()

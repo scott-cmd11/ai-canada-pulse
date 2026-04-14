@@ -5,6 +5,10 @@
             "schedule": "0 12 * * *"
         },
         {
+            "path": "/api/v1/ai-refresh?retry=true",
+            "schedule": "0 14 * * *"
+        },
+        {
             "path": "/api/v1/ai-refresh?light=true",
             "schedule": "*/30 * * * *"
         }
