@@ -9,16 +9,29 @@ import type { StartupSignalsData, StartupSignal } from "@/lib/startup-signals-cl
 function StartupMapPanel({ provinceFilter, liveSignals }: { provinceFilter?: string; liveSignals: StartupSignal[] }) {
   const [sectorFilter, setSectorFilter] = useState<StartupSector | "All">("All")
 
-  const startups = useMemo(() => {
-    let filtered = provinceFilter ? STARTUPS.filter((s) => s.provinceSlug === provinceFilter) : STARTUPS
-    if (sectorFilter !== "All") filtered = filtered.filter((s) => s.sector === sectorFilter)
-    return filtered
-  }, [provinceFilter, sectorFilter])
+  const provinceStartups = useMemo(() =>
+    provinceFilter ? STARTUPS.filter((s) => s.provinceSlug === provinceFilter) : STARTUPS
+  , [provinceFilter])
 
+  const startups = useMemo(() => {
+    if (sectorFilter !== "All") return provinceStartups.filter((s) => s.sector === sectorFilter)
+    return provinceStartups
+  }, [provinceStartups, sectorFilter])
+
+  // Use province-scoped stats when filtering, global otherwise
   const stats = getStartupStats()
-  const topSectors = Object.entries(stats.bySector)
+  const provinceSectorCounts = useMemo(() => {
+    const counts: Record<string, number> = {}
+    for (const s of provinceStartups) counts[s.sector] = (counts[s.sector] ?? 0) + 1
+    return counts
+  }, [provinceStartups])
+
+  const topSectors = Object.entries(provinceFilter ? provinceSectorCounts : stats.bySector)
+    .filter(([, count]) => count > 0)
     .sort(([, a], [, b]) => b - a)
     .slice(0, 6)
+
+  if (provinceFilter && provinceStartups.length === 0) return null
 
   // Build a map of company name → most recent live signal
   const signalByCompany = useMemo(() => {
@@ -47,18 +60,20 @@ function StartupMapPanel({ provinceFilter, liveSignals }: { provinceFilter?: str
     ? new Date(lastVerified + "T00:00:00").toLocaleDateString("en-CA", { month: "short", day: "numeric", year: "numeric" })
     : null
 
+  const displayTotal = provinceFilter ? provinceStartups.length : stats.total
+
   return (
     <section>
       <div className="section-header">
         <h2 className="flex justify-between items-baseline">
-          <span>Canadian AI Startups</span>
+          <span>{provinceFilter ? "AI Startups" : "Canadian AI Startups"}</span>
           <span className="text-sm font-medium" style={{ color: 'var(--text-muted)' }}>
-            {stats.total} companies tracked
+            {displayTotal} companies tracked
           </span>
         </h2>
       </div>
       <p className="text-sm mb-3 leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
-        Notable AI companies across Canada, from early-stage startups to public companies.
+        Notable AI companies{provinceFilter ? " in this province" : " across Canada"}, from early-stage startups to public companies.
         Cards marked <span className="font-semibold" style={{ color: '#16a34a' }}>Live</span> have recent news signals.
       </p>
 
@@ -73,7 +88,7 @@ function StartupMapPanel({ provinceFilter, liveSignals }: { provinceFilter?: str
             borderColor: sectorFilter === "All" ? 'var(--accent-primary)' : 'var(--border-subtle)',
           }}
         >
-          All ({stats.total})
+          All ({displayTotal})
         </button>
         {topSectors.map(([sector, count]) => (
           <button
@@ -206,7 +221,11 @@ function StartupMapPanel({ provinceFilter, liveSignals }: { provinceFilter?: str
 
 // ─── Startup Signals Panel ──────────────────────────────────────────────────────
 
-function StartupSignalsPanel({ signals, loading }: { signals: StartupSignal[]; loading: boolean }) {
+function StartupSignalsPanel({ signals, loading, provinceFilter }: { signals: StartupSignal[]; loading: boolean; provinceFilter?: string }) {
+  const filteredSignals = provinceFilter ? signals.filter((s) => s.province === provinceFilter) : signals
+
+  // On province pages, hide the panel entirely if there are no province-specific signals
+  if (provinceFilter && !loading && filteredSignals.length === 0) return null
   const SIGNAL_ICONS: Record<string, string> = {
     Funding: "💰",
     Acquisition: "🤝",
@@ -230,9 +249,9 @@ function StartupSignalsPanel({ signals, loading }: { signals: StartupSignal[]; l
       <div className="section-header">
         <h2 className="flex justify-between items-baseline">
           <span>Funding & Startup Signals</span>
-          {!loading && signals.length > 0 && (
+          {!loading && filteredSignals.length > 0 && (
             <span className="text-sm font-medium" style={{ color: 'var(--text-muted)' }}>
-              {signals.length} signals
+              {filteredSignals.length} signals
             </span>
           )}
         </h2>
@@ -249,13 +268,13 @@ function StartupSignalsPanel({ signals, loading }: { signals: StartupSignal[]; l
         </div>
       )}
 
-      {!loading && signals.length === 0 && (
+      {!loading && filteredSignals.length === 0 && (
         <p className="text-sm py-4" style={{ color: 'var(--text-muted)' }}>No recent startup signals detected.</p>
       )}
 
-      {!loading && signals.length > 0 && (
+      {!loading && filteredSignals.length > 0 && (
         <div className="flex flex-col gap-2.5">
-          {signals.slice(0, 6).map((signal: StartupSignal) => (
+          {filteredSignals.slice(0, 6).map((signal: StartupSignal) => (
             <div
               key={signal.id}
               className="saas-card p-3"
@@ -341,7 +360,7 @@ export default function EcosystemSection({ provinceFilter }: { provinceFilter?: 
   return (
     <div className="grid gap-4 lg:grid-cols-2">
       <StartupMapPanel provinceFilter={provinceFilter} liveSignals={signals} />
-      <StartupSignalsPanel signals={signals} loading={signalsLoading} />
+      <StartupSignalsPanel signals={signals} loading={signalsLoading} provinceFilter={provinceFilter} />
     </div>
   )
 }

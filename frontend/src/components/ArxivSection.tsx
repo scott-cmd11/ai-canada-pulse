@@ -38,6 +38,9 @@ export default function ArxivSection({ institutionFilter }: ArxivSectionProps = 
         )
         : rawPapers
 
+    // Hide section entirely when no papers are available (e.g. province with no matching arXiv results)
+    if (!loading && (!papers || papers.length === 0)) return null
+
     return (
         <section>
             <div className="flex items-center justify-between mb-1">

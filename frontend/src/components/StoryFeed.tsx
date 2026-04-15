@@ -56,6 +56,9 @@ export default function StoryFeed({ region }: StoryFeedProps = {}) {
   const summary = region ? regionSummary : sharedCtx.summary
   const { isFallback, lastUpdated } = regionResult
 
+  // On province pages, hide the section entirely rather than showing national fallback stories
+  if (region && isFallback) return null
+
   const feedStories = stories.filter((story) => !story.isBriefingTop)
 
   const filtered = active === ALL
