@@ -2,13 +2,17 @@
 
 import { useEffect, useRef, useState } from "react"
 import type { Map as LeafletMap } from "leaflet"
+import "leaflet/dist/leaflet.css"
 import { DATA_CENTRES, TYPE_COLOURS, TYPE_LABELS, type DataCentreType } from "@/lib/datacentres-data"
 
 const ALL_TYPES: DataCentreType[] = ["hyperscaler", "colo", "telco", "hpc", "government"]
 
-const TILE_LIGHT = "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
-const TILE_DARK  = "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-const ATTRIBUTION = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/">CARTO</a>'
+// OSM standard tiles — no API key, no subdomains, universally reliable
+const TILE_LIGHT = "https://tile.openstreetmap.org/{z}/{x}/{y}.png"
+// CartoDB DarkMatter for dark mode (direct URL, no {s}/{r} placeholders)
+const TILE_DARK  = "https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png"
+const ATTRIBUTION_OSM   = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+const ATTRIBUTION_CARTO = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/">CARTO</a>'
 
 export default function DataCentreMapClient() {
   const mapRef = useRef<HTMLDivElement>(null)
@@ -45,31 +49,32 @@ export default function DataCentreMapClient() {
       )
 
       const map = L.map(mapRef.current, {
+        center: [54, -96],
+        zoom: 4,
         zoomControl: false,
-        maxBounds: L.latLngBounds([35, -145], [75, -45]),
-        maxBoundsViscosity: 0.8,
       })
-      map.fitBounds(bounds, { padding: [24, 24] })
       leafletRef.current = map
 
       L.control.zoom({ position: "bottomright" }).addTo(map)
 
-      const tile = L.tileLayer(TILE_LIGHT, { attribution: ATTRIBUTION })
+      const tile = L.tileLayer(TILE_LIGHT, {
+        attribution: ATTRIBUTION_OSM,
+        maxZoom: 19,
+      })
       tile.addTo(map)
       tileLayerRef.current = tile
 
       const layer = L.layerGroup().addTo(map)
       markersLayerRef.current = layer
 
-      // Draw markers
       drawMarkers(L, layer, new Set(ALL_TYPES))
 
-      // Leaflet calculates tile viewport at init time — if the container
-      // wasn't fully laid out yet (dynamic import delay), tiles won't fill
-      // the edges. invalidateSize() forces a recalculation.
-      setTimeout(() => map.invalidateSize(), 100)
+      // whenReady fires after the first render frame — safe to fitBounds then
+      map.whenReady(() => {
+        map.invalidateSize()
+        map.fitBounds(bounds, { padding: [40, 40] })
+      })
 
-      // Also handle any future container resizes
       const ro = new ResizeObserver(() => map.invalidateSize())
       if (mapRef.current) ro.observe(mapRef.current)
     })
@@ -89,7 +94,10 @@ export default function DataCentreMapClient() {
     import("leaflet").then((L) => {
       if (!leafletRef.current) return
       tileLayerRef.current?.remove()
-      const tile = L.tileLayer(isDark ? TILE_DARK : TILE_LIGHT, { attribution: ATTRIBUTION })
+      const tile = L.tileLayer(isDark ? TILE_DARK : TILE_LIGHT, {
+        attribution: isDark ? ATTRIBUTION_CARTO : ATTRIBUTION_OSM,
+        maxZoom: 19,
+      })
       tile.addTo(leafletRef.current)
       tileLayerRef.current = tile
     })
