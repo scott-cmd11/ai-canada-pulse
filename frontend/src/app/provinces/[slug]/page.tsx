@@ -123,19 +123,9 @@ export default async function ProvincePage({
 
       {/* Stories */}
       {province.sections.stories && (
-        <section className="mx-auto max-w-[1080px] px-4 py-8 sm:px-6 sm:py-10 lg:px-10">
-          <h2
-            className="mb-4 text-2xl font-semibold"
-            style={{
-              fontFamily: 'var(--font-display)',
-              color: 'var(--text-primary)',
-              letterSpacing: '-0.3px',
-            }}
-          >
-            What&apos;s happening in {province.name}
-          </h2>
-          <StoryFeed region={province.name} />
-        </section>
+        <div className="mx-auto max-w-[1080px] px-4 sm:px-6 lg:px-10">
+          <StoryFeed region={province.name} sectionTitle={`What's happening in ${province.name}`} />
+        </div>
       )}
 
       {/* Research */}

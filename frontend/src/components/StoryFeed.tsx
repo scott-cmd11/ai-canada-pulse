@@ -23,9 +23,10 @@ const CATEGORIES: { value: typeof ALL | Category; label: string }[] = [
 
 interface StoryFeedProps {
   region?: string
+  sectionTitle?: string
 }
 
-export default function StoryFeed({ region }: StoryFeedProps = {}) {
+export default function StoryFeed({ region, sectionTitle }: StoryFeedProps = {}) {
   const [active, setActive] = useState<typeof ALL | Category>(ALL)
   const [displayCount, setDisplayCount] = useState(PAGE_SIZE)
 
@@ -68,6 +69,12 @@ export default function StoryFeed({ region }: StoryFeedProps = {}) {
   const visible = filtered.slice(0, displayCount)
 
   return (
+    <>
+    {sectionTitle && (
+      <h2 className="mb-4 text-2xl font-semibold" style={{ fontFamily: 'var(--font-display)', color: 'var(--text-primary)', letterSpacing: '-0.3px' }}>
+        {sectionTitle}
+      </h2>
+    )}
     <section className="rounded-2xl border p-5 sm:p-6" style={{ borderColor: 'var(--border-subtle)', backgroundColor: 'var(--surface-primary)' }}>
       <div className="flex flex-col gap-4 border-b pb-4 lg:flex-row lg:items-end lg:justify-between" style={{ borderColor: 'var(--border-subtle)' }}>
         <div>
@@ -169,5 +176,6 @@ export default function StoryFeed({ region }: StoryFeedProps = {}) {
       )}
       <SourceAttribution sourceId="rss-news" lastUpdated={lastUpdated} />
     </section>
+    </>
   )
 }
