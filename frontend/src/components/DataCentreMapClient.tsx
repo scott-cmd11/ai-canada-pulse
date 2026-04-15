@@ -36,11 +36,20 @@ export default function DataCentreMapClient() {
     import("leaflet").then((L) => {
       if (!mapRef.current || leafletRef.current) return
 
+      // Fit to the bounding box of all data centres so every marker is visible
+      const lats = DATA_CENTRES.map(d => d.lat)
+      const lngs = DATA_CENTRES.map(d => d.lng)
+      const bounds = L.latLngBounds(
+        [Math.min(...lats) - 1, Math.min(...lngs) - 2],
+        [Math.max(...lats) + 2, Math.max(...lngs) + 2],
+      )
+
       const map = L.map(mapRef.current, {
-        center: [57, -96],
-        zoom: 4,
         zoomControl: false,
+        maxBounds: L.latLngBounds([35, -145], [75, -45]),
+        maxBoundsViscosity: 0.8,
       })
+      map.fitBounds(bounds, { padding: [24, 24] })
       leafletRef.current = map
 
       L.control.zoom({ position: "bottomright" }).addTo(map)
@@ -54,6 +63,15 @@ export default function DataCentreMapClient() {
 
       // Draw markers
       drawMarkers(L, layer, new Set(ALL_TYPES))
+
+      // Leaflet calculates tile viewport at init time — if the container
+      // wasn't fully laid out yet (dynamic import delay), tiles won't fill
+      // the edges. invalidateSize() forces a recalculation.
+      setTimeout(() => map.invalidateSize(), 100)
+
+      // Also handle any future container resizes
+      const ro = new ResizeObserver(() => map.invalidateSize())
+      if (mapRef.current) ro.observe(mapRef.current)
     })
 
     return () => {
