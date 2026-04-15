@@ -283,6 +283,10 @@ async function _fetchAllStories(): Promise<Story[]> {
     (a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime()
   )
 
+  // Drop articles older than 90 days — prevents stale future-tense content from surfacing
+  const cutoff = Date.now() - 90 * 24 * 60 * 60 * 1000
+  allStories = allStories.filter((s) => new Date(s.publishedAt).getTime() >= cutoff)
+
   // Keep a larger pool internally so province filtering has enough to work with.
   // The dashboard UI applies its own CANADA_DASHBOARD_STORY_LIMIT display cap.
   allStories = allStories.slice(0, INTERNAL_STORY_LIMIT)

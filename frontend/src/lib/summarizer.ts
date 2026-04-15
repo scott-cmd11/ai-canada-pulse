@@ -303,7 +303,8 @@ async function ensureArticleSummaryQuality(
     const snippetUseful = article.snippet && !article.headline.startsWith(article.snippet.split("  ")[0])
     const context = snippetUseful ? article.snippet.slice(0, 260) : "No additional context provided"
 
-    const systemPrompt = `Write a 2-3 sentence factual news summary. State who was involved, what happened, and any concrete details (amounts, locations, dates, numbers). If context is thin, add a sentence with relevant background about the organization, sector, or technology. Do not start any sentence with "This signals", "This highlights", "This suggests", "This move", or similar editorial phrases. Use Canadian English spelling (e.g. "centre" not "center", "colour" not "color", "labour" not "labor", "defence" not "defense").
+    const today = new Date().toLocaleDateString("en-CA", { year: "numeric", month: "long", day: "numeric" })
+    const systemPrompt = `Today's date is ${today}. Write a 2-3 sentence factual news summary. State who was involved, what happened, and any concrete details (amounts, locations, dates, numbers). If context is thin, add a sentence with relevant background about the organization, sector, or technology. When source text uses future tense ("will", "upcoming", "starting in") for dates that are now in the past, use past tense instead. Do not start any sentence with "This signals", "This highlights", "This suggests", "This move", or similar editorial phrases. Use Canadian English spelling (e.g. "centre" not "center", "colour" not "color", "labour" not "labor", "defence" not "defense").
 
 Output only the summary text.`
 
@@ -371,7 +372,8 @@ async function summarizeBatch(
         })
         .join("\n\n")
 
-    const systemPrompt = `Write a 2-3 sentence factual news summary for each item. State who was involved, what happened, and any concrete details from the context (amounts, locations, dates, numbers). If context is thin, add a second sentence with relevant background about the organization, sector, or technology mentioned. Do not start any sentence with "This signals", "This highlights", "This suggests", "This move", or similar editorial phrases.
+    const today = new Date().toLocaleDateString("en-CA", { year: "numeric", month: "long", day: "numeric" })
+    const systemPrompt = `Today's date is ${today}. Write a 2-3 sentence factual news summary for each item. State who was involved, what happened, and any concrete details from the context (amounts, locations, dates, numbers). If context is thin, add a second sentence with relevant background about the organization, sector, or technology mentioned. When source text uses future tense ("will", "upcoming", "starting in") for dates that are now in the past, use past tense instead (e.g. "launched in January 2024" not "will launch in January 2024"). Do not start any sentence with "This signals", "This highlights", "This suggests", "This move", or similar editorial phrases.
 
 Output ONLY a JSON array of strings, one per item, same order.`
 
