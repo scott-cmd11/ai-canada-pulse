@@ -76,7 +76,7 @@ export const PROVINCES: ProvinceConfig[] = [
     ],
     sections: {
       stories: true, trends: true, stocks: true, research: true,
-      parliament: true, jobs: true, talent: true, startups: true, events: true, regulation: true,
+      parliament: false, jobs: true, talent: true, startups: true, events: true, regulation: true,
     },
     neighborSlugs: ["quebec", "manitoba"],
     lastVerified: "2026-03-31",
@@ -99,7 +99,7 @@ export const PROVINCES: ProvinceConfig[] = [
     ],
     sections: {
       stories: true, trends: true, stocks: true, research: true,
-      parliament: true, jobs: true, talent: true, startups: true, events: true, regulation: true,
+      parliament: false, jobs: true, talent: true, startups: true, events: true, regulation: true,
     },
     neighborSlugs: ["ontario", "new-brunswick", "northwest-territories"],
     lastVerified: "2026-03-31",
@@ -122,7 +122,7 @@ export const PROVINCES: ProvinceConfig[] = [
     ],
     sections: {
       stories: true, trends: true, stocks: true, research: true,
-      parliament: true, jobs: true, talent: true, startups: true, events: true, regulation: true,
+      parliament: false, jobs: true, talent: true, startups: true, events: true, regulation: true,
     },
     neighborSlugs: ["british-columbia", "saskatchewan", "northwest-territories"],
     lastVerified: "2026-03-31",
@@ -188,7 +188,7 @@ export const PROVINCES: ProvinceConfig[] = [
     ],
     sections: {
       stories: true, trends: true, stocks: true, research: true,
-      parliament: true, jobs: true, talent: true, startups: true, events: true, regulation: true,
+      parliament: false, jobs: true, talent: true, startups: true, events: true, regulation: true,
     },
     neighborSlugs: ["alberta", "yukon"],
     lastVerified: "2026-03-31",
