@@ -10,7 +10,6 @@ const navLinks = [
   { label: "Digest", href: "/" },
   { label: "Dashboard", href: "/dashboard" },
   { label: "Deep Dives", href: "/blog" },
-  { label: "Provinces & Territories", href: "/provinces" },
   { label: "Data Centres", href: "/datacentres", mobileHidden: true },
   { label: "About", href: "/about", mobileHidden: true },
   { label: "Methodology", href: "/methodology", mobileHidden: true },
@@ -63,7 +62,6 @@ export default function Header() {
               const isActive =
                 href === "/" ? pathname === "/" :
                 href === "/blog" ? pathname.startsWith("/blog") :
-                href === "/provinces" ? pathname.startsWith("/provinces") :
                 href === "/datacentres" ? pathname.startsWith("/datacentres") :
                 pathname === href
               return (
