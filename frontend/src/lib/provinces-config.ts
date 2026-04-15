@@ -229,17 +229,20 @@ export const PROVINCES: ProvinceConfig[] = [
     populationAsOf: "Jan 1, 2026 (Stats Canada Q4 2025)",
     region: "Atlantic",
     description:
-      "The University of New Brunswick hosts the Canadian Institute for Cybersecurity, a national centre for AI-driven security research.",
+      "New Brunswick's AI ecosystem spans cybersecurity research at UNB's Canadian Institute for Cybersecurity, health AI at Université de Moncton's PRIME Lab, and a growing commercial sector anchored by Introhive — Atlantic Canada's largest-funded tech company.",
     googleTrendsGeo: "CA-NB",
     institutions: [
       { name: "University of New Brunswick", type: "university", url: "https://www.unb.ca/cic" },
+      { name: "Université de Moncton",       type: "university", url: "https://www.umoncton.ca/bsi/en/node/12" },
+      { name: "McKenna Institute",           type: "institute",  url: "https://blogs.unb.ca/mckenna/" },
+      { name: "UNB RIDSAI",                  type: "institute",  url: "https://www.unb.ca/ridsai/" },
     ],
     sections: {
-      stories: true, trends: true, stocks: false, research: false,
-      parliament: false, jobs: false, talent: false, startups: false, events: false, regulation: true,
+      stories: true, trends: true, stocks: false, research: true,
+      parliament: false, jobs: false, talent: false, startups: true, events: false, regulation: true,
     },
     neighborSlugs: ["quebec", "nova-scotia", "prince-edward-island"],
-    lastVerified: "2026-03-31",
+    lastVerified: "2026-04-14",
   },
   {
     slug: "newfoundland-labrador",

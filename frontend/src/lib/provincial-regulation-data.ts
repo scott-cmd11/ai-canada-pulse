@@ -157,6 +157,32 @@ export const REGULATIONS: RegulationItem[] = [
     aiRelevance: "Indirect",
   },
 
+  // New Brunswick
+  {
+    id: "nb-digital-strategy",
+    name: "Digital New Brunswick 2.0",
+    jurisdiction: "New Brunswick",
+    jurisdictionSlug: "new-brunswick",
+    status: "In Force",
+    type: "Framework",
+    description: "Provincial digital transformation strategy guiding AI and data analytics adoption across GNB departments. Encompasses enterprise-wide modernisation including AI-driven service delivery, digital health, and workforce upskilling.",
+    effectiveDate: "2023-01-01",
+    url: "https://www3.gnb.ca/digital/",
+    aiRelevance: "Indirect",
+  },
+  {
+    id: "nb-chatgnb",
+    name: "ChatGNB — New Brunswick Government Generative AI Platform",
+    jurisdiction: "New Brunswick",
+    jurisdictionSlug: "new-brunswick",
+    status: "In Force",
+    type: "Guideline",
+    description: "GNB-wide generative AI platform (powered by Microsoft Azure / GPT-4) deployed exclusively for provincial government employees. Primary uses include bilingual document drafting and EN/FR translation. Winner of a Global Generative AI Award in 2024.",
+    effectiveDate: "2024-01-01",
+    url: "https://chatgnb.transformationnb.ca/en",
+    aiRelevance: "Direct",
+  },
+
   // Nova Scotia
   {
     id: "ns-ai-governance-team",
