@@ -16,6 +16,9 @@ interface DashboardEnrichmentBundle {
 const BUNDLE_KEY = "ai-dashboard-enrichment:v1"
 const TTL_SECONDS = 86400 // 24 hours
 
+const LOCK_KEY = "ai-dashboard-enrichment:lock"
+const LOCK_TTL_SECONDS = 30 * 60 // 30 min cooldown between background refills
+
 function getRedis(): Redis | null {
     if (!process.env.UPSTASH_REDIS_REST_URL || !process.env.UPSTASH_REDIS_REST_TOKEN) {
         return null
@@ -43,6 +46,27 @@ export async function readDashboardEnrichmentBundle(): Promise<DashboardEnrichme
     } catch (err) {
         console.warn("[ai-enrichment-cache] Failed to read bundle:", err)
         return null
+    }
+}
+
+/**
+ * Acquire the enrichment lock via SET NX EX. Returns true if acquired, false
+ * if another request already holds it (or Redis is unavailable). Used to
+ * throttle on-demand background enrichment triggered from the stories route.
+ */
+export async function tryAcquireEnrichmentLock(): Promise<boolean> {
+    const redis = getRedis()
+    if (!redis) return false
+
+    try {
+        const result = await redis.set(LOCK_KEY, Date.now().toString(), {
+            nx: true,
+            ex: LOCK_TTL_SECONDS,
+        })
+        return result === "OK"
+    } catch (err) {
+        console.warn("[ai-enrichment-cache] Lock acquire failed:", err)
+        return false
     }
 }
 
