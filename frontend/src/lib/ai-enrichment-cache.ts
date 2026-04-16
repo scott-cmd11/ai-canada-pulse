@@ -70,6 +70,47 @@ export async function tryAcquireEnrichmentLock(): Promise<boolean> {
     }
 }
 
+/**
+ * Diagnostic: return the lock value + remaining TTL in seconds, or null if
+ * no lock is held. Used by the status endpoint.
+ */
+export async function readEnrichmentLockStatus(): Promise<{ heldSince: string; ttlSeconds: number } | null> {
+    const redis = getRedis()
+    if (!redis) return null
+
+    try {
+        const [value, ttl] = await Promise.all([
+            redis.get<string>(LOCK_KEY),
+            redis.ttl(LOCK_KEY),
+        ])
+        if (!value || ttl <= 0) return null
+        const ms = Number.parseInt(value, 10)
+        return {
+            heldSince: Number.isFinite(ms) ? new Date(ms).toISOString() : value,
+            ttlSeconds: ttl,
+        }
+    } catch (err) {
+        console.warn("[ai-enrichment-cache] Lock status read failed:", err)
+        return null
+    }
+}
+
+/**
+ * Manually clear the enrichment lock. Used by the status endpoint's ?clearLock
+ * flag to recover from a stuck state (e.g. if a prior enrichment crashed mid-run).
+ */
+export async function clearEnrichmentLock(): Promise<boolean> {
+    const redis = getRedis()
+    if (!redis) return false
+    try {
+        await redis.del(LOCK_KEY)
+        return true
+    } catch (err) {
+        console.warn("[ai-enrichment-cache] Lock clear failed:", err)
+        return false
+    }
+}
+
 export async function writeDashboardEnrichmentBundle(
     bundle: DashboardEnrichmentBundle
 ): Promise<void> {

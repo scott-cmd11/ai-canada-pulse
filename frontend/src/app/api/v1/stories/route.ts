@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server"
+import { waitUntil } from "@vercel/functions"
 import { fetchAllStories, derivePulseFromStories, filterStoriesByRegion } from "@/lib/rss-client"
 import { hydrateCanadaStories } from "@/lib/dashboard-enrichment"
 import { getProvinceBySlug } from "@/lib/provinces-config"
@@ -16,32 +17,61 @@ export const maxDuration = 30
 const SUMMARY_COVERAGE_WINDOW = 10
 
 /**
- * Fire-and-forget: if the top Canada stories are missing AI summaries, kick
- * off the same enrichment the cron runs. Throttled via a 30-min Redis lock so
- * we don't stampede OpenAI on every request. Replaces the 30-min cron that was
- * removed in 7411773 (incompatible with Hobby plan's 2-cron cap).
+ * Resolve the origin to use for the self-call. `request.url` works on Vercel
+ * but falls back to VERCEL_URL for defence-in-depth against proxy rewrites.
+ */
+function resolveOrigin(requestUrl: string): string | null {
+    try {
+        const url = new URL(requestUrl)
+        if (url.origin && !url.origin.includes("localhost")) return url.origin
+    } catch {}
+    if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`
+    return null
+}
+
+/**
+ * If the top Canada stories are missing AI summaries, kick off the same
+ * enrichment the cron runs. Throttled via a 30-min Redis lock so we don't
+ * stampede OpenAI on every request. Uses Vercel's waitUntil so the outbound
+ * fetch actually survives the stories response. Replaces the 30-min cron
+ * that was removed in 7411773 (incompatible with Hobby's 2-cron cap).
  */
 async function triggerBackgroundEnrichmentIfStale(stories: Story[], requestUrl: string) {
     const missing = stories
         .slice(0, SUMMARY_COVERAGE_WINDOW)
-        .some((s) => !s.aiSummary)
-    if (!missing) return
+        .filter((s) => !s.aiSummary)
+    if (missing.length === 0) return
 
     const acquired = await tryAcquireEnrichmentLock()
-    if (!acquired) return
+    if (!acquired) {
+        console.log(`[api/stories] ${missing.length} stories missing summaries; lock held, skipping`)
+        return
+    }
 
     const secret = process.env.CRON_SECRET
-    if (!secret) return
+    if (!secret) {
+        console.warn("[api/stories] No CRON_SECRET; cannot self-trigger enrichment")
+        return
+    }
 
-    const origin = new URL(requestUrl).origin
-    // Fire without awaiting the response — the receiving function runs with its
-    // own 300s budget and will complete independently. We `void` the promise so
-    // the calling handler can return immediately.
-    void fetch(`${origin}/api/v1/ai-refresh?light=true`, {
-        headers: { Authorization: `Bearer ${secret}` },
-    }).catch((err) => {
-        console.warn("[api/stories] Background enrichment trigger failed:", err)
-    })
+    const origin = resolveOrigin(requestUrl)
+    if (!origin) {
+        console.warn("[api/stories] Cannot resolve origin for self-call")
+        return
+    }
+
+    console.log(`[api/stories] ${missing.length} stories missing summaries; triggering ${origin}/api/v1/ai-refresh?light=true`)
+
+    // waitUntil extends the function's lifetime for the outbound request so
+    // Vercel doesn't freeze us before the TCP bytes flush. The receiving
+    // function then runs with its own 300s budget.
+    waitUntil(
+        fetch(`${origin}/api/v1/ai-refresh?light=true`, {
+            headers: { Authorization: `Bearer ${secret}` },
+        })
+            .then((res) => console.log(`[api/stories] Enrichment trigger responded ${res.status}`))
+            .catch((err) => console.warn("[api/stories] Enrichment trigger failed:", err))
+    )
 }
 
 export async function GET(request: Request) {
