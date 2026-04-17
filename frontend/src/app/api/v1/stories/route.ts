@@ -96,11 +96,22 @@ export async function GET(request: Request) {
 
     const summary = await getSectionSummary('stories')
 
+    // If the top window still has stories without AI summaries, the self-heal
+    // above has likely just been triggered. Use a very short cache so the
+    // pre-enrichment response doesn't get pinned into the CDN for 10 min after
+    // the bundle catches up. Once fully hydrated, cache normally.
+    const topMissing = enrichedStories
+      .slice(0, SUMMARY_COVERAGE_WINDOW)
+      .filter((s) => !s.aiSummary).length
+    const cacheControl = topMissing > 0
+      ? "public, max-age=30, stale-while-revalidate=60"
+      : "public, max-age=600, stale-while-revalidate=1800"
+
     return NextResponse.json(
       { stories: enrichedStories, pulse, executiveBrief, summary },
       {
         headers: {
-          "Cache-Control": "public, max-age=600, stale-while-revalidate=1800",
+          "Cache-Control": cacheControl,
         },
       }
     )
