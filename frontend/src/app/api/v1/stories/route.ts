@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 import { waitUntil } from "@vercel/functions"
-import { fetchAllStories, derivePulseFromStories, filterStoriesByRegion } from "@/lib/rss-client"
+import { fetchAllStories, derivePulseFromStories, filterStoriesByRegion, CANADA_DASHBOARD_STORY_LIMIT } from "@/lib/rss-client"
 import { hydrateCanadaStories } from "@/lib/dashboard-enrichment"
 import { getProvinceBySlug } from "@/lib/provinces-config"
 import { checkRateLimit } from "@/lib/rate-limit"
@@ -11,10 +11,11 @@ import type { Story } from "@/lib/mock-data"
 export const dynamic = "force-dynamic"
 export const maxDuration = 30
 
-// How many top stories to scan for missing summaries before triggering
-// a background refill. The feed shows ~10 items initially, so this is enough
-// to cover the above-the-fold experience.
-const SUMMARY_COVERAGE_WINDOW = 10
+// Scan the full enrichment window (50 stories) for missing summaries. Anything
+// within CANADA_DASHBOARD_STORY_LIMIT is eligible for enrichment, so a gap
+// anywhere in that range is a valid reason to trigger the self-heal. The lock
+// throttles the trigger itself to once per 30 min.
+const SUMMARY_COVERAGE_WINDOW = CANADA_DASHBOARD_STORY_LIMIT
 
 /**
  * Resolve the origin to use for the self-call. `request.url` works on Vercel

@@ -388,13 +388,46 @@ Output ONLY a JSON array of strings, one per item, same order.`
     const results = new Map<string, string>()
     for (let i = 0; i < articles.length; i++) {
         const article = articles[i]
-        const enriched = await ensureArticleSummaryQuality(summaries[i], article, "Canada")
+        const short = article.headline.slice(0, 80)
+        let enriched = await ensureArticleSummaryQuality(summaries[i], article, "Canada")
+
+        if (!enriched) {
+            // Primary path exhausted — both the batch slot and the in-quality-check
+            // revision returned null/empty. Drop the quality gate and try one more
+            // time with a minimal prompt. This catches cases where OpenAI refuses
+            // or truncates on the stricter ask but handles the simpler one.
+            console.warn(`[summarizer] Primary attempt produced no summary for "${short}"; trying fallback`)
+            enriched = await emergencyFallbackSummary(article)
+            if (enriched) {
+                console.log(`[summarizer] Fallback summary succeeded for "${short}"`)
+            } else {
+                console.warn(`[summarizer] All attempts exhausted for "${short}" — leaving story without aiSummary`)
+            }
+        }
+
         if (enriched) {
             results.set(article.headline, enriched)
         }
     }
 
     return results
+}
+
+/**
+ * Last-resort summarizer: bare 1-sentence ask with no quality gate. Returns
+ * whatever OpenAI gives back. Only null if the API itself is unreachable or
+ * returns empty content. Called from summarizeBatch when the primary +
+ * quality-check revision both fail for a given headline.
+ */
+async function emergencyFallbackSummary(article: ArticleForSummary): Promise<string | null> {
+    const snippetUseful = article.snippet && !article.headline.startsWith(article.snippet.split("  ")[0])
+    const context = snippetUseful ? article.snippet.slice(0, 200) : "No additional context provided"
+
+    const systemPrompt = `Write one factual sentence summarising this news item. State who, what, and any concrete detail from the context. Use Canadian English spelling. Output only the sentence.`
+    const userPrompt = `Headline: "${article.headline}"\nContext: ${context}`
+
+    const raw = await callAI(OPENAI_BRIEF_MODEL, systemPrompt, userPrompt, 160)
+    return normalizeSummary(raw) || null
 }
 
 interface RepoForSummary {
