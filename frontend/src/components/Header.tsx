@@ -9,6 +9,7 @@ import ThemeToggle from "./ThemeToggle"
 const navLinks = [
   { label: "Digest", href: "/" },
   { label: "Dashboard", href: "/dashboard" },
+  { label: "Topics", href: "/topics" },
   { label: "Deep Dives", href: "/blog" },
   { label: "Data Centres", href: "/datacentres", mobileHidden: true },
   { label: "About", href: "/about", mobileHidden: true },
@@ -63,6 +64,7 @@ export default function Header() {
                 href === "/" ? pathname === "/" :
                 href === "/blog" ? pathname.startsWith("/blog") :
                 href === "/datacentres" ? pathname.startsWith("/datacentres") :
+                href === "/topics" ? pathname.startsWith("/topics") :
                 pathname === href
               return (
                 <Link

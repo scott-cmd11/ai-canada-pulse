@@ -4,6 +4,8 @@ export type DashboardEnrichmentKind = "canada"
 
 export interface DashboardEnrichmentPayload {
     summaries: Record<string, string>
+    // headline → topic slug list. Optional so pre-v2 bundles continue to deserialize.
+    topics?: Record<string, string[]>
     executiveBrief: string[] | null
     generatedAt: string
 }
@@ -13,7 +15,9 @@ interface DashboardEnrichmentBundle {
     generatedAt: string
 }
 
-const BUNDLE_KEY = "ai-dashboard-enrichment:v1"
+// v2 adds per-story topic tags to the canada payload. Bumping the key forces
+// a rebuild on deploy so stale v1 bundles don't silently omit the topics field.
+const BUNDLE_KEY = "ai-dashboard-enrichment:v2"
 const TTL_SECONDS = 86400 // 24 hours
 
 const LOCK_KEY = "ai-dashboard-enrichment:lock"

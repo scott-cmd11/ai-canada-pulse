@@ -1,6 +1,7 @@
 import type { Story } from "@/lib/mock-data"
 import { CANADA_DASHBOARD_STORY_LIMIT, fetchAllStories } from "@/lib/rss-client"
 import { summarizeArticles, generateExecutiveBrief } from "@/lib/summarizer"
+import { tagStoryTopics } from "@/lib/topic-tagger"
 import {
     readDashboardEnrichment,
     readDashboardEnrichmentBundle,
@@ -51,6 +52,15 @@ function buildSummaryIndex(summaries: Record<string, string>): Map<string, strin
     return index
 }
 
+// Same normalization pattern as summaries, but for the topics map.
+function buildTopicsIndex(topics: Record<string, string[]>): Map<string, string[]> {
+    const index = new Map<string, string[]>()
+    for (const [headline, tags] of Object.entries(topics)) {
+        index.set(headlineKey(headline), tags)
+    }
+    return index
+}
+
 export async function refreshDashboardEnrichmentBundle() {
     const canadaStories = await fetchAllStories()
     const canadaLimit = getCanadaSummaryTopN(canadaStories.length)
@@ -61,39 +71,65 @@ export async function refreshDashboardEnrichmentBundle() {
     // re-summarizing every story from scratch on each cron run.
     const existingBundle = await readDashboardEnrichmentBundle()
     const existingSummaries: Record<string, string> = existingBundle?.canada?.summaries ?? {}
-    const existingIndex = buildSummaryIndex(existingSummaries)
+    const existingTopics: Record<string, string[]> = existingBundle?.canada?.topics ?? {}
+    const existingSummaryIndex = buildSummaryIndex(existingSummaries)
+    const existingTopicsIndex = buildTopicsIndex(existingTopics)
 
     // Only summarize stories that don't already have a cached summary.
-    const newStories = canadaTop.filter((s) => !existingIndex.has(headlineKey(s.headline)))
+    const newStories = canadaTop.filter((s) => !existingSummaryIndex.has(headlineKey(s.headline)))
+    // Only tag stories whose topics haven't been computed yet. Tracked separately
+    // from summaries because a story can have a summary but (if the tagger failed)
+    // no topics, and on v1 → v2 the whole set needs tagging even if summaries exist.
+    const storiesNeedingTopics = canadaTop.filter(
+        (s) => !existingTopicsIndex.has(headlineKey(s.headline)),
+    )
     console.log(
         `[dashboard-enrichment] ${canadaTop.length} stories total; ` +
-        `${canadaTop.length - newStories.length} cached, ${newStories.length} new`
+        `${canadaTop.length - newStories.length} cached summaries, ${newStories.length} new; ` +
+        `${storiesNeedingTopics.length} need topics`,
     )
 
-    const [newSummaryMap, canadaBrief] = await Promise.all([
+    const [newSummaryMap, canadaBrief, newTopicsMap] = await Promise.all([
         newStories.length > 0
             ? summarizeArticles(newStories.map(toArticleSummaryInput))
             : Promise.resolve(null),
         generateExecutiveBrief(canadaTop.map(toArticleSummaryInput)),
+        storiesNeedingTopics.length > 0
+            ? tagStoryTopics(
+                storiesNeedingTopics.map((s) => ({
+                    headline: s.headline,
+                    snippet: s.summary,
+                    category: s.category,
+                })),
+            )
+            : Promise.resolve(new Map<string, string[]>()),
     ])
 
     // Merge: existing summaries + newly generated ones.
     // Use the canonical headline (from the current story list) as the key so
     // the hydration lookup is consistent.
     const mergedSummaries: Record<string, string> = {}
+    const mergedTopics: Record<string, string[]> = {}
     for (const story of canadaTop) {
         const key = story.headline
         const normalizedKey = headlineKey(key)
-        const cached = existingIndex.get(normalizedKey)
-        const fresh = newSummaryMap?.get(key)
-        const summary = fresh ?? cached
+
+        const cachedSummary = existingSummaryIndex.get(normalizedKey)
+        const freshSummary = newSummaryMap?.get(key)
+        const summary = freshSummary ?? cachedSummary
         if (summary) mergedSummaries[key] = summary
+
+        const cachedTags = existingTopicsIndex.get(normalizedKey)
+        const freshTags = newTopicsMap.get(key)
+        const tags = freshTags ?? cachedTags
+        if (tags && tags.length > 0) mergedTopics[key] = tags
     }
 
     const generatedAt = new Date().toISOString()
     const bundle = {
         canada: {
             summaries: mergedSummaries,
+            topics: mergedTopics,
             executiveBrief: canadaBrief,
             generatedAt,
         },
@@ -108,6 +144,7 @@ export async function refreshDashboardEnrichmentBundle() {
             canadaSummaryTarget: canadaTop.length,
             newlySummarized: newStories.length,
             carriedForward: canadaTop.length - newStories.length,
+            newlyTagged: storiesNeedingTopics.length,
         },
     }
 }
@@ -120,11 +157,16 @@ export async function hydrateCanadaStories(stories: Story[]) {
 
     // Build a normalized lookup index so minor headline differences don't cause misses.
     const summaryIndex = buildSummaryIndex(payload.summaries)
+    const topicsIndex = buildTopicsIndex(payload.topics ?? {})
 
-    const enrichedStories = stories.map((story) => ({
-        ...story,
-        aiSummary: summaryIndex.get(headlineKey(story.headline)) ?? story.aiSummary,
-    }))
+    const enrichedStories = stories.map((story) => {
+        const cachedTopics = topicsIndex.get(headlineKey(story.headline))
+        return {
+            ...story,
+            aiSummary: summaryIndex.get(headlineKey(story.headline)) ?? story.aiSummary,
+            topics: cachedTopics && cachedTopics.length > 0 ? cachedTopics : story.topics,
+        }
+    })
 
     return {
         stories: enrichedStories,

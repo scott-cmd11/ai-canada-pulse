@@ -15,6 +15,7 @@ export interface Story {
   isBriefingTop: boolean
   sourceUrl?: string
   sourceName?: string
+  topics?: string[]
 }
 
 export interface PulseData {

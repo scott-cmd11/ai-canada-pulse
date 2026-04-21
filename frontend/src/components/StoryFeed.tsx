@@ -1,10 +1,11 @@
 "use client"
 
 import Link from "next/link"
+import { usePathname, useRouter, useSearchParams } from "next/navigation"
 import SourceAttribution from '@/components/SourceAttribution'
 import ScopeLabel from '@/components/ScopeLabel'
 import { SkeletonStoryFeed } from '@/components/Skeleton'
-import { useState, useCallback } from "react"
+import { useState, useCallback, useMemo } from "react"
 import type { Category, Story } from "@/lib/mock-data"
 import StoryCard from "./StoryCard"
 import { useStories } from "@/hooks/useStories"
@@ -14,12 +15,15 @@ import SectionSummary from '@/components/SectionSummary'
 const ALL = "All Signals"
 const PAGE_SIZE = 4
 
-const CATEGORIES: { value: typeof ALL | Category; label: string }[] = [
-  { value: ALL, label: "All" },
-  { value: "Policy & Regulation", label: "Policy" },
-  { value: "Industry & Startups", label: "Markets" },
-  { value: "Research", label: "Research" },
+const CATEGORIES: { value: typeof ALL | Category; label: string; slug: string }[] = [
+  { value: ALL, label: "All", slug: "all" },
+  { value: "Policy & Regulation", label: "Policy", slug: "policy" },
+  { value: "Industry & Startups", label: "Markets", slug: "markets" },
+  { value: "Research", label: "Research", slug: "research" },
 ]
+
+const slugToValue = new Map(CATEGORIES.map((c) => [c.slug, c.value]))
+const valueToSlug = new Map(CATEGORIES.map((c) => [c.value, c.slug]))
 
 interface StoryFeedProps {
   region?: string
@@ -27,8 +31,36 @@ interface StoryFeedProps {
 }
 
 export default function StoryFeed({ region, sectionTitle }: StoryFeedProps = {}) {
-  const [active, setActive] = useState<typeof ALL | Category>(ALL)
+  const router = useRouter()
+  const pathname = usePathname()
+  const searchParams = useSearchParams()
+
+  // Only persist filter to the URL on the national dashboard feed. On province
+  // pages the query string is already used for the region param; keep local.
+  const syncToUrl = !region
+  const urlCat = syncToUrl ? searchParams?.get('cat') ?? null : null
+  const activeFromUrl = useMemo(() => {
+    if (!urlCat) return ALL
+    return slugToValue.get(urlCat) ?? ALL
+  }, [urlCat])
+  const active: typeof ALL | Category = syncToUrl ? activeFromUrl : ALL
+  const [localActive, setLocalActive] = useState<typeof ALL | Category>(ALL)
+  const effectiveActive = syncToUrl ? active : localActive
   const [displayCount, setDisplayCount] = useState(PAGE_SIZE)
+
+  const setActive = (value: typeof ALL | Category) => {
+    setDisplayCount(PAGE_SIZE)
+    if (!syncToUrl) {
+      setLocalActive(value)
+      return
+    }
+    const params = new URLSearchParams(searchParams?.toString() ?? '')
+    const slug = valueToSlug.get(value)
+    if (!slug || slug === 'all') params.delete('cat')
+    else params.set('cat', slug)
+    const qs = params.toString()
+    router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false })
+  }
 
   // Shared national context — used when no region prop is provided
   const sharedCtx = useStories()
@@ -62,9 +94,9 @@ export default function StoryFeed({ region, sectionTitle }: StoryFeedProps = {})
 
   const feedStories = stories.filter((story) => !story.isBriefingTop)
 
-  const filtered = active === ALL
+  const filtered = effectiveActive === ALL
     ? feedStories
-    : feedStories.filter((story) => story.category === active)
+    : feedStories.filter((story) => story.category === effectiveActive)
 
   const visible = filtered.slice(0, displayCount)
 
@@ -100,30 +132,31 @@ export default function StoryFeed({ region, sectionTitle }: StoryFeedProps = {})
       {!region && <SectionSummary summary={summary} />}
 
       <div className="mt-4 flex flex-wrap gap-2">
-        {CATEGORIES.map((category) => (
-          <button
-            key={category.value}
-            onClick={() => {
-              setActive(category.value)
-              setDisplayCount(PAGE_SIZE)
-            }}
-            className="min-h-[36px] rounded-full border px-3 py-2 text-xs font-semibold transition-colors"
-            style={active === category.value
-              ? {
-                  borderColor: 'color-mix(in srgb, var(--accent-primary) 20%, transparent)',
-                  backgroundColor: 'color-mix(in srgb, var(--accent-primary) 8%, transparent)',
-                  color: 'var(--accent-primary)',
-                }
-              : {
-                  borderColor: 'var(--border-subtle)',
-                  backgroundColor: 'var(--surface-primary)',
-                  color: 'var(--text-muted)',
-                }
-            }
-          >
-            {category.label}
-          </button>
-        ))}
+        {CATEGORIES.map((category) => {
+          const isActive = effectiveActive === category.value
+          return (
+            <button
+              key={category.value}
+              onClick={() => setActive(category.value)}
+              aria-pressed={isActive}
+              className="min-h-[36px] rounded-full border px-3 py-2 text-xs font-semibold transition-colors"
+              style={isActive
+                ? {
+                    borderColor: 'color-mix(in srgb, var(--accent-primary) 20%, transparent)',
+                    backgroundColor: 'color-mix(in srgb, var(--accent-primary) 8%, transparent)',
+                    color: 'var(--accent-primary)',
+                  }
+                : {
+                    borderColor: 'var(--border-subtle)',
+                    backgroundColor: 'var(--surface-primary)',
+                    color: 'var(--text-muted)',
+                  }
+              }
+            >
+              {category.label}
+            </button>
+          )
+        })}
       </div>
 
       <div className="mt-4 flex flex-col gap-4">

@@ -51,26 +51,15 @@ export default function StoryCard({ story }: Props) {
   const catColor = categoryColors[story.category] || "var(--accent-primary)"
 
   return (
-    <article
-      className="saas-card flex flex-col gap-4 p-5 sm:flex-row sm:gap-5"
-      style={{ transition: 'border-color 0.2s ease, box-shadow 0.2s ease' }}
-      onMouseEnter={(e) => {
-        e.currentTarget.style.borderColor = 'var(--accent-primary)'
-        e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.06)'
-      }}
-      onMouseLeave={(e) => {
-        e.currentTarget.style.borderColor = ''
-        e.currentTarget.style.boxShadow = ''
-      }}
-    >
+    <article className="saas-card flex flex-col gap-4 p-5 sm:flex-row sm:gap-5">
       <div className="mt-0.5 flex shrink-0 gap-3 sm:w-32 sm:flex-col sm:gap-2">
-        <span className="text-[11px] font-semibold uppercase tracking-[0.14em]" style={{ color: 'var(--text-muted)' }}>
+        <span className="meta" style={{ letterSpacing: '0.14em' }}>
           {relativeTime(story.publishedAt)}
         </span>
-        <span className="self-start rounded-full border px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.12em]" style={{ borderColor: `color-mix(in srgb, ${catColor} 25%, transparent)`, backgroundColor: `color-mix(in srgb, ${catColor} 10%, transparent)`, color: catColor }}>
+        <span className="chip self-start rounded-full border px-2.5 py-1" style={{ borderColor: `color-mix(in srgb, ${catColor} 25%, transparent)`, backgroundColor: `color-mix(in srgb, ${catColor} 10%, transparent)`, color: catColor }}>
           {categoryLabel}
         </span>
-        <AILabel level="classification" />
+        {!story.aiSummary && <AILabel level="classification" />}
       </div>
 
       <div className="min-w-0 flex-1">
@@ -99,10 +88,10 @@ export default function StoryCard({ story }: Props) {
           ) : null}
         </div>
 
-        <div className="mt-4 flex flex-wrap items-center gap-2 border-t pt-3 text-[11px] font-medium uppercase tracking-[0.12em]" style={{ borderColor: 'var(--border-subtle)', color: 'var(--text-muted)' }}>
-          <div className="flex flex-1 flex-wrap items-center gap-2">
-            {story.sourceName && <span>{story.sourceName}</span>}
-            {story.sourceName && <span>|</span>}
+        <div className="mt-4 flex flex-wrap items-center gap-2 border-t pt-3" style={{ borderColor: 'var(--border-subtle)' }}>
+          <div className="meta flex flex-1 flex-wrap items-center gap-2">
+            {!story.aiSummary && story.sourceName && <span>{story.sourceName}</span>}
+            {!story.aiSummary && story.sourceName && <span aria-hidden="true">·</span>}
             <span>{story.region}</span>
           </div>
           {story.sourceUrl && (

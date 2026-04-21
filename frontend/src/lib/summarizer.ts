@@ -45,7 +45,7 @@ async function callAI(
     maxCompletionTokens = 1200
 ): Promise<string | null> {
     if (!OPENAI_API_KEY) {
-        console.warn("[summarizer] No OPENAI_API_KEY configured")
+        console.error("[summarizer] ABORT: OPENAI_API_KEY env var is not set — summaries will be missing")
         return null
     }
 
@@ -80,7 +80,7 @@ async function callAI(
 
         if (!res.ok) {
             const errText = await res.text().catch(() => "unknown")
-            console.warn(`[summarizer] OpenAI API error ${res.status}: ${errText.slice(0, 200)}`)
+            console.error(`[summarizer] OpenAI ${res.status} ${res.statusText} on ${model}: ${errText.slice(0, 300)}`)
             return null
         }
 
@@ -112,9 +112,9 @@ async function callAI(
         return null
     } catch (err) {
         if (err instanceof DOMException && err.name === "AbortError") {
-            console.warn("[summarizer] OpenAI request timed out")
+            console.error(`[summarizer] OpenAI request timed out after ${TIMEOUT_MS}ms on ${model}`)
         } else {
-            console.warn("[summarizer] OpenAI error:", err)
+            console.error(`[summarizer] OpenAI fetch failed on ${model}:`, err)
         }
         return null
     }
