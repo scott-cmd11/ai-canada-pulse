@@ -5,7 +5,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation"
 import SourceAttribution from '@/components/SourceAttribution'
 import ScopeLabel from '@/components/ScopeLabel'
 import { SkeletonStoryFeed } from '@/components/Skeleton'
-import { useState, useCallback, useMemo } from "react"
+import { useState, useCallback, useMemo, Suspense } from "react"
 import type { Category, Story } from "@/lib/mock-data"
 import StoryCard from "./StoryCard"
 import { useStories } from "@/hooks/useStories"
@@ -30,7 +30,18 @@ interface StoryFeedProps {
   sectionTitle?: string
 }
 
-export default function StoryFeed({ region, sectionTitle }: StoryFeedProps = {}) {
+// Next.js 14 requires useSearchParams() to be inside a Suspense boundary during
+// static generation. Wrap the inner implementation so the dashboard page can
+// still be statically analysed for metadata / prerender pass.
+export default function StoryFeed(props: StoryFeedProps = {}) {
+  return (
+    <Suspense fallback={<SkeletonStoryFeed />}>
+      <StoryFeedInner {...props} />
+    </Suspense>
+  )
+}
+
+function StoryFeedInner({ region, sectionTitle }: StoryFeedProps = {}) {
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
