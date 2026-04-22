@@ -61,29 +61,47 @@ export default function BriefingCard() {
       className="saas-card accent-border-left flex flex-col gap-5 p-6 sm:p-8"
     >
       <div
-        className="flex flex-wrap items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.16em]"
-        style={{ color: 'var(--text-muted)' }}
+        className="flex flex-wrap items-center gap-3 text-[11px] uppercase"
+        style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-mono), monospace', letterSpacing: '0.16em', fontWeight: 700 }}
       >
         <span
-          className="rounded-full px-2.5 py-1"
+          className="px-2.5 py-1"
           style={{
-            backgroundColor: 'color-mix(in srgb, var(--accent-primary) 8%, transparent)',
-            color: 'var(--accent-primary)',
+            background: 'var(--accent-primary)',
+            color: '#fff',
+            letterSpacing: '0.18em',
           }}
         >
-          Lead signal
+          ▌ Lead Signal
         </span>
-        {topStory.sourceName && <span>| {topStory.sourceName}</span>}
-        <span>| {topStory.region}</span>
+        {topStory.sourceName && <span style={{ color: 'var(--text-secondary)' }}>{topStory.sourceName}</span>}
+        <span aria-hidden style={{ color: 'var(--border-strong)' }}>/</span>
+        <span>{topStory.region}</span>
         {topStory.aiSummary && <AILabel level="classification" />}
       </div>
 
       <div className="space-y-3">
         <h3
-          className="text-2xl font-semibold leading-tight sm:text-[2rem]"
-          style={{ color: 'var(--text-primary)' }}
+          className="text-[clamp(24px,3.4vw,40px)] leading-[1.05] uppercase"
+          style={{
+            color: 'var(--text-primary)',
+            fontFamily: 'var(--font-display), "Archivo Black", sans-serif',
+            letterSpacing: '-0.01em',
+          }}
         >
-          {topStory.headline}
+          {topStory.sourceUrl ? (
+            <a
+              href={topStory.sourceUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="story-headline-link"
+              style={{ color: 'inherit', textDecoration: 'none' }}
+            >
+              {topStory.headline}
+            </a>
+          ) : (
+            topStory.headline
+          )}
         </h3>
 
         {topStory.aiSummary ? (
@@ -103,10 +121,10 @@ export default function BriefingCard() {
         ) : null}
       </div>
 
-      <div className="flex flex-wrap items-center gap-4 pt-1">
+      <div className="flex flex-wrap items-center gap-4 border-t pt-3" style={{ borderColor: 'var(--border-subtle)' }}>
         <p
-          className="text-xs font-medium uppercase tracking-[0.14em]"
-          style={{ color: 'var(--text-muted)' }}
+          className="text-[11px] uppercase"
+          style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-mono), monospace', letterSpacing: '0.16em', fontWeight: 700 }}
         >
           {relativeTime(topStory.publishedAt)}
         </p>

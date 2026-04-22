@@ -19,108 +19,125 @@ const navLinks = [
 export default function Header() {
   const pathname = usePathname()
   const [menuOpen, setMenuOpen] = useState(false)
-  const today = new Date().toLocaleDateString("en-CA", {
-    weekday: "short",
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  })
 
   return (
-    <header className="sticky top-0 z-50 shadow-[0_10px_30px_rgba(15,23,42,0.06)] backdrop-blur-xl" style={{ borderBottom: "1px solid var(--header-border)", background: "var(--header-bg)" }}>
-      <div className="border-b" style={{ borderColor: "var(--border-subtle)" }}>
+    <header
+      className="sticky top-0 z-50 backdrop-blur"
+      style={{
+        borderBottom: "2px solid var(--border-strong)",
+        background: "var(--header-bg)",
+      }}
+    >
+      <div style={{ borderBottom: "1px solid var(--border-subtle)" }}>
         <LiveTicker />
       </div>
 
       <div className="w-full px-4 py-3 sm:px-6 lg:px-8">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-          <div className="flex items-center gap-4">
-            <Link href="/dashboard" className="group relative z-10 flex items-center gap-3">
-              <div className="flex h-9 w-9 items-center justify-center rounded-2xl border border-indigo-400/20 bg-gradient-to-br from-orange-700 to-amber-600 text-sm font-black text-white shadow-[0_8px_30px_rgba(194,65,12,0.3)]">
-                AI
-              </div>
-              <div>
-                <span className="block text-lg font-bold tracking-tight" style={{ color: "var(--text-primary)" }}>
-                  Canada Pulse
-                </span>
-                <span className="block text-[11px] font-semibold uppercase tracking-[0.18em]" style={{ color: "var(--text-muted)" }}>
-                  Editorial intelligence monitor
-                </span>
-              </div>
-            </Link>
-
-            <div className="hidden h-8 w-px lg:block" style={{ backgroundColor: "color-mix(in srgb, var(--text-muted) 20%, transparent)" }}></div>
-
-            <div className="hidden lg:flex lg:flex-col">
-              <span className="text-[11px] font-semibold uppercase tracking-[0.18em]" style={{ color: "var(--text-muted)" }}>Today</span>
-              <span className="text-sm font-medium" style={{ color: "var(--text-secondary)" }}>{today}</span>
-            </div>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-            <ThemeToggle />
-            {navLinks.map(({ label, href, mobileHidden }) => {
-              const isActive =
-                href === "/" ? pathname === "/" :
-                href === "/blog" ? pathname.startsWith("/blog") :
-                href === "/datacentres" ? pathname.startsWith("/datacentres") :
-                href === "/topics" ? pathname.startsWith("/topics") :
-                pathname === href
-              return (
-                <Link
-                  key={href}
-                  href={href}
-                  className={`rounded-full border px-3.5 py-2 text-xs shadow-sm min-h-[36px] flex items-center${mobileHidden ? " hidden sm:flex" : ""}`}
-                  style={{
-                    borderColor: "var(--border-strong)",
-                    color: isActive ? "var(--accent-primary)" : "var(--text-secondary)",
-                    fontWeight: isActive ? 700 : 600,
-                    background: "var(--surface-primary)",
-                  }}
-                >
-                  {label}
-                </Link>
-              )
-            })}
-            <button
-              className="sm:hidden flex items-center justify-center rounded-full border min-h-[36px] w-9"
+          <Link
+            href="/dashboard"
+            className="flex items-center gap-3 no-underline"
+            style={{ color: "var(--text-primary)" }}
+          >
+            <span
+              className="flex h-7 w-7 items-center justify-center text-[11px] font-black"
               style={{
-                borderColor: "var(--border-strong)",
-                background: "var(--surface-primary)",
-                color: "var(--text-secondary)",
+                background: "var(--accent-primary)",
+                color: "#fff",
+                fontFamily: "var(--font-display), sans-serif",
+                letterSpacing: "0.02em",
               }}
-              onClick={() => setMenuOpen((v) => !v)}
-              aria-label={menuOpen ? "Close menu" : "Open menu"}
-              aria-expanded={menuOpen}
+              aria-hidden
             >
-              {menuOpen ? (
-                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                  <path d="M2 2l10 10M12 2L2 12" />
-                </svg>
-              ) : (
-                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                  <path d="M1 4h12M1 7h12M1 10h12" />
-                </svg>
-              )}
-            </button>
+              AI
+            </span>
+            <span
+              className="text-[13px] uppercase"
+              style={{
+                fontFamily: "var(--font-mono), monospace",
+                fontWeight: 700,
+                letterSpacing: "0.14em",
+              }}
+            >
+              AI Canada Pulse
+              <span className="mx-2" style={{ color: "var(--text-muted)" }}>·</span>
+              <span style={{ color: "var(--text-muted)" }}>Live Index</span>
+            </span>
+          </Link>
+
+          <div className="flex flex-wrap items-center gap-1">
+            <nav className="hidden sm:flex items-center">
+              {navLinks.map(({ label, href, mobileHidden }) => {
+                const isActive =
+                  href === "/" ? pathname === "/" :
+                  href === "/blog" ? pathname.startsWith("/blog") :
+                  href === "/datacentres" ? pathname.startsWith("/datacentres") :
+                  href === "/topics" ? pathname.startsWith("/topics") :
+                  pathname === href
+                return (
+                  <Link
+                    key={href}
+                    href={href}
+                    className={`px-3 py-1.5 text-[11px] uppercase no-underline${mobileHidden ? " hidden md:inline-block" : ""}`}
+                    style={{
+                      fontFamily: "var(--font-mono), monospace",
+                      letterSpacing: "0.14em",
+                      fontWeight: isActive ? 700 : 500,
+                      color: isActive ? "#fff" : "var(--text-secondary)",
+                      background: isActive ? "var(--text-primary)" : "transparent",
+                    }}
+                  >
+                    {label}
+                  </Link>
+                )
+              })}
+            </nav>
+            <div className="ml-2 flex items-center gap-2">
+              <ThemeToggle />
+              <button
+                className="sm:hidden flex items-center justify-center border min-h-[32px] w-9"
+                style={{
+                  borderColor: "var(--border-strong)",
+                  background: "transparent",
+                  color: "var(--text-primary)",
+                }}
+                onClick={() => setMenuOpen((v) => !v)}
+                aria-label={menuOpen ? "Close menu" : "Open menu"}
+                aria-expanded={menuOpen}
+              >
+                {menuOpen ? (
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                    <path d="M2 2l10 10M12 2L2 12" />
+                  </svg>
+                ) : (
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                    <path d="M1 4h12M1 7h12M1 10h12" />
+                  </svg>
+                )}
+              </button>
+            </div>
           </div>
         </div>
 
         {menuOpen && (
-          <div className="sm:hidden flex flex-wrap gap-2 pt-3 pb-2 border-t mt-1" style={{ borderColor: "var(--border-subtle)" }}>
-            {navLinks.filter((l) => l.mobileHidden).map(({ label, href }) => {
+          <div
+            className="sm:hidden flex flex-wrap gap-0 pt-3 mt-1"
+            style={{ borderTop: "1px solid var(--border-subtle)" }}
+          >
+            {navLinks.map(({ label, href }) => {
               const isActive = pathname === href
               return (
                 <Link
                   key={href}
                   href={href}
                   onClick={() => setMenuOpen(false)}
-                  className="rounded-full border px-3.5 py-2 text-xs shadow-sm min-h-[36px] flex items-center"
+                  className="px-3 py-2 text-[11px] uppercase no-underline"
                   style={{
-                    borderColor: "var(--border-strong)",
-                    color: isActive ? "var(--accent-primary)" : "var(--text-secondary)",
-                    fontWeight: isActive ? 700 : 600,
-                    background: "var(--surface-primary)",
+                    fontFamily: "var(--font-mono), monospace",
+                    letterSpacing: "0.14em",
+                    fontWeight: isActive ? 700 : 500,
+                    color: isActive ? "#fff" : "var(--text-secondary)",
+                    background: isActive ? "var(--text-primary)" : "transparent",
                   }}
                 >
                   {label}

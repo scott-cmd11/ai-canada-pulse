@@ -1,117 +1,114 @@
 @import "tailwindcss";
 
 :root {
-  --bg-page: #faf8f4;
-  --bg-page-accent: rgba(194, 65, 12, 0.08);
-  --bg-page-warm: rgba(234, 88, 12, 0.06);
+  /* Sovereign Data palette — paper, ink, maple red, teal */
+  --bg-page: #f3ecdd;
+  --bg-page-accent: rgba(213, 43, 30, 0.05);
+  --bg-page-warm: rgba(13, 124, 143, 0.04);
 
   --surface-primary: #ffffff;
   --surface-elevated: #ffffff;
-  --surface-muted: rgba(250, 248, 244, 0.88);
-  --surface-secondary: #f5f5f4;
-  --surface-dark: #1c1917;
+  --surface-muted: rgba(247, 241, 225, 0.9);
+  --surface-secondary: #f7f1e1;
+  --surface-dark: #0a0a0a;
 
-  /* Inversion zone surfaces (for dark section bands) */
-  --surface-invert: #1c1917;
-  --text-on-invert: #fafaf9;
-  --text-on-invert-secondary: #d6d3d1;
-  --text-on-invert-muted: #a8a29e;
-  --border-on-invert: #44403c;
-  --accent-on-invert: #f97316;
+  --surface-invert: #0a0a0a;
+  --text-on-invert: #f7f1e1;
+  --text-on-invert-secondary: #d9d0b8;
+  --text-on-invert-muted: #9a917c;
+  --border-on-invert: #2e2e2e;
+  --accent-on-invert: #ef4a3d;
 
-  --text-primary: #1c1917;
-  --text-secondary: #44403c;
-  --text-muted: #78716c;
+  --text-primary: #0a0a0a;
+  --text-secondary: #2e2e2e;
+  --text-muted: #6b6b6b;
 
-  --border-subtle: #e7e5e4;
-  --border-strong: #d6d3d1;
-  --divider: #e7e5e4;
+  --border-subtle: #d9d0b8;
+  --border-strong: #0a0a0a;
+  --divider: #d9d0b8;
 
-  --accent-primary: #c2410c;
-  --accent-secondary: #ea580c;
-  --accent-glow: rgba(194, 65, 12, 0.08);
-  --accent-surface: rgba(194, 65, 12, 0.04);
+  --accent-primary: #D52B1E;
+  --accent-secondary: #0d7c8f;
+  --accent-glow: rgba(213, 43, 30, 0.08);
+  --accent-surface: rgba(213, 43, 30, 0.04);
 
-  --status-positive: #166534;
-  --status-negative: #dc2626;
-  --status-gold: #b45309;
+  --status-positive: #0d7c8f;
+  --status-negative: #D52B1E;
+  --status-gold: #a67308;
 
-  /* Category colors — warm editorial tones, no traffic-light associations */
-  --cat-policy: #7c6f5a;      /* warm brown — governance, institutions */
-  --cat-markets: #5a6f7c;     /* slate blue-grey — neutral, commercial */
-  --cat-research: #5c6b5a;    /* muted sage — academic, measured */
-  --cat-funding: #c2410c;     /* accent orange — money in motion */
-  --cat-geopolitics: #6b5a7c; /* muted plum — international, strategic */
+  --cat-policy: #2e2e2e;
+  --cat-markets: #0d7c8f;
+  --cat-research: #4a5a4a;
+  --cat-funding: #D52B1E;
+  --cat-geopolitics: #5a4a6b;
 
-  /* Multi-layer compound shadows */
-  --shadow-soft: 0 1px 2px rgba(28, 25, 23, 0.04), 0 2px 8px rgba(28, 25, 23, 0.06);
-  --shadow-elevated: 0 2px 4px rgba(28, 25, 23, 0.05), 0 8px 24px rgba(28, 25, 23, 0.1);
-  --radius-card: 12px;
-  --radius-pill: 999px;
+  --shadow-soft: none;
+  --shadow-elevated: 0 0 0 1px #0a0a0a;
+  --radius-card: 0px;
+  --radius-pill: 0px;
 
-  --bg-gradient-start: #faf8f4;
-  --card-gradient-top: rgba(255, 255, 255, 0.94);
-  --card-gradient-bottom: rgba(250, 248, 244, 0.9);
-  --card-sheen: rgba(255, 255, 255, 0.5);
-  --header-bg: rgba(250, 248, 244, 0.65);
-  --header-border: #e7e5e4;
-  --scrollbar-thumb: rgba(120, 113, 108, 0.4);
-  --scrollbar-thumb-hover: rgba(68, 64, 60, 0.5);
+  --bg-gradient-start: #f3ecdd;
+  --card-gradient-top: #ffffff;
+  --card-gradient-bottom: #ffffff;
+  --card-sheen: transparent;
+  --header-bg: rgba(243, 236, 221, 0.92);
+  --header-border: #0a0a0a;
+  --scrollbar-thumb: rgba(10, 10, 10, 0.35);
+  --scrollbar-thumb-hover: rgba(10, 10, 10, 0.55);
 }
 
 [data-theme="dark"] {
-  --bg-page: #1c1917;
-  --bg-page-accent: rgba(194, 65, 12, 0.08);
-  --bg-page-warm: rgba(234, 88, 12, 0.04);
+  --bg-page: #0a0a0a;
+  --bg-page-accent: rgba(239, 74, 61, 0.06);
+  --bg-page-warm: rgba(13, 124, 143, 0.05);
 
-  --surface-primary: #292524;
-  --surface-elevated: #312e2b;
-  --surface-muted: rgba(41, 37, 36, 0.88);
-  --surface-secondary: #1c1917;
-  --surface-dark: #fafaf9;
+  --surface-primary: #141414;
+  --surface-elevated: #1a1a1a;
+  --surface-muted: rgba(20, 20, 20, 0.9);
+  --surface-secondary: #141414;
+  --surface-dark: #f7f1e1;
 
-  --surface-invert: #0c0a09;
-  --text-on-invert: #fafaf9;
-  --text-on-invert-secondary: #d6d3d1;
-  --text-on-invert-muted: #a8a29e;
-  --border-on-invert: #292524;
-  --accent-on-invert: #fb923c;
+  --surface-invert: #f7f1e1;
+  --text-on-invert: #0a0a0a;
+  --text-on-invert-secondary: #2e2e2e;
+  --text-on-invert-muted: #6b6b6b;
+  --border-on-invert: #d9d0b8;
+  --accent-on-invert: #D52B1E;
 
-  --text-primary: #fafaf9;
-  --text-secondary: #d6d3d1;
-  --text-muted: #c8c3be;
+  --text-primary: #f7f1e1;
+  --text-secondary: #d9d0b8;
+  --text-muted: #9a917c;
 
-  --border-subtle: #44403c;
-  --border-strong: #57534e;
-  --divider: #44403c;
+  --border-subtle: #2e2e2e;
+  --border-strong: #f7f1e1;
+  --divider: #2e2e2e;
 
-  --accent-primary: #ea580c;
-  --accent-secondary: #f97316;
-  --accent-glow: rgba(234, 88, 12, 0.15);
-  --accent-surface: rgba(234, 88, 12, 0.08);
+  --accent-primary: #ef4a3d;
+  --accent-secondary: #2bb4c9;
+  --accent-glow: rgba(239, 74, 61, 0.12);
+  --accent-surface: rgba(239, 74, 61, 0.06);
 
-  --status-positive: #22c55e;
-  --status-negative: #f87171;
-  --status-gold: #fbbf24;
+  --status-positive: #2bb4c9;
+  --status-negative: #ef4a3d;
+  --status-gold: #e0b84a;
 
-  /* Category colors — lightened for dark backgrounds */
-  --cat-policy: #a89880;
-  --cat-markets: #7fa0b0;
-  --cat-research: #859e83;
-  --cat-funding: #ea580c;
-  --cat-geopolitics: #9e83b0;
+  --cat-policy: #d9d0b8;
+  --cat-markets: #2bb4c9;
+  --cat-research: #a8b5a0;
+  --cat-funding: #ef4a3d;
+  --cat-geopolitics: #b099c4;
 
-  --shadow-soft: 0 1px 2px rgba(0, 0, 0, 0.2), 0 2px 8px rgba(0, 0, 0, 0.25);
-  --shadow-elevated: 0 2px 4px rgba(0, 0, 0, 0.2), 0 8px 24px rgba(0, 0, 0, 0.4);
+  --shadow-soft: none;
+  --shadow-elevated: 0 0 0 1px #f7f1e1;
 
-  --bg-gradient-start: #1c1917;
-  --card-gradient-top: rgba(41, 37, 36, 0.94);
-  --card-gradient-bottom: rgba(28, 25, 23, 0.9);
-  --card-sheen: rgba(255, 255, 255, 0.02);
-  --header-bg: rgba(28, 25, 23, 0.65);
-  --header-border: #44403c;
-  --scrollbar-thumb: rgba(87, 83, 78, 0.6);
-  --scrollbar-thumb-hover: rgba(120, 113, 108, 0.7);
+  --bg-gradient-start: #0a0a0a;
+  --card-gradient-top: #141414;
+  --card-gradient-bottom: #141414;
+  --card-sheen: transparent;
+  --header-bg: rgba(10, 10, 10, 0.92);
+  --header-border: #f7f1e1;
+  --scrollbar-thumb: rgba(247, 241, 225, 0.3);
+  --scrollbar-thumb-hover: rgba(247, 241, 225, 0.55);
 }
 
 * {
@@ -133,28 +130,36 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Paper noise texture overlay */
+/* Subtle paper grain */
 body::after {
   content: "";
   position: fixed;
   inset: 0;
   pointer-events: none;
   z-index: 1;
-  opacity: 0.022;
+  opacity: 0.035;
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
 h1,
 h2 {
-  font-family: var(--font-display), Georgia, serif;
+  font-family: var(--font-display), "Archivo Black", "Helvetica Neue", sans-serif;
+  font-weight: 400;
   letter-spacing: -0.025em;
+  text-transform: uppercase;
 }
 
 h3,
 h4,
 h5,
 h6 {
-  letter-spacing: -0.02em;
+  font-family: var(--font-display), "Archivo Black", "Helvetica Neue", sans-serif;
+  font-weight: 400;
+  letter-spacing: -0.015em;
+}
+
+code, pre, .mono, .tabular {
+  font-family: var(--font-mono), "JetBrains Mono", ui-monospace, monospace;
 }
 
 a,
@@ -167,10 +172,10 @@ button {
 .glass-card,
 .saas-card {
   position: relative;
-  border: 1px solid var(--border-subtle);
+  border: 1px solid var(--border-strong);
   border-radius: var(--radius-card);
   background: var(--surface-primary);
-  box-shadow: var(--shadow-soft);
+  box-shadow: none;
   transition: border-color 0.2s, box-shadow 0.2s;
   overflow: hidden;
 }
@@ -206,10 +211,11 @@ button {
 /* ── Canonical uppercase label styles (cap at 3) ── */
 
 .eyebrow {
+  font-family: var(--font-mono), "JetBrains Mono", ui-monospace, monospace;
   font-size: 11px;
-  font-weight: 600;
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.18em;
+  letter-spacing: 0.16em;
   color: var(--accent-primary);
 }
 
@@ -443,6 +449,35 @@ button:focus-visible {
 * {
   scrollbar-width: thin;
   scrollbar-color: var(--scrollbar-thumb) transparent;
+}
+
+/* ── Sovereign flat-surface overrides ──
+   Sovereign is hard-ruled; strip incidental Tailwind radii in main content.
+   ThemeToggle + skip-link keep their pill shape via their own selectors. */
+main section,
+main [class*="saas-card"],
+main [class*="glass-card"],
+main [class^="rounded-"],
+main [class*=" rounded-"],
+main input[type="email"],
+main input[type="text"],
+main input[type="search"],
+main textarea,
+main button:not(.theme-toggle):not([role="switch"]) {
+  border-radius: 0;
+}
+
+main input:focus-visible,
+main textarea:focus-visible {
+  outline: 2px solid var(--accent-primary);
+  outline-offset: 2px;
+}
+
+.story-headline-link:hover,
+.story-headline-link:focus-visible {
+  color: var(--accent-primary);
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 /* ── Keyframes ── */

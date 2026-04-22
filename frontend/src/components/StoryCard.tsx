@@ -66,7 +66,7 @@ export default function StoryCard({ story }: Props) {
         <div className="space-y-2.5">
           <h3 className="text-lg font-semibold leading-snug" style={{ color: 'var(--text-primary)' }}>
             {story.sourceUrl ? (
-              <a href={story.sourceUrl} target="_blank" rel="noopener noreferrer" className="hover:underline focus-visible:underline focus-visible:outline-none" style={{ color: 'var(--accent-primary)', transition: 'opacity 0.15s ease' }}>
+              <a href={story.sourceUrl} target="_blank" rel="noopener noreferrer" className="story-headline-link hover:underline focus-visible:underline focus-visible:outline-none" style={{ color: 'var(--text-primary)', transition: 'color 0.15s ease' }}>
                 {story.headline}
               </a>
             ) : (

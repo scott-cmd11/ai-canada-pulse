@@ -40,15 +40,41 @@ export default function DashboardPage() {
 
       <main id="main-content" className="mx-auto flex w-full max-w-[1480px] flex-col gap-6 px-4 py-4 sm:px-6 lg:px-8 lg:py-6">
         <div className="pt-1 sm:pt-2">
-          <h1
-            className="max-w-3xl text-[1.75rem] leading-[1.15] sm:text-4xl"
-            style={{ fontFamily: 'var(--font-display)', color: 'var(--text-primary)', fontWeight: 600 }}
+          <p
+            className="flex items-center gap-3 text-[11px] uppercase"
+            style={{
+              fontFamily: 'var(--font-mono), monospace',
+              letterSpacing: '0.16em',
+              color: 'var(--text-muted)',
+              fontWeight: 700,
+            }}
           >
-            Canadian AI, tracked in real time
-          </h1>
-          <p className="mt-2 max-w-2xl text-sm leading-relaxed sm:text-base" style={{ color: 'var(--text-secondary)' }}>
-            An editorial intelligence monitor for policymakers, researchers, and operators — stitched from 17+ public data sources and refreshed throughout the day.
+            <span style={{ color: 'var(--accent-primary)' }}>● Live</span>
+            <span aria-hidden style={{ color: 'var(--border-strong)' }}>/</span>
+            <span>Vol III · Public Intelligence</span>
           </p>
+          <h1
+            className="mt-3 max-w-[22ch] text-[clamp(32px,5vw,68px)] leading-[0.96] uppercase"
+            style={{
+              fontFamily: 'var(--font-display), "Archivo Black", sans-serif',
+              color: 'var(--text-primary)',
+              letterSpacing: '-0.025em',
+            }}
+          >
+            AI activity in Canada,{' '}
+            <span style={{ color: 'var(--accent-primary)' }}>measured</span>{' '}
+            <span
+              style={{
+                fontFamily: 'var(--font-italic), Georgia, serif',
+                fontStyle: 'italic',
+                textTransform: 'lowercase',
+                letterSpacing: '-0.01em',
+                fontWeight: 400,
+              }}
+            >
+              hourly.
+            </span>
+          </h1>
         </div>
 
         <SectionNav />

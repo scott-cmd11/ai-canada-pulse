@@ -1,17 +1,34 @@
 import type { Metadata, Viewport } from "next"
-import { Fraunces, Manrope } from "next/font/google"
+import { Archivo, Archivo_Black, Fraunces, JetBrains_Mono } from "next/font/google"
 import "./globals.css"
 
-const manrope = Manrope({
+const archivo = Archivo({
   subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
   display: "swap",
   variable: "--font-ui",
 })
 
-const fraunces = Fraunces({
+const archivoBlack = Archivo_Black({
   subsets: ["latin"],
+  weight: ["400"],
   display: "swap",
   variable: "--font-display",
+})
+
+const jetbrains = JetBrains_Mono({
+  subsets: ["latin"],
+  weight: ["400", "500", "700"],
+  display: "swap",
+  variable: "--font-mono",
+})
+
+const fraunces = Fraunces({
+  subsets: ["latin"],
+  weight: ["400"],
+  style: ["italic"],
+  display: "swap",
+  variable: "--font-italic",
 })
 
 export const viewport: Viewport = {
@@ -51,7 +68,7 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" className={`${manrope.variable} ${fraunces.variable}`} suppressHydrationWarning>
+    <html lang="en" className={`${archivo.variable} ${archivoBlack.variable} ${jetbrains.variable} ${fraunces.variable}`} suppressHydrationWarning>
       <head>
         <script
           dangerouslySetInnerHTML={{
@@ -59,7 +76,7 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className={manrope.className} style={{ fontFeatureSettings: '"tnum"' }}>
+      <body className={archivo.className} style={{ fontFeatureSettings: '"tnum"' }}>
         <a
           href="#main-content"
           className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-lg focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:shadow-lg"

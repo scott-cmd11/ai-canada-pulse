@@ -164,56 +164,11 @@ async function DigestContent() {
   return <DigestView digest={digest} isToday={true} />
 }
 
-function SiteAbout() {
-  return (
-    <div
-      style={{
-        maxWidth: '680px',
-        margin: '0 auto',
-        padding: '28px 20px 20px',
-        borderBottom: '1px solid var(--border-subtle)',
-      }}
-    >
-      <h2
-        style={{
-          fontSize: '20px',
-          fontWeight: 700,
-          color: 'var(--text-primary)',
-          marginBottom: '6px',
-          fontFamily: 'var(--font-display)',
-          letterSpacing: '-0.02em',
-        }}
-      >
-        AI Canada Pulse
-      </h2>
-      <p style={{ fontSize: '13px', lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '10px' }}>
-        Independent Canadian AI monitoring — news, research, legislation, jobs, and market signals from public sources.
-      </p>
-      <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '8px' }}>
-        <span
-          style={{
-            fontSize: '11px',
-            fontWeight: 600,
-            color: 'var(--accent-secondary, #b45309)',
-            background: 'color-mix(in srgb, var(--accent-secondary, #b45309) 10%, transparent)',
-            border: '1px solid color-mix(in srgb, var(--accent-secondary, #b45309) 25%, transparent)',
-            borderRadius: '999px',
-            padding: '2px 8px',
-          }}
-        >
-          Early access · more data coming
-        </span>
-      </div>
-    </div>
-  )
-}
-
 export default function HomePage() {
   return (
     <div style={{ minHeight: '100vh', backgroundColor: 'var(--bg-page)' }}>
       <Header />
       <main style={{ paddingBottom: '60px' }}>
-        <SiteAbout />
         <Suspense fallback={
           <div style={{ maxWidth: '680px', margin: '40px auto', padding: '0 20px', color: 'var(--text-muted)', fontSize: '14px' }}>
             Loading today&apos;s digest…
