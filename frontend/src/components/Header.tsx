@@ -59,7 +59,7 @@ export default function Header() {
                 letterSpacing: "0.14em",
               }}
             >
-              AI Canada Pulse
+              Canada Pulse
               <span className="mx-2" style={{ color: "var(--text-muted)" }}>·</span>
               <span style={{ color: "var(--text-muted)" }}>Live Index</span>
             </span>
