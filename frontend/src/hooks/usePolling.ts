@@ -18,11 +18,17 @@ export function usePolling<T>(
         transform?: (json: Record<string, unknown>) => T | null
         fallbackUrl?: string
         isEmpty?: (data: T) => boolean
+        /**
+         * Seed value rendered immediately on mount. Use when the parent server
+         * component has already fetched the data so the first paint is not blank.
+         * Client polling still runs normally to keep the view fresh.
+         */
+        initialData?: T | null
     } = {}
 ) {
-    const { intervalMs = 120_000, transform, fallbackUrl, isEmpty } = opts  // Default: 2 minutes
-    const [data, setData] = useState<T | null>(null)
-    const [loading, setLoading] = useState(true)
+    const { intervalMs = 120_000, transform, fallbackUrl, isEmpty, initialData } = opts  // Default: 2 minutes
+    const [data, setData] = useState<T | null>(initialData ?? null)
+    const [loading, setLoading] = useState(initialData == null)
     const [lastUpdated, setLastUpdated] = useState<string | null>(null)
     const [isFallback, setIsFallback] = useState(false)
     const mountedRef = useRef(true)

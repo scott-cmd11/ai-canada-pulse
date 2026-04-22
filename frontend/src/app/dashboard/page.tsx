@@ -1,4 +1,8 @@
 import type { Metadata } from "next"
+import { fetchAllStories, derivePulseFromStories } from "@/lib/rss-client"
+import { hydrateCanadaStories } from "@/lib/dashboard-enrichment"
+import { getSectionSummary } from "@/lib/section-summaries-client"
+import type { StoriesInitialData } from "@/hooks/useStories"
 import Header from "@/components/Header"
 import BriefingCard from "@/components/BriefingCard"
 import IndicatorsSection from "@/components/IndicatorsSection"
@@ -22,6 +26,28 @@ export const metadata: Metadata = {
   description: "Real-time Canadian AI intelligence dashboard. Track policy, research, industry, market, and job signals from 17+ public data sources.",
 }
 
+// Revalidate the server-fetched snapshot every 60s. Keeps first paint fast
+// (CDN-cached), while client polling (2-min) still refreshes live views.
+export const revalidate = 60
+
+async function loadInitialStories(): Promise<StoriesInitialData | null> {
+  try {
+    const stories = await fetchAllStories()
+    const { stories: enrichedStories, executiveBrief } = await hydrateCanadaStories(stories)
+    const pulse = derivePulseFromStories(enrichedStories)
+    const summary = await getSectionSummary("stories").catch(() => null)
+    return {
+      stories: enrichedStories,
+      pulse,
+      executiveBrief: executiveBrief ?? [],
+      summary,
+    }
+  } catch (err) {
+    console.warn("[dashboard/page] Failed to preload stories:", err)
+    return null
+  }
+}
+
 function SectionTitle({ eyebrow, title, description, dark }: { eyebrow: string; title: string; description: string; dark?: boolean }) {
   return (
     <div className="mb-4 sm:mb-5">
@@ -32,9 +58,10 @@ function SectionTitle({ eyebrow, title, description, dark }: { eyebrow: string; 
   )
 }
 
-export default function DashboardPage() {
+export default async function DashboardPage() {
+  const initialStories = await loadInitialStories()
   return (
-    <StoriesProvider>
+    <StoriesProvider initialData={initialStories}>
     <div className="min-h-screen" style={{ background: 'var(--bg-page)', color: 'var(--text-primary)' }}>
       <Header />
 
