@@ -6,6 +6,7 @@ import { relativeTime } from "@/lib/relative-time"
 import { SkeletonBar } from '@/components/Skeleton'
 import AILabel from '@/components/AILabel'
 import ShareButtons from '@/components/ShareButtons'
+import CategoryGlyph from '@/components/CategoryGlyph'
 
 function isSummaryRedundant(headline: string, summary: string): boolean {
   const norm = (s: string) => s.toLowerCase().replace(/[^a-z0-9 ]/g, '').trim()
@@ -64,6 +65,9 @@ export default function BriefingCard() {
         className="flex flex-wrap items-center gap-3 text-[11px] uppercase"
         style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-mono), monospace', letterSpacing: '0.16em', fontWeight: 700 }}
       >
+        <span className="flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
+          <CategoryGlyph category={topStory.category} size={32} />
+        </span>
         <span
           className="px-2.5 py-1"
           style={{

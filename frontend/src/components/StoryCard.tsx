@@ -2,6 +2,7 @@ import type { Story } from "@/lib/mock-data"
 import { relativeTime } from "@/lib/relative-time"
 import AILabel from '@/components/AILabel'
 import ShareButtons from '@/components/ShareButtons'
+import CategoryGlyph from '@/components/CategoryGlyph'
 
 interface Props {
   story: Story
@@ -56,9 +57,12 @@ export default function StoryCard({ story }: Props) {
         <span className="meta" style={{ letterSpacing: '0.14em' }}>
           {relativeTime(story.publishedAt)}
         </span>
-        <span className="chip self-start rounded-full border px-2.5 py-1" style={{ borderColor: `color-mix(in srgb, ${catColor} 25%, transparent)`, backgroundColor: `color-mix(in srgb, ${catColor} 10%, transparent)`, color: catColor }}>
-          {categoryLabel}
-        </span>
+        <div className="flex items-center gap-2 self-start">
+          <CategoryGlyph category={story.category} size={28} />
+          <span className="chip rounded-full border px-2.5 py-1" style={{ borderColor: `color-mix(in srgb, ${catColor} 25%, transparent)`, backgroundColor: `color-mix(in srgb, ${catColor} 10%, transparent)`, color: catColor }}>
+            {categoryLabel}
+          </span>
+        </div>
         {!story.aiSummary && <AILabel level="classification" />}
       </div>
 
