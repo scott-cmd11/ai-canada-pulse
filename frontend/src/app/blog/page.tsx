@@ -9,7 +9,7 @@ export const dynamic = 'force-dynamic'
 
 export async function generateMetadata() {
   return {
-    title: 'Deep Dives — AI Canada Pulse',
+    title: 'Deep Dives',
     description: 'Auto-generated in-depth analysis of significant Canadian AI developments.',
     openGraph: { type: 'website' },
   }
@@ -73,7 +73,7 @@ export default function BlogPage() {
             Deep Dives
           </p>
           <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '28px', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '8px', letterSpacing: '-0.02em' }}>
-            In-Depth Analysis
+            Stories that earn a second look
           </h1>
           <p style={{ fontSize: '14px', color: 'var(--text-secondary)', lineHeight: 1.6 }}>
             Auto-generated when a significant Canadian AI story crosses our detection threshold. One per day, maximum.

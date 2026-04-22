@@ -7,16 +7,18 @@ import Header from '@/components/Header'
 
 export async function generateMetadata() {
   const today = new Date().toISOString().split('T')[0]
+  const suffix = ' — AI Canada Pulse'
   try {
     const digest = await getDigest(today)
+    const headline = digest?.headline ?? 'Today in Canadian AI'
     return {
-      title: digest?.headline ?? 'Today in Canadian AI — AI Canada Pulse',
+      title: { absolute: `${headline}${suffix}` },
       description: digest?.intro?.slice(0, 155) ?? 'Daily AI digest tracking developments across Canada.',
       openGraph: { type: 'website' },
     }
   } catch {
     return {
-      title: 'Today in Canadian AI — AI Canada Pulse',
+      title: { absolute: `Today in Canadian AI${suffix}` },
       description: 'Daily AI digest tracking developments across Canada.',
       openGraph: { type: 'website' },
     }
@@ -110,22 +112,13 @@ async function DigestContent() {
     }
 
     if (previousDigest && !previousDigest.error) {
-      return (
-        <>
-          <div style={{ maxWidth: '680px', margin: '0 auto', padding: '12px 20px', borderBottom: '1px solid var(--border-subtle)' }}>
-            <p style={{ fontSize: '13px', color: 'var(--text-muted)', margin: 0 }}>
-              Today&apos;s digest is being prepared — publishes after 12:00 UTC.
-            </p>
-          </div>
-          <DigestView digest={previousDigest} isToday={false} />
-        </>
-      )
+      return <DigestView digest={previousDigest} isToday={false} />
     }
 
     const stories = await fetchHeadlines()
     return (
       <HeadlinesFallback
-        message={`Today's digest is being prepared (publishes after 12:00 UTC).${stories.length > 0 ? " In the meantime, here are today's latest headlines:" : ''}`}
+        message={`Today's digest is being prepared.${stories.length > 0 ? " In the meantime, here are today's latest headlines:" : ''}`}
         stories={stories}
       />
     )
@@ -181,7 +174,7 @@ function SiteAbout() {
         borderBottom: '1px solid var(--border-subtle)',
       }}
     >
-      <h1
+      <h2
         style={{
           fontSize: '20px',
           fontWeight: 700,
@@ -192,7 +185,7 @@ function SiteAbout() {
         }}
       >
         AI Canada Pulse
-      </h1>
+      </h2>
       <p style={{ fontSize: '13px', lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '10px' }}>
         Independent Canadian AI monitoring — news, research, legislation, jobs, and market signals from public sources.
       </p>

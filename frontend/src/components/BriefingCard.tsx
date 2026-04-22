@@ -115,12 +115,9 @@ export default function BriefingCard() {
             href={topStory.sourceUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-sm font-semibold hover:underline focus-visible:underline focus-visible:outline-none"
-            style={{ color: 'var(--accent-primary)', transition: 'opacity 0.15s ease' }}
-            onMouseEnter={(e) => { e.currentTarget.style.opacity = '0.8' }}
-            onMouseLeave={(e) => { e.currentTarget.style.opacity = '1' }}
+            className="primary-source-link text-sm font-semibold"
           >
-            Read primary source
+            Read primary source →
           </a>
         )}
         {topStory.sourceUrl && (

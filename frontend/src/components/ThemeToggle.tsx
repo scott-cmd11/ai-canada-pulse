@@ -3,13 +3,13 @@
 import { useEffect, useState } from "react"
 
 export default function ThemeToggle() {
-  const [dark, setDark] = useState(() => {
-    if (typeof window !== 'undefined') {
-      return document.documentElement.getAttribute('data-theme') === 'dark'
-    }
-    return false
-  })
-  const [hovered, setHovered] = useState(false)
+  const [dark, setDark] = useState(false)
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setDark(document.documentElement.getAttribute('data-theme') === 'dark')
+    setMounted(true)
+  }, [])
 
   function toggle() {
     const next = !dark
@@ -21,17 +21,11 @@ export default function ThemeToggle() {
   return (
     <button
       onClick={toggle}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
       aria-label={dark ? "Switch to light mode" : "Switch to dark mode"}
-      className="rounded-full border px-3.5 py-2 text-xs font-semibold shadow-sm"
-      style={{
-        color: hovered ? "var(--accent-primary)" : "var(--text-muted)",
-        borderColor: hovered ? "color-mix(in srgb, var(--accent-primary) 40%, transparent)" : "var(--border-strong)",
-        background: "var(--surface-primary)",
-      }}
+      className="theme-toggle rounded-full border px-3.5 py-2 text-xs font-semibold shadow-sm"
+      suppressHydrationWarning
     >
-      {dark ? "\u2600 Light" : "\u25CF Dark"}
+      {mounted ? (dark ? "\u2600 Light" : "\u25CF Dark") : "\u25CF Dark"}
     </button>
   )
 }

@@ -2,7 +2,7 @@ import Header from '@/components/Header'
 import Link from 'next/link'
 
 export const metadata = {
-  title: 'About — AI Canada Pulse',
+  title: 'About',
   description: 'About this project: what it is, who built it, where the data comes from, and what its limitations are.',
 }
 
@@ -35,10 +35,10 @@ export default function AboutPage() {
             About
           </p>
           <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '28px', fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>
-            AI Canada Pulse
+            An independent monitor for Canadian AI signals
           </h1>
           <p style={{ marginTop: '10px', fontSize: '15px', lineHeight: 1.7, color: 'var(--text-secondary)' }}>
-            An independent dashboard tracking artificial intelligence developments across Canada — policy, research, industry, and public interest signals, refreshed daily.
+            Tracking policy, research, industry, and public interest developments across Canada — aggregated from 17+ public sources and refreshed daily.
           </p>
         </header>
 

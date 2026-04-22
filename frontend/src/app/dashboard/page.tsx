@@ -11,7 +11,6 @@ import RegulatorySection from "@/components/RegulatorySection"
 import CollapsibleSection from "@/components/CollapsibleSection"
 import SectionNav from "@/components/SectionNav"
 import ScrollToTop from "@/components/ScrollToTop"
-import ScrollReveal from "@/components/ScrollReveal"
 import SubscribeForm from "@/components/SubscribeForm"
 import DashboardFooter from "@/components/DashboardFooter"
 import SectionErrorBoundary from "@/components/SectionErrorBoundary"
@@ -40,6 +39,18 @@ export default function DashboardPage() {
       <Header />
 
       <main id="main-content" className="mx-auto flex w-full max-w-[1480px] flex-col gap-6 px-4 py-4 sm:px-6 lg:px-8 lg:py-6">
+        <div className="pt-1 sm:pt-2">
+          <h1
+            className="max-w-3xl text-[1.75rem] leading-[1.15] sm:text-4xl"
+            style={{ fontFamily: 'var(--font-display)', color: 'var(--text-primary)', fontWeight: 600 }}
+          >
+            Canadian AI, tracked in real time
+          </h1>
+          <p className="mt-2 max-w-2xl text-sm leading-relaxed sm:text-base" style={{ color: 'var(--text-secondary)' }}>
+            An editorial intelligence monitor for policymakers, researchers, and operators — stitched from 17+ public data sources and refreshed throughout the day.
+          </p>
+        </div>
+
         <SectionNav />
 
         <section id="acceleration" className="saas-card rounded-2xl p-5 sm:p-6">
@@ -74,58 +85,54 @@ export default function DashboardPage() {
 
         <hr className="section-divider" />
 
-        <ScrollReveal>
-          <section id="impact" className="section-dark rounded-2xl p-5 sm:p-6">
-            <SectionTitle
-              eyebrow="Market And Policy Impact"
-              title="Indicators that may signal AI adoption"
-              description="Macro and market data that could reflect AI-driven shifts in the Canadian economy."
-              dark
-            />
+        <section id="impact" className="section-dark rounded-2xl p-5 sm:p-6">
+          <SectionTitle
+            eyebrow="Market And Policy Impact"
+            title="Indicators that may signal AI adoption"
+            description="Macro and market data that could reflect AI-driven shifts in the Canadian economy."
+            dark
+          />
 
-            <div>
-              <SectionErrorBoundary sectionName="Pulse Indicators">
-                <IndicatorsSection />
-              </SectionErrorBoundary>
-            </div>
-          </section>
-        </ScrollReveal>
+          <div>
+            <SectionErrorBoundary sectionName="Pulse Indicators">
+              <IndicatorsSection />
+            </SectionErrorBoundary>
+          </div>
+        </section>
 
         <hr className="section-divider" />
 
-        <ScrollReveal>
-          <section id="more" className="saas-card rounded-2xl p-5 sm:p-6">
-            <SectionTitle
-              eyebrow="More Signals"
-              title="Deeper data on demand"
-              description="Expand any section below to explore research output, adoption trends, ecosystem activity, and regulatory standing."
-            />
+        <section id="more" className="saas-card rounded-2xl p-5 sm:p-6">
+          <SectionTitle
+            eyebrow="More Signals"
+            title="Deeper data on demand"
+            description="Expand any section below to explore research output, adoption trends, ecosystem activity, and regulatory standing."
+          />
 
-            <CollapsibleSection title="Parliament">
-              <SectionErrorBoundary sectionName="Parliament Activity">
-                <ParliamentSection />
-              </SectionErrorBoundary>
-            </CollapsibleSection>
+          <CollapsibleSection title="Parliament">
+            <SectionErrorBoundary sectionName="Parliament Activity">
+              <ParliamentSection />
+            </SectionErrorBoundary>
+          </CollapsibleSection>
 
-            <CollapsibleSection title="Research">
-              <SectionErrorBoundary sectionName="Fundamental Research">
-                <ResearchSection />
-              </SectionErrorBoundary>
-            </CollapsibleSection>
+          <CollapsibleSection title="Research">
+            <SectionErrorBoundary sectionName="Fundamental Research">
+              <ResearchSection />
+            </SectionErrorBoundary>
+          </CollapsibleSection>
 
-            <CollapsibleSection title="Ecosystem & Startups">
-              <SectionErrorBoundary sectionName="Ecosystem & Community">
-                <EcosystemSection />
-              </SectionErrorBoundary>
-            </CollapsibleSection>
+          <CollapsibleSection title="Ecosystem & Startups">
+            <SectionErrorBoundary sectionName="Ecosystem & Community">
+              <EcosystemSection />
+            </SectionErrorBoundary>
+          </CollapsibleSection>
 
-            <CollapsibleSection title="Regulatory & Global Standing">
-              <SectionErrorBoundary sectionName="Regulatory & Global Standing">
-                <RegulatorySection />
-              </SectionErrorBoundary>
-            </CollapsibleSection>
-          </section>
-        </ScrollReveal>
+          <CollapsibleSection title="Regulatory & Global Standing">
+            <SectionErrorBoundary sectionName="Regulatory & Global Standing">
+              <RegulatorySection />
+            </SectionErrorBoundary>
+          </CollapsibleSection>
+        </section>
       </main>
 
       <DashboardFooter />

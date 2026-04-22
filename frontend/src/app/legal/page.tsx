@@ -2,7 +2,7 @@ import Header from '@/components/Header'
 import Link from 'next/link'
 
 export const metadata = {
-  title: 'Legal & Privacy — AI Canada Pulse',
+  title: 'Legal & Privacy',
   description: 'Privacy policy, terms of use, AI-generated content disclosure, and copyright attribution.',
 }
 

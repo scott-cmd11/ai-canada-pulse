@@ -66,7 +66,7 @@ export default function DigestView({ digest, isToday }: Props) {
             marginBottom: '10px',
           }}
         >
-          {displayDate} · {isToday ? 'Today\'s Digest' : 'Archive'}
+          {displayDate}{isToday ? ' · Today\'s Digest' : ''}
         </p>
         <h1
           style={{

@@ -51,7 +51,7 @@ export default function DataCentresPage() {
 
         {/* Summary stats */}
         <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
-          {ALL_TYPES.map(type => (
+          {ALL_TYPES.filter(type => countByType[type] > 0).map(type => (
             <div
               key={type}
               className="rounded-xl border px-4 py-3"

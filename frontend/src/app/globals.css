@@ -190,14 +190,123 @@ button {
   z-index: 1;
 }
 
-.saas-card:hover::before {
+.saas-card:hover::before,
+.saas-card:focus-within::before {
   opacity: 1;
 }
 
 .glass-card:hover,
-.saas-card:hover {
+.saas-card:hover,
+.glass-card:focus-within,
+.saas-card:focus-within {
   border-color: var(--border-strong);
   box-shadow: var(--shadow-elevated);
+}
+
+/* ── Canonical uppercase label styles (cap at 3) ── */
+
+.eyebrow {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: var(--accent-primary);
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--text-secondary);
+}
+
+.meta {
+  font-size: 10px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.10em;
+  color: var(--text-muted);
+}
+
+/* ── Focus-visible parity for custom affordances ── */
+
+.focus-affordance:focus-visible {
+  outline: 2px solid var(--accent-primary);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+a:focus-visible,
+button:focus-visible {
+  outline: 2px solid var(--accent-primary);
+  outline-offset: 2px;
+}
+
+/* ── Theme toggle ── */
+
+.theme-toggle {
+  color: var(--text-muted);
+  border-color: var(--border-strong);
+  background: var(--surface-primary);
+}
+
+.theme-toggle:hover,
+.theme-toggle:focus-visible {
+  color: var(--accent-primary);
+  border-color: color-mix(in srgb, var(--accent-primary) 40%, transparent);
+}
+
+/* ── Primary source CTA (BriefingCard, etc.) ── */
+
+.primary-source-link {
+  color: var(--accent-primary);
+  text-decoration: none;
+}
+
+.primary-source-link:hover,
+.primary-source-link:focus-visible {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* ── Share popover ── */
+
+.share-trigger {
+  color: var(--text-muted);
+  border-color: var(--border-subtle);
+  background: transparent;
+  cursor: pointer;
+}
+
+.share-trigger:hover,
+.share-trigger:focus-visible {
+  color: var(--accent-primary);
+  border-color: color-mix(in srgb, var(--accent-primary) 40%, transparent);
+  background: color-mix(in srgb, var(--accent-primary) 5%, transparent);
+}
+
+.share-popover {
+  background: var(--surface-elevated);
+  border-color: var(--border-strong);
+  box-shadow: var(--shadow-elevated);
+}
+
+.share-item {
+  color: var(--text-secondary);
+  background: transparent;
+  cursor: pointer;
+  border: 0;
+  text-decoration: none;
+}
+
+.share-item:hover,
+.share-item:focus-visible {
+  color: var(--accent-primary);
+  background: color-mix(in srgb, var(--accent-primary) 7%, transparent);
 }
 
 /* ── Tabs ── */

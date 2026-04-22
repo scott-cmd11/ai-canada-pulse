@@ -3,6 +3,11 @@ import Link from "next/link"
 import ScrollToTop from "@/components/ScrollToTop"
 import { SOURCES, getSourcesByType } from "@/lib/source-registry"
 
+export const metadata = {
+  title: 'Methodology',
+  description: 'How AI Canada Pulse sources, scores, and summarizes Canadian AI signals.',
+}
+
 const TYPE_LABELS: Record<string, string> = {
   news: "News Sources",
   research: "Research",
@@ -73,7 +78,7 @@ export default function MethodologyPage() {
             borderStyle: "solid",
           }}
         >
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(99,102,241,0.12),_transparent_40%),radial-gradient(circle_at_bottom_left,_rgba(15,23,42,0.06),_transparent_35%)]" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(194,65,12,0.10),_transparent_40%),radial-gradient(circle_at_bottom_left,_rgba(28,25,23,0.05),_transparent_35%)]" />
           <div className="relative z-10 max-w-4xl">
             <p
               className="text-[11px] font-semibold uppercase tracking-[0.18em]"
@@ -85,7 +90,7 @@ export default function MethodologyPage() {
               className="mt-2 text-3xl font-bold tracking-tight sm:text-4xl"
               style={{ color: "var(--text-primary)" }}
             >
-              Methodology
+              How we source, score, and summarize
             </h1>
             <p className="mt-4 max-w-3xl text-base leading-relaxed sm:text-lg" style={{ color: "var(--text-secondary)" }}>
               AI Canada Pulse is an independent dashboard focused on AI signals from Canadian sources. The live dashboard
