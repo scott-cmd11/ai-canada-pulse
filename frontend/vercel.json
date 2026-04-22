@@ -2,11 +2,11 @@
     "crons": [
         {
             "path": "/api/v1/ai-refresh",
-            "schedule": "0 12 * * *"
+            "schedule": "0 */2 * * *"
         },
         {
             "path": "/api/v1/ai-refresh?retry=true",
-            "schedule": "0 14 * * *"
+            "schedule": "30 */2 * * *"
         }
     ]
 }
