@@ -333,7 +333,7 @@ export default function MethodologyPage() {
               </thead>
               <tbody>
                 {[
-                  { dataset: "Canadian AI Startups", records: "41 companies", lastVerified: "March 28, 2026", reviewSchedule: "Every 6 months" },
+                  { dataset: "Canadian AI Startups", records: "48 companies", lastVerified: "April 23, 2026", reviewSchedule: "Every 6 months" },
                   { dataset: "University AI Programs", records: "29 programs", lastVerified: "March 28, 2026", reviewSchedule: "Annually" },
                   { dataset: "Province & Territory Profiles", records: "13 regions", lastVerified: "March 28, 2026", reviewSchedule: "Annually" },
                   { dataset: "AI Events & Conferences", records: "13 events", lastVerified: "March 28, 2026", reviewSchedule: "Every 3 months" },
