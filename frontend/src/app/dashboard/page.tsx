@@ -78,7 +78,7 @@ export default async function DashboardPage() {
           >
             <span style={{ color: 'var(--accent-primary)' }}>● Live</span>
             <span aria-hidden style={{ color: 'var(--border-strong)' }}>/</span>
-            <span>Vol III · Public Intelligence</span>
+            <span>Public Intelligence</span>
           </p>
           <h1
             className="mt-2 max-w-[22ch] text-[clamp(26px,4.2vw,56px)] leading-[0.98] uppercase sm:mt-3"
