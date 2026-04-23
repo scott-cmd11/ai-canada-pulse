@@ -40,16 +40,17 @@ export default function Header() {
             style={{ color: "var(--text-primary)" }}
           >
             <span
-              className="flex h-7 w-7 items-center justify-center text-[11px] font-black"
+              className="flex h-7 w-7 items-center justify-center"
               style={{
                 background: "var(--accent-primary)",
                 color: "#fff",
-                fontFamily: "var(--font-display), sans-serif",
-                letterSpacing: "0.02em",
               }}
               aria-hidden
             >
-              AI
+              {/* Stylised maple leaf — Canadian, on-brand, no text duplication */}
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+                <path d="M12 2l1.5 4.5L18 4l-1.5 5 5 1-3.5 3 1 3-5-1-1 5-1-5-5 1 1-3L4 10l5-1L7.5 4 12 6.5 12 2z" />
+              </svg>
             </span>
             <span
               className="text-[13px] uppercase"
@@ -59,7 +60,7 @@ export default function Header() {
                 letterSpacing: "0.14em",
               }}
             >
-              Canada Pulse
+              AI Canada Pulse
               <span className="mx-2" style={{ color: "var(--text-muted)" }}>·</span>
               <span style={{ color: "var(--text-muted)" }}>Live Index</span>
             </span>

@@ -65,13 +65,13 @@ export default async function DashboardPage() {
     <div className="min-h-screen" style={{ background: 'var(--bg-page)', color: 'var(--text-primary)' }}>
       <Header />
 
-      <main id="main-content" className="mx-auto flex w-full max-w-[1480px] flex-col gap-6 px-4 py-4 sm:px-6 lg:px-8 lg:py-6">
-        <div className="pt-1 sm:pt-2">
+      <main id="main-content" className="mx-auto flex w-full max-w-[1480px] flex-col gap-5 px-4 py-3 sm:gap-6 sm:px-6 sm:py-4 lg:px-8 lg:py-5">
+        <div>
           <p
-            className="flex items-center gap-3 text-[11px] uppercase"
+            className="flex items-center gap-2.5 text-[11px] uppercase"
             style={{
               fontFamily: 'var(--font-mono), monospace',
-              letterSpacing: '0.16em',
+              letterSpacing: '0.14em',
               color: 'var(--text-muted)',
               fontWeight: 700,
             }}
@@ -81,7 +81,7 @@ export default async function DashboardPage() {
             <span>Vol III · Public Intelligence</span>
           </p>
           <h1
-            className="mt-3 max-w-[22ch] text-[clamp(32px,5vw,68px)] leading-[0.96] uppercase"
+            className="mt-2 max-w-[22ch] text-[clamp(26px,4.2vw,56px)] leading-[0.98] uppercase sm:mt-3"
             style={{
               fontFamily: 'var(--font-display), "Archivo Black", sans-serif',
               color: 'var(--text-primary)',
@@ -132,10 +132,6 @@ export default async function DashboardPage() {
           </div>
         </section>
 
-        <div className="mx-auto max-w-xl">
-          <SubscribeForm />
-        </div>
-
         <hr className="section-divider" />
 
         <section id="impact" className="section-dark rounded-2xl p-5 sm:p-6">
@@ -162,30 +158,47 @@ export default async function DashboardPage() {
             description="Expand any section below to explore research output, adoption trends, ecosystem activity, and regulatory standing."
           />
 
-          <CollapsibleSection title="Parliament">
+          <CollapsibleSection
+            title="Parliament"
+            defaultOpen
+            preview="Recent AI-related bills, debates, and committee activity"
+          >
             <SectionErrorBoundary sectionName="Parliament Activity">
               <ParliamentSection />
             </SectionErrorBoundary>
           </CollapsibleSection>
 
-          <CollapsibleSection title="Research">
+          <CollapsibleSection
+            title="Research"
+            preview="Canadian arXiv papers, NSERC grants, and institute output"
+          >
             <SectionErrorBoundary sectionName="Fundamental Research">
               <ResearchSection />
             </SectionErrorBoundary>
           </CollapsibleSection>
 
-          <CollapsibleSection title="Ecosystem & Startups">
+          <CollapsibleSection
+            title="Ecosystem & Startups"
+            preview="Canadian GitHub, HuggingFace, events, and community signals"
+          >
             <SectionErrorBoundary sectionName="Ecosystem & Community">
               <EcosystemSection />
             </SectionErrorBoundary>
           </CollapsibleSection>
 
-          <CollapsibleSection title="Regulatory & Global Standing">
+          <CollapsibleSection
+            title="Regulatory & Global Standing"
+            preview="Gov AI registry, OECD index, legislation tracking"
+          >
             <SectionErrorBoundary sectionName="Regulatory & Global Standing">
               <RegulatorySection />
             </SectionErrorBoundary>
           </CollapsibleSection>
         </section>
+
+        <div className="mx-auto mt-2 w-full max-w-xl">
+          <SubscribeForm />
+        </div>
       </main>
 
       <DashboardFooter />

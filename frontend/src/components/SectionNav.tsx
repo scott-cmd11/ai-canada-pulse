@@ -10,6 +10,16 @@ const sections = [
 
 export default function SectionNav() {
   const [activeId, setActiveId] = useState<string | null>(null)
+  const [compact, setCompact] = useState(false)
+
+  // Compress vertical padding once the user has scrolled past the hero so the
+  // sticky nav takes less real estate during deep scrolls.
+  useEffect(() => {
+    const onScroll = () => setCompact(window.scrollY > 240)
+    onScroll()
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [])
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -42,7 +52,7 @@ export default function SectionNav() {
   }
 
   return (
-    <nav className="sticky top-[72px] sm:top-[100px] z-40 rounded-2xl border px-4 py-3 shadow-[0_10px_30px_rgba(15,23,42,0.05)] backdrop-blur-xl" style={{ borderColor: 'color-mix(in srgb, var(--surface-primary) 60%, transparent)', backgroundColor: 'color-mix(in srgb, var(--surface-primary) 85%, transparent)' }}>
+    <nav className={`sticky top-[72px] sm:top-[100px] z-40 rounded-2xl border px-4 shadow-[0_10px_30px_rgba(15,23,42,0.05)] backdrop-blur-xl transition-[padding] duration-200 ${compact ? 'py-1.5' : 'py-3'}`} style={{ borderColor: 'color-mix(in srgb, var(--surface-primary) 60%, transparent)', backgroundColor: 'color-mix(in srgb, var(--surface-primary) 85%, transparent)' }}>
       <div className="flex flex-wrap items-center gap-2">
         <span className="mr-2 hidden text-[11px] font-semibold uppercase tracking-[0.18em] sm:inline" style={{ color: 'var(--text-muted)' }}>
           Navigate

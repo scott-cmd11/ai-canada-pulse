@@ -2,7 +2,6 @@ import type { Story } from "@/lib/mock-data"
 import { relativeTime } from "@/lib/relative-time"
 import AILabel from '@/components/AILabel'
 import ShareButtons from '@/components/ShareButtons'
-import CategoryGlyph from '@/components/CategoryGlyph'
 
 interface Props {
   story: Story
@@ -52,18 +51,14 @@ export default function StoryCard({ story }: Props) {
   const catColor = categoryColors[story.category] || "var(--accent-primary)"
 
   return (
-    <article className="saas-card flex flex-col gap-4 p-5 sm:flex-row sm:gap-5">
+    <article className="saas-card group flex flex-col gap-4 p-5 sm:flex-row sm:gap-5">
       <div className="mt-0.5 flex shrink-0 gap-3 sm:w-32 sm:flex-col sm:gap-2">
-        <span className="meta" style={{ letterSpacing: '0.14em' }}>
+        <span className="meta">
           {relativeTime(story.publishedAt)}
         </span>
-        <div className="flex items-center gap-2 self-start">
-          <CategoryGlyph category={story.category} size={28} />
-          <span className="chip rounded-full border px-2.5 py-1" style={{ borderColor: `color-mix(in srgb, ${catColor} 25%, transparent)`, backgroundColor: `color-mix(in srgb, ${catColor} 10%, transparent)`, color: catColor }}>
-            {categoryLabel}
-          </span>
-        </div>
-        {!story.aiSummary && <AILabel level="classification" />}
+        <span className="chip self-start rounded-full border px-2.5 py-1" style={{ borderColor: `color-mix(in srgb, ${catColor} 25%, transparent)`, backgroundColor: `color-mix(in srgb, ${catColor} 10%, transparent)`, color: catColor }}>
+          {categoryLabel}
+        </span>
       </div>
 
       <div className="min-w-0 flex-1">
@@ -99,7 +94,9 @@ export default function StoryCard({ story }: Props) {
             <span>{story.region}</span>
           </div>
           {story.sourceUrl && (
-            <ShareButtons url={story.sourceUrl} title={story.headline} />
+            <div className="opacity-100 transition-opacity duration-150 sm:opacity-0 sm:focus-within:opacity-100 sm:group-hover:opacity-100">
+              <ShareButtons url={story.sourceUrl} title={story.headline} />
+            </div>
           )}
         </div>
       </div>

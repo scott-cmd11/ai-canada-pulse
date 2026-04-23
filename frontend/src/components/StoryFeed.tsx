@@ -5,7 +5,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation"
 import SourceAttribution from '@/components/SourceAttribution'
 import ScopeLabel from '@/components/ScopeLabel'
 import { SkeletonStoryFeed } from '@/components/Skeleton'
-import { useState, useCallback, useMemo, Suspense } from "react"
+import { useState, useCallback, useMemo, useEffect, Suspense } from "react"
 import type { Category, Story } from "@/lib/mock-data"
 import StoryCard from "./StoryCard"
 import { useStories } from "@/hooks/useStories"
@@ -105,9 +105,66 @@ function StoryFeedInner({ region, sectionTitle }: StoryFeedProps = {}) {
 
   const feedStories = stories.filter((story) => !story.isBriefingTop)
 
-  const filtered = effectiveActive === ALL
+  // Region filter (client-only; national feed only). Canonical list of all
+  // provinces + territories so a reader from Yukon can still filter even if
+  // there's no story tagged there yet. "All" + "Canada" (national-scope items)
+  // come first, then jurisdictions alphabetically.
+  const [regionFilter, setRegionFilter] = useState<string>('All')
+  const regionOptions = useMemo(() => {
+    if (region) return []
+    return [
+      'All',
+      'Canada',
+      'Alberta',
+      'British Columbia',
+      'Manitoba',
+      'New Brunswick',
+      'Newfoundland and Labrador',
+      'Northwest Territories',
+      'Nova Scotia',
+      'Nunavut',
+      'Ontario',
+      'Prince Edward Island',
+      'Quebec',
+      'Saskatchewan',
+      'Yukon',
+    ]
+  }, [region])
+
+  // "New since last visit" — count stories published after the timestamp
+  // stored in localStorage from the previous session. Only shown on the
+  // national dashboard feed (not region pages) and only for returning visitors.
+  const LAST_VISIT_KEY = 'acp:last-visit'
+  const [lastVisitAt, setLastVisitAt] = useState<number | null>(null)
+  const [dismissedNewChip, setDismissedNewChip] = useState(false)
+  useEffect(() => {
+    if (region) return
+    try {
+      const raw = window.localStorage.getItem(LAST_VISIT_KEY)
+      const parsed = raw ? parseInt(raw, 10) : NaN
+      if (Number.isFinite(parsed)) setLastVisitAt(parsed)
+      // Write "now" so the next visit compares against this one.
+      window.localStorage.setItem(LAST_VISIT_KEY, Date.now().toString())
+    } catch {
+      // localStorage unavailable — quietly skip
+    }
+  }, [region])
+
+  const newCount = useMemo(() => {
+    if (!lastVisitAt || region) return 0
+    return feedStories.filter((s) => {
+      const t = new Date(s.publishedAt).getTime()
+      return Number.isFinite(t) && t > lastVisitAt
+    }).length
+  }, [feedStories, lastVisitAt, region])
+
+  const byCategory = effectiveActive === ALL
     ? feedStories
     : feedStories.filter((story) => story.category === effectiveActive)
+
+  const filtered = !region && regionFilter !== 'All'
+    ? byCategory.filter((story) => story.region === regionFilter)
+    : byCategory
 
   const visible = filtered.slice(0, displayCount)
 
@@ -142,7 +199,31 @@ function StoryFeedInner({ region, sectionTitle }: StoryFeedProps = {}) {
 
       {!region && <SectionSummary summary={summary} />}
 
-      <div className="mt-4 flex flex-wrap gap-2">
+      {newCount > 0 && !dismissedNewChip && (
+        <div className="mt-4">
+          <button
+            type="button"
+            onClick={() => setDismissedNewChip(true)}
+            className="group inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-semibold transition-colors"
+            style={{
+              borderColor: 'color-mix(in srgb, var(--accent-primary) 30%, transparent)',
+              backgroundColor: 'color-mix(in srgb, var(--accent-primary) 10%, transparent)',
+              color: 'var(--accent-primary)',
+            }}
+            aria-label={`${newCount} new ${newCount === 1 ? 'signal' : 'signals'} since your last visit — click to dismiss`}
+          >
+            <span
+              aria-hidden
+              className="inline-block h-1.5 w-1.5 rounded-full"
+              style={{ backgroundColor: 'var(--accent-primary)' }}
+            />
+            {newCount} new since your last visit
+            <span aria-hidden className="opacity-50 group-hover:opacity-100">×</span>
+          </button>
+        </div>
+      )}
+
+      <div className="mt-4 flex flex-wrap items-center gap-2">
         {CATEGORIES.map((category) => {
           const isActive = effectiveActive === category.value
           return (
@@ -168,6 +249,29 @@ function StoryFeedInner({ region, sectionTitle }: StoryFeedProps = {}) {
             </button>
           )
         })}
+        {!region && (
+          <label className="ml-auto flex items-center gap-2 text-xs" style={{ color: 'var(--text-muted)' }}>
+            <span className="hidden sm:inline font-semibold uppercase tracking-[0.14em]">Region</span>
+            <select
+              value={regionFilter}
+              onChange={(e) => {
+                setRegionFilter(e.target.value)
+                setDisplayCount(PAGE_SIZE)
+              }}
+              className="min-h-[36px] rounded-full border px-3 text-xs font-semibold transition-colors"
+              style={{
+                borderColor: regionFilter === 'All' ? 'var(--border-subtle)' : 'color-mix(in srgb, var(--accent-primary) 20%, transparent)',
+                backgroundColor: regionFilter === 'All' ? 'var(--surface-primary)' : 'color-mix(in srgb, var(--accent-primary) 8%, transparent)',
+                color: regionFilter === 'All' ? 'var(--text-muted)' : 'var(--accent-primary)',
+              }}
+              aria-label="Filter stories by region"
+            >
+              {regionOptions.map((r) => (
+                <option key={r} value={r}>{r === 'All' ? 'All regions' : r}</option>
+              ))}
+            </select>
+          </label>
+        )}
       </div>
 
       <div className="mt-4 flex flex-col gap-4">

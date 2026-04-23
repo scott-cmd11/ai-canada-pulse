@@ -5,10 +5,14 @@ import { useState } from 'react'
 interface Props {
   title: string
   children: React.ReactNode
+  /** Open the section on first render. Useful for the most-active topic. */
+  defaultOpen?: boolean
+  /** One-line preview shown next to the title when the section is closed. */
+  preview?: string
 }
 
-export default function CollapsibleSection({ title, children }: Props) {
-  const [isOpen, setIsOpen] = useState(false)
+export default function CollapsibleSection({ title, children, defaultOpen = false, preview }: Props) {
+  const [isOpen, setIsOpen] = useState(defaultOpen)
 
   return (
     <div
@@ -35,7 +39,23 @@ export default function CollapsibleSection({ title, children }: Props) {
         }}
         aria-expanded={isOpen}
       >
-        <span>{title}</span>
+        <span style={{ display: 'flex', flexDirection: 'column', gap: '2px', flex: 1, minWidth: 0 }}>
+          <span>{title}</span>
+          {!isOpen && preview && (
+            <span
+              style={{
+                fontSize: '12px',
+                fontWeight: 400,
+                color: 'var(--text-muted)',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              {preview}
+            </span>
+          )}
+        </span>
         <span
           style={{
             fontSize: '18px',
