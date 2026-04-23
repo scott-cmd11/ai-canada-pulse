@@ -112,7 +112,7 @@ export async function GET(request: NextRequest) {
   const recentPosts = await listDeepDives(1, 0).catch(() => [] as Awaited<ReturnType<typeof listDeepDives>>)
   const lastPostDate = recentPosts[0]?.date ? new Date(recentPosts[0].date) : null
   const daysSinceLastPost = lastPostDate ? (Date.now() - lastPostDate.getTime()) / 86_400_000 : Infinity
-  const shouldSeed = manualSeed || recentPosts.length === 0 || daysSinceLastPost >= 7
+  const shouldSeed = manualSeed || recentPosts.length === 0 || daysSinceLastPost >= 4
   try {
     const generate = shouldSeed ? forceGenerateDeepDive : detectAndGenerateDeepDive
     const slug = await generate(

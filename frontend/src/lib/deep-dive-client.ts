@@ -49,10 +49,10 @@ function detectSignificantStory(stories: Story[]): SignificantStory | null {
       const amount = parseInt(fundingMatch[1])
       const unit = fundingMatch[2].toUpperCase()
       const millions = unit === 'B' ? amount * 1000 : amount
-      if (millions >= 50 && AI_KEYWORDS.test(text)) {
+      if (millions >= 25 && AI_KEYWORDS.test(text)) {
         const candidate: SignificantStory = {
           story,
-          reason: `Canadian AI funding round ≥ $50M: ${story.headline}`,
+          reason: `Canadian AI funding round ≥ $25M: ${story.headline}`,
           priority: 3,
         }
         if (!best || candidate.priority > best.priority) best = candidate
@@ -208,15 +208,15 @@ Rules:
       return null
     }
 
-    // Quality check 2: body must reference ≥ 2 of the source headlines
+    // Quality check 2: body must reference ≥ 1 of the source headlines
     // Skipped in force/seed mode since we bypass threshold selection.
     if (!skipQualityChecks) {
       const sourceContext = [sig.story, ...related]
       const headlineMatches = sourceContext.filter((s) =>
         parsed.body.toLowerCase().includes(s.headline.slice(0, 25).toLowerCase())
       ).length
-      if (headlineMatches < 2) {
-        console.warn(`[deep-dive-client] Body references only ${headlineMatches} source headline(s), discarding`)
+      if (headlineMatches < 1) {
+        console.warn(`[deep-dive-client] Body references no source headlines, discarding`)
         return null
       }
     }
