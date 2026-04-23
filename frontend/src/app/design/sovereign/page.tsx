@@ -116,7 +116,7 @@ export default function SovereignPage() {
 
         <section className={styles.hero}>
           <p className={styles.eyebrow}>
-            <span>VOL III · ISSUE 042 · PUBLIC INTELLIGENCE</span>
+            <span>PUBLIC INTELLIGENCE</span>
             <span>LIVE</span>
           </p>
           <h1 className={styles.heroTitle}>
