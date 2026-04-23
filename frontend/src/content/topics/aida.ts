@@ -2,13 +2,13 @@ import type { TopicContent } from "@/lib/topic-content"
 
 const aida: TopicContent = {
     slug: "aida",
-    updatedAt: "2026-04-18",
+    updatedAt: "2026-04-23",
     explainerParagraphs: [
-        "The Artificial Intelligence and Data Act — AIDA — is Canada's proposed federal law governing how high-impact AI systems are designed, deployed, and monitored. It was introduced in June 2022 as part of Bill C-27, alongside two parallel pieces of privacy legislation. If passed, it would be the first comprehensive federal AI statute in Canadian history and one of the earliest such laws in any OECD country.",
-        "AIDA does not regulate every AI system. Its obligations attach to what it calls high-impact systems — a category defined in regulation rather than the act itself. Draft guidance from Innovation, Science and Economic Development Canada has signalled that criteria will focus on employment, essential services, biometric identification, content moderation, and health applications. Developers, deployers, and operators of these systems would face duties around risk assessment, bias mitigation, record-keeping, and incident reporting.",
-        "The law's practical reach depends heavily on regulations that have not been finalised. The act delegates most of its operative detail — which systems count as high-impact, what mitigation measures satisfy the duty of care, how enforcement actually proceeds — to secondary rulemaking. Critics argue this delegates too much to the executive branch. Supporters argue it's the only way to keep the law adaptable to a fast-moving field.",
-        "Enforcement would flow through a new AI and Data Commissioner, housed within ISED. The Commissioner would have audit and order-making powers, and could levy administrative monetary penalties. Criminal offences for the most serious violations — including knowingly using unlawfully obtained data to train an AI system — sit alongside the administrative regime.",
-        "As of early 2026 the bill remains at committee stage in Parliament, with industry, academic, and civil-society groups actively submitting amendments. The timeline is uncertain: between parliamentary arithmetic, the interaction with the EU AI Act, and proposals to split AIDA out of C-27 entirely, the final shape of Canadian federal AI regulation is still being negotiated.",
+        "The Artificial Intelligence and Data Act — AIDA — was Canada's first serious attempt at a federal AI statute. Introduced in June 2022 as part of Bill C-27, it would have been one of the earliest comprehensive AI laws in any OECD country. It never became law: when Parliament was prorogued in January 2025, C-27 died on the order paper, and the bill has not been reintroduced since.",
+        "AIDA did not regulate every AI system. Its obligations attached to what it called high-impact systems — a category that would have been defined in regulation rather than the act itself. Draft guidance from Innovation, Science and Economic Development Canada signalled criteria focused on employment, essential services, biometric identification, content moderation, and health applications. Developers, deployers, and operators of those systems would have faced duties around risk assessment, bias mitigation, record-keeping, and incident reporting.",
+        "The law's reach depended heavily on regulations that were never finalised. The act delegated most of its operative detail — which systems counted as high-impact, what mitigation measures satisfied the duty of care, how enforcement would proceed — to secondary rulemaking. Critics argued this delegated too much to the executive branch. Supporters argued it was the only way to keep the law adaptable to a fast-moving field.",
+        "After the April 2025 federal election returned a Liberal minority under Prime Minister Mark Carney, the government created a new portfolio — Minister of Artificial Intelligence and Digital Innovation — and named Evan Solomon to the role. Solomon has publicly signalled that AIDA will not return as drafted, and that any future AI framework will be 'light, tight, right' — decoupled from the privacy reform that sat alongside AIDA in C-27.",
+        "As of April 2026, Canada has no comprehensive federal AI statute in force. Ottawa is working on a replacement framework under Minister Solomon's ministry, and provinces continue to move on their own rules in parallel. The AIDA story is now relevant mainly as the starting point — and cautionary template — for whatever comes next.",
     ],
     whyItMatters: [
         "AIDA will set the baseline rules for how Canadian businesses deploy AI in hiring, healthcare, financial services, and public-facing content — touching nearly every sector.",
@@ -17,8 +17,8 @@ const aida: TopicContent = {
     ],
     keyPeople: [
         {
-            name: "François-Philippe Champagne",
-            role: "Minister of Innovation, Science and Industry",
+            name: "Evan Solomon",
+            role: "Minister of Artificial Intelligence and Digital Innovation",
             org: "Government of Canada",
         },
         {
@@ -28,8 +28,8 @@ const aida: TopicContent = {
         },
         {
             name: "Yoshua Bengio",
-            role: "Scientific Director",
-            org: "Mila — frequent AIDA witness",
+            role: "Founder and Scientific Advisor",
+            org: "Mila — architect of original AIDA testimony; now leads LawZero",
         },
     ],
     keyOrgs: [
@@ -39,7 +39,7 @@ const aida: TopicContent = {
     ],
     furtherReading: [
         {
-            label: "Bill C-27 — Parliament of Canada (full text)",
+            label: "Bill C-27 (44th Parliament, lapsed) — LEGISinfo historical record",
             url: "https://www.parl.ca/LegisInfo/en/bill/44-1/c-27",
         },
         {
