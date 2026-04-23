@@ -32,8 +32,8 @@ const SOURCE_TYPES = [
 
 const limits = [
   "AI summaries, digests, and deep dives are produced from headlines and short context snippets. They can miss nuance, omit background, or flatten uncertainty. They should be treated as navigation aids, not authoritative analysis.",
-  "The daily digest publishes once at 12:00 UTC. Before that time the previous day's digest is shown. If generation fails, the site falls back to live headlines.",
-  "Deep Dives are triggered automatically by a significance threshold (funding ≥$50M, parliamentary AI votes, notable research), or auto-generated if no Deep Dive has published in 7+ days. Stories that don't meet the threshold and fall within the weekly window may not generate one.",
+  "The daily digest is regenerated every two hours throughout the day as new stories are enriched. Before the first successful run of a given UTC day, the previous day's digest is shown. If generation fails, the site falls back to live headlines.",
+  "Deep Dives are triggered automatically by a significance threshold (funding ≥$25M, parliamentary AI votes, notable research), or auto-generated if no Deep Dive has published in 4+ days. Stories that don't meet the threshold and fall within that window may not generate one.",
   "Public feeds can change structure, publish duplicates, or omit context. The app deduplicates and filters aggressively, but false positives and missed stories remain possible.",
   "Market and macro indicators are contextual signals only. They are not investment advice, economic forecasts, or causal evidence about AI effects.",
   "Global AI ranking indices are updated annually by their publishers. The figures shown reflect the most recently published edition and may not reflect changes made since.",
@@ -456,7 +456,7 @@ export default function MethodologyPage() {
                   Daily Digest
                 </h3>
                 <p className="mt-2 text-xs leading-relaxed" style={{ color: "var(--text-secondary)" }}>
-                  <strong>gpt-4o-mini</strong> — synthesizes the top 10 stories into a headline, 2–3 sentence intro, 3–5 key developments, and top story links. Generated once daily at 12:00 UTC and stored in Redis for 90 days.
+                  <strong>gpt-4o-mini</strong> — synthesizes the top 10 stories into a headline, 2–3 sentence intro, 3–5 key developments, and top story links. Regenerated every two hours throughout the day and stored in Redis for 90 days.
                 </p>
               </div>
               <div
@@ -472,7 +472,7 @@ export default function MethodologyPage() {
                   Deep Dives
                 </h3>
                 <p className="mt-2 text-xs leading-relaxed" style={{ color: "var(--text-secondary)" }}>
-                  <strong>gpt-4o-mini</strong> — generates 400–600 word analytical articles when a story crosses a significance threshold: funding rounds ≥$50M, parliamentary AI legislation, or notable research. Also auto-generates at least once per week if no post has been published in 7+ days.
+                  <strong>gpt-4o-mini</strong> — generates 400–600 word analytical articles when a story crosses a significance threshold: funding rounds ≥$25M, parliamentary AI legislation, or notable research. Also auto-generates if no post has been published in 4+ days so the feed never goes stale.
                 </p>
               </div>
               <div
@@ -489,6 +489,22 @@ export default function MethodologyPage() {
                 </h3>
                 <p className="mt-2 text-xs leading-relaxed" style={{ color: "var(--text-secondary)" }}>
                   <strong>gpt-4o-mini</strong> — generates one-sentence summaries for 6 signal sections (Stories, Trends, Research, Parliament, Jobs, Stocks). Displayed at the top of each relevant section on the dashboard and provincial pages.
+                </p>
+              </div>
+              <div
+                className="rounded-2xl p-4"
+                style={{
+                  backgroundColor: "var(--surface-secondary)",
+                  borderColor: "var(--border-subtle)",
+                  borderWidth: "1px",
+                  borderStyle: "solid",
+                }}
+              >
+                <h3 className="text-sm font-bold" style={{ color: "var(--text-primary)" }}>
+                  Topic Tagging
+                </h3>
+                <p className="mt-2 text-xs leading-relaxed" style={{ color: "var(--text-secondary)" }}>
+                  Hybrid pipeline: regex keyword pre-filter handles the obvious matches for free, then <strong>gpt-5-nano</strong> resolves the remainder. Output is a list of topic slugs per story that powers the 20 Topic Hub pages and their per-topic feeds.
                 </p>
               </div>
             </div>
