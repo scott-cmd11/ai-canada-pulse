@@ -2,15 +2,15 @@
     "crons": [
         {
             "path": "/api/v1/ai-refresh",
-            "schedule": "0 */2 * * *"
+            "schedule": "0 12 * * *"
         },
         {
             "path": "/api/v1/ai-refresh?retry=true",
-            "schedule": "30 */2 * * *"
+            "schedule": "30 12 * * *"
         },
         {
             "path": "/api/v1/quotes/ingest",
-            "schedule": "0 */6 * * *"
+            "schedule": "0 18 * * *"
         }
     ]
 }
