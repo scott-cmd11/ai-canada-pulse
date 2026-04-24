@@ -10,7 +10,6 @@ import type { Category, Story } from "@/lib/mock-data"
 import StoryCard from "./StoryCard"
 import { useStories } from "@/hooks/useStories"
 import { usePolling } from "@/hooks/usePolling"
-import SectionSummary from '@/components/SectionSummary'
 
 const ALL = "All Signals"
 const PAGE_SIZE = 4
@@ -197,7 +196,6 @@ function StoryFeedInner({ region, sectionTitle }: StoryFeedProps = {}) {
         </div>
       )}
 
-      {!region && <SectionSummary summary={summary} />}
 
       {newCount > 0 && !dismissedNewChip && (
         <div className="mt-4">

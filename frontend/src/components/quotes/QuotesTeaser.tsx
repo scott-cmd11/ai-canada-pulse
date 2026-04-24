@@ -11,11 +11,18 @@ export default function QuotesTeaser() {
 
   useEffect(() => {
     let cancelled = false
-    fetch("/api/v1/quotes?limit=3")
+    fetch("/api/v1/quotes?limit=12")
       .then((res) => res.json())
       .then((json) => {
         if (cancelled) return
-        setQuotes(Array.isArray(json.data) ? json.data : [])
+        const all: Quote[] = Array.isArray(json.data) ? json.data : []
+        const cutoff = Date.now() - 60 * 24 * 60 * 60 * 1000
+        const fresh = all.filter((q) => {
+          if (!q.quote_date) return false
+          const t = Date.parse(q.quote_date)
+          return Number.isFinite(t) && t >= cutoff
+        })
+        setQuotes(fresh.slice(0, 3))
       })
       .catch((err) => console.warn("[QuotesTeaser] fetch failed:", err))
       .finally(() => {
@@ -26,74 +33,77 @@ export default function QuotesTeaser() {
     }
   }, [])
 
-  if (loading) {
-    return (
-      <div className="py-4">
+  const count = quotes?.length ?? 0
+  const gridCols =
+    count >= 3 ? "md:grid-cols-3" : count === 2 ? "md:grid-cols-2" : "md:grid-cols-1"
+
+  return (
+    <div className="saas-card p-4 sm:p-5">
+      <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
+        <span
+          className="text-[10px] font-bold uppercase tracking-[0.18em]"
+          style={{ color: "var(--text-muted)" }}
+        >
+          Quotes Archive
+        </span>
+        <Link
+          href="/quotes"
+          className="text-[11px] font-bold uppercase tracking-wider hover:underline"
+          style={{ color: "var(--accent-primary)" }}
+        >
+          See the full archive &rarr;
+        </Link>
+      </div>
+
+      {loading && (
         <p className="text-sm font-medium" style={{ color: "var(--text-muted)" }}>
           Loading quotes archive…
         </p>
-      </div>
-    )
-  }
+      )}
 
-  if (!quotes || quotes.length === 0) {
-    return (
-      <div className="flex items-center justify-between gap-3 flex-wrap">
+      {!loading && count === 0 && (
         <p className="text-sm" style={{ color: "var(--text-muted)" }}>
           The quotes archive is warming up.
         </p>
-        <Link
-          href="/quotes"
-          className="text-xs font-bold uppercase tracking-wider hover:underline"
-          style={{ color: "var(--accent-primary)" }}
-        >
-          See the archive &rarr;
-        </Link>
-      </div>
-    )
-  }
+      )}
 
-  return (
-    <div className="flex flex-col gap-4">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-        {quotes.map((q) => {
-          const partyStyle = PARTY_STYLES[q.party ?? ""] ?? DEFAULT_PARTY_STYLE
-          return (
-            <div
-              key={q.id}
-              className="saas-card p-4 flex flex-col gap-2"
-              style={{ backgroundColor: "var(--surface-primary)" }}
-            >
-              <div className="flex items-center gap-2 flex-wrap">
-                <span className="text-xs font-bold" style={{ color: "var(--text-primary)" }}>
-                  {q.speaker_name}
-                </span>
-                {q.party && (
-                  <span className="px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider rounded" style={partyStyle}>
-                    {q.party}
-                  </span>
-                )}
-              </div>
-              <p
-                className="text-sm leading-snug line-clamp-4"
-                style={{ color: "var(--text-secondary)", fontStyle: "italic" }}
+      {!loading && count > 0 && (
+        <div className={`grid grid-cols-1 ${gridCols} gap-3`}>
+          {quotes!.map((q) => {
+            const partyStyle = PARTY_STYLES[q.party ?? ""] ?? DEFAULT_PARTY_STYLE
+            return (
+              <div
+                key={q.id}
+                className="rounded-lg p-3 flex flex-col gap-2"
+                style={{
+                  backgroundColor: "var(--surface-secondary)",
+                  border: "1px solid var(--border-subtle)",
+                }}
               >
-                &ldquo;{q.quote_text.slice(0, 200)}{q.quote_text.length > 200 ? "…" : ""}&rdquo;
-              </p>
-              <p className="text-[10px] uppercase tracking-wider mt-auto" style={{ color: "var(--text-muted)" }}>
-                {q.quote_date ?? ""}
-              </p>
-            </div>
-          )
-        })}
-      </div>
-      <Link
-        href="/quotes"
-        className="self-end text-xs font-bold uppercase tracking-wider hover:underline"
-        style={{ color: "var(--accent-primary)" }}
-      >
-        See the full archive &rarr;
-      </Link>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="text-xs font-bold" style={{ color: "var(--text-primary)" }}>
+                    {q.speaker_name}
+                  </span>
+                  {q.party && (
+                    <span className="px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider rounded" style={partyStyle}>
+                      {q.party}
+                    </span>
+                  )}
+                </div>
+                <p
+                  className="text-sm leading-snug line-clamp-4"
+                  style={{ color: "var(--text-secondary)", fontStyle: "italic" }}
+                >
+                  &ldquo;{q.quote_text.slice(0, 200)}{q.quote_text.length > 200 ? "…" : ""}&rdquo;
+                </p>
+                <p className="text-[10px] uppercase tracking-wider mt-auto" style={{ color: "var(--text-muted)" }}>
+                  {q.quote_date ?? ""}
+                </p>
+              </div>
+            )
+          })}
+        </div>
+      )}
     </div>
   )
 }
