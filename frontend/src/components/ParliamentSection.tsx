@@ -4,17 +4,7 @@ import { useState, useEffect } from "react"
 import type { ParliamentMention, ParliamentData } from "@/lib/parliament-client"
 import SourceAttribution from '@/components/SourceAttribution'
 import SectionSummary from '@/components/SectionSummary'
-
-import type { CSSProperties } from "react"
-
-const PARTY_STYLES: Record<string, CSSProperties> = {
-  Liberal: { backgroundColor: 'color-mix(in srgb, #ef4444 12%, var(--surface-primary))', color: '#b91c1c', border: '1px solid color-mix(in srgb, #ef4444 20%, var(--surface-primary))' },
-  Conservative: { backgroundColor: 'color-mix(in srgb, #3b82f6 12%, var(--surface-primary))', color: '#1d4ed8', border: '1px solid color-mix(in srgb, #3b82f6 20%, var(--surface-primary))' },
-  NDP: { backgroundColor: 'color-mix(in srgb, #f59e0b 12%, var(--surface-primary))', color: '#b45309', border: '1px solid color-mix(in srgb, #f59e0b 20%, var(--surface-primary))' },
-  "Bloc Québécois": { backgroundColor: 'color-mix(in srgb, #0ea5e9 12%, var(--surface-primary))', color: '#0369a1', border: '1px solid color-mix(in srgb, #0ea5e9 20%, var(--surface-primary))' },
-  Green: { backgroundColor: 'color-mix(in srgb, #22c55e 12%, var(--surface-primary))', color: '#15803d', border: '1px solid color-mix(in srgb, #22c55e 20%, var(--surface-primary))' },
-}
-const DEFAULT_PARTY_STYLE: CSSProperties = { backgroundColor: 'var(--surface-secondary)', color: 'var(--text-secondary)', border: '1px solid var(--border-subtle)' }
+import { PARTY_STYLES, DEFAULT_PARTY_STYLE } from "@/lib/party-styles"
 
 export default function ParliamentSection() {
   const [data, setData] = useState<ParliamentData | null>(null)

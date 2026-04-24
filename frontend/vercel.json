@@ -7,6 +7,10 @@
         {
             "path": "/api/v1/ai-refresh?retry=true",
             "schedule": "30 */2 * * *"
+        },
+        {
+            "path": "/api/v1/quotes/ingest",
+            "schedule": "0 */6 * * *"
         }
     ]
 }

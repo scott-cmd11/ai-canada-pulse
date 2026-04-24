@@ -10,6 +10,7 @@ import StoryFeed from "@/components/StoryFeed"
 import SentimentSection from "@/components/SentimentSection"
 import ResearchSection from "@/components/ResearchSection"
 import ParliamentSection from "@/components/ParliamentSection"
+import QuotesTeaser from "@/components/quotes/QuotesTeaser"
 import EcosystemSection from "@/components/EcosystemSection"
 import RegulatorySection from "@/components/RegulatorySection"
 import CollapsibleSection from "@/components/CollapsibleSection"
@@ -128,6 +129,12 @@ export default async function DashboardPage() {
           <div className="mt-4">
             <SectionErrorBoundary sectionName="Media Sentiment">
               <SentimentSection />
+            </SectionErrorBoundary>
+          </div>
+
+          <div className="mt-4">
+            <SectionErrorBoundary sectionName="Quotes Archive">
+              <QuotesTeaser />
             </SectionErrorBoundary>
           </div>
         </section>
