@@ -324,6 +324,7 @@ Output only the summary text.`
     return revised || null
 }
 interface ArticleForSummary {
+    id: string
     headline: string
     snippet: string
     category: string
@@ -406,7 +407,7 @@ Output ONLY a JSON array of strings, one per item, same order.`
         }
 
         if (enriched) {
-            results.set(article.headline, enriched)
+            results.set(article.id, enriched)
         }
     }
 

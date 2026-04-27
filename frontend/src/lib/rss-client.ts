@@ -269,12 +269,20 @@ async function _fetchAllStories(): Promise<Story[]> {
     .filter((r): r is PromiseFulfilledResult<Story[]> => r.status === "fulfilled")
     .flatMap((r) => r.value)
 
-  // Deduplicate by normalized headline
-  const seen = new Set<string>()
+  // Pass 1: deduplicate by id (URL-derived — catches same article from multiple feeds)
+  const seenIds = new Set<string>()
+  allStories = allStories.filter((s) => {
+    if (seenIds.has(s.id)) return false
+    seenIds.add(s.id)
+    return true
+  })
+
+  // Pass 2: deduplicate by normalized headline (catches paraphrased cross-URL variants)
+  const seenHeadlines = new Set<string>()
   allStories = allStories.filter((s) => {
     const key = s.headline.toLowerCase().replace(/[^a-z0-9]/g, "")
-    if (seen.has(key)) return false
-    seen.add(key)
+    if (seenHeadlines.has(key)) return false
+    seenHeadlines.add(key)
     return true
   })
 

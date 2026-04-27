@@ -15,13 +15,13 @@ interface DashboardEnrichmentBundle {
     generatedAt: string
 }
 
-// v2 adds per-story topic tags to the canada payload. Bumping the key forces
-// a rebuild on deploy so stale v1 bundles don't silently omit the topics field.
-const BUNDLE_KEY = "ai-dashboard-enrichment:v2"
+// v3 switches enrichment keys from headline strings to story ids (URL-derived).
+// Bumping forces a rebuild so stale v2 headline-keyed bundles don't cause misses.
+const BUNDLE_KEY = "ai-dashboard-enrichment:v3"
 const TTL_SECONDS = 86400 // 24 hours
 
 const LOCK_KEY = "ai-dashboard-enrichment:lock"
-const LOCK_TTL_SECONDS = 30 * 60 // 30 min cooldown between background refills
+const LOCK_TTL_SECONDS = 10 * 60 // 10 min cooldown between background refills
 
 function getRedis(): Redis | null {
     if (!process.env.UPSTASH_REDIS_REST_URL || !process.env.UPSTASH_REDIS_REST_TOKEN) {

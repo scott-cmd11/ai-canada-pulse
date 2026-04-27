@@ -17,6 +17,7 @@ const TOPIC_TAGGER_MODEL = process.env.OPENAI_TAGGER_MODEL ?? "gpt-5-nano"
 const TIMEOUT_MS = 20_000
 
 interface StoryForTagging {
+  id: string
   headline: string
   snippet?: string
   category?: string
@@ -171,7 +172,7 @@ Example: {"1": ["aida"], "2": [], "3": ["compute-capacity", "ai-investment-fundi
 
   stories.forEach((s, i) => {
     const slugs = sanitizeSlugs(parsed[String(i + 1)])
-    result.set(s.headline, slugs)
+    result.set(s.id, slugs)
   })
 
   return result
@@ -194,7 +195,7 @@ export async function tagStoryTopics(
     const haystack = `${story.headline} ${story.snippet ?? ""}`
     const regexHits = regexTagsFor(haystack)
     if (regexHits.length > 0) {
-      result.set(story.headline, regexHits)
+      result.set(story.id, regexHits)
     } else {
       ambiguous.push(story)
     }
@@ -212,14 +213,14 @@ export async function tagStoryTopics(
     const llmTags = await resolveAmbiguousBatch(llmBatch)
     let llmHitCount = 0
     for (const story of ambiguous) {
-      const tags = llmTags.get(story.headline) ?? []
+      const tags = llmTags.get(story.id) ?? []
       if (tags.length > 0) llmHitCount++
-      result.set(story.headline, tags)
+      result.set(story.id, tags)
     }
     console.log(`[topic-tagger] LLM resolved ${llmHitCount}/${ambiguous.length} ambiguous stories with ≥1 tag`)
   } else {
     for (const story of ambiguous) {
-      result.set(story.headline, [])
+      result.set(story.id, [])
     }
     if (ambiguous.length > 0 && !OPENAI_API_KEY) {
       console.error(
@@ -242,7 +243,7 @@ export function tagStoryTopicsRegexOnly(
   const result = new Map<string, string[]>()
   for (const story of stories) {
     const haystack = `${story.headline} ${story.snippet ?? ""}`
-    result.set(story.headline, regexTagsFor(haystack))
+    result.set(story.id, regexTagsFor(haystack))
   }
   return result
 }

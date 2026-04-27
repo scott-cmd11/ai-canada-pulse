@@ -104,7 +104,7 @@ export async function GET(request: Request) {
       .slice(0, SUMMARY_COVERAGE_WINDOW)
       .filter((s) => !s.aiSummary).length
     const cacheControl = topMissing > 0
-      ? "public, max-age=30, stale-while-revalidate=60"
+      ? "public, max-age=180, stale-while-revalidate=300"
       : "public, max-age=600, stale-while-revalidate=1800"
 
     return NextResponse.json(
