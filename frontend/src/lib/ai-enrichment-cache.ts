@@ -15,9 +15,9 @@ interface DashboardEnrichmentBundle {
     generatedAt: string
 }
 
-// v3 switches enrichment keys from headline strings to story ids (URL-derived).
-// Bumping forces a rebuild so stale v2 headline-keyed bundles don't cause misses.
-const BUNDLE_KEY = "ai-dashboard-enrichment:v3"
+// v2 bundle: existing bundles have headline-keyed summaries; new enrichment runs
+// write id-keyed entries alongside. Dual-key lookup handles the transition.
+const BUNDLE_KEY = "ai-dashboard-enrichment:v2"
 const TTL_SECONDS = 86400 // 24 hours
 
 const LOCK_KEY = "ai-dashboard-enrichment:lock"

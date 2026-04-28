@@ -38,14 +38,43 @@ function summaryMapToRecord(summaryMap: Map<string, string> | null): Record<stri
     return summaryMap ? Object.fromEntries(summaryMap.entries()) : {}
 }
 
-// Build a lookup index keyed by story id (the raw key stored in the bundle).
-function buildSummaryIndex(summaries: Record<string, string>): Map<string, string> {
-    return new Map(Object.entries(summaries))
+// Normalize a headline for legacy (v2) bundle lookups.
+function normalizeHeadline(headline: string): string {
+    return headline.trim().toLowerCase().replace(/\s+/g, " ")
 }
 
-// Same pattern as summaries, keyed by story id.
+// Build a lookup index keyed by raw bundle key (story id for new entries, original
+// headline for legacy v2 entries). Also adds a normalized-headline entry for each
+// key so the dual-key lookup in hydrateCanadaStories works against old bundles.
+function buildSummaryIndex(summaries: Record<string, string>): Map<string, string> {
+    const index = new Map<string, string>()
+    for (const [key, summary] of Object.entries(summaries)) {
+        index.set(key, summary)
+        const norm = normalizeHeadline(key)
+        if (norm !== key) index.set(norm, summary)
+    }
+    return index
+}
+
+// Same dual-key pattern for topics.
 function buildTopicsIndex(topics: Record<string, string[]>): Map<string, string[]> {
-    return new Map(Object.entries(topics))
+    const index = new Map<string, string[]>()
+    for (const [key, tags] of Object.entries(topics)) {
+        index.set(key, tags)
+        const norm = normalizeHeadline(key)
+        if (norm !== key) index.set(norm, tags)
+    }
+    return index
+}
+
+// Check if a story already has a cached entry — try id first, then headline fallback
+// for legacy bundles keyed by headline.
+function isCachedSummary(story: Story, index: Map<string, string>): boolean {
+    return index.has(story.id) || index.has(normalizeHeadline(story.headline))
+}
+
+function isCachedTopics(story: Story, index: Map<string, string[]>): boolean {
+    return index.has(story.id) || index.has(normalizeHeadline(story.headline))
 }
 
 export async function refreshDashboardEnrichmentBundle() {
@@ -63,10 +92,11 @@ export async function refreshDashboardEnrichmentBundle() {
     const existingTopicsIndex = buildTopicsIndex(existingTopics)
 
     // Only summarize stories that don't already have a cached summary.
-    const newStories = canadaTop.filter((s) => !existingSummaryIndex.has(s.id))
+    // Checks id first, then headline fallback for legacy v2 bundles.
+    const newStories = canadaTop.filter((s) => !isCachedSummary(s, existingSummaryIndex))
     // Only tag stories whose topics haven't been computed yet.
     const storiesNeedingTopics = canadaTop.filter(
-        (s) => !existingTopicsIndex.has(s.id),
+        (s) => !isCachedTopics(s, existingTopicsIndex),
     )
     console.log(
         `[dashboard-enrichment] ${canadaTop.length} stories total; ` +
@@ -97,12 +127,14 @@ export async function refreshDashboardEnrichmentBundle() {
     const mergedSummaries: Record<string, string> = {}
     const mergedTopics: Record<string, string[]> = {}
     for (const story of canadaTop) {
-        const cachedSummary = existingSummaryIndex.get(story.id)
+        // id-first lookup, then headline fallback for legacy v2 entries
+        const normalizedHeadline = normalizeHeadline(story.headline)
+        const cachedSummary = existingSummaryIndex.get(story.id) ?? existingSummaryIndex.get(normalizedHeadline)
         const freshSummary = newSummaryMap?.get(story.id)
         const summary = freshSummary ?? cachedSummary
         if (summary) mergedSummaries[story.id] = summary
 
-        const cachedTags = existingTopicsIndex.get(story.id)
+        const cachedTags = existingTopicsIndex.get(story.id) ?? existingTopicsIndex.get(normalizedHeadline)
         const freshTags = newTopicsMap.get(story.id)
         const tags = freshTags ?? cachedTags
         if (tags && tags.length > 0) mergedTopics[story.id] = tags
@@ -143,10 +175,14 @@ export async function hydrateCanadaStories(stories: Story[]) {
     const topicsIndex = buildTopicsIndex(payload.topics ?? {})
 
     const enrichedStories = stories.map((story) => {
-        const cachedTopics = topicsIndex.get(story.id)
+        const normalizedHeadline = normalizeHeadline(story.headline)
+        const aiSummary = summaryIndex.get(story.id)
+            ?? summaryIndex.get(normalizedHeadline)
+            ?? story.aiSummary
+        const cachedTopics = topicsIndex.get(story.id) ?? topicsIndex.get(normalizedHeadline)
         return {
             ...story,
-            aiSummary: summaryIndex.get(story.id) ?? story.aiSummary,
+            aiSummary,
             topics: cachedTopics && cachedTopics.length > 0 ? cachedTopics : story.topics,
         }
     })
