@@ -1,16 +1,17 @@
 {
-    "crons": [
-        {
-            "path": "/api/v1/ai-refresh",
-            "schedule": "0 12 * * *"
-        },
-        {
-            "path": "/api/v1/ai-refresh?retry=true",
-            "schedule": "30 12 * * *"
-        },
-        {
-            "path": "/api/v1/quotes/ingest",
-            "schedule": "0 18 * * *"
-        }
-    ]
+  "ignoreCommand": "bash -c 'msg=$(git log -1 --pretty=%B); branch=${VERCEL_GIT_COMMIT_REF:-}; if echo \"$msg\" | grep -q \"\\[skip deploy\\]\"; then exit 0; fi; if [ \"$branch\" != \"main\" ] && ! echo \"$msg\" | grep -q \"\\[deploy preview\\]\"; then exit 0; fi; exit 1'",
+  "crons": [
+    {
+      "path": "/api/v1/ai-refresh",
+      "schedule": "0 12 * * *"
+    },
+    {
+      "path": "/api/v1/ai-refresh?retry=true",
+      "schedule": "30 12 * * *"
+    },
+    {
+      "path": "/api/v1/quotes/ingest",
+      "schedule": "0 18 * * *"
+    }
+  ]
 }
