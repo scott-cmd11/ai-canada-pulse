@@ -107,7 +107,7 @@ export default async function TopicPage({ params }: { params: Promise<{ slug: st
             {/* eslint-disable-next-line react/no-danger */}
             <script {...scriptProps} />
             <Header />
-            <main className="mx-auto max-w-[860px] px-4 py-8 sm:px-6 lg:px-10">
+            <main className="page-main-narrow">
                 <nav
                     style={{
                         marginBottom: "20px",

@@ -27,6 +27,7 @@ export function usePolling<T>(
     } = {}
 ) {
     const { intervalMs = 120_000, transform, fallbackUrl, isEmpty, initialData } = opts  // Default: 2 minutes
+    const hasInitialData = initialData != null
     const [data, setData] = useState<T | null>(initialData ?? null)
     const [loading, setLoading] = useState(initialData == null)
     const [lastUpdated, setLastUpdated] = useState<string | null>(null)
@@ -90,7 +91,7 @@ export function usePolling<T>(
 
     useEffect(() => {
         mountedRef.current = true
-        doFetch(true)
+        doFetch(!hasInitialData)
 
         const id = setInterval(() => {
             // Only poll when tab is visible
@@ -110,7 +111,7 @@ export function usePolling<T>(
             clearInterval(id)
             document.removeEventListener("visibilitychange", onVisibility)
         }
-    }, [doFetch, intervalMs])
+    }, [doFetch, intervalMs, hasInitialData])
 
     return { data, loading, lastUpdated, isFallback }
 }

@@ -62,7 +62,15 @@ export async function checkRateLimit(
   if (!l) return null // no Redis — allow through (build time / missing env)
 
   const ip = getClientIp(request)
-  const { success, limit, reset } = await l[tier].limit(ip)
+  let result: Awaited<ReturnType<Ratelimit["limit"]>>
+  try {
+    result = await l[tier].limit(ip)
+  } catch (err) {
+    console.warn(`[rate-limit] ${tier} limiter unavailable; allowing request:`, err)
+    return null
+  }
+
+  const { success, limit, reset } = result
 
   if (!success) {
     return new NextResponse(JSON.stringify({ error: 'Too many requests' }), {

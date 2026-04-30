@@ -38,8 +38,8 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   title: {
-    default: "AI Canada Pulse — Canadian AI Intelligence Monitor",
-    template: "%s — AI Canada Pulse",
+    default: "AI Canada Pulse - Canadian AI Intelligence Monitor",
+    template: "%s - AI Canada Pulse",
   },
   description: "Fact-driven intelligence platform tracking AI developments across Canada. Real-time signals from 17+ public data sources covering policy, research, industry, and market activity.",
   keywords: ["Canada AI", "artificial intelligence", "Canadian AI policy", "AI research", "AI jobs Canada", "machine learning", "AI dashboard"],
@@ -48,7 +48,7 @@ export const metadata: Metadata = {
     type: "website",
     locale: "en_CA",
     siteName: "AI Canada Pulse",
-    title: "AI Canada Pulse — Canadian AI Intelligence Monitor",
+    title: "AI Canada Pulse - Canadian AI Intelligence Monitor",
     description: "Fact-driven intelligence platform tracking AI developments across Canada. 17+ public data sources, zero fabricated data.",
   },
   twitter: {
@@ -80,7 +80,7 @@ export default function RootLayout({
         <a
           href="#main-content"
           className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-lg focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:shadow-lg"
-          style={{ background: 'var(--accent-primary)', color: '#fff' }}
+          style={{ background: "var(--accent-primary)", color: "#fff" }}
         >
           Skip to main content
         </a>

@@ -62,13 +62,15 @@ export async function GET(request: NextRequest) {
 
     const canada = bundle?.canada ?? null
     const summaries = canada?.summaries ?? {}
-    const summaryKeys = new Set(Object.keys(summaries).map((k) => headlineKey(k)))
+    const summaryKeys = new Set(Object.keys(summaries))
+    const headlineSummaryKeys = new Set(Object.keys(summaries).map((k) => headlineKey(k)))
 
     const top = stories.slice(0, Math.min(20, CANADA_DASHBOARD_STORY_LIMIT))
     const topStories = top.map((s) => ({
+        id: s.id,
         headline: s.headline,
         publishedAt: s.publishedAt,
-        hasSummary: summaryKeys.has(headlineKey(s.headline)),
+        hasSummary: summaryKeys.has(s.id) || headlineSummaryKeys.has(headlineKey(s.headline)),
     }))
 
     const withSummary = topStories.filter((s) => s.hasSummary).length

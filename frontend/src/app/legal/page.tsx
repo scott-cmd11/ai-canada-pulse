@@ -1,4 +1,5 @@
 import Header from '@/components/Header'
+import PageHero from '@/components/PageHero'
 import Link from 'next/link'
 
 export const metadata = {
@@ -10,16 +11,17 @@ export default function LegalPage() {
   return (
     <div style={{ minHeight: '100vh', backgroundColor: 'var(--bg-page)' }}>
       <Header />
-      <main className="mx-auto max-w-[720px] px-4 py-8 sm:px-6 lg:px-10">
-        <header style={{ paddingBottom: '24px', borderBottom: '1px solid var(--border-subtle)' }}>
-          <p style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--accent-primary)', marginBottom: '8px' }}>
-            Legal
-          </p>
-          <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '28px', fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>
-            Privacy, Terms & Disclosures
-          </h1>
-        </header>
-
+      <main className="page-main-narrow">
+        <PageHero
+          eyebrow="Legal"
+          title={<>Privacy and <span>disclosures</span></>}
+          description="Plain-language privacy, terms, AI-generated content disclosure, copyright attribution, and accessibility notes for AI Canada Pulse."
+          stats={[
+            { label: 'Privacy', value: 'PIPEDA' },
+            { label: 'Email', value: 'CASL' },
+            { label: 'Access', value: 'WCAG AA' },
+          ]}
+        />
         <div className="space-y-10 py-8" style={{ color: 'var(--text-secondary)', fontSize: '14px', lineHeight: 1.8 }}>
           {/* Privacy Policy */}
           <section>

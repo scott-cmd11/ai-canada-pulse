@@ -1,4 +1,5 @@
 import Header from '@/components/Header'
+import PageHero from '@/components/PageHero'
 import Link from 'next/link'
 
 export const metadata = {
@@ -29,21 +30,19 @@ export default function AboutPage() {
   return (
     <div style={{ minHeight: '100vh', backgroundColor: 'var(--bg-page)' }}>
       <Header />
-      <main className="mx-auto max-w-[720px] px-4 py-8 sm:px-6 lg:px-10">
-        <header style={{ paddingBottom: '24px', borderBottom: '1px solid var(--border-subtle)' }}>
-          <p style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--accent-primary)', marginBottom: '8px' }}>
-            About
-          </p>
-          <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '28px', fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>
-            An independent monitor for Canadian AI signals
-          </h1>
-          <p style={{ marginTop: '10px', fontSize: '15px', lineHeight: 1.7, color: 'var(--text-secondary)' }}>
-            Tracking policy, research, industry, and public interest developments across Canada — aggregated from 17+ public sources and refreshed daily.
-          </p>
-        </header>
-
+      <main className="page-main-narrow">
+        <PageHero
+          eyebrow="About"
+          title={<>Independent <span>AI signals</span></>}
+          description="Tracking policy, research, industry, and public interest developments across Canada from public sources and daily refreshes."
+          stats={[
+            { label: 'Operator', value: 'Independent' },
+            { label: 'Sources', value: '17+' },
+            { label: 'Focus', value: 'Canada' },
+          ]}
+        />
         <div
-          className="mt-5 rounded-lg px-4 py-3 text-sm leading-relaxed"
+          className="page-section page-panel px-4 py-3 text-sm leading-relaxed"
           style={{
             backgroundColor: 'color-mix(in srgb, var(--accent-primary) 6%, transparent)',
             border: '1px solid color-mix(in srgb, var(--accent-primary) 18%, transparent)',

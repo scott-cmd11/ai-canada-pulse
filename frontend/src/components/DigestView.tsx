@@ -53,7 +53,7 @@ export default function DigestView({ digest, isToday }: Props) {
   const hasNext = nextISO <= todayISO && !isToday
 
   return (
-    <article style={{ maxWidth: '680px', margin: '0 auto', padding: '0 20px' }}>
+    <article className="page-main-narrow">
       {/* Date + heading */}
       <header style={{ padding: '32px 0 24px', borderBottom: '1px solid var(--border-subtle)' }}>
         <p

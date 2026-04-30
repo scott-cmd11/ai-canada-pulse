@@ -58,7 +58,7 @@ export default function DeepDiveView({ post }: { post: DeepDive }) {
   })
 
   return (
-    <article style={{ maxWidth: '680px', margin: '0 auto', padding: '0 20px' }}>
+    <article className="page-main-narrow">
       {/* Back link */}
       <div style={{ padding: '24px 0 0' }}>
         <Link href="/" style={{ fontSize: '13px', color: 'var(--text-muted)', textDecoration: 'none' }}>

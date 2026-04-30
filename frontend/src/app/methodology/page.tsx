@@ -1,6 +1,7 @@
 import Header from "@/components/Header"
 import Link from "next/link"
 import ScrollToTop from "@/components/ScrollToTop"
+import PageHero from "@/components/PageHero"
 import { SOURCES, getSourcesByType } from "@/lib/source-registry"
 
 export const metadata = {
@@ -57,7 +58,7 @@ export default function MethodologyPage() {
     <div className="min-h-screen" style={{ backgroundColor: "var(--bg-page)", color: "var(--text-primary)" }}>
       <Header />
 
-      <main className="mx-auto w-full max-w-[1100px] px-4 py-10 sm:px-6 lg:px-8 lg:py-12">
+      <main className="page-main-narrow">
         <div className="mb-8">
           <Link
             href="/dashboard"
@@ -68,37 +69,16 @@ export default function MethodologyPage() {
           </Link>
         </div>
 
-        {/* Hero */}
-        <section
-          className="relative overflow-hidden rounded-3xl px-6 py-8 shadow-sm sm:px-8 sm:py-10"
-          style={{
-            backgroundColor: "var(--surface-primary)",
-            borderColor: "var(--border-subtle)",
-            borderWidth: "1px",
-            borderStyle: "solid",
-          }}
-        >
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(194,65,12,0.10),_transparent_40%),radial-gradient(circle_at_bottom_left,_rgba(28,25,23,0.05),_transparent_35%)]" />
-          <div className="relative z-10 max-w-4xl">
-            <p
-              className="text-[11px] font-semibold uppercase tracking-[0.18em]"
-              style={{ color: "var(--accent-primary)" }}
-            >
-              Trust and methodology
-            </p>
-            <h1
-              className="mt-2 text-3xl font-bold tracking-tight sm:text-4xl"
-              style={{ color: "var(--text-primary)" }}
-            >
-              How we source, score, and summarize
-            </h1>
-            <p className="mt-4 max-w-3xl text-base leading-relaxed sm:text-lg" style={{ color: "var(--text-secondary)" }}>
-              AI Canada Pulse is an independent dashboard focused on AI signals from Canadian sources. The live dashboard
-              blends public data feeds, deterministic classification, cached AI-generated summaries, and curated
-              institutional references. This page documents every data source and how AI processing works.
-            </p>
-          </div>
-        </section>
+        <PageHero
+          eyebrow="Trust and methodology"
+          title={<>Source, score, <span>summarize</span></>}
+          description="AI Canada Pulse blends public data feeds, deterministic classification, cached AI-generated summaries, and curated institutional references. This page documents every source and how AI processing works."
+          stats={[
+            { label: "Sources", value: `${SOURCES.length}` },
+            { label: "Method", value: "Public" },
+            { label: "AI", value: "Labelled" },
+          ]}
+        />
 
         {/* Data Sources */}
         <section className="mt-10" id="data-sources">

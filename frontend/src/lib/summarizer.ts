@@ -281,7 +281,7 @@ function isStrongArticleSummary(text: string, headline?: string): boolean {
     if (!normalized) return false
     const sentences = sentenceCount(normalized)
     const words = normalized.split(/\s+/).filter(Boolean).length
-    if (sentences < 3 || sentences > 4) return false
+    if (sentences < 2 || sentences > 4) return false
     if (words < 55 || words > 150) return false
     if (hasMetadataLeak(normalized)) return false
     if (hasGenericTone(normalized)) return false

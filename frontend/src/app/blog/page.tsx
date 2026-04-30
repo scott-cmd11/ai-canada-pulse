@@ -3,8 +3,9 @@ import { Suspense } from 'react'
 import Link from 'next/link'
 import { listDeepDives } from '@/lib/deep-dive-client'
 import Header from '@/components/Header'
+import PageHero from '@/components/PageHero'
 
-// Must be dynamic — content comes from Redis and updates throughout the day
+// Must be dynamic because content comes from Redis and updates throughout the day.
 export const dynamic = 'force-dynamic'
 
 export async function generateMetadata() {
@@ -21,7 +22,7 @@ async function BlogList() {
   if (entries.length === 0) {
     return (
       <div style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--text-muted)', fontSize: '14px' }}>
-        No deep dives yet — check back after a significant Canadian AI story breaks.
+        No deep dives yet. Check back after a significant Canadian AI story breaks.
       </div>
     )
   }
@@ -42,18 +43,18 @@ async function BlogList() {
               href={`/blog/${entry.slug}`}
               style={{ display: 'block', padding: '20px 0', textDecoration: 'none' }}
             >
-              <div style={{ display: 'flex', gap: '6px', marginBottom: '6px' }}>
+              <div style={{ display: 'flex', gap: '6px', marginBottom: '6px', flexWrap: 'wrap' }}>
                 {entry.tags.map((tag) => (
-                  <span key={tag} style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: 600 }}>
+                  <span key={tag} style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: 700 }}>
                     {tag}
                   </span>
                 ))}
               </div>
-              <p style={{ fontSize: '16px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '4px', lineHeight: 1.3 }}>
+              <p className="deep-dive-list-title" style={{ fontSize: '18px', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '6px', lineHeight: 1.25 }}>
                 {entry.title}
               </p>
               <p style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
-                {displayDate} · {entry.readingTimeMinutes} min read · AI-generated
+                {displayDate} / {entry.readingTimeMinutes} min read / AI-generated
               </p>
             </Link>
           </div>
@@ -67,20 +68,21 @@ export default function BlogPage() {
   return (
     <div style={{ minHeight: '100vh', backgroundColor: 'var(--bg-page)' }}>
       <Header />
-      <main style={{ maxWidth: '680px', margin: '0 auto', padding: '0 20px 60px' }}>
-        <header style={{ padding: '32px 0 24px', borderBottom: '1px solid var(--border-subtle)' }}>
-          <p style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--accent-primary)', marginBottom: '8px' }}>
-            Deep Dives
-          </p>
-          <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '28px', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '8px', letterSpacing: '-0.02em' }}>
-            Stories that earn a second look
-          </h1>
-          <p style={{ fontSize: '14px', color: 'var(--text-secondary)', lineHeight: 1.6 }}>
-            Auto-generated when a significant Canadian AI story crosses our detection threshold. One per day, maximum.
-          </p>
-        </header>
-        <Suspense fallback={<div style={{ padding: '40px 0', color: 'var(--text-muted)', fontSize: '14px' }}>Loading…</div>}>
-          <BlogList />
+      <main className="page-main-narrow">
+        <PageHero
+          eyebrow="Deep Dives"
+          title={<>Stories with a <span>second look</span></>}
+          description="Auto-generated when a significant Canadian AI story crosses the detection threshold. One per day, maximum, with source links for verification."
+          stats={[
+            { label: 'Format', value: 'Analysis' },
+            { label: 'Cadence', value: 'Daily max' },
+            { label: 'Label', value: 'AI' },
+          ]}
+        />
+        <Suspense fallback={<div style={{ padding: '40px 0', color: 'var(--text-muted)', fontSize: '14px' }}>Loading...</div>}>
+          <div className="page-section page-panel px-5 sm:px-6">
+            <BlogList />
+          </div>
         </Suspense>
       </main>
     </div>
