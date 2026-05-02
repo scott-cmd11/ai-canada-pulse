@@ -21,6 +21,7 @@ import DashboardFooter from "@/components/DashboardFooter"
 import SectionErrorBoundary from "@/components/SectionErrorBoundary"
 import KeyboardShortcuts from "@/components/KeyboardShortcuts"
 import { StoriesProvider } from "@/hooks/useStories"
+import { relativeTime } from "@/lib/relative-time"
 
 export const metadata: Metadata = {
   title: "Dashboard",
@@ -52,10 +53,84 @@ async function loadInitialStories(): Promise<StoriesInitialData | null> {
 function SectionTitle({ eyebrow, title, description, dark }: { eyebrow: string; title: string; description: string; dark?: boolean }) {
   return (
     <div className="mb-4 sm:mb-5">
-      <p className="text-[11px] font-semibold uppercase tracking-[0.18em]" style={{ color: dark ? 'var(--accent-on-invert)' : 'var(--accent-primary)' }}>{eyebrow}</p>
-      <h2 className="mt-1 text-2xl font-bold sm:text-3xl" style={{ fontFamily: 'var(--font-display)', color: dark ? 'var(--text-on-invert)' : 'var(--text-primary)', fontWeight: 600 }}>{title}</h2>
+      <p className="section-kicker" style={{ color: dark ? 'var(--accent-on-invert)' : undefined }}>{eyebrow}</p>
+      <h2 className="mt-1 text-2xl font-bold sm:text-3xl" style={{ fontFamily: 'var(--font-ui)', color: dark ? 'var(--text-on-invert)' : 'var(--text-primary)', fontWeight: 740 }}>{title}</h2>
       <p className="mt-2 max-w-3xl text-sm leading-relaxed" style={{ color: dark ? 'var(--text-on-invert-secondary)' : 'var(--text-secondary)' }}>{description}</p>
     </div>
+  )
+}
+
+function getTopCategory(stories: StoriesInitialData["stories"]) {
+  const categoryCounts = new Map<string, number>()
+  stories.slice(0, 20).forEach((story) => {
+    categoryCounts.set(story.category, (categoryCounts.get(story.category) ?? 0) + 1)
+  })
+  return Array.from(categoryCounts.entries()).sort((a, b) => b[1] - a[1])[0]?.[0] ?? "Canadian AI"
+}
+
+function DashboardHero({ initialStories }: { initialStories: StoriesInitialData | null }) {
+  const stories = initialStories?.stories ?? []
+  const pulse = initialStories?.pulse ?? null
+  const executiveBrief = initialStories?.executiveBrief ?? []
+  const sourceCount = new Set(stories.map((story) => story.sourceName).filter(Boolean)).size
+  const topCategory = getTopCategory(stories)
+  const latestStory = stories[0]
+  const updatedLabel = pulse?.updatedAt ? relativeTime(pulse.updatedAt) : "Live snapshot"
+  const briefLine =
+    executiveBrief[0] ??
+    initialStories?.summary ??
+    "A source-linked scan of Canadian AI policy, research, markets, and public institutions."
+
+  const metrics = [
+    { label: "Signals tracked", value: stories.length ? stories.length.toString() : "Live" },
+    { label: "Sources", value: sourceCount ? sourceCount.toString() : "Public" },
+    { label: "Top lane", value: topCategory.replace("Industry & Startups", "Markets") },
+  ]
+
+  return (
+    <section className="briefing-hero">
+      <div className="briefing-hero__main">
+        <p className="section-kicker">Live / Public Intelligence</p>
+        <h1 className="briefing-hero__title">
+          AI activity in Canada, <span>measured</span>{" "}
+          <em>hourly.</em>
+        </h1>
+        <p className="briefing-hero__copy">
+          A live, source-linked briefing across policy, research, markets, and public institutions.
+        </p>
+        <div className="briefing-hero__actions" aria-label="Primary dashboard actions">
+          <a href="#acceleration" className="briefing-action briefing-action--primary">
+            Start with signals
+          </a>
+          <a href="/methodology" className="briefing-action">
+            View methodology
+          </a>
+        </div>
+      </div>
+
+      <aside className="briefing-panel" aria-label="Current briefing status">
+        <div className="briefing-panel__header">
+          <span className="live-dot" aria-hidden="true" />
+          <span>{pulse?.moodLabel ?? "Live index"}</span>
+          <span>{updatedLabel}</span>
+        </div>
+        <p className="briefing-panel__brief">{briefLine}</p>
+        <div className="briefing-metrics">
+          {metrics.map((metric) => (
+            <div key={metric.label} className="briefing-metric">
+              <span>{metric.label}</span>
+              <strong>{metric.value}</strong>
+            </div>
+          ))}
+        </div>
+        {latestStory && (
+          <a href={latestStory.sourceUrl ?? "#acceleration"} className="briefing-latest">
+            <span>Latest signal</span>
+            <strong>{latestStory.headline}</strong>
+          </a>
+        )}
+      </aside>
+    </section>
   )
 }
 
@@ -67,43 +142,7 @@ export default async function DashboardPage() {
       <Header />
 
       <main id="main-content" className="mx-auto flex w-full max-w-[1480px] flex-col gap-5 px-4 py-3 sm:gap-6 sm:px-6 sm:py-4 lg:px-8 lg:py-5">
-        <div>
-          <p
-            className="flex items-center gap-2.5 text-[11px] uppercase"
-            style={{
-              fontFamily: 'var(--font-mono), monospace',
-              letterSpacing: '0.14em',
-              color: 'var(--text-muted)',
-              fontWeight: 700,
-            }}
-          >
-            <span style={{ color: 'var(--accent-primary)' }}>● Live</span>
-            <span aria-hidden style={{ color: 'var(--border-strong)' }}>/</span>
-            <span>Public Intelligence</span>
-          </p>
-          <h1
-            className="mt-2 max-w-[22ch] text-[clamp(26px,4.2vw,56px)] leading-[0.98] uppercase sm:mt-3"
-            style={{
-              fontFamily: 'var(--font-display), "Archivo Black", sans-serif',
-              color: 'var(--text-primary)',
-              letterSpacing: '-0.025em',
-            }}
-          >
-            AI activity in Canada,{' '}
-            <span style={{ color: 'var(--accent-primary)' }}>measured</span>{' '}
-            <span
-              style={{
-                fontFamily: 'var(--font-italic), Georgia, serif',
-                fontStyle: 'italic',
-                textTransform: 'lowercase',
-                letterSpacing: '-0.01em',
-                fontWeight: 400,
-              }}
-            >
-              hourly.
-            </span>
-          </h1>
-        </div>
+        <DashboardHero initialStories={initialStories} />
 
         <SectionNav />
 

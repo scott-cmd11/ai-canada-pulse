@@ -46,17 +46,21 @@ function HeadlinesFallback({
   stories: { headline: string; sourceUrl: string; sourceName: string }[]
 }) {
   return (
-    <div style={{ maxWidth: '680px', margin: '0 auto', padding: '32px 20px' }}>
-      <p style={{ fontSize: '14px', color: 'var(--text-muted)', marginBottom: '20px' }}>{message}</p>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
+    <div style={{ maxWidth: '760px', margin: '0 auto', padding: '44px 20px' }}>
+      <section className="saas-card" style={{ padding: '24px' }}>
+        <p className="eyebrow" style={{ marginBottom: '10px' }}>Latest headlines</p>
+        <h1 style={{ fontSize: 'clamp(28px, 4vw, 44px)', lineHeight: 1.08, marginBottom: '12px' }}>
+          Today in Canadian AI
+        </h1>
+        <p style={{ fontSize: '15px', color: 'var(--text-secondary)', lineHeight: 1.7, marginBottom: '22px' }}>{message}</p>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
         {stories.map((s, i) => (
-          <div key={i}>
-            {i > 0 && <div style={{ height: '1px', background: 'var(--border-subtle)' }} />}
+          <div key={i} style={{ border: '1px solid var(--border-subtle)', borderRadius: '10px', background: 'var(--surface-elevated)' }}>
             <a
               href={s.sourceUrl}
               target="_blank"
               rel="noopener noreferrer"
-              style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', textDecoration: 'none', color: 'var(--text-primary)', fontSize: '13px' }}
+              style={{ display: 'flex', justifyContent: 'space-between', gap: '16px', padding: '12px 14px', textDecoration: 'none', color: 'var(--text-primary)', fontSize: '14px', lineHeight: 1.45 }}
             >
               <span>{s.headline}</span>
               <span style={{ color: 'var(--text-muted)', fontSize: '11px', marginLeft: '12px', whiteSpace: 'nowrap' }}>{s.sourceName} →</span>
@@ -64,9 +68,10 @@ function HeadlinesFallback({
           </div>
         ))}
       </div>
-      <a href="/dashboard" style={{ display: 'block', marginTop: '20px', color: 'var(--accent-primary)', fontSize: '13px' }}>
+      <a href="/dashboard" style={{ display: 'inline-flex', marginTop: '22px', color: 'var(--accent-primary)', fontSize: '13px', fontWeight: 700, textDecoration: 'none' }}>
         View the live dashboard →
       </a>
+      </section>
     </div>
   )
 }

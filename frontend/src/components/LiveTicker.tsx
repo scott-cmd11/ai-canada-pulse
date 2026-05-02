@@ -29,10 +29,10 @@ export default function LiveTicker() {
     const story = stories[currentIndex % stories.length]
 
     const categoryColors: Record<string, { bg: string; text: string }> = {
-        "Policy & Regulation": { bg: 'color-mix(in srgb, #3b82f6 12%, var(--surface-primary))', text: '#3b82f6' },
-        "Industry & Startups": { bg: 'color-mix(in srgb, #10b981 12%, var(--surface-primary))', text: '#10b981' },
-        "Research & Development": { bg: 'color-mix(in srgb, #8b5cf6 12%, var(--surface-primary))', text: '#8b5cf6' },
-        "Funding & Investment": { bg: 'color-mix(in srgb, #f59e0b 12%, var(--surface-primary))', text: '#f59e0b' },
+        "Policy & Regulation": { bg: 'color-mix(in srgb, var(--cat-policy) 12%, var(--surface-primary))', text: 'var(--cat-policy)' },
+        "Industry & Startups": { bg: 'color-mix(in srgb, var(--cat-markets) 12%, var(--surface-primary))', text: 'var(--cat-markets)' },
+        "Research & Development": { bg: 'color-mix(in srgb, var(--cat-research) 12%, var(--surface-primary))', text: 'var(--cat-research)' },
+        "Funding & Investment": { bg: 'color-mix(in srgb, var(--cat-funding) 12%, var(--surface-primary))', text: 'var(--cat-funding)' },
     }
     const catStyle = categoryColors[story.category] || { bg: 'color-mix(in srgb, var(--text-muted) 12%, var(--surface-primary))', text: 'var(--text-muted)' }
 
@@ -41,16 +41,16 @@ export default function LiveTicker() {
             className="w-full overflow-hidden"
             style={{
                 backgroundColor: 'var(--surface-secondary)',
-                borderBottom: '1px solid color-mix(in srgb, var(--accent-primary) 25%, var(--border-subtle))',
+                borderBottom: '1px solid var(--border-subtle)',
             }}
         >
             <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-1.5 flex items-center gap-3">
                 <div className="flex items-center gap-1.5 shrink-0">
                     <span className="relative flex h-2 w-2">
-                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75" style={{ backgroundColor: '#f87171' }}></span>
-                        <span className="relative inline-flex rounded-full h-2 w-2" style={{ backgroundColor: '#ef4444' }}></span>
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-50" style={{ backgroundColor: 'var(--accent-secondary)' }}></span>
+                        <span className="relative inline-flex rounded-full h-2 w-2" style={{ backgroundColor: 'var(--accent-secondary)' }}></span>
                     </span>
-                    <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: '#f87171' }}>Live</span>
+                    <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: 'var(--accent-secondary)' }}>Live</span>
                 </div>
 
                 <div

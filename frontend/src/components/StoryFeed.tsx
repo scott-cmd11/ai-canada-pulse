@@ -174,13 +174,13 @@ function StoryFeedInner({ region, sectionTitle }: StoryFeedProps = {}) {
         {sectionTitle}
       </h2>
     )}
-    <section className="rounded-2xl border p-5 sm:p-6" style={{ borderColor: 'var(--border-subtle)', backgroundColor: 'var(--surface-primary)' }}>
+    <section className="rounded-[10px] border p-5 sm:p-6" style={{ borderColor: 'var(--border-subtle)', backgroundColor: 'var(--surface-elevated)' }}>
       <div className="flex flex-col gap-4 border-b pb-4 lg:flex-row lg:items-end lg:justify-between" style={{ borderColor: 'var(--border-subtle)' }}>
         <div>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.18em]" style={{ color: 'var(--text-muted)' }}>
+          <p className="section-kicker" style={{ color: 'var(--text-muted)' }}>
             Curated Canada stream
           </p>
-          <h3 className="mt-1 text-xl font-bold" style={{ color: 'var(--text-primary)' }}>Signals worth scanning now</h3>
+          <h3 className="mt-1 text-xl font-bold" style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-ui)' }}>Signals worth scanning now</h3>
           <p className="mt-2 max-w-2xl text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
             A narrower Canada feed focused on the items most relevant to acceleration, capacity building, and institutional impact.
           </p>
@@ -205,10 +205,10 @@ function StoryFeedInner({ region, sectionTitle }: StoryFeedProps = {}) {
             className="group inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-semibold transition-colors"
             style={{
               borderColor: 'color-mix(in srgb, var(--accent-primary) 30%, transparent)',
-              backgroundColor: 'color-mix(in srgb, var(--accent-primary) 10%, transparent)',
+              backgroundColor: 'var(--accent-surface)',
               color: 'var(--accent-primary)',
             }}
-            aria-label={`${newCount} new ${newCount === 1 ? 'signal' : 'signals'} since your last visit — click to dismiss`}
+            aria-label={`${newCount} new ${newCount === 1 ? 'signal' : 'signals'} since your last visit - click to dismiss`}
           >
             <span
               aria-hidden
@@ -233,12 +233,12 @@ function StoryFeedInner({ region, sectionTitle }: StoryFeedProps = {}) {
               style={isActive
                 ? {
                     borderColor: 'color-mix(in srgb, var(--accent-primary) 20%, transparent)',
-                    backgroundColor: 'color-mix(in srgb, var(--accent-primary) 8%, transparent)',
+                    backgroundColor: 'var(--accent-surface)',
                     color: 'var(--accent-primary)',
                   }
                 : {
                     borderColor: 'var(--border-subtle)',
-                    backgroundColor: 'var(--surface-primary)',
+                    backgroundColor: 'var(--surface-elevated)',
                     color: 'var(--text-muted)',
                   }
               }
@@ -259,7 +259,7 @@ function StoryFeedInner({ region, sectionTitle }: StoryFeedProps = {}) {
               className="min-h-[36px] rounded-full border px-3 text-xs font-semibold transition-colors"
               style={{
                 borderColor: regionFilter === 'All' ? 'var(--border-subtle)' : 'color-mix(in srgb, var(--accent-primary) 20%, transparent)',
-                backgroundColor: regionFilter === 'All' ? 'var(--surface-primary)' : 'color-mix(in srgb, var(--accent-primary) 8%, transparent)',
+                backgroundColor: regionFilter === 'All' ? 'var(--surface-elevated)' : 'var(--accent-surface)',
                 color: regionFilter === 'All' ? 'var(--text-muted)' : 'var(--accent-primary)',
               }}
               aria-label="Filter stories by region"
@@ -286,7 +286,7 @@ function StoryFeedInner({ region, sectionTitle }: StoryFeedProps = {}) {
 
       {!loading && stories.length === 0 && (
         <div className="py-8 text-center">
-          <p className="text-sm font-medium" style={{ color: 'var(--text-muted)' }}>Unable to load stories — check back shortly.</p>
+          <p className="text-sm font-medium" style={{ color: 'var(--text-muted)' }}>Unable to load stories - check back shortly.</p>
         </div>
       )}
 
@@ -305,7 +305,7 @@ function StoryFeedInner({ region, sectionTitle }: StoryFeedProps = {}) {
             <button
               onClick={() => setDisplayCount((prev) => prev + PAGE_SIZE)}
               className="rounded-lg border px-4 py-2 text-sm font-semibold transition-colors"
-              style={{ borderColor: 'var(--border-subtle)', backgroundColor: 'var(--surface-primary)', color: 'var(--text-secondary)' }}
+              style={{ borderColor: 'var(--border-subtle)', backgroundColor: 'var(--surface-elevated)', color: 'var(--text-secondary)' }}
             >
               Show more signals
             </button>
@@ -313,7 +313,7 @@ function StoryFeedInner({ region, sectionTitle }: StoryFeedProps = {}) {
             <button
               onClick={() => setDisplayCount(PAGE_SIZE)}
               className="rounded-lg border px-4 py-2 text-sm font-semibold transition-colors"
-              style={{ borderColor: 'var(--border-subtle)', backgroundColor: 'var(--surface-primary)', color: 'var(--text-secondary)' }}
+              style={{ borderColor: 'var(--border-subtle)', backgroundColor: 'var(--surface-elevated)', color: 'var(--text-secondary)' }}
             >
               Collapse
             </button>
