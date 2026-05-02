@@ -11,6 +11,7 @@ const navLinks = [
   { label: "Dashboard", href: "/dashboard" },
   { label: "Topics", href: "/topics" },
   { label: "Deep Dives", href: "/blog" },
+  { label: "AI Today", href: "https://aitoday.vercel.app/", external: true },
   { label: "Data Centres", href: "/datacentres", mobileHidden: true },
   { label: "About", href: "/about", mobileHidden: true },
   { label: "Methodology", href: "/methodology", mobileHidden: true },
@@ -67,25 +68,45 @@ export default function Header() {
                 background: "color-mix(in srgb, var(--surface-muted) 70%, transparent)",
               }}
             >
-              {navLinks.map(({ label, href, mobileHidden }) => {
+              {navLinks.map(({ label, href, mobileHidden, external }) => {
                 const isActive =
+                  external ? false :
                   href === "/" ? pathname === "/" :
                   href === "/blog" ? pathname.startsWith("/blog") :
                   href === "/datacentres" ? pathname.startsWith("/datacentres") :
                   href === "/topics" ? pathname.startsWith("/topics") :
                   pathname === href
+                const className = `rounded-full px-3 py-1.5 text-[11px] no-underline${mobileHidden ? " hidden md:inline-block" : ""}`
+                const style = {
+                  fontFamily: "var(--font-mono), monospace",
+                  letterSpacing: "0.06em",
+                  fontWeight: isActive ? 700 : 500,
+                  color: isActive ? "var(--text-on-invert)" : "var(--text-secondary)",
+                  background: isActive ? "var(--surface-invert)" : "transparent",
+                }
+
+                if (external) {
+                  return (
+                    <a
+                      key={href}
+                      href={href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={className}
+                      style={style}
+                      aria-label={`${label} daily curated news, opens in a new tab`}
+                    >
+                      {label}
+                    </a>
+                  )
+                }
+
                 return (
                   <Link
                     key={href}
                     href={href}
-                    className={`rounded-full px-3 py-1.5 text-[11px] no-underline${mobileHidden ? " hidden md:inline-block" : ""}`}
-                    style={{
-                      fontFamily: "var(--font-mono), monospace",
-                      letterSpacing: "0.06em",
-                      fontWeight: isActive ? 700 : 500,
-                      color: isActive ? "var(--text-on-invert)" : "var(--text-secondary)",
-                      background: isActive ? "var(--surface-invert)" : "transparent",
-                    }}
+                    className={className}
+                    style={style}
                   >
                     {label}
                   </Link>
@@ -125,21 +146,41 @@ export default function Header() {
             className="mt-2 grid gap-1 rounded-[10px] border p-2 sm:hidden"
             style={{ borderColor: "var(--border-subtle)", background: "var(--surface-elevated)" }}
           >
-            {navLinks.map(({ label, href }) => {
-              const isActive = pathname === href
+            {navLinks.map(({ label, href, external }) => {
+              const isActive = external ? false : pathname === href
+              const className = "rounded-md px-3 py-2 text-[11px] no-underline"
+              const style = {
+                fontFamily: "var(--font-mono), monospace",
+                letterSpacing: "0.06em",
+                fontWeight: isActive ? 700 : 500,
+                color: isActive ? "var(--text-on-invert)" : "var(--text-secondary)",
+                background: isActive ? "var(--surface-invert)" : "transparent",
+              }
+
+              if (external) {
+                return (
+                  <a
+                    key={href}
+                    href={href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={() => setMenuOpen(false)}
+                    className={className}
+                    style={style}
+                    aria-label={`${label} daily curated news, opens in a new tab`}
+                  >
+                    {label}
+                  </a>
+                )
+              }
+
               return (
                 <Link
                   key={href}
                   href={href}
                   onClick={() => setMenuOpen(false)}
-                  className="rounded-md px-3 py-2 text-[11px] no-underline"
-                  style={{
-                    fontFamily: "var(--font-mono), monospace",
-                    letterSpacing: "0.06em",
-                    fontWeight: isActive ? 700 : 500,
-                    color: isActive ? "var(--text-on-invert)" : "var(--text-secondary)",
-                    background: isActive ? "var(--surface-invert)" : "transparent",
-                  }}
+                  className={className}
+                  style={style}
                 >
                   {label}
                 </Link>
