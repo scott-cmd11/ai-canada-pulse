@@ -127,23 +127,6 @@ export default function BlogPage() {
         <Suspense fallback={<div className="editorial-loading">Loading...</div>}>
           <BlogList />
         </Suspense>
-        <section className="editorial-path" aria-label="Reader path">
-          <Link href="/" className="editorial-path__item">
-            <span>Daily brief</span>
-            <strong>Start with the digest</strong>
-            <small>Fast context when you want the day in one pass.</small>
-          </Link>
-          <Link href="/dashboard" className="editorial-path__item">
-            <span>Live index</span>
-            <strong>Scan current signals</strong>
-            <small>Source-linked developments, filters, and impact sections.</small>
-          </Link>
-          <Link href="/methodology" className="editorial-path__item">
-            <span>Trust layer</span>
-            <strong>Check the method</strong>
-            <small>How sources, AI labels, and thresholds are handled.</small>
-          </Link>
-        </section>
       </main>
     </div>
   )
