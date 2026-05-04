@@ -1,8 +1,8 @@
 "use client"
 
 import Link from "next/link"
-import { usePathname } from "next/navigation"
-import { useState } from "react"
+import { usePathname, useRouter } from "next/navigation"
+import { useCallback, useEffect, useState } from "react"
 import LiveTicker from "./LiveTicker"
 import ThemeToggle from "./ThemeToggle"
 
@@ -18,7 +18,15 @@ const navLinks = [
 
 export default function Header() {
   const pathname = usePathname()
+  const router = useRouter()
   const [menuOpen, setMenuOpen] = useState(false)
+  const warmRoute = useCallback((href: string) => {
+    if (href.startsWith("/")) router.prefetch(href)
+  }, [router])
+
+  useEffect(() => {
+    warmRoute("/dashboard")
+  }, [warmRoute])
 
   return (
     <header
@@ -36,6 +44,10 @@ export default function Header() {
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
           <Link
             href="/dashboard"
+            prefetch
+            onMouseEnter={() => warmRoute("/dashboard")}
+            onFocus={() => warmRoute("/dashboard")}
+            onTouchStart={() => warmRoute("/dashboard")}
             className="flex items-center gap-3 no-underline"
             style={{ color: "var(--text-primary)" }}
           >
@@ -71,6 +83,10 @@ export default function Header() {
                   <Link
                     key={href}
                     href={href}
+                    prefetch
+                    onMouseEnter={() => warmRoute(href)}
+                    onFocus={() => warmRoute(href)}
+                    onTouchStart={() => warmRoute(href)}
                     className={`px-3 py-1.5 text-[11px] uppercase no-underline${mobileHidden ? " hidden md:inline-block" : ""}`}
                     style={{
                       fontFamily: "var(--font-mono), monospace",
@@ -123,7 +139,14 @@ export default function Header() {
                 <Link
                   key={href}
                   href={href}
-                  onClick={() => setMenuOpen(false)}
+                  prefetch
+                  onMouseEnter={() => warmRoute(href)}
+                  onFocus={() => warmRoute(href)}
+                  onTouchStart={() => warmRoute(href)}
+                  onClick={() => {
+                    warmRoute(href)
+                    setMenuOpen(false)
+                  }}
                   className="px-3 py-2 text-[11px] uppercase no-underline"
                   style={{
                     fontFamily: "var(--font-mono), monospace",
