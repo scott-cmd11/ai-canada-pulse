@@ -18,7 +18,7 @@ function isSummaryRedundant(headline: string, summary: string): boolean {
   // One contains the other
   if (s.startsWith(h) || h.startsWith(s)) return true
 
-  // Word-level Jaccard similarity — redundant if >60% overlap
+  // Word-level Jaccard similarity - redundant if >60% overlap
   const hWords = h.split(/\s+/)
   const sWords = s.split(/\s+/)
   const sWordSet = new Set(sWords)
@@ -51,8 +51,8 @@ export default function StoryCard({ story }: Props) {
   const catColor = categoryColors[story.category] || "var(--accent-primary)"
 
   return (
-    <article className="saas-card group flex flex-col gap-4 p-5 sm:flex-row sm:gap-5">
-      <div className="mt-0.5 flex shrink-0 gap-3 sm:w-32 sm:flex-col sm:gap-2">
+    <article className="saas-card story-row group flex flex-col gap-4 p-5 sm:flex-row sm:gap-5">
+      <div className="story-row__rail mt-0.5 flex shrink-0 gap-3 sm:w-36 sm:flex-col sm:gap-2">
         <span className="meta">
           {relativeTime(story.publishedAt)}
         </span>
@@ -63,7 +63,7 @@ export default function StoryCard({ story }: Props) {
 
       <div className="min-w-0 flex-1">
         <div className="space-y-2.5">
-          <h3 className="text-lg font-semibold leading-snug" style={{ color: 'var(--text-primary)' }}>
+          <h3 className="text-lg font-semibold leading-snug sm:text-xl" style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-ui)' }}>
             {story.sourceUrl ? (
               <a href={story.sourceUrl} target="_blank" rel="noopener noreferrer" className="story-headline-link hover:underline focus-visible:underline focus-visible:outline-none" style={{ color: 'var(--text-primary)', transition: 'color 0.15s ease' }}>
                 {story.headline}
@@ -90,7 +90,7 @@ export default function StoryCard({ story }: Props) {
         <div className="mt-4 flex flex-wrap items-center gap-2 border-t pt-3" style={{ borderColor: 'var(--border-subtle)' }}>
           <div className="meta flex flex-1 flex-wrap items-center gap-2">
             {!story.aiSummary && story.sourceName && <span>{story.sourceName}</span>}
-            {!story.aiSummary && story.sourceName && <span aria-hidden="true">·</span>}
+            {!story.aiSummary && story.sourceName && <span aria-hidden="true">/</span>}
             <span>{story.region}</span>
           </div>
           {story.sourceUrl && (

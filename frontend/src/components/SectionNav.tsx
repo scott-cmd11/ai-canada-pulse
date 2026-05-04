@@ -3,9 +3,9 @@
 import { useState, useEffect } from "react"
 
 const sections = [
-  { id: "acceleration", label: "Signals" },
+  { id: "acceleration", label: "Start here" },
   { id: "impact", label: "Impact" },
-  { id: "more", label: "More" },
+  { id: "more", label: "Deepen" },
 ]
 
 export default function SectionNav() {
@@ -52,10 +52,10 @@ export default function SectionNav() {
   }
 
   return (
-    <nav className={`sticky top-[72px] sm:top-[100px] z-40 rounded-2xl border px-4 shadow-[0_10px_30px_rgba(15,23,42,0.05)] backdrop-blur-xl transition-[padding] duration-200 ${compact ? 'py-1.5' : 'py-3'}`} style={{ borderColor: 'color-mix(in srgb, var(--surface-primary) 60%, transparent)', backgroundColor: 'color-mix(in srgb, var(--surface-primary) 85%, transparent)' }}>
+    <nav className={`sticky top-[72px] sm:top-[96px] z-40 rounded-[10px] border px-4 shadow-[0_10px_30px_rgba(15,23,42,0.05)] backdrop-blur-xl transition-[padding] duration-200 ${compact ? 'py-1.5' : 'py-3'}`} style={{ borderColor: 'var(--border-subtle)', backgroundColor: 'color-mix(in srgb, var(--surface-elevated) 91%, transparent)' }}>
       <div className="flex flex-wrap items-center gap-2">
-        <span className="mr-2 hidden text-[11px] font-semibold uppercase tracking-[0.18em] sm:inline" style={{ color: 'var(--text-muted)' }}>
-          Navigate
+        <span className="mr-2 hidden text-[11px] font-semibold uppercase tracking-[0.08em] sm:inline" style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-mono), monospace' }}>
+          Briefing path
         </span>
         {sections.map((section) => {
           const isActive = activeId === section.id
@@ -63,7 +63,7 @@ export default function SectionNav() {
             <button
               key={section.id}
               onClick={() => scrollTo(section.id)}
-              className="min-h-[36px] rounded-full border px-3.5 py-2 text-xs font-semibold shadow-sm transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-700 focus-visible:ring-offset-1"
+              className="min-h-[36px] rounded-full border px-3.5 py-2 text-xs font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-700 focus-visible:ring-offset-1"
               style={{
                 borderColor: isActive
                   ? 'var(--accent-primary)'
@@ -75,7 +75,7 @@ export default function SectionNav() {
                   ? 'var(--accent-primary)'
                   : 'var(--text-secondary)',
                 fontWeight: isActive ? 700 : 600,
-                transform: isActive ? 'scale(1.04)' : 'scale(1)',
+                transform: 'none',
                 boxShadow: isActive
                   ? '0 2px 8px color-mix(in srgb, var(--accent-primary) 20%, transparent)'
                   : undefined,

@@ -32,7 +32,7 @@ const SOURCE_TYPES = [
 
 const limits = [
   "AI summaries, digests, and deep dives are produced from headlines and short context snippets. They can miss nuance, omit background, or flatten uncertainty. They should be treated as navigation aids, not authoritative analysis.",
-  "The daily digest is regenerated every two hours throughout the day as new stories are enriched. Before the first successful run of a given UTC day, the previous day's digest is shown. If generation fails, the site falls back to live headlines.",
+  "The daily digest is generated once per day with a same-day retry job. Lightweight story enrichment refreshes several more times per day. If the digest is late or stale, the site labels that state and falls back to current public-source headlines.",
   "Deep Dives are triggered automatically by a significance threshold (funding ≥$25M, parliamentary AI votes, notable research), or auto-generated if no Deep Dive has published in 4+ days. Stories that don't meet the threshold and fall within that window may not generate one.",
   "Public feeds can change structure, publish duplicates, or omit context. The app deduplicates and filters aggressively, but false positives and missed stories remain possible.",
   "Market and macro indicators are contextual signals only. They are not investment advice, economic forecasts, or causal evidence about AI effects.",
@@ -456,7 +456,7 @@ export default function MethodologyPage() {
                   Daily Digest
                 </h3>
                 <p className="mt-2 text-xs leading-relaxed" style={{ color: "var(--text-secondary)" }}>
-                  <strong>gpt-4o-mini</strong> — synthesizes the top 10 stories into a headline, 2–3 sentence intro, 3–5 key developments, and top story links. Regenerated every two hours throughout the day and stored in Redis for 90 days.
+                  <strong>gpt-4o-mini</strong> — synthesizes the top 10 stories into a headline, 2–3 sentence intro, 3–5 key developments, and top story links. Generated daily with a same-day retry, then stored in Redis for 90 days.
                 </p>
               </div>
               <div

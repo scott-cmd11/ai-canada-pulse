@@ -6,14 +6,18 @@
 import { Redis } from '@upstash/redis'
 import type { DailyDigest, DigestTag } from './digest-types'
 
-const redis = new Redis({
-  url: process.env.UPSTASH_REDIS_REST_URL!,
-  token: process.env.UPSTASH_REDIS_REST_TOKEN!,
-})
-
 const OPENAI_MODEL = process.env.OPENAI_BRIEF_MODEL ?? 'gpt-4o-mini'
 const TIMEOUT_MS = 30_000
 const DIGEST_TTL_SECONDS = 90 * 24 * 60 * 60 // 90 days
+
+function getRedis(): Redis {
+  const url = process.env.UPSTASH_REDIS_REST_URL
+  const token = process.env.UPSTASH_REDIS_REST_TOKEN
+  if (!url || !token) {
+    throw new Error('Digest Redis is not configured')
+  }
+  return new Redis({ url, token })
+}
 
 function redisKey(date: string) {
   return `digest:${date}`
@@ -24,18 +28,21 @@ function redisKey(date: string) {
  * Throws if Redis is unavailable (callers must handle this for fallback rendering).
  */
 export async function getDigest(date: string): Promise<DailyDigest | null> {
+  const redis = getRedis()
   const raw = await redis.get<DailyDigest>(redisKey(date))
   return raw ?? null
 }
 
 /** Store a digest in Redis with 90-day TTL. */
 export async function saveDigest(digest: DailyDigest): Promise<void> {
+  const redis = getRedis()
   await redis.set(redisKey(digest.date), digest, { ex: DIGEST_TTL_SECONDS })
 }
 
 /** Store an error sentinel so pages know the cron ran but failed.
  *  Never overwrites a previously successful digest for the same day. */
 export async function saveDigestError(date: string, reason = 'Digest generation failed', stage = 'digest'): Promise<void> {
+  const redis = getRedis()
   const existing = await redis.get<DailyDigest>(redisKey(date))
   if (existing && !existing.error) return // keep the good digest
   const sentinel: Partial<DailyDigest> = {

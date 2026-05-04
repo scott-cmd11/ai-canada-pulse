@@ -26,7 +26,7 @@ function isSummaryRedundant(headline: string, summary: string): boolean {
 export default function BriefingCard() {
   const { stories, loading } = useStories()
 
-  // Prefer a story with an AI summary for the lead signal — it's the most prominent card
+  // Prefer a story with an AI summary for the most prominent card.
   const topStory: Story | undefined =
     stories.find((s) => s.isBriefingTop && s.aiSummary) ||
     stories.find((s) => s.aiSummary) ||
@@ -50,7 +50,7 @@ export default function BriefingCard() {
     return (
       <article className="saas-card accent-border-left flex flex-col gap-5 p-6 sm:p-8">
         <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
-          Unable to load stories — check back shortly.
+          Unable to load stories - check back shortly.
         </p>
       </article>
     )
@@ -59,20 +59,24 @@ export default function BriefingCard() {
   return (
     <article
       className="saas-card accent-border-left flex flex-col gap-5 p-6 sm:p-8"
+      style={{
+        background:
+          'linear-gradient(115deg, color-mix(in srgb, var(--accent-primary) 5%, transparent), transparent 36%), linear-gradient(180deg, var(--card-gradient-top), var(--card-gradient-bottom))',
+      }}
     >
       <div
         className="flex flex-wrap items-center gap-3 text-[11px] uppercase"
-        style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-mono), monospace', letterSpacing: '0.16em', fontWeight: 700 }}
+        style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-mono), monospace', letterSpacing: '0.08em', fontWeight: 700 }}
       >
         <span
-          className="px-2.5 py-1"
+          className="rounded-full px-3 py-1"
           style={{
-            background: 'var(--accent-primary)',
-            color: '#fff',
-            letterSpacing: '0.18em',
+            background: 'var(--accent-surface)',
+            color: 'var(--accent-primary)',
+            letterSpacing: '0.08em',
           }}
         >
-          ▌ Lead Signal
+          Lead signal
         </span>
         {topStory.sourceName && <span style={{ color: 'var(--text-secondary)' }}>{topStory.sourceName}</span>}
         <span aria-hidden style={{ color: 'var(--border-strong)' }}>/</span>
@@ -80,13 +84,15 @@ export default function BriefingCard() {
         {topStory.aiSummary && <AILabel level="classification" />}
       </div>
 
-      <div className="space-y-3">
+      <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_18rem] lg:items-end">
+        <div className="space-y-3">
         <h3
-          className="text-[clamp(24px,3.4vw,40px)] leading-[1.05] uppercase"
+          className="text-[clamp(24px,3vw,40px)] leading-[1.08]"
           style={{
             color: 'var(--text-primary)',
-            fontFamily: 'var(--font-display), "Archivo Black", sans-serif',
-            letterSpacing: '-0.01em',
+            fontFamily: 'var(--font-ui), sans-serif',
+            fontWeight: 780,
+            letterSpacing: '0',
           }}
         >
           {topStory.sourceUrl ? (
@@ -119,12 +125,19 @@ export default function BriefingCard() {
             {topStory.summary}
           </p>
         ) : null}
+        </div>
+        <div className="rounded-[10px] border p-4" style={{ borderColor: 'var(--border-subtle)', backgroundColor: 'var(--surface-muted)' }}>
+          <p className="section-kicker" style={{ color: 'var(--text-muted)' }}>Why this leads</p>
+          <p className="mt-2 text-sm leading-6" style={{ color: 'var(--text-secondary)' }}>
+            This is the highest-priority source-linked item in the current Canada feed.
+          </p>
+        </div>
       </div>
 
       <div className="flex flex-wrap items-center gap-4 border-t pt-3" style={{ borderColor: 'var(--border-subtle)' }}>
         <p
           className="text-[11px] uppercase"
-          style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-mono), monospace', letterSpacing: '0.16em', fontWeight: 700 }}
+          style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-mono), monospace', letterSpacing: '0.08em', fontWeight: 700 }}
         >
           {relativeTime(topStory.publishedAt)}
         </p>
@@ -135,7 +148,7 @@ export default function BriefingCard() {
             rel="noopener noreferrer"
             className="primary-source-link text-sm font-semibold"
           >
-            Read primary source →
+            Read primary source
           </a>
         )}
         {topStory.sourceUrl && (

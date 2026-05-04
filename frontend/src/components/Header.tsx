@@ -1,8 +1,8 @@
 "use client"
 
 import Link from "next/link"
-import { usePathname, useRouter } from "next/navigation"
-import { useCallback, useEffect, useState } from "react"
+import { usePathname } from "next/navigation"
+import { useState } from "react"
 import LiveTicker from "./LiveTicker"
 import ThemeToggle from "./ThemeToggle"
 
@@ -11,6 +11,7 @@ const navLinks = [
   { label: "Dashboard", href: "/dashboard" },
   { label: "Topics", href: "/topics" },
   { label: "Deep Dives", href: "/blog" },
+  { label: "AI Today", href: "https://aitoday.vercel.app/", external: true },
   { label: "Data Centres", href: "/datacentres", mobileHidden: true },
   { label: "About", href: "/about", mobileHidden: true },
   { label: "Methodology", href: "/methodology", mobileHidden: true },
@@ -18,83 +19,94 @@ const navLinks = [
 
 export default function Header() {
   const pathname = usePathname()
-  const router = useRouter()
   const [menuOpen, setMenuOpen] = useState(false)
-  const warmRoute = useCallback((href: string) => {
-    if (href.startsWith("/")) router.prefetch(href)
-  }, [router])
-
-  useEffect(() => {
-    warmRoute("/dashboard")
-  }, [warmRoute])
 
   return (
     <header
-      className="sticky top-0 z-50 backdrop-blur"
+      className="sticky top-0 z-50 backdrop-blur-xl"
       style={{
-        borderBottom: "2px solid var(--border-strong)",
+        borderBottom: "1px solid var(--header-border)",
         background: "var(--header-bg)",
+        boxShadow: "0 10px 30px rgba(22, 39, 55, 0.06)",
       }}
     >
       <div style={{ borderBottom: "1px solid var(--border-subtle)" }}>
         <LiveTicker />
       </div>
 
-      <div className="w-full px-4 py-3 sm:px-6 lg:px-8">
+      <div className="mx-auto w-full max-w-[1500px] px-4 py-3 sm:px-6 lg:px-8">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
           <Link
             href="/dashboard"
-            prefetch
-            onMouseEnter={() => warmRoute("/dashboard")}
-            onFocus={() => warmRoute("/dashboard")}
-            onTouchStart={() => warmRoute("/dashboard")}
-            className="flex items-center gap-3 no-underline"
+            className="flex min-w-0 items-center gap-3 no-underline"
             style={{ color: "var(--text-primary)" }}
           >
             <span
               aria-hidden
-              className="h-5 w-[3px] shrink-0"
-              style={{ background: "var(--accent-primary)" }}
+              className="h-8 w-1 shrink-0 rounded-full"
+              style={{ background: "linear-gradient(180deg, var(--accent-secondary), var(--accent-primary))" }}
             />
             <span
-              className="text-[13px] uppercase"
+              className="min-w-0 text-[13px]"
               style={{
                 fontFamily: "var(--font-mono), monospace",
                 fontWeight: 700,
-                letterSpacing: "0.14em",
+                letterSpacing: "0.08em",
               }}
             >
-              AI Canada Pulse
-              <span className="mx-2" style={{ color: "var(--text-muted)" }}>·</span>
-              <span style={{ color: "var(--text-muted)" }}>Live Index</span>
+              <span className="whitespace-nowrap">AI Canada Pulse</span>
+              <span className="mx-2" style={{ color: "var(--text-muted)" }}>/</span>
+              <span className="whitespace-nowrap" style={{ color: "var(--text-muted)" }}>Live Index</span>
             </span>
           </Link>
 
-          <div className="flex flex-wrap items-center gap-1">
-            <nav className="hidden sm:flex items-center">
-              {navLinks.map(({ label, href, mobileHidden }) => {
+          <div className="flex flex-wrap items-center gap-2">
+            <nav
+              className="hidden items-center rounded-full border p-1 sm:flex"
+              style={{
+                borderColor: "var(--border-subtle)",
+                background: "color-mix(in srgb, var(--surface-muted) 70%, transparent)",
+              }}
+            >
+              {navLinks.map(({ label, href, mobileHidden, external }) => {
                 const isActive =
+                  external ? false :
                   href === "/" ? pathname === "/" :
                   href === "/blog" ? pathname.startsWith("/blog") :
                   href === "/datacentres" ? pathname.startsWith("/datacentres") :
                   href === "/topics" ? pathname.startsWith("/topics") :
                   pathname === href
+                const className = `rounded-full px-3 py-1.5 text-[11px] no-underline${mobileHidden ? " hidden md:inline-block" : ""}`
+                const style = {
+                  fontFamily: "var(--font-mono), monospace",
+                  letterSpacing: "0.06em",
+                  fontWeight: isActive ? 700 : 500,
+                  color: isActive ? "var(--text-on-invert)" : "var(--text-secondary)",
+                  background: isActive ? "var(--surface-invert)" : "transparent",
+                }
+
+                if (external) {
+                  return (
+                    <a
+                      key={href}
+                      href={href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={className}
+                      style={style}
+                      aria-label={`${label} daily curated news, opens in a new tab`}
+                    >
+                      {label}
+                    </a>
+                  )
+                }
+
                 return (
                   <Link
                     key={href}
                     href={href}
-                    prefetch
-                    onMouseEnter={() => warmRoute(href)}
-                    onFocus={() => warmRoute(href)}
-                    onTouchStart={() => warmRoute(href)}
-                    className={`px-3 py-1.5 text-[11px] uppercase no-underline${mobileHidden ? " hidden md:inline-block" : ""}`}
-                    style={{
-                      fontFamily: "var(--font-mono), monospace",
-                      letterSpacing: "0.14em",
-                      fontWeight: isActive ? 700 : 500,
-                      color: isActive ? "#fff" : "var(--text-secondary)",
-                      background: isActive ? "var(--text-primary)" : "transparent",
-                    }}
+                    className={className}
+                    style={style}
                   >
                     {label}
                   </Link>
@@ -104,11 +116,12 @@ export default function Header() {
             <div className="ml-2 flex items-center gap-2">
               <ThemeToggle />
               <button
-                className="sm:hidden flex items-center justify-center border min-h-[32px] w-9"
+                className="flex min-h-[36px] w-10 items-center justify-center rounded-full border sm:hidden"
                 style={{
-                  borderColor: "var(--border-strong)",
-                  background: "transparent",
+                  borderColor: "var(--border-subtle)",
+                  background: "var(--surface-elevated)",
                   color: "var(--text-primary)",
+                  boxShadow: "var(--shadow-soft)",
                 }}
                 onClick={() => setMenuOpen((v) => !v)}
                 aria-label={menuOpen ? "Close menu" : "Open menu"}
@@ -130,31 +143,44 @@ export default function Header() {
 
         {menuOpen && (
           <div
-            className="sm:hidden flex flex-wrap gap-0 pt-3 mt-1"
-            style={{ borderTop: "1px solid var(--border-subtle)" }}
+            className="mt-2 grid gap-1 rounded-[10px] border p-2 sm:hidden"
+            style={{ borderColor: "var(--border-subtle)", background: "var(--surface-elevated)" }}
           >
-            {navLinks.map(({ label, href }) => {
-              const isActive = pathname === href
+            {navLinks.map(({ label, href, external }) => {
+              const isActive = external ? false : pathname === href
+              const className = "rounded-md px-3 py-2 text-[11px] no-underline"
+              const style = {
+                fontFamily: "var(--font-mono), monospace",
+                letterSpacing: "0.06em",
+                fontWeight: isActive ? 700 : 500,
+                color: isActive ? "var(--text-on-invert)" : "var(--text-secondary)",
+                background: isActive ? "var(--surface-invert)" : "transparent",
+              }
+
+              if (external) {
+                return (
+                  <a
+                    key={href}
+                    href={href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={() => setMenuOpen(false)}
+                    className={className}
+                    style={style}
+                    aria-label={`${label} daily curated news, opens in a new tab`}
+                  >
+                    {label}
+                  </a>
+                )
+              }
+
               return (
                 <Link
                   key={href}
                   href={href}
-                  prefetch
-                  onMouseEnter={() => warmRoute(href)}
-                  onFocus={() => warmRoute(href)}
-                  onTouchStart={() => warmRoute(href)}
-                  onClick={() => {
-                    warmRoute(href)
-                    setMenuOpen(false)
-                  }}
-                  className="px-3 py-2 text-[11px] uppercase no-underline"
-                  style={{
-                    fontFamily: "var(--font-mono), monospace",
-                    letterSpacing: "0.14em",
-                    fontWeight: isActive ? 700 : 500,
-                    color: isActive ? "#fff" : "var(--text-secondary)",
-                    background: isActive ? "var(--text-primary)" : "transparent",
-                  }}
+                  onClick={() => setMenuOpen(false)}
+                  className={className}
+                  style={style}
                 >
                   {label}
                 </Link>

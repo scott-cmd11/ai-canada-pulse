@@ -1,0 +1,81 @@
+import { getDigest } from '@/lib/digest-client'
+import { readDashboardEnrichmentBundle } from '@/lib/ai-enrichment-cache'
+import { fetchAllStories } from '@/lib/rss-client'
+import { SOURCES } from '@/lib/source-registry'
+
+function formatAge(iso?: string | null) {
+  if (!iso) return 'Not available'
+  const timestamp = new Date(iso).getTime()
+  if (Number.isNaN(timestamp)) return 'Not available'
+  const minutes = Math.max(0, Math.round((Date.now() - timestamp) / 60_000))
+  if (minutes < 60) return `${minutes}m ago`
+  const hours = Math.round(minutes / 60)
+  if (hours < 48) return `${hours}h ago`
+  return `${Math.round(hours / 24)}d ago`
+}
+
+function StatusItem({ label, value, detail, tone = 'neutral' }: { label: string; value: string; detail: string; tone?: 'neutral' | 'warning' | 'good' }) {
+  const color = tone === 'good' ? 'var(--status-positive)' : tone === 'warning' ? 'var(--status-gold)' : 'var(--text-secondary)'
+  return (
+    <div style={{ minWidth: 0 }}>
+      <p
+        style={{
+          margin: 0,
+          color: 'var(--text-muted)',
+          fontFamily: 'var(--font-mono), monospace',
+          fontSize: '10px',
+          fontWeight: 700,
+          letterSpacing: '0.12em',
+          textTransform: 'uppercase',
+        }}
+      >
+        {label}
+      </p>
+      <p style={{ margin: '4px 0 0', color, fontSize: '13px', fontWeight: 700 }}>{value}</p>
+      <p style={{ margin: '2px 0 0', color: 'var(--text-muted)', fontSize: '11px' }}>{detail}</p>
+    </div>
+  )
+}
+
+export default async function OperationalStatus() {
+  const today = new Date().toISOString().split('T')[0]
+  const [stories, digest, enrichment] = await Promise.all([
+    fetchAllStories().catch(() => []),
+    getDigest(today).catch(() => null),
+    readDashboardEnrichmentBundle().catch(() => null),
+  ])
+
+  const latestStory = stories
+    .map((story) => story.publishedAt)
+    .filter(Boolean)
+    .sort((a, b) => new Date(b).getTime() - new Date(a).getTime())[0]
+  const digestFresh = digest && !digest.error && digest.date === today
+  const enrichmentAge = enrichment?.canada?.generatedAt ?? enrichment?.generatedAt ?? null
+
+  return (
+    <section
+      aria-label="Automation freshness"
+      style={{
+        maxWidth: '1480px',
+        margin: '0 auto',
+        padding: '10px 16px 0',
+      }}
+    >
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
+          gap: '12px',
+          border: '1px solid var(--border-subtle)',
+          background: 'var(--surface-primary)',
+          padding: '12px',
+        }}
+      >
+        <StatusItem label="Public feed" value={`${stories.length} signals`} detail={formatAge(latestStory)} tone={stories.length > 0 ? 'good' : 'warning'} />
+        <StatusItem label="Daily digest" value={digestFresh ? 'Current' : 'Behind'} detail={digest?.date ?? 'No digest found'} tone={digestFresh ? 'good' : 'warning'} />
+        <StatusItem label="AI enrichment" value={enrichmentAge ? 'Cached' : 'Missing'} detail={formatAge(enrichmentAge)} tone={enrichmentAge ? 'good' : 'warning'} />
+        <StatusItem label="Tracked sources" value={`${SOURCES.length} sources`} detail="Registry-backed" tone="good" />
+      </div>
+    </section>
+  )
+}

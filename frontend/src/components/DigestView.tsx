@@ -15,8 +15,8 @@ function TagBadge({ tag }: { tag: string }) {
         backgroundColor: 'var(--surface-secondary, var(--surface-primary))',
         color: 'var(--text-muted)',
         border: '1px solid var(--border-subtle)',
-        borderRadius: '4px',
-        padding: '2px 8px',
+        borderRadius: '999px',
+        padding: '4px 9px',
         fontSize: '11px',
         fontWeight: 600,
         letterSpacing: '0.03em',
@@ -53,14 +53,14 @@ export default function DigestView({ digest, isToday }: Props) {
   const hasNext = nextISO <= todayISO && !isToday
 
   return (
-    <article style={{ maxWidth: '680px', margin: '0 auto', padding: '0 20px' }}>
+    <article style={{ maxWidth: '760px', margin: '0 auto', padding: '0 20px' }}>
       {/* Date + heading */}
-      <header style={{ padding: '32px 0 24px', borderBottom: '1px solid var(--border-subtle)' }}>
+      <header style={{ padding: '44px 0 28px', borderBottom: '1px solid var(--border-subtle)' }}>
         <p
           style={{
             fontSize: '11px',
             fontWeight: 700,
-            letterSpacing: '0.1em',
+            letterSpacing: '0.08em',
             textTransform: 'uppercase',
             color: 'var(--accent-primary)',
             marginBottom: '10px',
@@ -70,22 +70,23 @@ export default function DigestView({ digest, isToday }: Props) {
         </p>
         <h1
           style={{
-            fontFamily: 'var(--font-display)',
-            fontSize: 'clamp(24px, 4vw, 36px)',
-            fontWeight: 800,
+            fontFamily: 'var(--font-ui)',
+            fontSize: 'clamp(30px, 4vw, 48px)',
+            fontWeight: 760,
             color: 'var(--text-primary)',
-            lineHeight: 1.15,
-            letterSpacing: '-0.03em',
+            lineHeight: 1.08,
+            letterSpacing: '0',
             marginBottom: '16px',
+            textTransform: 'none',
           }}
         >
           {digest.headline}
         </h1>
         <p
           style={{
-            fontSize: '15px',
+            fontSize: '16px',
             color: 'var(--text-secondary)',
-            lineHeight: 1.7,
+            lineHeight: 1.72,
             marginBottom: '16px',
           }}
         >
@@ -96,7 +97,7 @@ export default function DigestView({ digest, isToday }: Props) {
             <TagBadge key={tag} tag={tag} />
           ))}
         </div>
-        <div style={{ marginTop: '14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={{ marginTop: '16px', display: 'flex', gap: '12px', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between' }}>
           <p style={{ fontSize: '11px', color: 'var(--text-muted)', margin: 0 }}>
             AI-generated digest · may contain errors · verify with linked sources
           </p>
@@ -105,7 +106,7 @@ export default function DigestView({ digest, isToday }: Props) {
       </header>
 
       {/* Key Developments */}
-      <section style={{ padding: '24px 0', borderBottom: '1px solid var(--border-subtle)' }}>
+      <section style={{ padding: '28px 0', borderBottom: '1px solid var(--border-subtle)' }}>
         <p
           style={{
             fontSize: '11px',
@@ -124,15 +125,15 @@ export default function DigestView({ digest, isToday }: Props) {
               <li key={i} style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
                 <span
                   style={{
-                    width: '6px',
-                    height: '6px',
+                    width: '7px',
+                    height: '7px',
                     borderRadius: '50%',
-                    background: 'var(--text-muted)',
+                    background: 'var(--accent-secondary)',
                     marginTop: '8px',
                     flexShrink: 0,
                   }}
                 />
-                <span style={{ fontSize: '14px', color: 'var(--text-primary)', lineHeight: 1.65 }}>
+                <span style={{ fontSize: '15px', color: 'var(--text-primary)', lineHeight: 1.72 }}>
                   {dev.text}
                 </span>
               </li>
@@ -156,10 +157,16 @@ export default function DigestView({ digest, isToday }: Props) {
           >
             Top Stories
           </p>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
             {digest.topStories.map((story, i) => (
-              <div key={i}>
-                {i > 0 && <div style={{ height: '1px', background: 'var(--border-subtle)' }} />}
+              <div
+                key={i}
+                style={{
+                  border: '1px solid var(--border-subtle)',
+                  borderRadius: '10px',
+                  background: 'var(--surface-elevated)',
+                }}
+              >
                 <a
                   href={story.url}
                   target="_blank"
@@ -168,10 +175,10 @@ export default function DigestView({ digest, isToday }: Props) {
                     display: 'flex',
                     justifyContent: 'space-between',
                     alignItems: 'center',
-                    padding: '10px 0',
+                    padding: '12px 14px',
                     textDecoration: 'none',
                     color: 'var(--text-primary)',
-                    fontSize: '13px',
+                    fontSize: '14px',
                   }}
                 >
                   <span>{story.headline}</span>
