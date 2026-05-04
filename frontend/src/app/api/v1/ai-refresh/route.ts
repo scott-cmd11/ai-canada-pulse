@@ -33,25 +33,35 @@ function authorize(request: NextRequest): boolean {
   }
 }
 
+function errorMessage(err: unknown): string {
+  return err instanceof Error ? err.message : 'Unknown error'
+}
+
 export async function GET(request: NextRequest) {
   if (!authorize(request)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
   const today = new Date().toISOString().split('T')[0]
-  const results: Record<string, unknown> = { date: today }
+  const requestedDate = request.nextUrl.searchParams.get('date')
+  if (requestedDate && !/^\d{4}-\d{2}-\d{2}$/.test(requestedDate)) {
+    return NextResponse.json({ error: 'Invalid date format. Use YYYY-MM-DD.' }, { status: 400 })
+  }
+  const targetDate = requestedDate ?? today
+  const results: Record<string, unknown> = { date: targetDate }
 
   // Light mode: only run enrichment. Used by the 30-min stories cron so new
   // stories get AI summaries without running the full heavy pipeline.
   const lightMode = request.nextUrl.searchParams.get('light') === 'true'
+  const digestOnly = request.nextUrl.searchParams.get('digestOnly') === 'true'
 
   // Retry mode: 14:00 UTC backup cron. Skips heavy steps if today's digest
   // already generated successfully — only re-runs if the 12:00 cron missed or errored.
   const retryMode = request.nextUrl.searchParams.get('retry') === 'true'
   if (retryMode) {
-    const existingDigest = await getDigest(today).catch(() => null)
+    const existingDigest = await getDigest(targetDate).catch(() => null)
     if (existingDigest && !existingDigest.error) {
-      return NextResponse.json({ ok: true, generatedAt: new Date().toISOString(), mode: 'retry-skipped', date: today })
+      return NextResponse.json({ ok: true, generatedAt: new Date().toISOString(), mode: 'retry-skipped', date: targetDate })
     }
     console.log('[ai-refresh] Retry mode: digest missing or errored, running full pipeline')
   }
@@ -90,19 +100,25 @@ export async function GET(request: NextRequest) {
         sourceUrl: s.sourceUrl ?? '',
         category: s.category,
       })),
-      today
+      targetDate
     )
     if (digest) {
       await saveDigest(digest)
       results.digest = 'generated'
     } else {
-      await saveDigestError(today)
+      await saveDigestError(targetDate, 'Digest generation returned no result')
       results.digest = 'error'
     }
   } catch (err) {
     console.error('[ai-refresh] Digest generation failed:', err)
-    await saveDigestError(today)
+    const reason = errorMessage(err)
+    await saveDigestError(targetDate, reason)
     results.digest = 'error'
+    results.digestError = reason
+  }
+
+  if (digestOnly) {
+    return NextResponse.json({ ok: true, generatedAt: new Date().toISOString(), mode: 'digest-only', ...results })
   }
 
   // Step 4: Check significance + conditionally generate deep-dive
@@ -123,16 +139,16 @@ export async function GET(request: NextRequest) {
         sourceUrl: s.sourceUrl ?? '',
         category: s.category,
       })),
-      today
+      targetDate
     )
     results.deepDive = slug
       ? `generated: ${slug}`
       : shouldSeed ? 'seed attempted but failed' : 'no threshold crossed'
 
-    // Write the deep-dive slug back to today's digest so the homepage callout renders
+    // Write the deep-dive slug back to the target digest so the homepage callout renders
     if (slug && results.digest === 'generated') {
       try {
-        const existingDigest = await getDigest(today)
+        const existingDigest = await getDigest(targetDate)
         if (existingDigest && !existingDigest.error) {
           await saveDigest({ ...existingDigest, deepDiveSlug: slug })
           results.deepDiveLinked = true
@@ -164,7 +180,7 @@ export async function GET(request: NextRequest) {
         category: s.category,
         region: s.region ?? 'Canada',
       })),
-      today
+      targetDate
     )
     results.sectionSummaries = summaries ? 'generated' : 'skipped'
   } catch (err) {
@@ -174,10 +190,10 @@ export async function GET(request: NextRequest) {
 
   // Step 7: Weekly email — on Mondays, compile and send the weekly digest.
   // Redis dedup key prevents re-sending if the cron or a manual trigger runs more than once today.
-  const dayOfWeek = new Date().getUTCDay() // 0 = Sunday, 1 = Monday
+  const dayOfWeek = new Date(`${targetDate}T00:00:00Z`).getUTCDay() // 0 = Sunday, 1 = Monday
   const forceWeekly = request.nextUrl.searchParams.get('weekly') === 'true'
-  if (dayOfWeek === 1 || forceWeekly) {
-    const weeklyDedupeKey = `weekly-email-sent:${today}`
+  if (!requestedDate && (dayOfWeek === 1 || forceWeekly)) {
+    const weeklyDedupeKey = `weekly-email-sent:${targetDate}`
     const alreadySent = !forceWeekly && await redis.get(weeklyDedupeKey)
     if (alreadySent) {
       results.weeklyEmail = 'skipped (already sent today)'

@@ -1,0 +1,44 @@
+name: AI Refresh Scheduler
+
+on:
+  schedule:
+    - cron: "0 */6 * * *"
+  workflow_dispatch:
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger AI refresh endpoint
+        env:
+          AI_REFRESH_URL: ${{ secrets.AI_REFRESH_URL }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          set -euo pipefail
+
+          URL="${AI_REFRESH_URL:-https://www.aicanadapulse.ca/api/v1/ai-refresh}"
+
+          if [ -z "${CRON_SECRET:-}" ]; then
+            echo "Missing required GitHub secret: CRON_SECRET"
+            exit 1
+          fi
+
+          response=$(curl -sS -w "\n%{http_code}" \
+            -H "Authorization: Bearer ${CRON_SECRET}" \
+            "$URL")
+
+          body=$(echo "$response" | sed '$d')
+          status=$(echo "$response" | tail -n 1)
+
+          echo "HTTP status: $status"
+          echo "Response body: $body"
+
+          if [ "$status" -ne 200 ]; then
+            echo "AI refresh call failed"
+            exit 1
+          fi
+
+          echo "$body" | grep -q '"ok":true' || {
+            echo "AI refresh response missing ok=true"
+            exit 1
+          }

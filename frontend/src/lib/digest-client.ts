@@ -35,10 +35,16 @@ export async function saveDigest(digest: DailyDigest): Promise<void> {
 
 /** Store an error sentinel so pages know the cron ran but failed.
  *  Never overwrites a previously successful digest for the same day. */
-export async function saveDigestError(date: string): Promise<void> {
+export async function saveDigestError(date: string, reason = 'Digest generation failed', stage = 'digest'): Promise<void> {
   const existing = await redis.get<DailyDigest>(redisKey(date))
   if (existing && !existing.error) return // keep the good digest
-  const sentinel: Partial<DailyDigest> = { date, error: true, generatedAt: new Date().toISOString() }
+  const sentinel: Partial<DailyDigest> = {
+    date,
+    error: true,
+    errorReason: reason,
+    errorStage: stage,
+    generatedAt: new Date().toISOString(),
+  }
   await redis.set(redisKey(date), sentinel, { ex: DIGEST_TTL_SECONDS })
 }
 
@@ -52,12 +58,11 @@ export async function generateDigest(
   date: string
 ): Promise<DailyDigest | null> {
   if (!process.env.OPENAI_API_KEY) {
-    console.warn('[digest-client] No OPENAI_API_KEY configured')
-    return null
+    throw new Error('OPENAI_API_KEY is not configured')
   }
 
   const top = stories.slice(0, 10)
-  if (top.length === 0) return null
+  if (top.length === 0) throw new Error('No stories available for digest generation')
 
   const storiesText = top
     .map((s, i) => `${i + 1}. [${s.sourceName}] ${s.headline}\n   URL: ${s.sourceUrl}\n   ${s.summary}`)
@@ -119,12 +124,12 @@ Rules:
     if (!response.ok) {
       const errText = await response.text().catch(() => 'unknown')
       console.error(`[digest-client] OpenAI error ${response.status}: ${errText.slice(0, 200)}`)
-      return null
+      throw new Error(`OpenAI API returned ${response.status}`)
     }
 
     const data = await response.json()
     let content = data?.choices?.[0]?.message?.content
-    if (!content) return null
+    if (!content) throw new Error('OpenAI response did not include message content')
 
     if (typeof content !== 'string') {
       if (Array.isArray(content)) {
@@ -136,10 +141,10 @@ Rules:
           })
           .join('')
           .trim()
-        if (!content) return null
+        if (!content) throw new Error('OpenAI response content was empty')
       } else {
         console.error('[digest-client] Unexpected content type:', typeof content)
-        return null
+        throw new Error(`Unexpected OpenAI content type: ${typeof content}`)
       }
     }
 
@@ -154,7 +159,7 @@ Rules:
     // Validate required fields before constructing digest
     if (!parsed.headline || !parsed.intro || !Array.isArray(parsed.developments)) {
       console.error('[digest-client] LLM response missing required fields')
-      return null
+      throw new Error('OpenAI digest response missing required fields')
     }
 
     // Derive unique tags from developments
@@ -173,6 +178,6 @@ Rules:
     return digest
   } catch (err) {
     console.error('[digest-client] Generation failed:', err)
-    return null
+    throw err instanceof Error ? err : new Error('Digest generation failed')
   }
 }

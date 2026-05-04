@@ -21,7 +21,13 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ digest: null, state: 'pending' }, { status: 200 })
   }
   if (digest.error) {
-    return NextResponse.json({ digest: null, state: 'error' }, { status: 200 })
+    return NextResponse.json({
+      digest: null,
+      state: 'error',
+      error: digest.errorReason ?? 'Digest generation failed',
+      errorStage: digest.errorStage ?? 'digest',
+      generatedAt: digest.generatedAt,
+    }, { status: 200 })
   }
 
   return NextResponse.json({ digest, state: 'ready' })
