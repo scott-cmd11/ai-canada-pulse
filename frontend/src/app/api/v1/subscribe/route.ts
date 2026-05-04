@@ -41,7 +41,7 @@ export async function POST(request: Request) {
   // Generic success message for all outcomes (prevents email enumeration)
   const successResponse = NextResponse.json({
     ok: true,
-    message: 'Check your email to confirm your subscription',
+    message: "If this email is already subscribed, you're all set. Otherwise, check your inbox to confirm.",
   })
 
   try {

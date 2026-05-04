@@ -17,6 +17,8 @@ jobs:
           set -euo pipefail
 
           URL="${AI_REFRESH_URL:-https://www.aicanadapulse.ca/api/v1/ai-refresh}"
+          URL="${URL/https:\/\/ai-canada-pulse.vercel.app/https:\/\/www.aicanadapulse.ca}"
+          URL="${URL/https:\/\/aicanadapulse.ca/https:\/\/www.aicanadapulse.ca}"
 
           if [ -z "${CRON_SECRET:-}" ]; then
             echo "Missing required GitHub secret: CRON_SECRET"

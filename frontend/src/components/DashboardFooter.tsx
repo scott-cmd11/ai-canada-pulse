@@ -66,11 +66,6 @@ export default function DashboardFooter() {
           </div>
         </div>
 
-        {/* Government disclaimer */}
-        <p className="mt-3 border-t pt-3 text-center text-xs leading-relaxed" style={{ borderColor: 'var(--border-subtle)', color: 'var(--text-muted)' }}>
-          Not an official Government of Canada website. Not affiliated with, endorsed by, or sponsored by the Government of Canada or any federal department. Personal project only.
-        </p>
-
         {/* Bottom row: copyright + links */}
         <div className="mt-3 flex flex-col items-center gap-2 border-t pt-3 text-xs sm:flex-row sm:justify-between" style={{ borderColor: 'var(--border-subtle)', color: 'var(--text-muted)' }}>
           <p>&copy; {new Date().getFullYear()} AI Canada Pulse. AI-generated content is clearly labelled and may contain errors.</p>

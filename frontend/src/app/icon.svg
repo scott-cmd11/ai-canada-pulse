@@ -1,26 +1,7 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-  <!-- Background -->
-  <rect width="32" height="32" rx="6" fill="#c2410c"/>
-
-  <!-- Pulse / EKG waveform in white -->
-  <polyline
-    points="2,17 7,17 10,9 13,25 16,13 19,17 22,17"
-    stroke="white"
-    stroke-width="2.5"
-    fill="none"
-    stroke-linecap="round"
-    stroke-linejoin="round"
-  />
-
-  <!-- Maple leaf at the peak of the pulse (simplified, 5-point) -->
-  <g transform="translate(26, 10) scale(0.38)">
-    <path
-      d="M0,-9 L1.8,-3.5 L7.5,-4.5 L4.5,0 L7,1.5 L3.5,1.5 L4.5,7 L0,5 L-4.5,7 L-3.5,1.5 L-7,1.5 L-4.5,0 L-7.5,-4.5 L-1.8,-3.5 Z"
-      fill="white"
-      opacity="0.9"
-    />
-  </g>
-
-  <!-- Trailing line after maple leaf -->
-  <line x1="29" y1="17" x2="30" y2="17" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="AI Canada Pulse">
+  <rect width="64" height="64" rx="14" fill="#f8f5ee"/>
+  <rect x="7" y="7" width="50" height="50" rx="10" fill="#151515"/>
+  <path d="M14 43h36" stroke="#f8f5ee" stroke-width="3" stroke-linecap="round"/>
+  <path d="M15 34h7l4-13 7 26 5-17h11" fill="none" stroke="#c45d3e" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="49" cy="34" r="4" fill="#f8f5ee"/>
 </svg>
