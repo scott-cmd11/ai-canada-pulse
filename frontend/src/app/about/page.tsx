@@ -114,7 +114,10 @@ export default function AboutPage() {
               Story summaries, executive briefs, daily digests, and deep-dive posts are generated with OpenAI models. All AI-generated content is labelled throughout the site. See the{' '}
               <Link href="/methodology" className="font-semibold hover:underline" style={{ color: 'var(--accent-primary)' }}>
                 Methodology
-              </Link>{' '}page for full pipeline details.
+              </Link>{' '}page for full pipeline details and the{' '}
+              <Link href="/sources" className="font-semibold hover:underline" style={{ color: 'var(--accent-primary)' }}>
+                Source Health
+              </Link>{' '}page for live, stale, fallback, and curated source status.
             </p>
           </Section>
 

@@ -7,6 +7,7 @@ import { fetchStatCanAdoption } from '@/lib/statcan-sdmx-client'
 import { fetchGovAIRegistry } from '@/lib/gov-ai-registry-client'
 import { fetchProcurementDemand } from '@/lib/procurement-demand-client'
 import { getEditorialDate } from '@/lib/editorial-date'
+import { buildSourceHealthRows, countSourceHealthStatuses } from '@/lib/source-health'
 
 export const dynamic = 'force-dynamic'
 export const maxDuration = 30
@@ -26,6 +27,12 @@ export async function GET() {
     .map((story) => story.publishedAt)
     .filter(Boolean)
     .sort((a, b) => new Date(b).getTime() - new Date(a).getTime())[0] ?? null
+  const observedSourceHealth = [
+    ...(adoption?.sourceHealth ?? []),
+    ...(aiRegister?.sourceHealth ?? []),
+    ...(procurement?.sourceHealth ?? []),
+  ]
+  const sourceHealth = buildSourceHealthRows(observedSourceHealth)
 
   return NextResponse.json({
     generatedAt: new Date().toISOString(),
@@ -50,11 +57,8 @@ export async function GET() {
     sources: {
       count: SOURCES.length,
       ids: SOURCES.map((source) => source.id),
-      health: [
-        ...(adoption?.sourceHealth ?? []),
-        ...(aiRegister?.sourceHealth ?? []),
-        ...(procurement?.sourceHealth ?? []),
-      ],
+      healthSummary: countSourceHealthStatuses(sourceHealth),
+      health: sourceHealth,
     },
   })
 }

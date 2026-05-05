@@ -13,6 +13,7 @@ const navLinks = [
   { label: "Deep Dives", href: "/blog" },
   { label: "AI Today", href: "https://aitoday.vercel.app/", external: true },
   { label: "Data Centres", href: "/datacentres", mobileHidden: true },
+  { label: "Sources", href: "/sources", mobileHidden: true },
   { label: "About", href: "/about", mobileHidden: true },
   { label: "Methodology", href: "/methodology", mobileHidden: true },
 ]
@@ -74,6 +75,7 @@ export default function Header() {
                   href === "/" ? pathname === "/" :
                   href === "/blog" ? pathname.startsWith("/blog") :
                   href === "/datacentres" ? pathname.startsWith("/datacentres") :
+                  href === "/sources" ? pathname.startsWith("/sources") :
                   href === "/topics" ? pathname.startsWith("/topics") :
                   pathname === href
                 const className = `rounded-full px-3 py-1.5 text-[11px] no-underline${mobileHidden ? " hidden md:inline-block" : ""}`

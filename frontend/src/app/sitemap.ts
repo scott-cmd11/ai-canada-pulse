@@ -14,6 +14,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
         { url: `${SITE_URL}/datacentres`, lastModified: now, changeFrequency: "weekly", priority: 0.7 },
         { url: `${SITE_URL}/quotes`, lastModified: now, changeFrequency: "daily", priority: 0.7 },
         { url: `${SITE_URL}/topics`, lastModified: now, changeFrequency: "daily", priority: 0.9 },
+        { url: `${SITE_URL}/sources`, lastModified: now, changeFrequency: "hourly", priority: 0.8 },
         { url: `${SITE_URL}/insights`, lastModified: now, changeFrequency: "weekly", priority: 0.7 },
         { url: `${SITE_URL}/methodology`, lastModified: now, changeFrequency: "monthly", priority: 0.5 },
         { url: `${SITE_URL}/subscribe`, lastModified: now, changeFrequency: "monthly", priority: 0.6 },

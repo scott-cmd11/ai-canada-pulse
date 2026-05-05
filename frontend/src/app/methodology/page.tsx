@@ -135,7 +135,8 @@ export default function MethodologyPage() {
             </h2>
             <p className="mt-2 max-w-3xl text-sm leading-relaxed" style={{ color: "var(--text-secondary)" }}>
               All sources tracked by the platform, grouped by type. Status separates live feeds from manually curated
-              references, and role separates adoption rates from proxy or context signals.
+              references, and role separates adoption rates from proxy or context signals. Current fetch health is
+              visible on the <Link href="/sources" className="font-semibold hover:underline" style={{ color: "var(--accent-primary)" }}>source health page</Link>.
             </p>
           </div>
 
