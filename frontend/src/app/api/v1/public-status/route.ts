@@ -6,12 +6,13 @@ import { SOURCES } from '@/lib/source-registry'
 import { fetchStatCanAdoption } from '@/lib/statcan-sdmx-client'
 import { fetchGovAIRegistry } from '@/lib/gov-ai-registry-client'
 import { fetchProcurementDemand } from '@/lib/procurement-demand-client'
+import { getEditorialDate } from '@/lib/editorial-date'
 
 export const dynamic = 'force-dynamic'
 export const maxDuration = 30
 
 export async function GET() {
-  const today = new Date().toISOString().split('T')[0]
+  const today = getEditorialDate()
   const [stories, digest, enrichment, adoption, aiRegister, procurement] = await Promise.all([
     fetchAllStories().catch(() => []),
     getDigest(today).catch(() => null),

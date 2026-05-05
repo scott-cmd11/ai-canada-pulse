@@ -6,16 +6,11 @@ import Header from '@/components/Header'
 import FreshnessNotice, { LatestHeadlinesLink } from '@/components/FreshnessNotice'
 import OperationalStatus from '@/components/OperationalStatus'
 import type { DailyDigest } from '@/lib/digest-types'
-
-function isoDateFromOffset(date: string, offsetDays: number) {
-  const next = new Date(`${date}T12:00:00Z`)
-  next.setUTCDate(next.getUTCDate() + offsetDays)
-  return next.toISOString().split('T')[0]
-}
+import { addDaysToISODate, getEditorialDate } from '@/lib/editorial-date'
 
 async function findLatestDigest(today: string, maxDays = 7): Promise<DailyDigest | null> {
   for (let offset = -1; Math.abs(offset) <= maxDays; offset -= 1) {
-    const date = isoDateFromOffset(today, offset)
+    const date = addDaysToISODate(today, offset)
     const digest = await getDigest(date).catch(() => null)
     if (digest && !digest.error) return digest
   }
@@ -23,7 +18,7 @@ async function findLatestDigest(today: string, maxDays = 7): Promise<DailyDigest
 }
 
 export async function generateMetadata() {
-  const today = new Date().toISOString().split('T')[0]
+  const today = getEditorialDate()
   const suffix = ' - AI Canada Pulse'
   try {
     const digest = await getDigest(today)
@@ -56,7 +51,7 @@ function DigestUnavailable({ message }: { message: string }) {
 }
 
 async function DigestContent() {
-  const today = new Date().toISOString().split('T')[0]
+  const today = getEditorialDate()
   let digest: DailyDigest | null = null
   let redisDown = false
 

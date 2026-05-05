@@ -7,6 +7,7 @@ import Link from 'next/link'
 import type { DailyDigest } from '@/lib/digest-types'
 import ShareButtons from '@/components/ShareButtons'
 import SubscribeForm from '@/components/SubscribeForm'
+import { getEditorialDate } from '@/lib/editorial-date'
 
 function TagBadge({ tag }: { tag: string }) {
   return (
@@ -49,7 +50,7 @@ export default function DigestView({ digest, isToday }: Props) {
   nextDate.setUTCDate(nextDate.getUTCDate() + 1)
   const prevISO = prevDate.toISOString().split('T')[0]
   const nextISO = nextDate.toISOString().split('T')[0]
-  const todayISO = new Date().toISOString().split('T')[0]
+  const todayISO = getEditorialDate()
   const hasNext = nextISO <= todayISO && !isToday
 
   return (

@@ -1,5 +1,6 @@
 // frontend/src/lib/section-summaries-client.ts
 import { Redis } from '@upstash/redis'
+import { addDaysToISODate, getEditorialDate } from '@/lib/editorial-date'
 
 let redisClient: Redis | null | undefined
 
@@ -117,8 +118,8 @@ export async function getSectionSummaries(date: string): Promise<SectionSummarie
 
 // Returns today's summary for a key, falling back to yesterday's if today's not yet generated
 export async function getSectionSummary(key: SectionKey): Promise<string | null> {
-  const today = new Date().toISOString().split('T')[0]
-  const yesterday = new Date(Date.now() - 86_400_000).toISOString().split('T')[0]
+  const today = getEditorialDate()
+  const yesterday = addDaysToISODate(today, -1)
 
   const summaries = (await getSectionSummaries(today)) ?? (await getSectionSummaries(yesterday))
   return summaries?.[key] ?? null

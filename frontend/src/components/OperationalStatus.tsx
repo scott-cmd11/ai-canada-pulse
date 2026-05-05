@@ -5,6 +5,7 @@ import { SOURCES } from '@/lib/source-registry'
 import { fetchStatCanAdoption, type AdoptionSourceHealth } from '@/lib/statcan-sdmx-client'
 import { fetchGovAIRegistry } from '@/lib/gov-ai-registry-client'
 import { fetchProcurementDemand } from '@/lib/procurement-demand-client'
+import { getEditorialDate } from '@/lib/editorial-date'
 
 function formatAge(iso?: string | null) {
   if (!iso) return 'Not available'
@@ -57,7 +58,7 @@ function summarizeSourceHealth(health: AdoptionSourceHealth[]) {
 }
 
 export default async function OperationalStatus() {
-  const today = new Date().toISOString().split('T')[0]
+  const today = getEditorialDate()
   const [stories, digest, enrichment, adoption, registry, procurement] = await Promise.all([
     fetchAllStories().catch(() => []),
     getDigest(today).catch(() => null),

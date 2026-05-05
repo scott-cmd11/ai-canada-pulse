@@ -10,6 +10,7 @@ import { refreshJobBankStats } from '@/lib/jobs-client'
 import { compileWeeklyDigest } from '@/lib/weekly-digest'
 import { sendWeeklyDigestBatch } from '@/lib/email'
 import { getSupabase } from '@/lib/supabase'
+import { getEditorialDate } from '@/lib/editorial-date'
 import { Redis } from '@upstash/redis'
 
 let redisClient: Redis | null | undefined
@@ -48,7 +49,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const today = new Date().toISOString().split('T')[0]
+  const today = getEditorialDate()
   const requestedDate = request.nextUrl.searchParams.get('date')
   if (requestedDate && !/^\d{4}-\d{2}-\d{2}$/.test(requestedDate)) {
     return NextResponse.json({ error: 'Invalid date format. Use YYYY-MM-DD.' }, { status: 400 })
