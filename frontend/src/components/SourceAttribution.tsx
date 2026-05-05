@@ -5,6 +5,15 @@ interface SourceAttributionProps {
   lastUpdated?: string | null
 }
 
+const EVIDENCE_ROLE_LABELS: Record<string, string> = {
+  'adoption-rate': 'Direct adoption rate',
+  'public-sector-system': 'Public-sector system evidence',
+  'demand-signal': 'Demand signal',
+  'proxy-signal': 'Proxy signal',
+  context: 'Context source',
+  'source-feed': 'Source feed',
+}
+
 export default function SourceAttribution({ sourceId, lastUpdated }: SourceAttributionProps) {
   const source = getSourceById(sourceId)
   if (!source) return null
@@ -47,7 +56,7 @@ export default function SourceAttribution({ sourceId, lastUpdated }: SourceAttri
           fontWeight: 600,
         }}
       >
-        {source.evidenceRole.replaceAll('-', ' ')}
+        {EVIDENCE_ROLE_LABELS[source.evidenceRole] ?? source.evidenceRole.replaceAll('-', ' ')}
       </span>
       {lastUpdated && (
         <>

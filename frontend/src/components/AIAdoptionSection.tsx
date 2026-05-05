@@ -93,22 +93,34 @@ export default function AIAdoptionSection() {
       <div className="section-header">
         <h2 className="flex items-baseline justify-between gap-3">
           <span>Official AI Adoption</span>
-          <span
-            className="rounded-full border px-2.5 py-1 text-xs font-bold uppercase tracking-wider"
-            style={{
-              color: data.isLive ? "#15803d" : "#b45309",
-              backgroundColor: data.isLive ? "rgba(22, 163, 74, 0.08)" : "rgba(245, 158, 11, 0.10)",
-              borderColor: data.isLive ? "rgba(22, 163, 74, 0.24)" : "rgba(245, 158, 11, 0.28)",
-            }}
-          >
-            {data.isLive ? "Live StatCan" : "Fallback"}
+          <span className="flex flex-wrap justify-end gap-2">
+            <span
+              className="rounded-full border px-2.5 py-1 text-xs font-bold uppercase tracking-wider"
+              style={{
+                color: "var(--accent-primary)",
+                backgroundColor: "color-mix(in srgb, var(--accent-primary) 8%, transparent)",
+                borderColor: "color-mix(in srgb, var(--accent-primary) 24%, transparent)",
+              }}
+            >
+              Evidence: direct adoption rate
+            </span>
+            <span
+              className="rounded-full border px-2.5 py-1 text-xs font-bold uppercase tracking-wider"
+              style={{
+                color: data.isLive ? "#15803d" : "#b45309",
+                backgroundColor: data.isLive ? "rgba(22, 163, 74, 0.08)" : "rgba(245, 158, 11, 0.10)",
+                borderColor: data.isLive ? "rgba(22, 163, 74, 0.24)" : "rgba(245, 158, 11, 0.28)",
+              }}
+            >
+              {data.isLive ? "Live StatCan" : "Fallback"}
+            </span>
           </span>
         </h2>
       </div>
 
       <p className="mb-4 max-w-3xl text-sm leading-relaxed" style={{ color: "var(--text-secondary)" }}>
-        Official Statistics Canada business survey tables are treated as the primary adoption source. Search trends,
-        news volume, GitHub, and model releases remain proxy signals, not direct adoption rates.
+        Official Statistics Canada business survey tables are the only direct adoption-rate source in this section.
+        Search trends, news volume, GitHub, and model releases remain proxy signals, not adoption rates.
       </p>
 
       <div className="grid gap-3 md:grid-cols-3">
@@ -122,6 +134,9 @@ export default function AIAdoptionSection() {
           <p className="mt-2 text-xs leading-relaxed" style={{ color: "var(--text-secondary)" }}>
             Businesses used AI to produce goods or deliver services in {data.surveyPeriod}.
           </p>
+          <p className="mt-2 text-[10px] font-semibold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>
+            Source type: official survey
+          </p>
         </div>
         <div className="saas-card p-4">
           <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>
@@ -133,6 +148,9 @@ export default function AIAdoptionSection() {
           <p className="mt-2 text-xs leading-relaxed" style={{ color: "var(--text-secondary)" }}>
             Businesses planned to use AI over the next 12 months in Q3 2025.
           </p>
+          <p className="mt-2 text-[10px] font-semibold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>
+            Source type: planned-use survey
+          </p>
         </div>
         <div className="saas-card p-4">
           <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>
@@ -143,6 +161,9 @@ export default function AIAdoptionSection() {
           </p>
           <p className="mt-2 text-xs leading-relaxed" style={{ color: "var(--text-secondary)" }}>
             Of planned AI users expected no change in total employment.
+          </p>
+          <p className="mt-2 text-[10px] font-semibold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>
+            Source type: expected impact survey
           </p>
         </div>
       </div>

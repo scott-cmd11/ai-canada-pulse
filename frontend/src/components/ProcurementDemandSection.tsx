@@ -29,13 +29,13 @@ function SignalCard({ signal }: { signal: ProcurementDemandSignal }) {
         <span>{signal.kind === "tender" ? "Open tender" : "Awarded contract"}</span>
         {signal.publishedAt && (
           <>
-            <span style={{ color: "var(--border-subtle)" }}>·</span>
+            <span style={{ color: "var(--border-subtle)" }}>-</span>
             <span>{signal.publishedAt}</span>
           </>
         )}
         {amount && (
           <>
-            <span style={{ color: "var(--border-subtle)" }}>·</span>
+            <span style={{ color: "var(--border-subtle)" }}>-</span>
             <span>{amount}</span>
           </>
         )}
@@ -93,11 +93,23 @@ export default function ProcurementDemandSection() {
       <div className="section-header">
         <h2 className="flex items-baseline justify-between gap-3">
           <span>Procurement Demand Signals</span>
-          {signals.length > 0 && (
-            <span className="text-sm font-medium" style={{ color: "var(--text-muted)" }}>
-              {signals.length} reviewable signals
+          <span className="flex flex-wrap justify-end gap-2">
+            <span
+              className="rounded-full border px-2.5 py-1 text-xs font-bold uppercase tracking-wider"
+              style={{
+                color: "var(--text-secondary)",
+                backgroundColor: "var(--surface-primary)",
+                borderColor: "var(--border-subtle)",
+              }}
+            >
+              Evidence: demand signal
             </span>
-          )}
+            {signals.length > 0 && (
+              <span className="text-sm font-medium" style={{ color: "var(--text-muted)" }}>
+                {signals.length} reviewable signals
+              </span>
+            )}
+          </span>
         </h2>
       </div>
       <p className="mb-4 max-w-3xl text-sm leading-relaxed" style={{ color: "var(--text-secondary)" }}>

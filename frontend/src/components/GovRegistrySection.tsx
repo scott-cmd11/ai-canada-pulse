@@ -55,11 +55,23 @@ export default function GovRegistrySection() {
       <div className="section-header">
         <h2 className="flex items-baseline justify-between gap-3">
           <span>Federal AI Register</span>
-          {!loading && systems.length > 0 && (
-            <span className="text-sm font-medium" style={{ color: "var(--text-muted)" }}>
-              {totals.total || systems.length} systems tracked
+          <span className="flex flex-wrap justify-end gap-2">
+            <span
+              className="rounded-full border px-2.5 py-1 text-xs font-bold uppercase tracking-wider"
+              style={{
+                color: "var(--text-secondary)",
+                backgroundColor: "var(--surface-primary)",
+                borderColor: "var(--border-subtle)",
+              }}
+            >
+              Evidence: system inventory
             </span>
-          )}
+            {!loading && systems.length > 0 && (
+              <span className="text-sm font-medium" style={{ color: "var(--text-muted)" }}>
+                {totals.total || systems.length} systems tracked
+              </span>
+            )}
+          </span>
         </h2>
       </div>
       <p className="mb-4 max-w-3xl text-sm leading-relaxed" style={{ color: "var(--text-secondary)" }}>
@@ -105,7 +117,7 @@ export default function GovRegistrySection() {
                       <span style={{ color: "var(--text-secondary)" }}>{system.department}</span>
                       {system.datePublished && (
                         <>
-                          <span style={{ color: "var(--border-subtle)" }}>·</span>
+                          <span style={{ color: "var(--border-subtle)" }}>-</span>
                           <span>{system.datePublished}</span>
                         </>
                       )}
@@ -125,7 +137,7 @@ export default function GovRegistrySection() {
                       </p>
                     )}
                     <p className="mt-1 text-[10px] leading-relaxed" style={{ color: "var(--text-muted)" }}>
-                      Users: {system.primaryUsers} · Capability: {system.capabilities}
+                      Users: {system.primaryUsers} - Capability: {system.capabilities}
                     </p>
                   </div>
 
