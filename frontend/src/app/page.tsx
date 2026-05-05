@@ -1,7 +1,6 @@
 // frontend/src/app/page.tsx
 import { Suspense } from 'react'
 import { getDigest } from '@/lib/digest-client'
-import { fetchAllStories } from '@/lib/rss-client'
 import DigestView from '@/components/DigestView'
 import Header from '@/components/Header'
 import FreshnessNotice, { LatestHeadlinesLink } from '@/components/FreshnessNotice'
@@ -45,47 +44,12 @@ export async function generateMetadata() {
   }
 }
 
-async function fetchHeadlines() {
-  try {
-    const raw = await fetchAllStories()
-    return raw.slice(0, 8).map((s) => ({
-      headline: s.headline,
-      sourceUrl: s.sourceUrl ?? '',
-      sourceName: s.sourceName ?? '',
-    }))
-  } catch {
-    return []
-  }
-}
-
-function HeadlinesFallback({
-  message,
-  stories,
-}: {
-  message: string
-  stories: { headline: string; sourceUrl: string; sourceName: string }[]
-}) {
+function DigestUnavailable({ message }: { message: string }) {
   return (
     <div style={{ maxWidth: '680px', margin: '0 auto', padding: '32px 20px' }}>
-      <p style={{ fontSize: '14px', color: 'var(--text-muted)', marginBottom: '20px' }}>{message}</p>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
-        {stories.map((s, i) => (
-          <div key={`${s.sourceUrl}-${i}`}>
-            {i > 0 && <div style={{ height: '1px', background: 'var(--border-subtle)' }} />}
-            <a
-              href={s.sourceUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', textDecoration: 'none', color: 'var(--text-primary)', fontSize: '13px' }}
-            >
-              <span>{s.headline}</span>
-              <span style={{ color: 'var(--text-muted)', fontSize: '11px', marginLeft: '12px', whiteSpace: 'nowrap' }}>{s.sourceName} -&gt;</span>
-            </a>
-          </div>
-        ))}
-      </div>
-      <a href="/dashboard" style={{ display: 'block', marginTop: '20px', color: 'var(--accent-primary)', fontSize: '13px' }}>
-        View the live dashboard -&gt;
+      <p style={{ fontSize: '14px', color: 'var(--text-muted)', marginBottom: '12px', lineHeight: 1.6 }}>{message}</p>
+      <a href="/dashboard" style={{ color: 'var(--accent-primary)', fontSize: '13px', fontWeight: 700, textDecoration: 'none' }}>
+        Open the live dashboard -&gt;
       </a>
     </div>
   )
@@ -103,26 +67,23 @@ async function DigestContent() {
   }
 
   if (redisDown) {
-    const stories = await fetchHeadlines()
     return (
       <>
         <FreshnessNotice tone="error" title="Digest temporarily unavailable">
-          The cached digest store is unavailable. Showing live public-source headlines instead. <LatestHeadlinesLink />.
+          The cached digest store is unavailable. <LatestHeadlinesLink /> for the live source feed and adoption monitor.
         </FreshnessNotice>
-        <HeadlinesFallback message="Latest public-source headlines:" stories={stories} />
+        <DigestUnavailable message="The daily digest is temporarily unavailable. Live signals are still available on the dashboard." />
       </>
     )
   }
 
   if (digest && !digest.error && digest.date !== today) {
-    const stories = await fetchHeadlines()
     return (
       <>
         <FreshnessNotice title="Digest freshness warning">
-          The latest stored digest is dated {digest.date}, not today. Showing current headlines first and keeping the
-          archived digest clearly labelled below. <LatestHeadlinesLink />.
+          The latest stored digest is dated {digest.date}, not today. The digest below is clearly labelled; live
+          headlines stay on the dashboard. <LatestHeadlinesLink />.
         </FreshnessNotice>
-        <HeadlinesFallback message="Current public-source headlines:" stories={stories.slice(0, 5)} />
         <DigestView digest={digest} isToday={false} />
       </>
     )
@@ -132,24 +93,20 @@ async function DigestContent() {
     const previousDigest = await findLatestDigest(today)
 
     if (previousDigest) {
-      const stories = await fetchHeadlines()
       return (
         <>
           <FreshnessNotice tone={digest?.error ? 'error' : 'warning'} title={digest?.error ? 'Digest generation issue' : "Today's digest is being prepared"}>
-            Showing the latest available digest from {previousDigest.date}. The live dashboard and headline feed continue
-            to update independently. <LatestHeadlinesLink />.
+            Showing the latest available digest from {previousDigest.date}. Live headlines and source checks continue
+            on the dashboard. <LatestHeadlinesLink />.
           </FreshnessNotice>
-          <HeadlinesFallback message="Current public-source headlines:" stories={stories.slice(0, 5)} />
           <DigestView digest={previousDigest} isToday={false} />
         </>
       )
     }
 
-    const stories = await fetchHeadlines()
     return (
-      <HeadlinesFallback
-        message={digest?.error ? "Today's digest is temporarily unavailable. Here are the latest headlines:" : `Today's digest is being prepared.${stories.length > 0 ? " In the meantime, here are today's latest headlines:" : ''}`}
-        stories={stories}
+      <DigestUnavailable
+        message={digest?.error ? "Today's digest is temporarily unavailable." : "Today's digest is being prepared."}
       />
     )
   }
