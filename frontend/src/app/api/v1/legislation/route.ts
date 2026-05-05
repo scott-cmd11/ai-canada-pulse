@@ -2,6 +2,8 @@ import { NextResponse } from "next/server"
 import { fetchLegislationData } from "@/lib/legisinfo-client"
 import { checkRateLimit } from "@/lib/rate-limit"
 
+export const dynamic = "force-dynamic"
+
 export async function GET(request: Request) {
   const limited = await checkRateLimit(request, 'loose')
   if (limited) return limited

@@ -13,6 +13,9 @@ import ParliamentSection from "@/components/ParliamentSection"
 import QuotesTeaser from "@/components/quotes/QuotesTeaser"
 import EcosystemSection from "@/components/EcosystemSection"
 import RegulatorySection from "@/components/RegulatorySection"
+import AIAdoptionSection from "@/components/AIAdoptionSection"
+import GovRegistrySection from "@/components/GovRegistrySection"
+import ProcurementDemandSection from "@/components/ProcurementDemandSection"
 import CollapsibleSection from "@/components/CollapsibleSection"
 import SectionNav from "@/components/SectionNav"
 import ScrollToTop from "@/components/ScrollToTop"
@@ -26,7 +29,7 @@ import OperationalStatus from "@/components/OperationalStatus"
 
 export const metadata: Metadata = {
   title: "Dashboard",
-  description: "Real-time Canadian AI intelligence dashboard. Track policy, research, industry, market, and job signals from 17+ public data sources.",
+  description: "Source-linked Canadian AI adoption dashboard with official Statistics Canada metrics, public-sector AI systems, procurement demand, policy, research, jobs, and clearly labelled proxy signals.",
 }
 
 // Revalidate the server-fetched snapshot every 60s. Keeps first paint fast
@@ -93,15 +96,15 @@ function DashboardHero({ initialStories }: { initialStories: StoriesInitialData 
       <div className="briefing-hero__main">
         <p className="section-kicker">Live / Public Intelligence</p>
         <h1 className="briefing-hero__title">
-          AI activity in Canada, <span>measured</span>{" "}
-          <em>hourly.</em>
+          AI activity in Canada, <span>source-linked</span>{" "}
+          <em>daily.</em>
         </h1>
         <p className="briefing-hero__copy">
-          A live, source-linked briefing across policy, research, markets, and public institutions.
+          A public-source briefing across official adoption tables, policy, research, markets, and public institutions.
         </p>
         <div className="briefing-hero__actions" aria-label="Primary dashboard actions">
-          <a href="#acceleration" className="briefing-action briefing-action--primary">
-            Start with signals
+          <a href="#adoption" className="briefing-action briefing-action--primary">
+            Start with adoption
           </a>
           <a href="/methodology" className="briefing-action">
             View methodology
@@ -147,6 +150,27 @@ export default async function DashboardPage() {
         <DashboardHero initialStories={initialStories} />
 
         <SectionNav />
+
+        <section id="adoption" className="flex flex-col gap-5">
+          <SectionTitle
+            eyebrow="Adoption Monitor"
+            title="Canada's AI adoption evidence, ranked by source quality"
+            description="Official business adoption rates come first, followed by federal public-sector AI systems and procurement demand signals. Proxy indicators stay downstream."
+          />
+
+          <SectionErrorBoundary sectionName="Official AI Adoption">
+            <AIAdoptionSection />
+          </SectionErrorBoundary>
+
+          <div className="grid gap-5 xl:grid-cols-2">
+            <SectionErrorBoundary sectionName="Government AI Register">
+              <GovRegistrySection />
+            </SectionErrorBoundary>
+            <SectionErrorBoundary sectionName="Procurement Demand">
+              <ProcurementDemandSection />
+            </SectionErrorBoundary>
+          </div>
+        </section>
 
         <section id="acceleration" className="saas-card rounded-2xl p-5 sm:p-6">
           <SectionTitle
@@ -203,12 +227,11 @@ export default async function DashboardPage() {
           <SectionTitle
             eyebrow="More Signals"
             title="Deeper data on demand"
-            description="Expand any section below to explore research output, adoption trends, ecosystem activity, and regulatory standing."
+            description="Expand any section below to explore research output, ecosystem activity, parliamentary activity, and regulatory standing."
           />
 
           <CollapsibleSection
             title="Parliament"
-            defaultOpen
             preview="Recent AI-related bills, debates, and committee activity"
           >
             <SectionErrorBoundary sectionName="Parliament Activity">
@@ -236,7 +259,7 @@ export default async function DashboardPage() {
 
           <CollapsibleSection
             title="Regulatory & Global Standing"
-            preview="Gov AI registry, OECD index, legislation tracking"
+            preview="Legislation, regulation, and international standing"
           >
             <SectionErrorBoundary sectionName="Regulatory & Global Standing">
               <RegulatorySection />

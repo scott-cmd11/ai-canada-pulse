@@ -5,10 +5,16 @@
 import { Redis } from '@upstash/redis'
 import type { DeepDive, DeepDiveIndexEntry, DigestTag } from './digest-types'
 
-const redis = new Redis({
-  url: process.env.UPSTASH_REDIS_REST_URL!,
-  token: process.env.UPSTASH_REDIS_REST_TOKEN!,
-})
+let redisClient: Redis | null | undefined
+
+function getRedis(): Redis | null {
+  if (redisClient !== undefined) return redisClient
+
+  const url = process.env.UPSTASH_REDIS_REST_URL
+  const token = process.env.UPSTASH_REDIS_REST_TOKEN
+  redisClient = url && token ? new Redis({ url, token }) : null
+  return redisClient
+}
 
 const OPENAI_MODEL = process.env.OPENAI_BRIEF_MODEL ?? 'gpt-4o-mini'
 const TIMEOUT_MS = 35_000
@@ -101,6 +107,9 @@ function slugify(text: string): string {
 }
 
 async function uniqueSlug(base: string): Promise<string> {
+  const redis = getRedis()
+  if (!redis) return base
+
   let slug = base
   let counter = 2
   while (counter <= 10) {
@@ -258,6 +267,11 @@ export async function forceGenerateDeepDive(
   date: string
 ): Promise<string | null> {
   if (stories.length === 0) return null
+  const redis = getRedis()
+  if (!redis) {
+    console.warn('[deep-dive-client] Redis is not configured; skipping deep-dive generation')
+    return null
+  }
 
   // Pick the first Research story, or fall back to the first story overall
   const best = stories.find((s) => s.category === 'Research') ?? stories[0]
@@ -291,6 +305,11 @@ export async function detectAndGenerateDeepDive(
 ): Promise<string | null> {
   const sig = detectSignificantStory(stories)
   if (!sig) return null
+  const redis = getRedis()
+  if (!redis) {
+    console.warn('[deep-dive-client] Redis is not configured; skipping deep-dive generation')
+    return null
+  }
 
   console.log(`[deep-dive-client] Threshold crossed: ${sig.reason}`)
 
@@ -319,6 +338,9 @@ export async function detectAndGenerateDeepDive(
 
 /** Retrieve a single deep-dive by slug. */
 export async function getDeepDive(slug: string): Promise<DeepDive | null> {
+  const redis = getRedis()
+  if (!redis) return null
+
   try {
     return await redis.get<DeepDive>(`deepdive:${slug}`)
   } catch {
@@ -331,6 +353,9 @@ export async function listDeepDives(
   limit = 10,
   offset = 0
 ): Promise<DeepDiveIndexEntry[]> {
+  const redis = getRedis()
+  if (!redis) return []
+
   try {
     const raw = await redis.zrange(DEEP_DIVE_INDEX_KEY, offset, offset + limit - 1, {
       rev: true,

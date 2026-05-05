@@ -1,4 +1,4 @@
-// AI Events client — wraps curated events data with optional live enrichment
+// AI Events client wraps curated events data with optional live enrichment.
 
 import { AI_EVENTS, getUpcomingEvents, getEventsByProvince, getEventStats, type AIEvent } from "./events-data"
 

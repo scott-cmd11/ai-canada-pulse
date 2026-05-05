@@ -12,10 +12,16 @@ import { sendWeeklyDigestBatch } from '@/lib/email'
 import { getSupabase } from '@/lib/supabase'
 import { Redis } from '@upstash/redis'
 
-const redis = new Redis({
-  url: process.env.UPSTASH_REDIS_REST_URL!,
-  token: process.env.UPSTASH_REDIS_REST_TOKEN!,
-})
+let redisClient: Redis | null | undefined
+
+function getRedis(): Redis | null {
+  if (redisClient !== undefined) return redisClient
+
+  const url = process.env.UPSTASH_REDIS_REST_URL
+  const token = process.env.UPSTASH_REDIS_REST_TOKEN
+  redisClient = url && token ? new Redis({ url, token }) : null
+  return redisClient
+}
 
 export const dynamic = 'force-dynamic'
 export const maxDuration = 300 // bumped from 60 to accommodate digest + deep-dive generation
@@ -194,7 +200,8 @@ export async function GET(request: NextRequest) {
   const forceWeekly = request.nextUrl.searchParams.get('weekly') === 'true'
   if (!requestedDate && (dayOfWeek === 1 || forceWeekly)) {
     const weeklyDedupeKey = `weekly-email-sent:${targetDate}`
-    const alreadySent = !forceWeekly && await redis.get(weeklyDedupeKey)
+    const redis = getRedis()
+    const alreadySent = redis && !forceWeekly ? await redis.get(weeklyDedupeKey) : false
     if (alreadySent) {
       results.weeklyEmail = 'skipped (already sent today)'
     } else {
@@ -217,7 +224,9 @@ export async function GET(request: NextRequest) {
                 weeklyData
               )
               // Mark as sent for the rest of today (TTL: 36h covers any timezone drift)
-              await redis.set(weeklyDedupeKey, '1', { ex: 36 * 60 * 60 })
+              if (redis) {
+                await redis.set(weeklyDedupeKey, '1', { ex: 36 * 60 * 60 })
+              }
               results.weeklyEmail = `sent: ${emailResults.sent}, failed: ${emailResults.failed} (${subscribers.length} subscribers)`
             } else {
               results.weeklyEmail = 'no confirmed subscribers'

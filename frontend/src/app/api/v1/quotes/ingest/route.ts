@@ -6,6 +6,8 @@ import { NextResponse } from "next/server"
 import { requireAdmin } from "@/lib/quotes/admin-auth"
 import { runIngest } from "@/lib/quotes/ingest"
 
+export const dynamic = "force-dynamic"
+
 // Allow up to 5 minutes — provincial scrapers + LLM classification add up.
 export const maxDuration = 300
 

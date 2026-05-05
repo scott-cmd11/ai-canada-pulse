@@ -253,7 +253,7 @@ function GlobalStandingPanel() {
 
 export default function RegulatorySection() {
   return (
-    <div>
+    <div className="flex flex-col gap-6">
       <GlobalStandingPanel />
       <LegislationTracker />
     </div>

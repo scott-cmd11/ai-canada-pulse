@@ -6,7 +6,10 @@
     "dev": "next dev -p 3001",
     "build": "next build",
     "start": "next start -p 3001",
-    "lint": "next lint"
+    "lint": "next lint --dir src",
+    "check:adoption-sources": "node scripts/check-adoption-sources.mjs",
+    "check:source-registry": "node scripts/check-source-registry.mjs",
+    "check:sources": "npm run check:adoption-sources && npm run check:source-registry"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.102.1",
@@ -14,7 +17,6 @@
     "@types/leaflet": "^1.9.21",
     "@upstash/ratelimit": "^2.0.8",
     "@vercel/functions": "^3.4.3",
-    "@vercel/kv": "^3.0.0",
     "clsx": "^2.1.1",
     "csv-parse": "^6.2.1",
     "echarts": "^5.5.1",
@@ -25,7 +27,6 @@
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-leaflet": "^5.0.0",
-    "redis": "^5.11.0",
     "resend": "^6.10.0",
     "rss-parser": "^3.13.0"
   },
@@ -34,6 +35,8 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "eslint": "^8.57.1",
+    "eslint-config-next": "^14.2.35",
     "postcss": "^8.5.13",
     "tailwindcss": "^4.0.0",
     "typescript": "^5"

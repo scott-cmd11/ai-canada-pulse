@@ -2,7 +2,6 @@ import { getSourceById } from '@/lib/source-registry'
 
 interface SourceAttributionProps {
   sourceId: string
-  /** Time string from usePolling's lastUpdated (e.g. "2:34:05 PM") */
   lastUpdated?: string | null
 }
 
@@ -39,12 +38,20 @@ export default function SourceAttribution({ sourceId, lastUpdated }: SourceAttri
             fontWeight: 500,
           }}
         >
-          {source.name} →
+          {source.name} -&gt;
         </a>
+      </span>
+      <span
+        style={{
+          color: source.evidenceRole === 'adoption-rate' ? 'var(--accent-primary)' : 'var(--text-muted)',
+          fontWeight: 600,
+        }}
+      >
+        {source.evidenceRole.replaceAll('-', ' ')}
       </span>
       {lastUpdated && (
         <>
-          <span style={{ color: 'var(--border-subtle)' }}>·</span>
+          <span style={{ color: 'var(--border-subtle)' }}>-</span>
           <span>Updated {lastUpdated}</span>
         </>
       )}

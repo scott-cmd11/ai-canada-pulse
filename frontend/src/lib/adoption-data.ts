@@ -1,54 +1,68 @@
-// Real data from Statistics Canada surveys and Treasury Board of Canada reports
-// Sources:
-// - Statistics Canada, "Artificial intelligence and Canadian businesses" (11-621-m, Q2 2025)
-// - Treasury Board of Canada Secretariat, "AI in the Government of Canada" (2024)
-//
-// ⚠  REFRESH SCHEDULE: This file contains static data that needs manual updates.
-//    - Stats Canada 11-621-m releases quarterly: check https://www150.statcan.gc.ca/n1/en/catalogue/11-621-M
-//    - Treasury Board reports annually: check https://www.canada.ca/en/government/system/digital-government/digital-government-innovations/responsible-use-ai.html
-//    - Last verified: February 2026
+// Curated fallback only. Live adoption surfaces should use /api/v1/adoption,
+// backed by Statistics Canada WDS tables in statcan-sdmx-client.ts.
 
 export interface AdoptionDataPoint {
   sector: string
   percentage: number
   source: string
+  sourceUrl: string
+  tableId: string
   year: number
   quarter?: string
+  status: "fallback"
 }
 
-// Private sector adoption by industry (Stats Canada 11-621-m, Q2 2025)
 export const privateSectorAdoption: AdoptionDataPoint[] = [
-  { sector: "Information & cultural industries", percentage: 35.6, source: "Statistics Canada", year: 2025, quarter: "Q2" },
-  { sector: "Professional, scientific & technical", percentage: 31.7, source: "Statistics Canada", year: 2025, quarter: "Q2" },
-  { sector: "Finance & insurance", percentage: 30.6, source: "Statistics Canada", year: 2025, quarter: "Q2" },
-  { sector: "Wholesale trade", percentage: 17.8, source: "Statistics Canada", year: 2025, quarter: "Q2" },
-  { sector: "Manufacturing", percentage: 15.2, source: "Statistics Canada", year: 2025, quarter: "Q2" },
-  { sector: "Retail trade", percentage: 8.4, source: "Statistics Canada", year: 2025, quarter: "Q2" },
-  { sector: "Transportation & warehousing", percentage: 7.1, source: "Statistics Canada", year: 2025, quarter: "Q2" },
-  { sector: "Health care & social assistance", percentage: 5.8, source: "Statistics Canada", year: 2025, quarter: "Q2" },
-]
-
-// Government sector adoption (Treasury Board)
-export const governmentAdoption: AdoptionDataPoint[] = [
-  { sector: "Federal departments (using AI)", percentage: 20, source: "Treasury Board of Canada", year: 2024 },
-  { sector: "Federal roles with AI exposure", percentage: 74, source: "Treasury Board of Canada", year: 2024 },
-  { sector: "Provincial/territorial (active pilots)", percentage: 35, source: "ISED Canada", year: 2024 },
-]
-
-// Overall comparison
-export const overallComparison = {
-  privateSector: {
-    label: "Private Sector",
-    adoptionRate: 12.2,
-    source: "Statistics Canada, 11-621-m",
+  {
+    sector: "Information and cultural industries",
+    percentage: 35.6,
+    source: "Statistics Canada",
+    sourceUrl: "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3310100401",
+    tableId: "33-10-1004-01",
     year: 2025,
     quarter: "Q2",
-    note: "Generative AI comprises ~73% of all AI tools used",
+    status: "fallback",
+  },
+  {
+    sector: "Professional, scientific and technical services",
+    percentage: 31.7,
+    source: "Statistics Canada",
+    sourceUrl: "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3310100401",
+    tableId: "33-10-1004-01",
+    year: 2025,
+    quarter: "Q2",
+    status: "fallback",
+  },
+  {
+    sector: "Finance and insurance",
+    percentage: 30.6,
+    source: "Statistics Canada",
+    sourceUrl: "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3310100401",
+    tableId: "33-10-1004-01",
+    year: 2025,
+    quarter: "Q2",
+    status: "fallback",
+  },
+]
+
+export const overallComparison = {
+  privateSector: {
+    label: "Private sector",
+    adoptionRate: 12.2,
+    source: "Statistics Canada, Table 33-10-1004-01",
+    sourceUrl: "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3310100401",
+    year: 2025,
+    quarter: "Q2",
+    status: "fallback" as const,
+    note: "Fallback value only; live surfaces use /api/v1/adoption.",
   },
   publicSector: {
-    label: "Public Sector",
-    adoptionRate: 20,
-    source: "Treasury Board of Canada Secretariat",
-    year: 2024,
+    label: "Federal public sector",
+    adoptionRate: null,
+    source: "Government of Canada AI Register",
+    sourceUrl: "https://open.canada.ca/data/en/dataset/fcbc0200-79ba-4fa4-94a6-00e32facea6b",
+    year: 2026,
+    status: "live-source-required" as const,
+    note: "The federal register counts systems, not a department adoption rate.",
   },
 }

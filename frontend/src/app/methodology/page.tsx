@@ -15,7 +15,9 @@ const TYPE_LABELS: Record<string, string> = {
   jobs: "Jobs",
   registry: "Data Registries",
   regulatory: "Regulatory",
+  procurement: "Procurement Demand",
   startup: "Startups & Ecosystem",
+  market: "Market & Proxy Signals",
   benchmark: "Benchmarks & Rankings",
 }
 
@@ -25,17 +27,21 @@ const SOURCE_TYPES = [
   "government",
   "jobs",
   "registry",
+  "procurement",
   "regulatory",
   "startup",
+  "market",
   "benchmark",
 ] as const
 
 const limits = [
   "AI summaries, digests, and deep dives are produced from headlines and short context snippets. They can miss nuance, omit background, or flatten uncertainty. They should be treated as navigation aids, not authoritative analysis.",
   "The daily digest is generated once per day with a same-day retry job. Lightweight story enrichment refreshes several more times per day. If the digest is late or stale, the site labels that state and falls back to current public-source headlines.",
-  "Deep Dives are triggered automatically by a significance threshold (funding ≥$25M, parliamentary AI votes, notable research), or auto-generated if no Deep Dive has published in 4+ days. Stories that don't meet the threshold and fall within that window may not generate one.",
+  "Deep Dives are triggered automatically by a significance threshold (funding of at least $25M, parliamentary AI votes, notable research), or auto-generated if no Deep Dive has published in 4+ days. Stories that don't meet the threshold and fall within that window may not generate one.",
   "Public feeds can change structure, publish duplicates, or omit context. The app deduplicates and filters aggressively, but false positives and missed stories remain possible.",
   "Market and macro indicators are contextual signals only. They are not investment advice, economic forecasts, or causal evidence about AI effects.",
+  "Statistics Canada AI adoption tables are the primary source for adoption rates. Procurement notices, contracts, search interest, GitHub, Hugging Face, and news volume are demand or ecosystem proxy signals only.",
+  "CanadaBuys and contract records are classified mechanically by keywords and should be reviewed as leads. They do not prove a system was delivered, adopted, or successful.",
   "Global AI ranking indices are updated annually by their publishers. The figures shown reflect the most recently published edition and may not reflect changes made since.",
 ]
 
@@ -44,6 +50,21 @@ const FETCH_METHOD_LABELS: Record<string, string> = {
   api: "API",
   scrape: "Scrape",
   manual: "Manual",
+}
+
+const SOURCE_STATUS_LABELS: Record<string, string> = {
+  live: "Live",
+  mixed: "Mixed",
+  curated: "Curated",
+}
+
+const EVIDENCE_ROLE_LABELS: Record<string, string> = {
+  "adoption-rate": "Adoption rate",
+  "public-sector-system": "Public-sector system",
+  "demand-signal": "Demand signal",
+  "proxy-signal": "Proxy signal",
+  context: "Context",
+  "source-feed": "Source feed",
 }
 
 const SCOPE_LABELS: Record<string, string> = {
@@ -113,8 +134,8 @@ export default function MethodologyPage() {
               Data Sources
             </h2>
             <p className="mt-2 max-w-3xl text-sm leading-relaxed" style={{ color: "var(--text-secondary)" }}>
-              All sources tracked by the platform, grouped by type. Refresh intervals are server-side cache
-              revalidation times.
+              All sources tracked by the platform, grouped by type. Status separates live feeds from manually curated
+              references, and role separates adoption rates from proxy or context signals.
             </p>
           </div>
 
@@ -138,7 +159,7 @@ export default function MethodologyPage() {
                       borderStyle: "solid",
                     }}
                   >
-                    <table className="w-full min-w-[540px] text-sm">
+                    <table className="w-full min-w-[720px] text-sm">
                       <thead>
                         <tr
                           style={{
@@ -165,6 +186,18 @@ export default function MethodologyPage() {
                             style={{ color: "var(--text-muted)" }}
                           >
                             Refresh
+                          </th>
+                          <th
+                            className="hidden px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider md:table-cell"
+                            style={{ color: "var(--text-muted)" }}
+                          >
+                            Status
+                          </th>
+                          <th
+                            className="hidden px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider lg:table-cell"
+                            style={{ color: "var(--text-muted)" }}
+                          >
+                            Role
                           </th>
                           <th
                             className="hidden px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider lg:table-cell"
@@ -224,6 +257,24 @@ export default function MethodologyPage() {
                                     color: "var(--text-muted)",
                                   }}
                                 >
+                                  {SOURCE_STATUS_LABELS[source.sourceStatus]}
+                                </span>
+                                <span
+                                  className="rounded-full px-2 py-0.5 text-[10px] font-semibold"
+                                  style={{
+                                    backgroundColor: "var(--surface-secondary)",
+                                    color: "var(--text-muted)",
+                                  }}
+                                >
+                                  {EVIDENCE_ROLE_LABELS[source.evidenceRole]}
+                                </span>
+                                <span
+                                  className="rounded-full px-2 py-0.5 text-[10px] font-semibold"
+                                  style={{
+                                    backgroundColor: "var(--surface-secondary)",
+                                    color: "var(--text-muted)",
+                                  }}
+                                >
                                   {FETCH_METHOD_LABELS[source.fetchMethod]}
                                 </span>
                               </div>
@@ -244,6 +295,31 @@ export default function MethodologyPage() {
                               >
                                 {source.refreshInterval}
                               </span>
+                            </td>
+                            <td className="hidden px-4 py-3 align-top md:table-cell">
+                              <span
+                                className="rounded-full px-2 py-1 text-[11px] font-semibold"
+                                style={{
+                                  backgroundColor: source.sourceStatus === "live"
+                                    ? "rgba(22, 163, 74, 0.08)"
+                                    : source.sourceStatus === "mixed"
+                                      ? "rgba(245, 158, 11, 0.10)"
+                                      : "var(--surface-secondary)",
+                                  color: source.sourceStatus === "live"
+                                    ? "#15803d"
+                                    : source.sourceStatus === "mixed"
+                                      ? "#b45309"
+                                      : "var(--text-muted)",
+                                }}
+                              >
+                                {SOURCE_STATUS_LABELS[source.sourceStatus]}
+                              </span>
+                            </td>
+                            <td
+                              className="hidden px-4 py-3 align-top text-xs lg:table-cell"
+                              style={{ color: source.evidenceRole === "adoption-rate" ? "var(--accent-primary)" : "var(--text-secondary)", fontWeight: source.evidenceRole === "adoption-rate" ? 700 : 500 }}
+                            >
+                              {EVIDENCE_ROLE_LABELS[source.evidenceRole]}
                             </td>
                             <td
                               className="hidden px-4 py-3 align-top text-xs lg:table-cell"
@@ -424,7 +500,7 @@ export default function MethodologyPage() {
                   Classification
                 </h3>
                 <p className="mt-2 text-xs leading-relaxed" style={{ color: "var(--text-secondary)" }}>
-                  Categorizes stories by province, topic, and sentiment using keyword matching and regex rules. No AI model involved — fully deterministic.
+                  Categorizes stories by province, topic, and sentiment using keyword matching and regex rules. No AI model involved - fully deterministic.
                 </p>
               </div>
               <div
@@ -440,7 +516,7 @@ export default function MethodologyPage() {
                   Summarization
                 </h3>
                 <p className="mt-2 text-xs leading-relaxed" style={{ color: "var(--text-secondary)" }}>
-                  <strong>gpt-4o-mini</strong> — generates 3–4 sentence summaries (60–140 words) of news articles, cached in Upstash Redis.
+                  <strong>gpt-4o-mini</strong> - generates 3-4 sentence summaries (60-140 words) of news articles, cached in Upstash Redis.
                 </p>
               </div>
               <div
@@ -456,7 +532,7 @@ export default function MethodologyPage() {
                   Daily Digest
                 </h3>
                 <p className="mt-2 text-xs leading-relaxed" style={{ color: "var(--text-secondary)" }}>
-                  <strong>gpt-4o-mini</strong> — synthesizes the top 10 stories into a headline, 2–3 sentence intro, 3–5 key developments, and top story links. Generated daily with a same-day retry, then stored in Redis for 90 days.
+                  <strong>gpt-4o-mini</strong> - synthesizes the top 10 stories into a headline, 2-3 sentence intro, 3-5 key developments, and top story links. Generated daily with a same-day retry, then stored in Redis for 90 days.
                 </p>
               </div>
               <div
@@ -472,7 +548,7 @@ export default function MethodologyPage() {
                   Deep Dives
                 </h3>
                 <p className="mt-2 text-xs leading-relaxed" style={{ color: "var(--text-secondary)" }}>
-                  <strong>gpt-4o-mini</strong> — generates 400–600 word analytical articles when a story crosses a significance threshold: funding rounds ≥$25M, parliamentary AI legislation, or notable research. Also auto-generates if no post has been published in 4+ days so the feed never goes stale.
+                  <strong>gpt-4o-mini</strong> - generates 400-600 word analytical articles when a story crosses a significance threshold: funding rounds of at least $25M, parliamentary AI legislation, or notable research. Also auto-generates if no post has been published in 4+ days so the feed never goes stale.
                 </p>
               </div>
               <div
@@ -488,7 +564,7 @@ export default function MethodologyPage() {
                   Section Summaries
                 </h3>
                 <p className="mt-2 text-xs leading-relaxed" style={{ color: "var(--text-secondary)" }}>
-                  <strong>gpt-4o-mini</strong> — generates one-sentence summaries for 6 signal sections (Stories, Trends, Research, Parliament, Jobs, Stocks). Displayed at the top of each relevant section on the dashboard and provincial pages.
+                  <strong>gpt-4o-mini</strong> - generates one-sentence summaries for 6 signal sections (Stories, Trends, Research, Parliament, Jobs, Stocks). Displayed at the top of each relevant section on the dashboard and provincial pages.
                 </p>
               </div>
               <div

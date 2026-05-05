@@ -3,6 +3,8 @@ import { fetchParliamentAIMentions } from "@/lib/parliament-client"
 import { checkRateLimit } from "@/lib/rate-limit"
 import { getSectionSummary } from "@/lib/section-summaries-client"
 
+export const dynamic = "force-dynamic"
+
 export async function GET(request: Request) {
   const limited = await checkRateLimit(request, 'loose')
   if (limited) return limited

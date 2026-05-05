@@ -96,7 +96,7 @@ function MentionCard({ mention }: { mention: ParliamentMention }) {
       </div>
       {mention.excerpt && (
         <p className="text-sm italic border-l-2 pl-3 mb-3 leading-relaxed" style={{ color: 'var(--text-secondary)', borderColor: 'var(--border-subtle)' }}>
-          "{mention.excerpt}"
+          &ldquo;{mention.excerpt}&rdquo;
         </p>
       )}
       <a
@@ -139,7 +139,7 @@ function MentionRow({ mention }: { mention: ParliamentMention }) {
       <td className="py-4 px-4 md:px-6 text-sm leading-relaxed max-w-[500px]">
         {mention.excerpt && (
           /* Eradicate line-clamp to prevent truncation bugs entirely */
-          <p className="italic border-l-2 pl-3 mb-2" style={{ color: 'var(--text-secondary)', borderColor: 'var(--border-subtle)' }}>"{mention.excerpt}"</p>
+          <p className="italic border-l-2 pl-3 mb-2" style={{ color: 'var(--text-secondary)', borderColor: 'var(--border-subtle)' }}>&ldquo;{mention.excerpt}&rdquo;</p>
         )}
         <a
           href={mention.url}

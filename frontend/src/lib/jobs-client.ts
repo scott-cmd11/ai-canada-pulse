@@ -6,10 +6,16 @@ import { Redis } from '@upstash/redis'
 import { parse } from 'csv-parse'
 import { Readable } from 'stream'
 
-const redis = new Redis({
-  url: process.env.UPSTASH_REDIS_REST_URL!,
-  token: process.env.UPSTASH_REDIS_REST_TOKEN!,
-})
+let redisClient: Redis | null | undefined
+
+function getRedis(): Redis | null {
+  if (redisClient !== undefined) return redisClient
+
+  const url = process.env.UPSTASH_REDIS_REST_URL
+  const token = process.env.UPSTASH_REDIS_REST_TOKEN
+  redisClient = url && token ? new Redis({ url, token }) : null
+  return redisClient
+}
 
 const DATASET_ID = 'ea639e28-c0fc-48bf-b5dd-b8899bd43072'
 const CKAN_API = `https://open.canada.ca/data/api/3/action/package_show?id=${DATASET_ID}`
@@ -279,6 +285,12 @@ export async function refreshJobBankStats(): Promise<JobMarketData | null> {
 
   const result: JobMarketData = { ...stats, source: 'jobbank-csv', dataMonth }
 
+  const redis = getRedis()
+  if (!redis) {
+    console.warn('[jobs-client] Redis is not configured; returning uncached Job Bank stats')
+    return result
+  }
+
   try {
     await redis.set('jobbank-csv-stats', result, { ex: CACHE_TTL })
     console.log(`[jobs-client] Cached Job Bank stats: ${result.totalAIJobs} vacancies (${dataMonth})`)
@@ -291,6 +303,9 @@ export async function refreshJobBankStats(): Promise<JobMarketData | null> {
 
 async function _fetchAIJobMarket(province?: string): Promise<JobMarketData | null> {
   // Always read from Redis cache — populated by the daily cron via refreshJobBankStats()
+  const redis = getRedis()
+  if (!redis) return getFallbackData()
+
   try {
     const cached = await redis.get<JobMarketData>('jobbank-csv-stats')
     if (cached) {

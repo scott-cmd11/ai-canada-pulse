@@ -54,10 +54,10 @@ export default function AdoptionComparison() {
       textStyle: { color: ct.tooltipText, fontSize: 13 },
       formatter: (params: Array<{ name: string; value: number }>) => {
         const p = params[0]
-        return `${p.name}<br/><b style="color: ${ct.tooltipValue}; font-size: 14px;">${p.value}%</b> deployed`
+        return `${p.name}<br/><b style="color: ${ct.tooltipValue}; font-size: 14px;">${p.value}%</b> fallback context`
       },
     },
-    animation: false
+    animation: false,
   }
 
   return (
@@ -67,55 +67,54 @@ export default function AdoptionComparison() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-
         <div className="flex flex-col gap-6">
           <div className="saas-card p-6 flex-1 flex flex-col justify-center">
-            <p className="text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: 'var(--text-muted)' }}>
+            <p className="text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: "var(--text-muted)" }}>
               Public Sector
             </p>
-            <p className="text-2xl sm:text-4xl font-bold tracking-tight leading-none mb-2" style={{ color: 'var(--text-primary)' }}>
-              {overallComparison.publicSector.adoptionRate}%
+            <p className="text-2xl sm:text-4xl font-bold tracking-tight leading-none mb-2" style={{ color: "var(--text-primary)" }}>
+              Source-linked
             </p>
-            <p className="text-sm font-medium leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
-              Agencies utilizing ≥1 system
+            <p className="text-sm font-medium leading-relaxed" style={{ color: "var(--text-secondary)" }}>
+              Federal AI Register entries are treated as system-level evidence, not an adoption rate.
             </p>
-            <span className="text-[11px] uppercase tracking-wider font-semibold mt-4 block" style={{ color: 'var(--text-muted)' }}>
+            <span className="text-[11px] uppercase tracking-wider font-semibold mt-4 block" style={{ color: "var(--text-muted)" }}>
               Source: {overallComparison.publicSector.source}
             </span>
           </div>
 
           <div className="saas-card p-6 flex-1 flex flex-col justify-center">
-            <p className="text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: 'var(--text-muted)' }}>
+            <p className="text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: "var(--text-muted)" }}>
               Private Sector
             </p>
-            <p className="text-2xl sm:text-4xl font-bold tracking-tight leading-none mb-2" style={{ color: 'var(--text-primary)' }}>
-              {overallComparison.privateSector.adoptionRate}%
+            <p className="text-2xl sm:text-4xl font-bold tracking-tight leading-none mb-2" style={{ color: "var(--text-primary)" }}>
+              {overallComparison.privateSector.adoptionRate ?? "Fallback"}%
             </p>
-            <p className="text-sm font-medium leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
-              National enterprise average
+            <p className="text-sm font-medium leading-relaxed" style={{ color: "var(--text-secondary)" }}>
+              National business AI use where live StatCan fetch is unavailable.
             </p>
-            <span className="text-[11px] uppercase tracking-wider font-semibold mt-4 block" style={{ color: 'var(--text-muted)' }}>
+            <span className="text-[11px] uppercase tracking-wider font-semibold mt-4 block" style={{ color: "var(--text-muted)" }}>
               Source: {overallComparison.privateSector.source}
             </span>
           </div>
         </div>
 
         <div className="saas-card p-6 lg:p-8 lg:col-span-2 flex flex-col border-t-4 border-t-indigo-700">
-          <p className="text-sm font-bold mb-4" style={{ color: 'var(--text-primary)' }}>
+          <p className="text-sm font-bold mb-4" style={{ color: "var(--text-primary)" }}>
             Commercial Deployment by Sector
           </p>
           <div className="flex-1 min-h-[250px] w-full">
             <ReactECharts
               echarts={echarts}
               option={industryOption}
-              style={{ height: '300px', width: '100%' }}
+              style={{ height: "300px", width: "100%" }}
             />
           </div>
         </div>
-
       </div>
-      <p className="mt-3 text-[11px] font-semibold uppercase tracking-wider text-right" style={{ color: 'var(--text-muted)' }}>
-        Source: Statistics Canada 11-621-M, Treasury Board of Canada
+
+      <p className="mt-3 text-[11px] font-semibold uppercase tracking-wider text-right" style={{ color: "var(--text-muted)" }}>
+        Source: Statistics Canada AI adoption tables, Government of Canada AI Register
       </p>
     </section>
   )

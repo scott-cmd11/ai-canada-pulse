@@ -3,16 +3,22 @@ import { getDigest } from '@/lib/digest-client'
 import { readDashboardEnrichmentBundle } from '@/lib/ai-enrichment-cache'
 import { fetchAllStories } from '@/lib/rss-client'
 import { SOURCES } from '@/lib/source-registry'
+import { fetchStatCanAdoption } from '@/lib/statcan-sdmx-client'
+import { fetchGovAIRegistry } from '@/lib/gov-ai-registry-client'
+import { fetchProcurementDemand } from '@/lib/procurement-demand-client'
 
 export const dynamic = 'force-dynamic'
 export const maxDuration = 30
 
 export async function GET() {
   const today = new Date().toISOString().split('T')[0]
-  const [stories, digest, enrichment] = await Promise.all([
+  const [stories, digest, enrichment, adoption, aiRegister, procurement] = await Promise.all([
     fetchAllStories().catch(() => []),
     getDigest(today).catch(() => null),
     readDashboardEnrichmentBundle().catch(() => null),
+    fetchStatCanAdoption().catch(() => null),
+    fetchGovAIRegistry().catch(() => null),
+    fetchProcurementDemand().catch(() => null),
   ])
 
   const latestStoryPublishedAt = stories
@@ -43,6 +49,11 @@ export async function GET() {
     sources: {
       count: SOURCES.length,
       ids: SOURCES.map((source) => source.id),
+      health: [
+        ...(adoption?.sourceHealth ?? []),
+        ...(aiRegister?.sourceHealth ?? []),
+        ...(procurement?.sourceHealth ?? []),
+      ],
     },
   })
 }

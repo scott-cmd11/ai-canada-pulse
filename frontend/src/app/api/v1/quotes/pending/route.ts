@@ -4,6 +4,8 @@ import { NextResponse } from "next/server"
 import { requireAdmin } from "@/lib/quotes/admin-auth"
 import { listPending, listRecentReviewed } from "@/lib/quotes/supabase-quotes"
 
+export const dynamic = "force-dynamic"
+
 export async function GET(request: Request) {
   const unauthorised = requireAdmin(request)
   if (unauthorised) return unauthorised

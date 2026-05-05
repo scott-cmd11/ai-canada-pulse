@@ -31,8 +31,6 @@ function StartupMapPanel({ provinceFilter, liveSignals }: { provinceFilter?: str
     .sort(([, a], [, b]) => b - a)
     .slice(0, 6)
 
-  if (provinceFilter && provinceStartups.length === 0) return null
-
   // Build a map of company name → most recent live signal
   const signalByCompany = useMemo(() => {
     const map = new Map<string, StartupSignal>()
@@ -42,6 +40,8 @@ function StartupMapPanel({ provinceFilter, liveSignals }: { provinceFilter?: str
     }
     return map
   }, [liveSignals])
+
+  if (provinceFilter && provinceStartups.length === 0) return null
 
   const STAGE_COLORS: Record<string, { bg: string; color: string; border: string }> = {
     Seed: { bg: 'color-mix(in srgb, #10b981 12%, var(--surface-primary))', color: '#10b981', border: '1px solid color-mix(in srgb, #10b981 20%, var(--surface-primary))' },

@@ -99,9 +99,6 @@ function StoryFeedInner({ region, sectionTitle }: StoryFeedProps = {}) {
   const summary = region ? regionSummary : sharedCtx.summary
   const { isFallback, lastUpdated } = regionResult
 
-  // On province pages, hide the section entirely rather than showing national fallback stories
-  if (region && isFallback) return null
-
   const feedStories = stories.filter((story) => !story.isBriefingTop)
 
   // Region filter (client-only; national feed only). Canonical list of all
@@ -166,6 +163,9 @@ function StoryFeedInner({ region, sectionTitle }: StoryFeedProps = {}) {
     : byCategory
 
   const visible = filtered.slice(0, displayCount)
+
+  // On province pages, hide the section entirely rather than showing national fallback stories
+  if (region && isFallback) return null
 
   return (
     <>

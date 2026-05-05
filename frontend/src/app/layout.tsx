@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next"
 import { Archivo, Archivo_Black, Fraunces, JetBrains_Mono } from "next/font/google"
+import { SOURCES } from "@/lib/source-registry"
 import "./globals.css"
 
 const archivo = Archivo({
@@ -38,23 +39,23 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   title: {
-    default: "AI Canada Pulse — Canadian AI Intelligence Monitor",
-    template: "%s — AI Canada Pulse",
+    default: "AI Canada Pulse - Canadian AI Adoption Monitor",
+    template: "%s - AI Canada Pulse",
   },
-  description: "Fact-driven intelligence platform tracking AI developments across Canada. Real-time signals from 17+ public data sources covering policy, research, industry, and market activity.",
-  keywords: ["Canada AI", "artificial intelligence", "Canadian AI policy", "AI research", "AI jobs Canada", "machine learning", "AI dashboard"],
+  description: `Source-linked monitor tracking AI adoption in Canada from ${SOURCES.length} public sources, including official Statistics Canada tables, the Government of Canada AI Register, procurement demand, policy, research, jobs, and proxy signals.`,
+  keywords: ["Canada AI adoption", "Statistics Canada AI", "Government of Canada AI Register", "AI procurement Canada", "Canadian AI policy", "AI research", "AI jobs Canada", "machine learning", "AI dashboard"],
   authors: [{ name: "Scott Hazlitt" }],
   openGraph: {
     type: "website",
     locale: "en_CA",
     siteName: "AI Canada Pulse",
-    title: "AI Canada Pulse — Canadian AI Intelligence Monitor",
-    description: "Fact-driven intelligence platform tracking AI developments across Canada. 17+ public data sources, zero fabricated data.",
+    title: "AI Canada Pulse - Canadian AI Adoption Monitor",
+    description: `Source-linked Canadian AI adoption monitor with ${SOURCES.length} public sources, official adoption metrics, public-sector system evidence, and clearly labelled proxy signals.`,
   },
   twitter: {
     card: "summary_large_image",
     title: "AI Canada Pulse",
-    description: "Real-time Canadian AI intelligence from 17+ public data sources.",
+    description: `Canadian AI adoption intelligence from ${SOURCES.length} source-linked public datasets and feeds.`,
   },
   robots: {
     index: true,

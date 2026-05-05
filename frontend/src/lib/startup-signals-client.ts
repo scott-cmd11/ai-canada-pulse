@@ -58,7 +58,7 @@ export async function fetchStartupSignals(): Promise<StartupSignalsData> {
     if (!res.ok) return getFallbackData()
 
     const json = await res.json()
-    const stories: Array<{ title: string; url: string; source: string; publishedAt: string }> = json.stories || []
+    const stories: Array<{ title?: string; headline?: string; url?: string; source?: string; sourceName?: string; sourceUrl?: string; publishedAt?: string }> = json.stories || []
 
     const signals = extractSignals(stories)
 
@@ -76,11 +76,13 @@ export async function fetchStartupSignals(): Promise<StartupSignalsData> {
   }
 }
 
-function extractSignals(stories: Array<{ title: string; url: string; source: string; publishedAt: string }>): StartupSignal[] {
+function extractSignals(stories: Array<{ title?: string; headline?: string; url?: string; source?: string; sourceName?: string; sourceUrl?: string; publishedAt?: string }>): StartupSignal[] {
   const signals: StartupSignal[] = []
 
   for (const story of stories) {
-    const title = story.title
+    const title = (story.title ?? story.headline ?? "").trim()
+    if (!title) continue
+
     const titleLower = title.toLowerCase()
 
     // Check if story mentions a known Canadian AI company
@@ -115,8 +117,8 @@ function extractSignals(stories: Array<{ title: string; url: string; source: str
         headline: title,
         amount,
         date: story.publishedAt?.slice(0, 10) || new Date().toISOString().slice(0, 10),
-        source: story.source,
-        url: story.url,
+        source: story.source ?? story.sourceName ?? "Public source",
+        url: story.url ?? story.sourceUrl ?? "#",
         province: startup?.province,
       })
     }

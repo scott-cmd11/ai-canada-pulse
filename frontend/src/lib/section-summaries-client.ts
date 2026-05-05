@@ -1,10 +1,16 @@
 // frontend/src/lib/section-summaries-client.ts
 import { Redis } from '@upstash/redis'
 
-const redis = new Redis({
-  url: process.env.UPSTASH_REDIS_REST_URL!,
-  token: process.env.UPSTASH_REDIS_REST_TOKEN!,
-})
+let redisClient: Redis | null | undefined
+
+function getRedis(): Redis | null {
+  if (redisClient !== undefined) return redisClient
+
+  const url = process.env.UPSTASH_REDIS_REST_URL
+  const token = process.env.UPSTASH_REDIS_REST_TOKEN
+  redisClient = url && token ? new Redis({ url, token }) : null
+  return redisClient
+}
 
 const OPENAI_MODEL = process.env.OPENAI_BRIEF_MODEL ?? 'gpt-4o-mini'
 const TIMEOUT_MS = 20_000
@@ -87,6 +93,9 @@ Respond ONLY with valid JSON, no markdown fences:
     const required: SectionKey[] = ['stories', 'trends', 'jobs', 'research', 'parliament', 'stocks']
     if (!required.every((k) => typeof parsed[k] === 'string')) return null
 
+    const redis = getRedis()
+    if (!redis) return parsed
+
     await redis.set(redisKey(date), parsed, { ex: TTL_SECONDS })
     return parsed
   } catch (err) {
@@ -96,6 +105,9 @@ Respond ONLY with valid JSON, no markdown fences:
 }
 
 export async function getSectionSummaries(date: string): Promise<SectionSummaries | null> {
+  const redis = getRedis()
+  if (!redis) return null
+
   try {
     return await redis.get<SectionSummaries>(redisKey(date))
   } catch {

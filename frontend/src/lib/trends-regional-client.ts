@@ -7,7 +7,6 @@
 
 import { unstable_cache } from "next/cache"
 
-// eslint-disable-next-line @typescript-eslint/no-require-imports
 const googleTrends = require("google-trends-api")
 
 export interface ProvinceInterest {

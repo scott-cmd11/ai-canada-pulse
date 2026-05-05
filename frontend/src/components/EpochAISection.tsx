@@ -290,7 +290,7 @@ export default function EpochAISection() {
                 <a href="https://metr.org/time-horizons/" target="_blank" rel="noopener noreferrer" className="hover:underline font-medium" style={{ color: 'var(--accent-primary)' }}>
                     METR
                 </a>
-                's evaluations of {stats.totalModels} frontier AI models.
+                {"'"}s evaluations of {stats.totalModels} frontier AI models.
             </p>
 
             {/* Stat cards */}
