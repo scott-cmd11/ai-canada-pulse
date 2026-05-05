@@ -103,8 +103,11 @@ function DashboardHero({ initialStories }: { initialStories: StoriesInitialData 
           A public-source briefing across official adoption tables, policy, research, markets, and public institutions.
         </p>
         <div className="briefing-hero__actions" aria-label="Primary dashboard actions">
-          <a href="#adoption" className="briefing-action briefing-action--primary">
-            Start with adoption
+          <a href="#acceleration" className="briefing-action briefing-action--primary">
+            Latest signals
+          </a>
+          <a href="#adoption" className="briefing-action">
+            Adoption monitor
           </a>
           <a href="/methodology" className="briefing-action">
             View methodology
@@ -151,27 +154,6 @@ export default async function DashboardPage() {
 
         <SectionNav />
 
-        <section id="adoption" className="flex flex-col gap-5">
-          <SectionTitle
-            eyebrow="Adoption Monitor"
-            title="Canada's AI adoption evidence, ranked by source quality"
-            description="Official business adoption rates come first, followed by federal public-sector AI systems and procurement demand signals. Proxy indicators stay downstream."
-          />
-
-          <SectionErrorBoundary sectionName="Official AI Adoption">
-            <AIAdoptionSection />
-          </SectionErrorBoundary>
-
-          <div className="grid gap-5 xl:grid-cols-2">
-            <SectionErrorBoundary sectionName="Government AI Register">
-              <GovRegistrySection />
-            </SectionErrorBoundary>
-            <SectionErrorBoundary sectionName="Procurement Demand">
-              <ProcurementDemandSection />
-            </SectionErrorBoundary>
-          </div>
-        </section>
-
         <section id="acceleration" className="saas-card rounded-2xl p-5 sm:p-6">
           <SectionTitle
             eyebrow="Acceleration Signals"
@@ -200,6 +182,27 @@ export default async function DashboardPage() {
           <div className="mt-4">
             <SectionErrorBoundary sectionName="Quotes Archive">
               <QuotesTeaser />
+            </SectionErrorBoundary>
+          </div>
+        </section>
+
+        <section id="adoption" className="flex flex-col gap-5">
+          <SectionTitle
+            eyebrow="Adoption Monitor"
+            title="Canada's AI adoption evidence, ranked by source quality"
+            description="Official business adoption rates come first, followed by federal public-sector AI systems and procurement demand signals. Proxy indicators stay downstream."
+          />
+
+          <SectionErrorBoundary sectionName="Official AI Adoption">
+            <AIAdoptionSection />
+          </SectionErrorBoundary>
+
+          <div className="grid gap-5 xl:grid-cols-2">
+            <SectionErrorBoundary sectionName="Government AI Register">
+              <GovRegistrySection />
+            </SectionErrorBoundary>
+            <SectionErrorBoundary sectionName="Procurement Demand">
+              <ProcurementDemandSection />
             </SectionErrorBoundary>
           </div>
         </section>
