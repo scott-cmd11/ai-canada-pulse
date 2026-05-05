@@ -22,6 +22,15 @@ const STATUS_STYLES: Record<SourceHealthStatus, { bg: string; colour: string }> 
   unverified: { bg: "rgba(71, 85, 105, 0.10)", colour: "var(--text-secondary)" },
 }
 
+const STATUS_SUMMARY_LABELS: Record<SourceHealthStatus, string> = {
+  live: "Verified live",
+  stale: "Stale",
+  fallback: "Fallback",
+  mixed: "Mixed",
+  curated: "Curated",
+  unverified: "Auto feeds",
+}
+
 function formatDateTime(value: string | null): string {
   if (!value) return "Not timestamped"
   const date = new Date(value)
@@ -123,7 +132,7 @@ export default async function SourcesPage() {
                   className="rounded-full px-3 py-1 text-[11px] font-semibold"
                   style={{ backgroundColor: style.bg, color: style.colour }}
                 >
-                  {status}: {counts[status]}
+                  {STATUS_SUMMARY_LABELS[status]}: {counts[status]}
                 </span>
               )
             })}
@@ -171,9 +180,9 @@ export default async function SourcesPage() {
                           {row.description}
                         </p>
                       </td>
-                      <td className="px-4 py-4 align-top">
+                      <td className="min-w-[132px] px-4 py-4 align-top">
                         <span
-                          className="rounded-full px-2 py-1 text-[11px] font-semibold"
+                          className="inline-flex whitespace-nowrap rounded-full px-2.5 py-1 text-[11px] font-semibold"
                           style={{ backgroundColor: statusStyle.bg, color: statusStyle.colour }}
                         >
                           {row.statusLabel}

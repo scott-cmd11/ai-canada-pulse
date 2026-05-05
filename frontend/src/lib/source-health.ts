@@ -52,7 +52,7 @@ const STATUS_LABELS: Record<SourceHealthStatus, string> = {
   fallback: "Fallback",
   curated: "Manually curated",
   mixed: "Mixed",
-  unverified: "Configured live",
+  unverified: "Auto feed",
 }
 
 function normaliseSourceId(id: string): string {
